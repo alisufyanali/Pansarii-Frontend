@@ -1,10 +1,6 @@
 // app/layout.tsx
 import "./globals.css";
-import { CartProvider } from "./context/CartContext";
-import { WishlistProvider } from "./context/WishList";
-import Navbar from "./Desktop/components/navbar";
-import Footer from "./Desktop/components/footer";
-// import PansariinnSidebar from "./Desktop/components/sidebar/index";
+import DeviceDetector from "./utils/screen-detection";
 
 export const metadata = {
   title: "Pansari Inn - Premium Ayurvedic & Herbal Products",
@@ -41,16 +37,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body className="bg-white text-gray-900 font-poppins antialiased">
-        <CartProvider>
-          <WishlistProvider>
-            <Navbar />
-            <main className="min-h-screen bg-white pt-44">
-              {children}
-            </main>
-            <Footer />
-            {/* <PansariinnSidebar /> */}
-          </WishlistProvider>
-        </CartProvider>
+        <DeviceDetector>{children}</DeviceDetector>
       </body>
     </html>
   );
