@@ -1,26 +1,25 @@
-// app/Mobile/components/Navbar.tsx
+// app/Mobile/components/Navbar.tsx (Alternative)
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
 import { 
-  FaHome,
-  FaShoppingCart,
-  FaUser,
-  FaSearch,
-  FaTh,
-  FaWindowMaximize,
-  FaBars,
-  FaThLarge
-} from 'react-icons/fa';
+  HiHome, 
+  HiShoppingBag, 
+  HiUser, 
+  HiMenu,
+  HiOutlineHome,
+  HiOutlineShoppingBag,
+  HiOutlineUser,
+  HiOutlineMenu
+} from 'react-icons/hi';
 
 interface NavbarProps {
   setIsMenuOpen: (isOpen: boolean) => void;
-  setIsSearchOpen: (isOpen: boolean) => void;
 }
 
-export default function Navbar({ setIsMenuOpen, setIsSearchOpen }: NavbarProps) {
+export default function Navbar({ setIsMenuOpen }: NavbarProps) {
   const pathname = usePathname();
   const { getCartCount } = useCart();
   
@@ -30,31 +29,35 @@ export default function Navbar({ setIsMenuOpen, setIsSearchOpen }: NavbarProps) 
     { 
       name: 'Home', 
       href: '/', 
-      icon: <FaHome className="w-5 h-5" />
-    },
-    { 
-      name: 'Search', 
-      href: '#',
-      icon: <FaSearch className="w-5 h-5" />,
-      isButton: true,
-      onClick: () => setIsSearchOpen(true)
+      icon: <HiOutlineHome className="w-6 h-6" />,
+      activeIcon: <HiHome className="w-6 h-6" />
     },
     { 
       name: 'Menu', 
       href: '#',
-      icon: <FaTh className="w-6 h-6" />, // Grid icon for menu
+      icon: <HiOutlineMenu className="w-6 h-6" />,
+      activeIcon: <HiMenu className="w-6 h-6" />,
       isButton: true,
       onClick: () => setIsMenuOpen(true),
-      isCenter: true
     },
     { 
       name: 'Cart', 
       href: '/cart', 
       icon: (
         <div className="relative">
-          <FaShoppingCart className="w-5 h-5" />
+          <HiOutlineShoppingBag className="w-6 h-6" />
           {cartCount > 0 && (
-            <span className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full flex items-center justify-center font-bold border-2 border-white shadow-md">
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold border-2 border-white">
+              {cartCount > 9 ? '9+' : cartCount}
+            </span>
+          )}
+        </div>
+      ),
+      activeIcon: (
+        <div className="relative">
+          <HiShoppingBag className="w-6 h-6" />
+          {cartCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold border-2 border-white">
               {cartCount > 9 ? '9+' : cartCount}
             </span>
           )}
@@ -62,9 +65,10 @@ export default function Navbar({ setIsMenuOpen, setIsSearchOpen }: NavbarProps) 
       )
     },
     { 
-      name: 'Account', 
+      name: 'Sign In', 
       href: '/login', 
-      icon: <FaUser className="w-5 h-5" />
+      icon: <HiOutlineUser className="w-6 h-6" />,
+      activeIcon: <HiUser className="w-6 h-6" />
     },
   ];
 
@@ -76,71 +80,40 @@ export default function Navbar({ setIsMenuOpen, setIsSearchOpen }: NavbarProps) 
 
   return (
     <>
-      {/* Floating Navbar Container */}
-      <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40 w-[94%] max-w-md">
-        {/* Shadow/Glow Effect Behind */}
-        <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-emerald-500/20 blur-xl rounded-2xl -z-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-green-300/10 to-emerald-400/10 blur-lg rounded-2xl -z-10 translate-y-1"></div>
+      {/* Clean Floating Navbar */}
+      <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[92%] max-w-sm">
+        {/* Subtle Shadow */}
+        <div className="absolute inset-0 bg-black/5 blur-lg rounded-2xl -z-10 translate-y-1"></div>
         
-        {/* Glass Morphism Navbar */}
-        <div className="relative bg-white/95 backdrop-blur-md border border-white/30 rounded-2xl shadow-xl shadow-green-900/10">
-          
-          {/* Decorative Top Dots */}
-          <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
-            {[1, 2, 3].map((dot) => (
-              <div 
-                key={dot}
-                className="w-1.5 h-1.5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"
-              ></div>
-            ))}
-          </div>
+        {/* Main Container */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-lg">
           
           {/* Navigation Items */}
-          <div className="flex items-center justify-between px-2 py-3">
-            {bottomNavLinks.map((item, index) => {
+          <div className="flex items-center justify-around p-2">
+            {bottomNavLinks.map((item) => {
               const active = isActive(item.href);
-              
-              if (item.isCenter) {
-                return (
-                  <button
-                    key={item.name}
-                    onClick={item.onClick}
-                    className="relative -top-8 mx-1 w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white flex flex-col items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95 border-4 border-white"
-                    aria-label={item.name || "Open Menu"}
-                  >
-                    <div className="w-7 h-7">
-                      {item.icon}
-                    </div>
-                    {item.name && (
-                      <span className="text-xs mt-1 font-semibold">{item.name}</span>
-                    )}
-                    
-                    {/* Floating Animation */}
-                    <div className="absolute inset-0 rounded-full border-2 border-green-300/40 animate-pulse"></div>
-                  </button>
-                );
-              }
               
               if (item.isButton) {
                 return (
                   <button
                     key={item.name}
                     onClick={item.onClick}
-                    className={`flex flex-col items-center justify-center px-3 py-2 rounded-xl transition-all duration-200 ${
-                      active 
-                        ? 'text-green-600 bg-green-50/80' 
-                        : 'text-gray-600 hover:text-green-600 hover:bg-green-50/50'
-                    }`}
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-200
+                      ${active ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}
                     aria-label={item.name}
                   >
-                    <div className="w-5 h-5">
-                      {item.icon}
+                    <div className={`p-2 rounded-lg transition-all duration-200
+                      ${active ? 'bg-emerald-100 text-emerald-600' : 'text-gray-600'}`}>
+                      {active ? item.activeIcon : item.icon}
                     </div>
-                    <span className="text-xs mt-1 font-medium">{item.name}</span>
+                    <span className={`mt-1 text-xs font-medium transition-all duration-200
+                      ${active ? 'text-emerald-600' : 'text-gray-600'}`}>
+                      {item.name}
+                    </span>
                     
                     {/* Active Indicator */}
                     {active && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1"></div>
                     )}
                   </button>
                 );
@@ -150,33 +123,31 @@ export default function Navbar({ setIsMenuOpen, setIsSearchOpen }: NavbarProps) 
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`relative flex flex-col items-center justify-center px-3 py-2 rounded-xl transition-all duration-200 ${
-                    active 
-                      ? 'text-green-600 bg-green-50/80' 
-                      : 'text-gray-600 hover:text-green-600 hover:bg-green-50/50'
-                  }`}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-200
+                    ${active ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}
                   aria-label={item.name}
                 >
-                  <div className="w-5 h-5">
-                    {item.icon}
+                  <div className={`p-2 rounded-lg transition-all duration-200
+                    ${active ? 'bg-emerald-100 text-emerald-600' : 'text-gray-600'}`}>
+                    {active ? item.activeIcon : item.icon}
                   </div>
-                  <span className="text-xs mt-1 font-medium">{item.name}</span>
+                  <span className={`mt-1 text-xs font-medium transition-all duration-200
+                    ${active ? 'text-emerald-600' : 'text-gray-600'}`}>
+                    {item.name}
+                  </span>
                   
                   {/* Active Indicator */}
                   {active && (
-                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1"></div>
                   )}
                 </Link>
               );
             })}
           </div>
-          
-          {/* Bottom Decorative Line */}
-          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-green-400/10 to-emerald-500/10 rounded-full"></div>
         </div>
       </nav>
       
-      {/* Safety Spacer for Bottom Content */}
+      {/* Bottom Spacer */}
       <div className="h-20"></div>
     </>
   );
