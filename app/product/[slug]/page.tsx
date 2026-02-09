@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import ProductDetails from '@/app/Desktop/components/ProductDetails';
 import ProductDetailsSection from '@/app/Desktop/Sections/ProductDetailsSection';
 import { allProducts } from '@/app/Desktop/data/products';
-import { FaArrowLeft, FaHome, FaStore } from 'react-icons/fa'; // Changed FaShop to FaStore
+import { FaArrowLeft, FaHome, FaStore } from 'react-icons/fa'; 
 
 export default function ProductPage() {
   const params = useParams();

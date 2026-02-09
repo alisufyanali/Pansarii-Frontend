@@ -31,7 +31,7 @@ export default function MobileLayout({ children }: { children: ReactNode }) {
         {/* Floating Bottom Navbar */}
         <Navbar 
           setIsMenuOpen={setIsMenuOpen}
-          setIsSearchOpen={setIsSearchOpen}
+          // setIsSearchOpen={setIsSearchOpen}
         />
 
         {/* Menu Modal */}
