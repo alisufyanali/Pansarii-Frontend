@@ -3,8 +3,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import SearchBarWrapper from './navbar/SearchBarWrapper';
 import CartSidebar from './sidebar';
 import { useCart } from '../../context/CartContext';
@@ -40,12 +40,11 @@ const getCategoriesFromProducts = () => {
     }
   });
   
-  // Convert to array and sort alphabetically
   return Array.from(categoriesSet)
     .sort()
     .map(category => ({
       name: category,
-      slug: category.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      slug: category,
       count: allProducts.filter(p => p.category === category).length
     }));
 };
@@ -62,7 +61,9 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { getCartCount, getCartTotal } = useCart();
   const [isCategorySidebarOpen, setIsCategorySidebarOpen] = useState(false);
   const [isCartSidebarOpen, setIsCartSidebarOpen] = useState(false);
@@ -70,6 +71,9 @@ export default function Navbar() {
   
   // Get categories from products
   const categories = getCategoriesFromProducts();
+  
+  // Get current category from URL
+  const currentCategory = searchParams.get('category');
   
   // Filter categories based on search
   const filteredCategories = categories.filter(category => 
@@ -114,6 +118,26 @@ export default function Navbar() {
     setIsCategorySidebarOpen(false);
     setCategorySearch('');
   };
+
+  // Handle category selection - updates URL for shop page
+  const handleCategorySelect = (slug: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (slug === 'all') {
+      params.delete('category');
+    } else {
+      params.set('category', slug);
+    }
+    
+    const queryString = params.toString();
+    const url = queryString ? `/shop?${queryString}` : '/shop';
+    
+    router.push(url);
+    closeCategorySidebar();
+  };
+  
+  // Calculate total products
+  const totalProducts = categories.reduce((sum, cat) => sum + cat.count, 0);
 
   return (
     <>
@@ -204,7 +228,7 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              {/* Desktop Search Bar */}
+              {/* Desktop Search Bar - No onSearch prop needed */}
               <div className="flex-1 max-w-2xl hidden lg:block">
                 <SearchBarWrapper 
                   placeholder="Search for products..."
@@ -313,7 +337,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Search Bar */}
+        {/* Mobile Search Bar - No onSearch prop needed */}
         <div className="lg:hidden bg-white px-4 py-3">
           <SearchBarWrapper 
             placeholder="Search for products..."
@@ -344,97 +368,124 @@ export default function Navbar() {
             </nav>
           </div>
         </div>
-
-       
       </header>
 
-      {/* Category Sidebar - LEFT SIDE */}
+      {/* Simple Category Sidebar - Green Theme Only */}
       {isCategorySidebarOpen && (
         <div className="fixed inset-0 z-50">
-          {/* Blur Overlay */}
+          {/* Dark Overlay */}
           <div 
-            className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300"
+            className="absolute inset-0 bg-black/50"
             onClick={closeCategorySidebar}
           />
           
           {/* Sidebar */}
-          <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300">
+          <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 overflow-y-auto">
             {/* Header - Green */}
-            <div className="bg-green-700 text-white p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-bold">Browse Categories</h2>
+            <div className="bg-green-700 text-white p-5 sticky top-0 z-10">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold flex items-center gap-3">
+                  <FaLeaf className="w-5 h-5" />
+                  Categories
+                </h2>
                 <button 
                   onClick={closeCategorySidebar}
-                  className="p-1 hover:bg-green-600 rounded transition"
-                  aria-label="Close categories"
+                  className="p-2 hover:bg-green-600 rounded-full transition"
+                  aria-label="Close"
                 >
                   <FaTimes className="w-4 h-4" />
                 </button>
               </div>
               
-              {/* Search */}
-              <div className="relative">
+              {/* Search Box */}
+              <div className="mt-4 relative">
                 <input
                   type="text"
                   value={categorySearch}
                   onChange={(e) => setCategorySearch(e.target.value)}
                   placeholder="Search categories..."
-                  className="w-full px-3 py-2 pl-9 bg-white/10 text-white placeholder-white/60 rounded text-sm focus:outline-none focus:ring-1 focus:ring-white/50"
+                  className="w-full px-4 py-2.5 pl-10 bg-white/10 text-white placeholder-white/70 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/20"
                 />
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" />
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/70" />
               </div>
+
+              {/* All Categories Button */}
+              <button
+                onClick={() => handleCategorySelect('all')}
+                className={`mt-3 w-full text-left px-4 py-2.5 rounded-lg transition flex items-center justify-between ${
+                  !currentCategory
+                    ? 'bg-white text-green-700 font-semibold'
+                    : 'text-white hover:bg-green-600'
+                }`}
+              >
+                <span>All Categories</span>
+                <span className="text-sm opacity-80">({totalProducts})</span>
+              </button>
             </div>
 
             {/* Categories List */}
-            <div className="h-[calc(100vh-140px)] overflow-y-auto">
+            <div className="p-4">
               {filteredCategories.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-gray-500">No categories found</p>
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-3">No categories found</p>
                   <button
                     onClick={() => setCategorySearch('')}
-                    className="mt-2 text-sm text-green-700 hover:text-green-800"
+                    className="text-green-700 hover:text-green-800 font-medium text-sm"
                   >
                     Clear search
                   </button>
                 </div>
               ) : (
-                <div className="p-2">
-                  {filteredCategories.map((category) => (
-                    <Link
-                      key={category.slug}
-                      href={`/shop?category=${category.slug}`}
-                      onClick={closeCategorySidebar}
-                      className="flex items-center justify-between p-3 hover:bg-green-50 rounded transition border-b border-gray-100 last:border-b-0 group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center group-hover:bg-green-200 transition">
-                          <FaLeaf className="w-4 h-4 text-green-700" />
+                <div className="space-y-1">
+                  {filteredCategories.map((category) => {
+                    const isSelected = currentCategory === category.slug;
+                    return (
+                      <button
+                        key={category.slug}
+                        onClick={() => handleCategorySelect(category.slug)}
+                        className={`w-full flex items-center justify-between p-3 rounded-lg transition text-left group ${
+                          isSelected 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'hover:bg-green-50 text-gray-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            isSelected ? 'bg-green-200' : 'bg-green-100 group-hover:bg-green-200'
+                          }`}>
+                            <FaLeaf className={`w-4 h-4 ${
+                              isSelected ? 'text-green-700' : 'text-green-600'
+                            }`} />
+                          </div>
+                          <span className="font-medium">{category.name}</span>
                         </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-black group-hover:text-green-700 text-sm">
-                            {category.name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {category.count} product{category.count !== 1 ? 's' : ''}
-                          </p>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm px-2 py-1 rounded-full ${
+                            isSelected 
+                              ? 'bg-green-200 text-green-800' 
+                              : 'bg-gray-100 text-gray-600 group-hover:bg-green-100'
+                          }`}>
+                            {category.count}
+                          </span>
+                          <FaChevronRight className={`w-3 h-3 ${
+                            isSelected ? 'text-green-700' : 'text-gray-400 group-hover:text-green-600'
+                          }`} />
                         </div>
-                      </div>
-                      <FaChevronRight className="w-3 h-3 text-gray-400 group-hover:text-green-700" />
-                    </Link>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
 
-            {/* Footer - Simple View All Button */}
-            <div className="absolute bottom-0 left-0 right-0 p-3 border-t bg-white">
-              <Link
-                href="/shop"
-                onClick={closeCategorySidebar}
-                className="block w-full py-2.5 bg-green-700 text-white text-center rounded hover:bg-green-600 transition text-sm font-medium"
-              >
-                View All Products
-              </Link>
+            {/* Footer with Total */}
+            <div className="sticky bottom-0 p-4 border-t bg-white">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Total Categories</span>
+                <span className="font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full">
+                  {categories.length}
+                </span>
+              </div>
             </div>
           </div>
         </div>

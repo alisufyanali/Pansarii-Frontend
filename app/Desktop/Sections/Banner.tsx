@@ -6,20 +6,23 @@ export default function Banner() {
   const bannerImg = '/images/Banner.png'; // Make sure this image exists in your public/images folder
 
   return (
-    <section className="relative w-full h-screen flex">
-      {/* Background Image */}
+    <section className="relative w-full h-[90vh] flex">
+      {/* Background Image - Use object-position to control what part of image is visible */}
       <div className="absolute inset-0 w-full h-full">
         <Image
           src={bannerImg}
           alt="Pansari Inn Banner"
           fill
-          className="object-cover"
+          className="object-cover object-top" // Changed to object-top to show top of image
           priority
         />
       </div>
 
+      {/* Dark overlay for better text readability (optional) */}
+      <div className="absolute inset-0 z-[1]"></div>
+
       {/* Content Overlay */}
-      <div className="relative z-10 flex w-full" style={{ marginLeft: '4%', marginRight: '4%' }}>
+      <div className="relative z-10 flex w-full mt-auto mb-auto" style={{ marginLeft: '4%', marginRight: '4%' }}>
         {/* Left Column - Content */}
         <div className="w-1/2 flex flex-col justify-center px-12 gap-4">
           {/* First line - Lexend, Bold */}
@@ -69,7 +72,7 @@ export default function Banner() {
                 fontFamily: "Poppins, sans-serif",
               }}
             >
-              Shop Now <span className="ml-2 text-lg">→</span>
+              Shop Now <span className="ml-2 text-lg">&gt;</span>
             </a>
             <a
               href="/remedies"
@@ -82,7 +85,7 @@ export default function Banner() {
                 fontFamily: "Poppins, sans-serif",
               }}
             >
-              Explore Remedies <span className="ml-2 text-lg">→</span>
+              Explore Remedies <span className="ml-2 text-lg">&gt;</span>
             </a>
           </div>
         </div>

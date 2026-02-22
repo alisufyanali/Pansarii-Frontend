@@ -1,4 +1,3 @@
-// components/ProductDetailsModal.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -94,7 +93,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
       });
     }
 
-    // Show success toast - REMOVED icon property
+    // Show success toast
     toast.success(`Added ${quantity} × ${product.nameEn} (${selectedSize}) to cart!`, {
       position: "top-right",
       autoClose: 3000,
@@ -132,7 +131,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
       });
     }
 
-    // Show success toast with redirect message - REMOVED icon property
+    // Show success toast with redirect message
     toast.success(
       <div>
         <div className="font-semibold">Added to cart! Redirecting...</div>
@@ -168,23 +167,20 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
 
   return (
     <>
-      {/* React Toastify Container - We'll place this in the main layout or app */}
-      {/* The ToastContainer should be placed once in your main layout */}
-      
-      {/* Modal */}
+      {/* Modal with Blurry Backdrop */}
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-        {/* Transparent Backdrop */}
+        {/* Blurry Backdrop */}
         <div 
-          className="absolute inset-0 bg-transparent"
+          className="absolute inset-0 bg-black/40 backdrop-blur-md"
           onClick={onClose}
         />
 
         {/* Modal Content */}
         <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden border border-gray-200">
-          {/* Close Button */}
+          {/* Close Button - Moved to top-left to avoid overlap with discount badge */}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors border border-gray-200"
+            className="absolute top-3 left-3 z-20 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors border border-gray-200"
             aria-label="Close modal"
           >
             <FaTimes className="w-4 h-4 text-gray-700" />
@@ -197,6 +193,13 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
             <div className="lg:w-2/5 p-4 border-r border-gray-100">
               {/* Main Image with Zoom */}
               <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50 mb-3">
+                {/* Sale Badge - Now positioned inside image area but away from close button */}
+                {product.sale && (
+                  <div className="absolute top-3 right-3 z-10 px-3 py-1.5 bg-red-500 text-white rounded-full text-sm font-semibold shadow-lg">
+                    {product.sale}
+                  </div>
+                )}
+                
                 <div 
                   ref={imageRef}
                   className="relative w-full h-full cursor-zoom-in"
@@ -256,18 +259,13 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
             {/* Right Column - Product Info */}
             <div className="lg:w-3/5 p-4 lg:p-6 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 2rem)' }}>
               <div className="space-y-4">
-                {/* Header */}
+                {/* Header - Removed sale badge from here since it's now in image area */}
                 <div>
                   <div className="flex items-start justify-between">
                     <div>
                       <h1 className="text-xl font-bold text-gray-900">{product.nameEn}</h1>
                       <p className="text-gray-600 text-sm mt-1">{product.nameUr}</p>
                     </div>
-                    {product.sale && (
-                      <span className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-semibold">
-                        {product.sale}
-                      </span>
-                    )}
                   </div>
                   
                   {product.description && (

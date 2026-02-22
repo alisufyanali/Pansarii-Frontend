@@ -81,6 +81,26 @@ function SearchFilterBarContent({
     }));
   }, []);
 
+  // Listen for URL changes to update categories
+  useEffect(() => {
+    const urlCategory = searchParams.get('category');
+    const urlCategories = searchParams.get('categories')?.split(',') || [];
+    
+    const newCategories = urlCategory 
+      ? [urlCategory] 
+      : urlCategories.length > 0 
+        ? urlCategories 
+        : [];
+    
+    // Only update if categories have changed
+    if (JSON.stringify(newCategories) !== JSON.stringify(filters.categories)) {
+      setFilters(prev => ({ 
+        ...prev, 
+        categories: newCategories 
+      }));
+    }
+  }, [searchParams]);
+
   const sortOptions = [
     { value: 'default', label: 'Default' },
     { value: 'price-low', label: 'Price: Low to High' },
@@ -111,30 +131,6 @@ function SearchFilterBarContent({
     setFilters(prev => ({ ...prev, searchQuery: e.target.value }));
   };
 
-  const handleCategoryToggle = useCallback((category: string) => {
-    setFilters(prev => {
-      const newCategories = prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category];
-      
-      const params = new URLSearchParams(searchParams.toString());
-      if (newCategories.length === 1) {
-        params.set('category', newCategories[0]);
-        params.delete('categories');
-      } else if (newCategories.length > 1) {
-        params.set('categories', newCategories.join(','));
-        params.delete('category');
-      } else {
-        params.delete('category');
-        params.delete('categories');
-      }
-      
-      router.push(`${pathname}?${params.toString()}`);
-      
-      return { ...prev, categories: newCategories };
-    });
-  }, [router, pathname, searchParams]);
-
   const handlePriceChange = (min: number, max: number) => {
     setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }));
   };
@@ -158,29 +154,17 @@ function SearchFilterBarContent({
       showOnSale: false,
       showInStock: true,
     });
-    router.push(pathname);
-  }, [router, pathname]);
-
-  const clearCategory = useCallback((categoryToRemove: string) => {
-    setFilters(prev => {
-      const newCategories = prev.categories.filter(c => c !== categoryToRemove);
-      
-      const params = new URLSearchParams(searchParams.toString());
-      if (newCategories.length === 0) {
-        params.delete('category');
-        params.delete('categories');
-      } else if (newCategories.length === 1) {
-        params.set('category', newCategories[0]);
-        params.delete('categories');
-      } else {
-        params.set('categories', newCategories.join(','));
-        params.delete('category');
-      }
-      router.push(`${pathname}?${params.toString()}`);
-      
-      return { ...prev, categories: newCategories };
-    });
+    
+    // Clear URL params but keep category if it exists
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('search');
+    params.delete('categories');
+    // Keep 'category' param if it exists (for tabs)
+    router.push(`${pathname}?${params.toString()}`);
   }, [router, pathname, searchParams]);
+
+  // Get current category from URL
+  const currentCategory = searchParams.get('category');
 
   return (
     <div className="mb-6">
@@ -277,59 +261,6 @@ function SearchFilterBarContent({
           </div>
         </div>
 
-        {/* Active Filters */}
-        {(filters.searchQuery || filters.categories.length > 0 || filters.showOnSale || filters.minPrice > 0 || filters.maxPrice < 5000) && (
-          <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
-            <span className="text-xs text-gray-500">Active filters:</span>
-            
-            {filters.searchQuery && (
-              <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs">
-                Search: "{filters.searchQuery}"
-                <button
-                  onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))}
-                  className="hover:text-blue-900"
-                >
-                  <FiX className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            
-            {filters.categories.map((category) => (
-              <span key={category} className="inline-flex items-center gap-1 bg-green-50 text-green-700 px-2 py-1 rounded text-xs">
-                {category.replace('-', ' ')}
-                <button onClick={() => clearCategory(category)} className="hover:text-green-900">
-                  <FiX className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-            
-            {filters.showOnSale && (
-              <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 px-2 py-1 rounded text-xs">
-                On Sale
-                <button onClick={() => setFilters(prev => ({ ...prev, showOnSale: false }))} className="hover:text-red-900">
-                  <FiX className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            
-            {(filters.minPrice > 0 || filters.maxPrice < 5000) && (
-              <span className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs">
-                PKR {filters.minPrice} - {filters.maxPrice}
-                <button onClick={() => handlePriceChange(0, 5000)} className="hover:text-purple-900">
-                  <FiX className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            
-            <button
-              onClick={clearFilters}
-              className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 hover:bg-gray-100 rounded"
-            >
-              Clear all
-            </button>
-          </div>
-        )}
-
         {/* Filter Panel */}
         {isFilterOpen && (
           <div className="absolute top-full left-0 right-0 mt-1 border border-[#E1E3E1] rounded-lg bg-white shadow-lg z-50">
@@ -369,30 +300,43 @@ function SearchFilterBarContent({
                   </div>
                 </div>
 
-                {/* Categories */}
+                {/* Categories - Now reflects current category from tabs */}
                 {categories.length > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Categories
                     </label>
                     <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
-                      {categories.map((category) => (
-                        <div key={category} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id={`cat-${category}`}
-                            checked={filters.categories.includes(category)}
-                            onChange={() => handleCategoryToggle(category)}
-                            className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                          />
-                          <label 
-                            htmlFor={`cat-${category}`} 
-                            className="ml-2 text-sm text-gray-700 cursor-pointer capitalize"
-                          >
-                            {category.replace('-', ' ')}
-                          </label>
-                        </div>
-                      ))}
+                      {categories.map((category) => {
+                        const isSelected = filters.categories.includes(category) || currentCategory === category;
+                        return (
+                          <div key={category} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`cat-${category}`}
+                              checked={isSelected}
+                              onChange={() => {
+                                // This will update URL through the main shop component
+                                // The actual category change is handled by CategoryTabs
+                                const params = new URLSearchParams(searchParams.toString());
+                                if (isSelected) {
+                                  params.delete('category');
+                                } else {
+                                  params.set('category', category);
+                                }
+                                router.push(`${pathname}?${params.toString()}`);
+                              }}
+                              className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                            />
+                            <label 
+                              htmlFor={`cat-${category}`} 
+                              className="ml-2 text-sm text-gray-700 cursor-pointer capitalize"
+                            >
+                              {category.replace('-', ' ')}
+                            </label>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

@@ -1,9 +1,9 @@
-// components/Sidebar.tsx
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishList';
 import { allProducts } from '@/app/Desktop/data/products';
@@ -13,8 +13,6 @@ import {
   FaPlus, 
   FaMinus, 
   FaTrash,
-  FaTruck,
-  FaShieldAlt,
   FaCreditCard,
   FaArrowRight,
   FaStar,
@@ -53,6 +51,7 @@ interface CartItem {
 }
 
 export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
+  const router = useRouter();
   const { 
     cartItems, 
     updateQuantity, 
@@ -82,8 +81,19 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const cartTotal = getCartTotal();
   const cartCount = getCartCount();
   const wishlistCount = getWishlistCount();
-  const shippingCharge = cartTotal >= 2000 ? 0 : 250;
-  const finalTotal = cartTotal + shippingCharge;
+
+  // Prevent body scroll when sidebar is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -206,7 +216,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     setTimeout(() => {
       setIsCheckingOut(false);
       onClose();
-      window.location.href = '/checkout';
+      router.push('/checkout');
     }, 1000);
   };
 
@@ -239,7 +249,25 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
   const handleLoginRedirect = () => {
     onClose();
-    window.location.href = '/login?redirect=wishlist';
+    router.push('/login?redirect=wishlist');
+  };
+
+  const handleMoveAllToCart = () => {
+    wishlistItems.forEach(item => handleMoveToCart(item));
+  };
+
+  const handleViewWishlist = () => {
+    onClose();
+    router.push('/wishlist');
+  };
+
+  const handleViewCart = () => {
+    onClose();
+    router.push('/cart');
+  };
+
+  const handleContinueShopping = () => {
+    onClose();
   };
 
   const isItemUpdating = (item: CartItem) => {
@@ -257,11 +285,11 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       />
 
       {/* Cart/Wishlist Sidebar */}
-      <div className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[101] transform transition-transform duration-300 ${
+      <div className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[101] transform transition-transform duration-300 overflow-hidden ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
-        {/* Header with Tabs */}
-        <div className="bg-green-700 text-white">
+        {/* Header with Tabs - Fixed at top */}
+        <div className="bg-green-700 text-white sticky top-0 z-10">
           {/* Tabs */}
           <div className="flex border-b border-green-600">
             <button
@@ -339,33 +367,184 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="h-[calc(100vh-250px)] overflow-y-auto p-4">
-          {activeMenu === 'cart' ? (
-            // CART CONTENT
-            cartCount === 0 ? (
-              // Empty Cart State
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaShoppingCart className="w-8 h-8 text-gray-400" />
+        {/* Scrollable Content */}
+        <div className="h-[calc(100vh-180px)] overflow-y-auto">
+          <div className="p-4">
+            {activeMenu === 'cart' ? (
+              // CART CONTENT
+              cartCount === 0 ? (
+                // Empty Cart State
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FaShoppingCart className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Your cart is empty</h3>
+                  <p className="text-gray-600 mb-6 text-sm">Add some products to get started</p>
+                  <button
+                    onClick={handleContinueShopping}
+                    className="px-5 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium"
+                  >
+                    Continue Shopping
+                  </button>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Your cart is empty</h3>
-                <p className="text-gray-600 mb-6 text-sm">Add some products to get started</p>
-                <button
-                  onClick={onClose}
-                  className="px-5 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium"
-                >
-                  Continue Shopping
-                </button>
-              </div>
+              ) : (
+                // Cart Items
+                <div className="space-y-3">
+                  {cartItems.map((item) => {
+                    const isUpdating = isItemUpdating(item);
+                    
+                    return (
+                      <div key={`${item.id}-${item.size}`} className="flex gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+                        {/* Product Image */}
+                        <div className="w-16 h-16 flex-shrink-0 relative">
+                          <Image
+                            src={item.img}
+                            alt={item.nameEn}
+                            fill
+                            className="object-cover rounded-lg"
+                            sizes="64px"
+                          />
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium text-gray-900 text-sm">{item.nameEn}</h4>
+                              <p className="text-xs text-gray-500">{item.category}</p>
+                              {item.size && item.size !== 'Standard' && (
+                                <p className="text-xs text-gray-500">Size: {item.size}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => toggleWishlist({
+                                  id: item.id,
+                                  nameEn: item.nameEn,
+                                  nameUr: item.nameUr,
+                                  price: item.price,
+                                  img: item.img
+                                })}
+                                className="text-gray-400 hover:text-red-500 disabled:opacity-50"
+                                aria-label="Toggle wishlist"
+                                disabled={isUpdating}
+                              >
+                                <FaHeart className={`w-3.5 h-3.5 ${isInWishlist(item.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                              </button>
+                              <button
+                                onClick={() => removeFromCart(item.id, item.size)}
+                                className="text-gray-400 hover:text-red-500 disabled:opacity-50"
+                                aria-label={`Remove ${item.nameEn}`}
+                                disabled={isUpdating}
+                              >
+                                <FaTrash className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {/* Price and Quantity */}
+                          <div className="flex items-center justify-between mt-2">
+                            <div>
+                              <span className="font-bold text-green-700 text-sm">
+                                PKR {(item.price * item.quantity).toLocaleString()}
+                              </span>
+                              {item.oldPrice && (
+                                <span className="text-xs text-gray-400 line-through ml-1">
+                                  PKR {(item.oldPrice * item.quantity).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                            
+                            {/* Quantity Controls */}
+                            <div className="flex items-center gap-1 border border-gray-300 rounded-md select-none">
+                              <button
+                                onClick={() => handleDecrement(item)}
+                                className="px-2 py-0.5 text-gray-600 hover:text-green-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                aria-label="Decrease quantity"
+                                disabled={isUpdating}
+                                type="button"
+                              >
+                                {isUpdating ? (
+                                  <div className="w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                  <FaMinus className="w-2.5 h-2.5" />
+                                )}
+                              </button>
+                              <span className={`px-2 text-sm font-medium w-8 text-center select-none ${
+                                isUpdating ? 'text-gray-400' : 'text-gray-900'
+                              }`}>
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => handleIncrement(item)}
+                                className="px-2 py-0.5 text-gray-600 hover:text-green-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                aria-label="Increase quantity"
+                                disabled={isUpdating || item.quantity >= 99}
+                                type="button"
+                              >
+                                {isUpdating ? (
+                                  <div className="w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                  <FaPlus className="w-2.5 h-2.5" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
             ) : (
-              // Cart Items
-              <div className="space-y-3">
-                {cartItems.map((item) => {
-                  const isUpdating = isItemUpdating(item);
-                  
-                  return (
-                    <div key={`${item.id}-${item.size}`} className="flex gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+              // WISHLIST CONTENT
+              !isLoggedIn ? (
+                // Login Required for Wishlist
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FaUser className="w-8 h-8 text-red-300" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Login Required</h3>
+                  <p className="text-gray-600 mb-4 text-sm">Please login to view your wishlist</p>
+                  <p className="text-gray-500 text-xs mb-6">
+                    Your wishlist will be saved to your account for easy access across devices
+                  </p>
+                  <div className="space-y-3">
+                    <button
+                      onClick={handleLoginRedirect}
+                      className="w-full py-2.5 bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"
+                    >
+                      <FaSignInAlt className="w-4 h-4" />
+                      Login to Continue
+                    </button>
+                    <button
+                      onClick={() => setActiveMenu('cart')}
+                      className="w-full py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
+                    >
+                      View Cart Instead
+                    </button>
+                  </div>
+                </div>
+              ) : wishlistCount === 0 ? (
+                // Empty Wishlist State
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FaHeart className="w-8 h-8 text-red-300" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Your wishlist is empty</h3>
+                  <p className="text-gray-600 mb-6 text-sm">Save your favorite products here!</p>
+                  <button
+                    onClick={handleContinueShopping}
+                    className="px-5 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium"
+                  >
+                    Browse Products
+                  </button>
+                </div>
+              ) : (
+                // Wishlist Items
+                <div className="space-y-3">
+                  {wishlistItems.map((item) => (
+                    <div key={item.id} className="flex gap-3 p-3 bg-white border border-gray-200 rounded-lg">
                       {/* Product Image */}
                       <div className="w-16 h-16 flex-shrink-0 relative">
                         <Image
@@ -381,264 +560,115 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-medium text-gray-900 text-sm">{item.nameEn}</h4>
-                            <p className="text-xs text-gray-500">{item.category}</p>
-                            {item.size && item.size !== 'Standard' && (
-                              <p className="text-xs text-gray-500">Size: {item.size}</p>
-                            )}
+                            <h4 className="font-medium text-gray-900 text-sm line-clamp-1">{item.nameEn}</h4>
+                            <p className="text-xs text-gray-500">{item.category || 'Product'}</p>
                           </div>
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => toggleWishlist({
-                                id: item.id,
-                                nameEn: item.nameEn,
-                                nameUr: item.nameUr,
-                                price: item.price,
-                                img: item.img
-                              })}
-                              className="text-gray-400 hover:text-red-500 disabled:opacity-50"
-                              aria-label="Toggle wishlist"
-                              disabled={isUpdating}
-                            >
-                              <FaHeart className={`w-3.5 h-3.5 ${isInWishlist(item.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                            </button>
-                            <button
-                              onClick={() => removeFromCart(item.id, item.size)}
-                              className="text-gray-400 hover:text-red-500 disabled:opacity-50"
-                              aria-label={`Remove ${item.nameEn}`}
-                              disabled={isUpdating}
+                              onClick={() => removeFromWishlist(item.id)}
+                              className="text-gray-400 hover:text-red-500"
+                              aria-label={`Remove ${item.nameEn} from wishlist`}
                             >
                               <FaTrash className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
                         
-                        {/* Price and Quantity */}
-                        <div className="flex items-center justify-between mt-2">
-                          <div>
-                            <span className="font-bold text-green-700 text-sm">
-                              PKR {(item.price * item.quantity).toLocaleString()}
+                        {/* Price */}
+                        <div className="mt-2 mb-3">
+                          <span className="font-bold text-green-700 text-sm">
+                            PKR {item.price.toLocaleString()}
+                          </span>
+                          {item.oldPrice && (
+                            <span className="text-xs text-gray-400 line-through ml-1">
+                              PKR {item.oldPrice.toLocaleString()}
                             </span>
-                            {item.oldPrice && (
-                              <span className="text-xs text-gray-400 line-through ml-1">
-                                PKR {(item.oldPrice * item.quantity).toLocaleString()}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {/* Quantity Controls */}
-                          <div className="flex items-center gap-1 border border-gray-300 rounded-md select-none">
-                            <button
-                              onClick={() => handleDecrement(item)}
-                              className="px-2 py-0.5 text-gray-600 hover:text-green-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                              aria-label="Decrease quantity"
-                              disabled={isUpdating}
-                              type="button"
-                            >
-                              {isUpdating ? (
-                                <div className="w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                <FaMinus className="w-2.5 h-2.5" />
-                              )}
-                            </button>
-                            <span className={`px-2 text-sm font-medium w-8 text-center select-none ${
-                              isUpdating ? 'text-gray-400' : 'text-gray-900'
-                            }`}>
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => handleIncrement(item)}
-                              className="px-2 py-0.5 text-gray-600 hover:text-green-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                              aria-label="Increase quantity"
-                              disabled={isUpdating || item.quantity >= 99}
-                              type="button"
-                            >
-                              {isUpdating ? (
-                                <div className="w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                <FaPlus className="w-2.5 h-2.5" />
-                              )}
-                            </button>
-                          </div>
+                          )}
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )
-          ) : (
-            // WISHLIST CONTENT
-            !isLoggedIn ? (
-              // Login Required for Wishlist
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaUser className="w-8 h-8 text-red-300" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Login Required</h3>
-                <p className="text-gray-600 mb-4 text-sm">Please login to view your wishlist</p>
-                <p className="text-gray-500 text-xs mb-6">
-                  Your wishlist will be saved to your account for easy access across devices
-                </p>
-                <div className="space-y-3">
-                  <button
-                    onClick={handleLoginRedirect}
-                    className="w-full py-2.5 bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"
-                  >
-                    <FaSignInAlt className="w-4 h-4" />
-                    Login to Continue
-                  </button>
-                  <button
-                    onClick={() => setActiveMenu('cart')}
-                    className="w-full py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
-                  >
-                    View Cart Instead
-                  </button>
-                </div>
-              </div>
-            ) : wishlistCount === 0 ? (
-              // Empty Wishlist State
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaHeart className="w-8 h-8 text-red-300" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Your wishlist is empty</h3>
-                <p className="text-gray-600 mb-6 text-sm">Save your favorite products here!</p>
-                <button
-                  onClick={onClose}
-                  className="px-5 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium"
-                >
-                  Browse Products
-                </button>
-              </div>
-            ) : (
-              // Wishlist Items
-              <div className="space-y-3">
-                {wishlistItems.map((item) => (
-                  <div key={item.id} className="flex gap-3 p-3 bg-white border border-gray-200 rounded-lg">
-                    {/* Product Image */}
-                    <div className="w-16 h-16 flex-shrink-0 relative">
-                      <Image
-                        src={item.img}
-                        alt={item.nameEn}
-                        fill
-                        className="object-cover rounded-lg"
-                        sizes="64px"
-                      />
-                    </div>
 
-                    {/* Product Details */}
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium text-gray-900 text-sm line-clamp-1">{item.nameEn}</h4>
-                          <p className="text-xs text-gray-500">{item.category || 'Product'}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
+                        {/* Actions */}
+                        <div className="flex gap-2">
                           <button
-                            onClick={() => removeFromWishlist(item.id)}
-                            className="text-gray-400 hover:text-red-500"
-                            aria-label={`Remove ${item.nameEn} from wishlist`}
+                            onClick={() => handleMoveToCart(item)}
+                            className="flex-1 py-1.5 bg-green-700 text-white text-xs font-medium rounded hover:bg-green-600 transition flex items-center justify-center gap-1"
                           >
-                            <FaTrash className="w-3.5 h-3.5" />
+                            <FaExchangeAlt className="w-2.5 h-2.5" />
+                            Move to Cart
                           </button>
                         </div>
                       </div>
-                      
-                      {/* Price */}
-                      <div className="mt-2 mb-3">
-                        <span className="font-bold text-green-700 text-sm">
-                          PKR {item.price.toLocaleString()}
-                        </span>
-                        {item.oldPrice && (
-                          <span className="text-xs text-gray-400 line-through ml-1">
-                            PKR {item.oldPrice.toLocaleString()}
-                          </span>
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
+
+            {/* Product Suggestions Section (only for cart) */}
+            {activeMenu === 'cart' && suggestedProducts.length > 0 && (
+              <div className="mt-6 pt-4 border-t">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-900 text-sm">Recommended for you</h3>
+                  <div className="flex items-center gap-1">
+                    <FaStar className="w-3 h-3 text-amber-400" />
+                    <span className="text-xs text-gray-500">Popular</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  {suggestedProducts.map((product) => (
+                    <div key={product.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition group">
+                      {/* Product Image with Badge */}
+                      <div className="relative w-12 h-12 flex-shrink-0">
+                        <Image
+                          src={product.img}
+                          alt={product.nameEn}
+                          fill
+                          className="object-cover rounded"
+                          sizes="48px"
+                        />
+                        {product.isBestSeller && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                            <FaStar className="w-2 h-2 text-white" />
+                          </div>
                         )}
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleMoveToCart(item)}
-                          className="flex-1 py-1.5 bg-green-700 text-white text-xs font-medium rounded hover:bg-green-600 transition flex items-center justify-center gap-1"
-                        >
-                          <FaExchangeAlt className="w-2.5 h-2.5" />
-                          Move to Cart
-                        </button>
+                      {/* Product Info */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-medium text-gray-900 truncate">
+                          {product.nameEn}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-sm font-bold text-green-700">
+                            PKR {product.price.toLocaleString()}
+                          </span>
+                          {product.oldPrice && (
+                            <span className="text-xs text-gray-400 line-through">
+                              PKR {product.oldPrice.toLocaleString()}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-          )}
 
-          {/* Product Suggestions Section (only for cart) */}
-          {activeMenu === 'cart' && suggestedProducts.length > 0 && (
-            <div className="mt-6 pt-4 border-t">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-900 text-sm">Recommended for you</h3>
-                <div className="flex items-center gap-1">
-                  <FaStar className="w-3 h-3 text-amber-400" />
-                  <span className="text-xs text-gray-500">Popular</span>
+                      {/* Add to Cart Button */}
+                      <button
+                        onClick={() => handleAddSuggestedProduct(product)}
+                        className="flex-shrink-0 w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center hover:bg-green-200 transition group-hover:scale-110"
+                        aria-label={`Add ${product.nameEn} to cart`}
+                      >
+                        <span className="text-sm font-bold">+</span>
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                {suggestedProducts.map((product) => (
-                  <div key={product.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition group">
-                    {/* Product Image with Badge */}
-                    <div className="relative w-12 h-12 flex-shrink-0">
-                      <Image
-                        src={product.img}
-                        alt={product.nameEn}
-                        fill
-                        className="object-cover rounded"
-                        sizes="48px"
-                      />
-                      {product.isBestSeller && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
-                          <FaStar className="w-2 h-2 text-white" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Product Info */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-gray-900 truncate">
-                        {product.nameEn}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-sm font-bold text-green-700">
-                          PKR {product.price.toLocaleString()}
-                        </span>
-                        {product.oldPrice && (
-                          <span className="text-xs text-gray-400 line-through">
-                            PKR {product.oldPrice.toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Add to Cart Button */}
-                    <button
-                      onClick={() => handleAddSuggestedProduct(product)}
-                      className="flex-shrink-0 w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center hover:bg-green-200 transition group-hover:scale-110"
-                      aria-label={`Add ${product.nameEn} to cart`}
-                    >
-                      <span className="text-sm font-bold">+</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Footer - Different for cart and wishlist */}
         {activeMenu === 'cart' && cartCount > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white">
+          <div className="sticky bottom-0 left-0 right-0 p-4 border-t bg-white">
             {/* Cart Summary */}
             <div className="space-y-2 mb-4">
               {/* Subtotal */}
@@ -647,27 +677,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <span className="font-medium">PKR {cartTotal.toLocaleString()}</span>
               </div>
 
-              {/* Shipping */}
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Shipping</span>
-                {shippingCharge === 0 ? (
-                  <span className="text-green-600 font-medium">FREE</span>
-                ) : (
-                  <span className="font-medium">PKR {shippingCharge.toLocaleString()}</span>
-                )}
-              </div>
-
-              {/* Free Shipping Notice */}
-              {cartTotal < 2000 && (
-                <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
-                  Add PKR {(2000 - cartTotal).toLocaleString()} more for free shipping
-                </div>
-              )}
-
               {/* Total */}
               <div className="flex justify-between text-base font-bold pt-2 border-t">
                 <span>Total</span>
-                <span className="text-green-700">PKR {finalTotal.toLocaleString()}</span>
+                <span className="text-green-700">PKR {cartTotal.toLocaleString()}</span>
               </div>
             </div>
 
@@ -681,13 +694,12 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 >
                   Clear Cart
                 </button>
-                <Link
-                  href="/cart"
-                  onClick={onClose}
+                <button
+                  onClick={handleViewCart}
                   className="flex-1 py-2 border border-green-700 text-green-700 text-center rounded-lg hover:bg-green-50 transition text-sm font-medium"
                 >
                   View Cart
-                </Link>
+                </button>
               </div>
 
               <button
@@ -708,24 +720,12 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   </>
                 )}
               </button>
-
-              {/* Trust Badges */}
-              <div className="flex items-center justify-center gap-4 pt-2 border-t">
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <FaTruck className="w-2.5 h-2.5" />
-                  <span>Free Shipping</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <FaShieldAlt className="w-2.5 h-2.5" />
-                  <span>Secure</span>
-                </div>
-              </div>
             </div>
           </div>
         )}
 
         {activeMenu === 'wishlist' && isLoggedIn && wishlistCount > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white">
+          <div className="sticky bottom-0 left-0 right-0 p-4 border-t bg-white">
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">Total items:</span>
@@ -734,26 +734,23 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => {
-                    wishlistItems.forEach(item => handleMoveToCart(item));
-                  }}
+                  onClick={handleMoveAllToCart}
                   className="flex-1 py-2.5 bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"
                 >
                   <FaExchangeAlt className="w-4 h-4" />
                   Move All to Cart
                 </button>
-                <Link
-                  href="/wishlist"
-                  onClick={onClose}
+                <button
+                  onClick={handleViewWishlist}
                   className="flex-1 py-2.5 border border-green-700 text-green-700 text-center rounded-lg hover:bg-green-50 transition font-medium flex items-center justify-center gap-2"
                 >
                   <FaHeart className="w-4 h-4" />
                   View All
-                </Link>
+                </button>
               </div>
 
               <button
-                onClick={onClose}
+                onClick={handleContinueShopping}
                 className="w-full py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
               >
                 Continue Shopping

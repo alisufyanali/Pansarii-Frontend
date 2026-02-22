@@ -64,10 +64,12 @@ export default function BeautyCorner() {
             Beauty <span className="text-[#197B33]">Corner</span>
           </h2>
           
-          <div className="flex items-center gap-4">
-            <span className="text-black font-semibold">View All</span>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark">
-              →
+          <div className="flex items-center gap-4 cursor-pointer group">
+            <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors">
+              View All
+            </span>
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
+              <span className="text-lg font-bold">{'>'}</span>
             </div>
           </div>
         </div>

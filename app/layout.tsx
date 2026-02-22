@@ -1,6 +1,9 @@
 // app/layout.tsx
 import "./globals.css";
 import DeviceDetector from "./utils/screen-detection";
+import { CartProvider } from "./context/CartContext";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata = {
   title: "Pansari Inn - Premium Ayurvedic & Herbal Products",
@@ -21,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -36,8 +39,22 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#ffffff" />
       </head>
-      <body className="bg-white text-gray-900 font-poppins antialiased">
-        <DeviceDetector>{children}</DeviceDetector>
+      <body className="bg-white text-gray-900 font-poppins antialiased" suppressHydrationWarning>
+        <CartProvider>
+          <DeviceDetector>{children}</DeviceDetector>
+          <ToastContainer 
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
+        </CartProvider>
       </body>
     </html>
   );

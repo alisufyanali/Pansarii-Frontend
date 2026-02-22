@@ -7,9 +7,10 @@ import { FaStar, FaCheckCircle, FaShoppingCart } from 'react-icons/fa';
 interface ProductGridProps {
   products: Product[];
   viewMode?: 'grid' | 'list';
+  onAddToCart?: (product: Product) => void; // Add this prop
 }
 
-function ProductGrid({ products, viewMode = 'grid' }: ProductGridProps) {
+function ProductGrid({ products, viewMode = 'grid', onAddToCart }: ProductGridProps) {
   if (viewMode === 'list') {
     return (
       <div className="space-y-4">
@@ -90,9 +91,12 @@ function ProductGrid({ products, viewMode = 'grid' }: ProductGridProps) {
 
                   <button 
                     className="px-8 py-3 bg-green-700 text-white rounded-full hover:bg-green-600 transition font-semibold flex items-center gap-2"
-                    onClick={() => {
-                      // Handle add to cart - you can integrate with your cart context here
-                      console.log('Add to cart:', product.id);
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (onAddToCart) {
+                        onAddToCart(product);
+                      }
                     }}
                   >
                     <FaShoppingCart className="w-4 h-4" />
@@ -117,7 +121,25 @@ function ProductGrid({ products, viewMode = 'grid' }: ProductGridProps) {
                    gap-4 sm:gap-6">
       {products.map((product) => (
         <div key={`${product.id}-${product.nameEn}`} className="w-full">
+          {/* Render ProductCard WITHOUT onAddToCart prop */}
           <ProductCard product={product} />
+          
+          {/* Add a separate floating add to cart button for grid view */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (onAddToCart) {
+                  onAddToCart(product);
+                }
+              }}
+              className="absolute bottom-2 right-2 w-10 h-10 bg-green-700 text-white rounded-full flex items-center justify-center hover:bg-green-600 transition shadow-lg opacity-0 group-hover:opacity-100 focus:opacity-100"
+              aria-label="Add to cart"
+            >
+              <FaShoppingCart className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       ))}
     </div>
@@ -128,6 +150,7 @@ export default memo(ProductGrid, (prevProps, nextProps) => {
   return (
     prevProps.products.length === nextProps.products.length &&
     prevProps.viewMode === nextProps.viewMode &&
+    prevProps.onAddToCart === nextProps.onAddToCart &&
     prevProps.products.every((product, index) => 
       product.id === nextProps.products[index]?.id
     )

@@ -4,8 +4,10 @@
 import { useState, memo, lazy, Suspense } from 'react';
 import { FilterOptions, Product } from "../../utils/filterProducts";
 import SearchFilterBar from "../../components/SearchFilterBar";
-import CategoryMenuButton from "../../components/categoriesmenubutton";
+import CategoryTabs from "../../components/CategoryTabs";
 import Pagination from "./Pagination";
+import { useCart } from "../../../context/CartContext";
+import { toast } from 'react-toastify';
 
 // Lazy load ProductGrid to avoid circular dependencies
 const ProductGrid = lazy(() => import('./ProductGrid'));
@@ -37,9 +39,13 @@ function ShopContentLoading() {
         <div className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
       </div>
 
-      {/* Category Menu Button Skeleton */}
+      {/* Category Tabs Skeleton */}
       <div className="mb-6">
-        <div className="h-10 bg-gray-200 rounded-lg animate-pulse w-48"></div>
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-10 bg-gray-200 rounded-full animate-pulse w-24 flex-shrink-0"></div>
+          ))}
+        </div>
       </div>
 
       {/* Results Info Skeleton */}
@@ -63,7 +69,7 @@ function ShopContentLoading() {
 }
 
 interface ShopContentProps {
-  categories: string[];
+  categories: string[]; // Fixed typo from sAtring[] to string[]
   filters: FilterOptions;
   setFilters: (filters: FilterOptions) => void;
   filteredProducts: Product[];
@@ -76,15 +82,15 @@ interface ShopContentProps {
   onPageChange: (page: number) => void;
   initialSearchQuery?: string;
   allProducts: Product[];
-  isLoading?: boolean; // Add loading prop
+  isLoading?: boolean;
 }
 
 function ShopContent({
-  categories,
+  categories = [], // Added default value
   filters,
   setFilters,
-  filteredProducts,
-  currentProducts,
+  filteredProducts = [], // Added default value
+  currentProducts = [], // Added default value
   currentPage,
   totalPages,
   indexOfFirstProduct,
@@ -92,10 +98,11 @@ function ShopContent({
   productsPerPage,
   onPageChange,
   initialSearchQuery = '',
-  allProducts,
-  isLoading = false // Default to false
+  allProducts = [], // Added default value
+  isLoading = false
 }: ShopContentProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const { addToCart } = useCart();
 
   // Show loading skeleton if isLoading is true
   if (isLoading) {
@@ -120,10 +127,67 @@ function ShopContent({
     });
   };
 
-  // Generate category data with product counts
-  const categoryData = categories.map(category => {
-    const count = allProducts.filter(product => 
-      product.category?.toLowerCase() === category.toLowerCase()
+  // Handle category change from tabs
+  const handleCategoryChange = (category: string) => {
+    setFilters({
+      ...filters,
+      categories: category ? [category] : [],
+    });
+  };
+
+  // Handle add to cart
+  const handleAddToCart = (product: Product) => {
+    if (!product || !product.id) {
+      toast.error('Failed to add item to cart!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
+      return;
+    }
+
+    console.log('🛒 Adding to cart from shop:', {
+      id: product.id,
+      nameEn: product.nameEn,
+      price: product.price
+    });
+
+    // Add the product to cart
+    addToCart({
+      id: product.id,
+      img: product.img,
+      nameEn: product.nameEn,
+      nameUr: product.nameUr,
+      price: product.price,
+      size: product.sizes?.[0] || 'Default'
+    });
+
+    // Show success toast
+    toast.success(
+      <div>
+        <div className="font-semibold">Added to Cart!</div>
+        <div className="text-sm opacity-90">{product.nameEn}</div>
+      </div>,
+      {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      }
+    );
+  };
+
+  // Generate category data with product counts for tabs
+  const categoryData = (categories || []).map(category => {
+    const count = (allProducts || []).filter(product => 
+      product?.category?.toLowerCase() === category.toLowerCase()
     ).length;
     
     return {
@@ -160,10 +224,12 @@ function ShopContent({
         initialSearchQuery={initialSearchQuery}
       />
 
-      {/* Category Menu Button */}
-      <div className="mb-6">
-        <CategoryMenuButton categories={categoryData} />
-      </div>
+      {/* Category Tabs */}
+      <CategoryTabs 
+        categories={categoryData}
+        activeCategory={filters.categories[0] || 'all'}
+        onCategoryChange={handleCategoryChange}
+      />
 
       {/* Results Info */}
       <div className="my-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -178,7 +244,7 @@ function ShopContent({
           )}
           {(filters.categories.length > 0 || filters.showOnSale || filters.minPrice > 0 || filters.maxPrice < 5000) && (
             <p className="text-sm text-gray-500 mt-1">
-              {filters.categories.length > 0 && `${filters.categories.length} categories selected • `}
+              {filters.categories.length > 0 && `${filters.categories.length} category selected • `}
               {filters.showOnSale && `On sale only • `}
               {(filters.minPrice > 0 || filters.maxPrice < 5000) && `Price: PKR ${filters.minPrice} - PKR ${filters.maxPrice}`}
             </p>
@@ -193,9 +259,13 @@ function ShopContent({
         )}
       </div>
 
-      {/* Product Grid with Suspense */}
+      {/* Product Grid with Suspense - Now with onAddToCart prop */}
       <Suspense fallback={<ProductGridLoading />}>
-        <ProductGrid products={currentProducts} viewMode={viewMode} />
+        <ProductGrid 
+          products={currentProducts} 
+          viewMode={viewMode} 
+          onAddToCart={handleAddToCart} // Added this prop
+        />
       </Suspense>
 
       {/* No Results State */}
@@ -229,4 +299,4 @@ function ShopContent({
   );
 }
 
-export default ShopContent;
+export default memo(ShopContent);
