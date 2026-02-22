@@ -19,7 +19,8 @@ import {
   FaHeart,
   FaUser,
   FaSignInAlt,
-  FaExchangeAlt
+  FaExchangeAlt,
+  FaShoppingBag
 } from 'react-icons/fa';
 
 interface CartSidebarProps {
@@ -74,6 +75,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [suggestedProducts, setSuggestedProducts] = useState<SuggestedProduct[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
   
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const updateTimeoutRef = useRef<{ [key: string]: NodeJS.Timeout }>({});
@@ -82,17 +84,13 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const cartCount = getCartCount();
   const wishlistCount = getWishlistCount();
 
-  // Prevent body scroll when sidebar is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-    
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
+    return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
   useEffect(() => {
@@ -104,7 +102,6 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   useEffect(() => {
     if (cartItems.length > 0) {
       const cartCategories = Array.from(new Set(cartItems.map(item => item.category)));
-      
       const suggestions = allProducts
         .filter(product => 
           cartCategories.includes(product.category) && 
@@ -121,7 +118,6 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           isBestSeller: product.isBestSeller,
           sale: product.sale
         }));
-      
       setSuggestedProducts(suggestions);
     } else {
       const popularSuggestions = allProducts
@@ -137,7 +133,6 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           isBestSeller: product.isBestSeller,
           sale: product.sale
         }));
-      
       setSuggestedProducts(popularSuggestions);
     }
   }, [cartItems]);
@@ -150,63 +145,27 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
   const handleIncrement = (item: CartItem) => {
     const itemKey = `${item.id}-${item.size}`;
-    
-    if (updatingItems.has(itemKey)) {
-      return;
-    }
-    
-    if (item.quantity >= 99) {
-      return;
-    }
-    
-    if (updateTimeoutRef.current[itemKey]) {
-      clearTimeout(updateTimeoutRef.current[itemKey]);
-    }
-    
+    if (updatingItems.has(itemKey) || item.quantity >= 99) return;
+    if (updateTimeoutRef.current[itemKey]) clearTimeout(updateTimeoutRef.current[itemKey]);
     setUpdatingItems(prev => new Set(prev).add(itemKey));
-    
-    const newQuantity = item.quantity + 1;
-    updateQuantity(item.id, item.size, newQuantity);
-    
+    updateQuantity(item.id, item.size, item.quantity + 1);
     updateTimeoutRef.current[itemKey] = setTimeout(() => {
-      setUpdatingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(itemKey);
-        return newSet;
-      });
+      setUpdatingItems(prev => { const s = new Set(prev); s.delete(itemKey); return s; });
     }, 300);
   };
 
   const handleDecrement = (item: CartItem) => {
     const itemKey = `${item.id}-${item.size}`;
-    
-    if (updatingItems.has(itemKey)) {
-      return;
-    }
-    
-    if (updateTimeoutRef.current[itemKey]) {
-      clearTimeout(updateTimeoutRef.current[itemKey]);
-    }
-    
+    if (updatingItems.has(itemKey)) return;
+    if (updateTimeoutRef.current[itemKey]) clearTimeout(updateTimeoutRef.current[itemKey]);
     setUpdatingItems(prev => new Set(prev).add(itemKey));
-    
     if (item.quantity <= 1) {
       removeFromCart(item.id, item.size);
-      setUpdatingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(itemKey);
-        return newSet;
-      });
+      setUpdatingItems(prev => { const s = new Set(prev); s.delete(itemKey); return s; });
     } else {
-      const newQuantity = item.quantity - 1;
-      updateQuantity(item.id, item.size, newQuantity);
-      
+      updateQuantity(item.id, item.size, item.quantity - 1);
       updateTimeoutRef.current[itemKey] = setTimeout(() => {
-        setUpdatingItems(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(itemKey);
-          return newSet;
-        });
+        setUpdatingItems(prev => { const s = new Set(prev); s.delete(itemKey); return s; });
       }, 300);
     }
   };
@@ -231,6 +190,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       category: 'Suggested',
       size: 'Standard'
     });
+    setAddedItems(prev => new Set(prev).add(String(product.id)));
+    setTimeout(() => {
+      setAddedItems(prev => { const s = new Set(prev); s.delete(String(product.id)); return s; });
+    }, 1500);
   };
 
   const handleMoveToCart = (item: any) => {
@@ -247,515 +210,380 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     removeFromWishlist(item.id);
   };
 
-  const handleLoginRedirect = () => {
-    onClose();
-    router.push('/login?redirect=wishlist');
-  };
+  const handleLoginRedirect = () => { onClose(); router.push('/login?redirect=wishlist'); };
+  const handleMoveAllToCart = () => { wishlistItems.forEach(item => handleMoveToCart(item)); };
+  const handleViewWishlist = () => { onClose(); router.push('/wishlist'); };
+  const handleViewCart = () => { onClose(); router.push('/cart'); };
+  const handleContinueShopping = () => { onClose(); };
+  const isItemUpdating = (item: CartItem) => updatingItems.has(`${item.id}-${item.size}`);
 
-  const handleMoveAllToCart = () => {
-    wishlistItems.forEach(item => handleMoveToCart(item));
-  };
-
-  const handleViewWishlist = () => {
-    onClose();
-    router.push('/wishlist');
-  };
-
-  const handleViewCart = () => {
-    onClose();
-    router.push('/cart');
-  };
-
-  const handleContinueShopping = () => {
-    onClose();
-  };
-
-  const isItemUpdating = (item: CartItem) => {
-    return updatingItems.has(`${item.id}-${item.size}`);
-  };
-
-  if (!isOpen) return null;
+  const savings = cartItems.reduce((sum, item) => {
+    if (item.oldPrice) return sum + ((item.oldPrice - item.price) * item.quantity);
+    return sum;
+  }, 0);
 
   return (
     <>
-      {/* Blur Overlay */}
+      {/* Overlay */}
       <div 
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[100] transition-opacity"
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
 
-      {/* Cart/Wishlist Sidebar */}
-      <div className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[101] transform transition-transform duration-300 overflow-hidden ${
+      {/* Sidebar — uses flex column so footer is always at bottom */}
+      <div className={`fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white shadow-2xl z-[101] flex flex-col transform transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
-        {/* Header with Tabs - Fixed at top */}
-        <div className="bg-green-700 text-white sticky top-0 z-10">
+
+        {/* ── HEADER (fixed) ── */}
+        <div className="flex-shrink-0 bg-green-700 text-white">
           {/* Tabs */}
-          <div className="flex border-b border-green-600">
+          <div className="flex">
             <button
               onClick={() => setActiveMenu('cart')}
-              className={`flex-1 py-3 flex items-center justify-center gap-2 font-medium transition ${
+              className={`flex-1 py-3.5 flex items-center justify-center gap-2 text-sm font-semibold transition border-b-2 ${
                 activeMenu === 'cart' 
-                  ? 'bg-green-800' 
-                  : 'hover:bg-green-600'
+                  ? 'border-white bg-green-800' 
+                  : 'border-transparent hover:bg-green-600'
               }`}
             >
               <FaShoppingCart className="w-4 h-4" />
               Cart
               {cartCount > 0 && (
-                <span className="bg-white text-green-700 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="bg-white text-green-700 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
             </button>
             <button
               onClick={() => {
-                if (!isLoggedIn) {
-                  handleLoginRedirect();
-                  return;
-                }
+                if (!isLoggedIn) { handleLoginRedirect(); return; }
                 setActiveMenu('wishlist');
               }}
-              className={`flex-1 py-3 flex items-center justify-center gap-2 font-medium transition ${
+              className={`flex-1 py-3.5 flex items-center justify-center gap-2 text-sm font-semibold transition border-b-2 ${
                 activeMenu === 'wishlist' 
-                  ? 'bg-green-800' 
-                  : 'hover:bg-green-600'
+                  ? 'border-white bg-green-800' 
+                  : 'border-transparent hover:bg-green-600'
               }`}
             >
               <FaHeart className="w-4 h-4" />
               Wishlist
               {wishlistCount > 0 && (
-                <span className="bg-white text-green-700 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="bg-white text-green-700 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                   {wishlistCount > 9 ? '9+' : wishlistCount}
                 </span>
               )}
             </button>
             <button 
               onClick={onClose}
-              className="px-4 hover:bg-green-600 transition flex items-center"
-              aria-label="Close sidebar"
+              className="px-4 hover:bg-green-600 transition border-b-2 border-transparent"
+              aria-label="Close"
             >
               <FaTimes className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Title */}
-          <div className="p-4">
-            <div className="flex items-center gap-3">
-              {activeMenu === 'cart' ? (
-                <>
-                  <FaShoppingCart className="w-5 h-5" />
-                  <div>
-                    <h2 className="text-lg font-bold">Shopping Cart</h2>
-                    <p className="text-xs text-green-100">
-                      {cartCount} item{cartCount !== 1 ? 's' : ''}
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <FaHeart className="w-5 h-5" />
-                  <div>
-                    <h2 className="text-lg font-bold">My Wishlist</h2>
-                    <p className="text-xs text-green-100">
-                      {wishlistCount} item{wishlistCount !== 1 ? 's' : ''}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
+          {/* Subtitle strip */}
+          <div className="px-4 py-2.5 flex items-center justify-between">
+            <p className="text-sm text-green-100 font-medium">
+              {activeMenu === 'cart'
+                ? cartCount === 0 ? 'Your cart is empty' : `${cartCount} item${cartCount !== 1 ? 's' : ''} in cart`
+                : wishlistCount === 0 ? 'No saved items' : `${wishlistCount} saved item${wishlistCount !== 1 ? 's' : ''}`
+              }
+            </p>
+            {activeMenu === 'cart' && cartCount > 0 && savings > 0 && (
+              <span className="text-xs bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full font-semibold">
+                You save PKR {savings.toLocaleString()}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="h-[calc(100vh-180px)] overflow-y-auto">
-          <div className="p-4">
-            {activeMenu === 'cart' ? (
-              // CART CONTENT
-              cartCount === 0 ? (
-                // Empty Cart State
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FaShoppingCart className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Your cart is empty</h3>
-                  <p className="text-gray-600 mb-6 text-sm">Add some products to get started</p>
-                  <button
-                    onClick={handleContinueShopping}
-                    className="px-5 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium"
-                  >
-                    Continue Shopping
-                  </button>
-                </div>
-              ) : (
-                // Cart Items
-                <div className="space-y-3">
-                  {cartItems.map((item) => {
-                    const isUpdating = isItemUpdating(item);
-                    
-                    return (
-                      <div key={`${item.id}-${item.size}`} className="flex gap-3 p-3 bg-white border border-gray-200 rounded-lg">
-                        {/* Product Image */}
-                        <div className="w-16 h-16 flex-shrink-0 relative">
-                          <Image
-                            src={item.img}
-                            alt={item.nameEn}
-                            fill
-                            className="object-cover rounded-lg"
-                            sizes="64px"
-                          />
-                        </div>
+        {/* ── SCROLLABLE CONTENT (flex-1 fills remaining space) ── */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div className="p-4 space-y-3">
 
-                        {/* Product Details */}
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium text-gray-900 text-sm">{item.nameEn}</h4>
-                              <p className="text-xs text-gray-500">{item.category}</p>
-                              {item.size && item.size !== 'Standard' && (
-                                <p className="text-xs text-gray-500">Size: {item.size}</p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => toggleWishlist({
-                                  id: item.id,
-                                  nameEn: item.nameEn,
-                                  nameUr: item.nameUr,
-                                  price: item.price,
-                                  img: item.img
-                                })}
-                                className="text-gray-400 hover:text-red-500 disabled:opacity-50"
-                                aria-label="Toggle wishlist"
-                                disabled={isUpdating}
-                              >
-                                <FaHeart className={`w-3.5 h-3.5 ${isInWishlist(item.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                              </button>
-                              <button
-                                onClick={() => removeFromCart(item.id, item.size)}
-                                className="text-gray-400 hover:text-red-500 disabled:opacity-50"
-                                aria-label={`Remove ${item.nameEn}`}
-                                disabled={isUpdating}
-                              >
-                                <FaTrash className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                          
-                          {/* Price and Quantity */}
-                          <div className="flex items-center justify-between mt-2">
-                            <div>
-                              <span className="font-bold text-green-700 text-sm">
-                                PKR {(item.price * item.quantity).toLocaleString()}
-                              </span>
-                              {item.oldPrice && (
-                                <span className="text-xs text-gray-400 line-through ml-1">
-                                  PKR {(item.oldPrice * item.quantity).toLocaleString()}
-                                </span>
-                              )}
-                            </div>
-                            
-                            {/* Quantity Controls */}
-                            <div className="flex items-center gap-1 border border-gray-300 rounded-md select-none">
-                              <button
-                                onClick={() => handleDecrement(item)}
-                                className="px-2 py-0.5 text-gray-600 hover:text-green-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                aria-label="Decrease quantity"
-                                disabled={isUpdating}
-                                type="button"
-                              >
-                                {isUpdating ? (
-                                  <div className="w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                                ) : (
-                                  <FaMinus className="w-2.5 h-2.5" />
-                                )}
-                              </button>
-                              <span className={`px-2 text-sm font-medium w-8 text-center select-none ${
-                                isUpdating ? 'text-gray-400' : 'text-gray-900'
-                              }`}>
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() => handleIncrement(item)}
-                                className="px-2 py-0.5 text-gray-600 hover:text-green-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                aria-label="Increase quantity"
-                                disabled={isUpdating || item.quantity >= 99}
-                                type="button"
-                              >
-                                {isUpdating ? (
-                                  <div className="w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                                ) : (
-                                  <FaPlus className="w-2.5 h-2.5" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )
-            ) : (
-              // WISHLIST CONTENT
-              !isLoggedIn ? (
-                // Login Required for Wishlist
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FaUser className="w-8 h-8 text-red-300" />
+            {/* ─ CART CONTENT ─ */}
+            {activeMenu === 'cart' && (
+              <>
+                {cartCount === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-5">
+                      <FaShoppingBag className="w-9 h-9 text-green-300" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Your cart is empty</h3>
+                    <p className="text-gray-500 text-sm mb-6 max-w-48">Looks like you haven't added anything yet.</p>
+                    <button
+                      onClick={handleContinueShopping}
+                      className="px-6 py-2.5 bg-green-700 text-white rounded-full hover:bg-green-600 transition text-sm font-semibold shadow"
+                    >
+                      Start Shopping
+                    </button>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Login Required</h3>
-                  <p className="text-gray-600 mb-4 text-sm">Please login to view your wishlist</p>
-                  <p className="text-gray-500 text-xs mb-6">
-                    Your wishlist will be saved to your account for easy access across devices
-                  </p>
+                ) : (
                   <div className="space-y-3">
-                    <button
-                      onClick={handleLoginRedirect}
-                      className="w-full py-2.5 bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"
-                    >
-                      <FaSignInAlt className="w-4 h-4" />
-                      Login to Continue
-                    </button>
-                    <button
-                      onClick={() => setActiveMenu('cart')}
-                      className="w-full py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
-                    >
-                      View Cart Instead
-                    </button>
-                  </div>
-                </div>
-              ) : wishlistCount === 0 ? (
-                // Empty Wishlist State
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FaHeart className="w-8 h-8 text-red-300" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Your wishlist is empty</h3>
-                  <p className="text-gray-600 mb-6 text-sm">Save your favorite products here!</p>
-                  <button
-                    onClick={handleContinueShopping}
-                    className="px-5 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium"
-                  >
-                    Browse Products
-                  </button>
-                </div>
-              ) : (
-                // Wishlist Items
-                <div className="space-y-3">
-                  {wishlistItems.map((item) => (
-                    <div key={item.id} className="flex gap-3 p-3 bg-white border border-gray-200 rounded-lg">
-                      {/* Product Image */}
-                      <div className="w-16 h-16 flex-shrink-0 relative">
-                        <Image
-                          src={item.img}
-                          alt={item.nameEn}
-                          fill
-                          className="object-cover rounded-lg"
-                          sizes="64px"
-                        />
-                      </div>
-
-                      {/* Product Details */}
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium text-gray-900 text-sm line-clamp-1">{item.nameEn}</h4>
-                            <p className="text-xs text-gray-500">{item.category || 'Product'}</p>
+                    {cartItems.map((item) => {
+                      const isUpdating = isItemUpdating(item);
+                      const discount = item.oldPrice ? Math.round((1 - item.price / item.oldPrice) * 100) : 0;
+                      return (
+                        <div key={`${item.id}-${item.size}`} className="flex gap-3 p-3 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                          {/* Image */}
+                          <div className="w-[70px] h-[70px] flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-50">
+                            <Image src={item.img} alt={item.nameEn} fill className="object-cover" sizes="70px" />
+                            {discount > 0 && (
+                              <div className="absolute top-1 left-1 bg-red-500 text-white text-[9px] font-bold px-1 rounded">
+                                -{discount}%
+                              </div>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2">
+
+                          {/* Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start gap-1">
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">{item.nameEn}</h4>
+                                {item.size && item.size !== 'Standard' && (
+                                  <span className="text-[11px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded mt-1 inline-block">{item.size}</span>
+                                )}
+                              </div>
+                              {/* Actions */}
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <button
+                                  onClick={() => toggleWishlist({ id: item.id, nameEn: item.nameEn, nameUr: item.nameUr, price: item.price, img: item.img })}
+                                  className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-400 transition"
+                                  disabled={isUpdating}
+                                >
+                                  <FaHeart className={`w-3.5 h-3.5 ${isInWishlist(item.id) ? 'text-red-500' : ''}`} />
+                                </button>
+                                <button
+                                  onClick={() => removeFromCart(item.id, item.size)}
+                                  className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-500 transition"
+                                  disabled={isUpdating}
+                                >
+                                  <FaTrash className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Price + Qty row */}
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="font-bold text-green-700 text-sm">
+                                  PKR {(item.price * item.quantity).toLocaleString()}
+                                </span>
+                                {item.oldPrice && (
+                                  <span className="text-[11px] text-gray-400 line-through">
+                                    PKR {(item.oldPrice * item.quantity).toLocaleString()}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Qty control */}
+                              <div className={`flex items-center rounded-lg border transition-colors ${isUpdating ? 'border-gray-200 bg-gray-50' : 'border-gray-200 bg-white'}`}>
+                                <button
+                                  onClick={() => handleDecrement(item)}
+                                  disabled={isUpdating}
+                                  className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-green-700 hover:bg-green-50 rounded-l-lg transition disabled:opacity-40"
+                                >
+                                  <FaMinus className="w-2.5 h-2.5" />
+                                </button>
+                                <span className="w-8 text-center text-sm font-bold text-gray-900 select-none">
+                                  {isUpdating ? (
+                                    <span className="flex justify-center">
+                                      <span className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
+                                    </span>
+                                  ) : item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => handleIncrement(item)}
+                                  disabled={isUpdating || item.quantity >= 99}
+                                  className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-green-700 hover:bg-green-50 rounded-r-lg transition disabled:opacity-40"
+                                >
+                                  <FaPlus className="w-2.5 h-2.5" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Suggestions */}
+                {suggestedProducts.length > 0 && (
+                  <div className="mt-2 pt-4 border-t border-dashed border-gray-200">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">You might also like</p>
+                    <div className="space-y-2">
+                      {suggestedProducts.map((product) => (
+                        <div key={product.id} className="flex items-center gap-3 p-2.5 bg-gray-50 hover:bg-green-50 rounded-xl transition group">
+                          <div className="relative w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden">
+                            <Image src={product.img} alt={product.nameEn} fill className="object-cover" sizes="44px" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800 truncate">{product.nameEn}</p>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm font-bold text-green-700">PKR {product.price.toLocaleString()}</span>
+                              {product.oldPrice && <span className="text-xs text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleAddSuggestedProduct(product)}
+                            className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition ${
+                              addedItems.has(String(product.id))
+                                ? 'bg-green-700 text-white scale-110'
+                                : 'bg-white text-green-700 border border-green-200 hover:bg-green-700 hover:text-white group-hover:border-green-700'
+                            }`}
+                          >
+                            {addedItems.has(String(product.id)) ? '✓' : '+'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ─ WISHLIST CONTENT ─ */}
+            {activeMenu === 'wishlist' && (
+              <>
+                {!isLoggedIn ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-5">
+                      <FaUser className="w-9 h-9 text-red-200" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Login Required</h3>
+                    <p className="text-gray-500 text-sm mb-6 max-w-52">Sign in to view and manage your saved items.</p>
+                    <button onClick={handleLoginRedirect} className="w-full max-w-56 py-2.5 bg-green-700 text-white rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-green-600 transition mb-3 shadow">
+                      <FaSignInAlt className="w-4 h-4" />
+                      Sign In
+                    </button>
+                    <button onClick={() => setActiveMenu('cart')} className="text-sm text-gray-500 hover:text-green-700 transition underline">
+                      Back to cart
+                    </button>
+                  </div>
+                ) : wishlistCount === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-5">
+                      <FaHeart className="w-9 h-9 text-red-200" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Nothing saved yet</h3>
+                    <p className="text-gray-500 text-sm mb-6 max-w-48">Tap the heart on products to save them here.</p>
+                    <button onClick={handleContinueShopping} className="px-6 py-2.5 bg-green-700 text-white rounded-full hover:bg-green-600 transition text-sm font-semibold shadow">
+                      Browse Products
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {wishlistItems.map((item) => (
+                      <div key={item.id} className="flex gap-3 p-3 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <div className="w-[70px] h-[70px] flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-50">
+                          <Image src={item.img} alt={item.nameEn} fill className="object-cover" sizes="70px" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start">
+                            <div className="min-w-0 pr-1">
+                              <h4 className="font-semibold text-gray-900 text-sm line-clamp-2">{item.nameEn}</h4>
+                              {item.category && <p className="text-xs text-gray-400 mt-0.5">{item.category}</p>}
+                            </div>
+                            <button onClick={() => removeFromWishlist(item.id)} className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-500 transition flex-shrink-0">
+                              <FaTrash className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="font-bold text-green-700 text-sm">PKR {item.price.toLocaleString()}</span>
+                              {item.oldPrice && <span className="text-[11px] text-gray-400 line-through">PKR {item.oldPrice.toLocaleString()}</span>}
+                            </div>
                             <button
-                              onClick={() => removeFromWishlist(item.id)}
-                              className="text-gray-400 hover:text-red-500"
-                              aria-label={`Remove ${item.nameEn} from wishlist`}
+                              onClick={() => handleMoveToCart(item)}
+                              className="flex items-center gap-1.5 py-1.5 px-3 bg-green-700 text-white text-xs font-semibold rounded-lg hover:bg-green-600 transition"
                             >
-                              <FaTrash className="w-3.5 h-3.5" />
+                              <FaShoppingCart className="w-2.5 h-2.5" />
+                              Add to Cart
                             </button>
                           </div>
                         </div>
-                        
-                        {/* Price */}
-                        <div className="mt-2 mb-3">
-                          <span className="font-bold text-green-700 text-sm">
-                            PKR {item.price.toLocaleString()}
-                          </span>
-                          {item.oldPrice && (
-                            <span className="text-xs text-gray-400 line-through ml-1">
-                              PKR {item.oldPrice.toLocaleString()}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleMoveToCart(item)}
-                            className="flex-1 py-1.5 bg-green-700 text-white text-xs font-medium rounded hover:bg-green-600 transition flex items-center justify-center gap-1"
-                          >
-                            <FaExchangeAlt className="w-2.5 h-2.5" />
-                            Move to Cart
-                          </button>
-                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
-
-            {/* Product Suggestions Section (only for cart) */}
-            {activeMenu === 'cart' && suggestedProducts.length > 0 && (
-              <div className="mt-6 pt-4 border-t">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900 text-sm">Recommended for you</h3>
-                  <div className="flex items-center gap-1">
-                    <FaStar className="w-3 h-3 text-amber-400" />
-                    <span className="text-xs text-gray-500">Popular</span>
+                    ))}
                   </div>
-                </div>
-                
-                <div className="space-y-2">
-                  {suggestedProducts.map((product) => (
-                    <div key={product.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition group">
-                      {/* Product Image with Badge */}
-                      <div className="relative w-12 h-12 flex-shrink-0">
-                        <Image
-                          src={product.img}
-                          alt={product.nameEn}
-                          fill
-                          className="object-cover rounded"
-                          sizes="48px"
-                        />
-                        {product.isBestSeller && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
-                            <FaStar className="w-2 h-2 text-white" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Product Info */}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 truncate">
-                          {product.nameEn}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-sm font-bold text-green-700">
-                            PKR {product.price.toLocaleString()}
-                          </span>
-                          {product.oldPrice && (
-                            <span className="text-xs text-gray-400 line-through">
-                              PKR {product.oldPrice.toLocaleString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Add to Cart Button */}
-                      <button
-                        onClick={() => handleAddSuggestedProduct(product)}
-                        className="flex-shrink-0 w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center hover:bg-green-200 transition group-hover:scale-110"
-                        aria-label={`Add ${product.nameEn} to cart`}
-                      >
-                        <span className="text-sm font-bold">+</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                )}
+              </>
             )}
           </div>
         </div>
 
-        {/* Footer - Different for cart and wishlist */}
-        {activeMenu === 'cart' && cartCount > 0 && (
-          <div className="sticky bottom-0 left-0 right-0 p-4 border-t bg-white">
-            {/* Cart Summary */}
-            <div className="space-y-2 mb-4">
-              {/* Subtotal */}
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">PKR {cartTotal.toLocaleString()}</span>
-              </div>
+        {/* ── FOOTER (flex-shrink-0, always at bottom) ── */}
 
-              {/* Total */}
-              <div className="flex justify-between text-base font-bold pt-2 border-t">
-                <span>Total</span>
-                <span className="text-green-700">PKR {cartTotal.toLocaleString()}</span>
+        {/* Cart Footer */}
+        {activeMenu === 'cart' && cartCount > 0 && (
+          <div className="flex-shrink-0 border-t border-gray-100 bg-white p-4 space-y-3">
+            {/* Order summary */}
+            <div className="bg-gray-50 rounded-xl p-3 space-y-1.5">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Subtotal ({cartCount} items)</span>
+                <span className="font-medium text-gray-900">PKR {cartTotal.toLocaleString()}</span>
+              </div>
+              {savings > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-green-600">You save</span>
+                  <span className="text-green-600 font-semibold">- PKR {savings.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="border-t border-gray-200 pt-1.5 flex justify-between font-bold">
+                <span className="text-gray-900">Total</span>
+                <span className="text-green-700 text-base">PKR {cartTotal.toLocaleString()}</span>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <button
-                  onClick={clearCart}
-                  className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium"
-                  disabled={updatingItems.size > 0}
-                >
-                  Clear Cart
-                </button>
-                <button
-                  onClick={handleViewCart}
-                  className="flex-1 py-2 border border-green-700 text-green-700 text-center rounded-lg hover:bg-green-50 transition text-sm font-medium"
-                >
-                  View Cart
-                </button>
-              </div>
+            {/* Buttons */}
+            <button
+              onClick={handleCheckout}
+              disabled={isCheckingOut || updatingItems.size > 0}
+              className="w-full py-3 bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-600 active:scale-[0.98] transition disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-green-200"
+            >
+              {isCheckingOut ? (
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Processing...</>
+              ) : (
+                <><FaCreditCard className="w-4 h-4" />Proceed to Checkout<FaArrowRight className="w-3.5 h-3.5" /></>
+              )}
+            </button>
 
+            <div className="flex gap-2">
               <button
-                onClick={handleCheckout}
-                disabled={isCheckingOut || updatingItems.size > 0}
-                className="w-full py-2.5 bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition disabled:opacity-70 disabled:cursor-not-allowed text-sm"
+                onClick={handleViewCart}
+                className="flex-1 py-2 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
               >
-                {isCheckingOut ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <FaCreditCard className="w-3.5 h-3.5" />
-                    Checkout Now
-                    <FaArrowRight className="w-3.5 h-3.5" />
-                  </>
-                )}
+                View Cart
+              </button>
+              <button
+                onClick={clearCart}
+                disabled={updatingItems.size > 0}
+                className="flex-1 py-2 border border-gray-200 text-red-500 rounded-xl hover:bg-red-50 transition text-sm font-medium disabled:opacity-50"
+              >
+                Clear Cart
               </button>
             </div>
           </div>
         )}
 
+        {/* Wishlist Footer */}
         {activeMenu === 'wishlist' && isLoggedIn && wishlistCount > 0 && (
-          <div className="sticky bottom-0 left-0 right-0 p-4 border-t bg-white">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Total items:</span>
-                <span className="font-bold text-green-700">{wishlistCount}</span>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={handleMoveAllToCart}
-                  className="flex-1 py-2.5 bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"
-                >
-                  <FaExchangeAlt className="w-4 h-4" />
-                  Move All to Cart
-                </button>
-                <button
-                  onClick={handleViewWishlist}
-                  className="flex-1 py-2.5 border border-green-700 text-green-700 text-center rounded-lg hover:bg-green-50 transition font-medium flex items-center justify-center gap-2"
-                >
-                  <FaHeart className="w-4 h-4" />
-                  View All
-                </button>
-              </div>
-
-              <button
-                onClick={handleContinueShopping}
-                className="w-full py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
-              >
-                Continue Shopping
-              </button>
-            </div>
+          <div className="flex-shrink-0 border-t border-gray-100 bg-white p-4 space-y-2.5">
+            <button
+              onClick={handleMoveAllToCart}
+              className="w-full py-3 bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-600 active:scale-[0.98] transition shadow-lg shadow-green-200"
+            >
+              <FaExchangeAlt className="w-4 h-4" />
+              Move All to Cart
+            </button>
+            <button
+              onClick={handleViewWishlist}
+              className="w-full py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium"
+            >
+              View Full Wishlist
+            </button>
           </div>
         )}
       </div>

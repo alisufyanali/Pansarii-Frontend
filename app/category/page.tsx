@@ -4,8 +4,10 @@
 import { useState, useEffect } from 'react';
 import { newArrivalProducts, NewArrivalProduct } from '../Desktop/data/newproducts';
 import ProductCard from '../Desktop/components/ProductCard';
+import ProductDetailsModal from '../Desktop/components/ProductDetailsModal';
 import SearchFilterBar from '../Desktop/components/SearchFilterBar';
 import { FilterOptions } from '../Desktop/utils/filterProducts';
+import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
 
 export default function CategoriesPage() {
   // Get all unique categories
@@ -16,6 +18,8 @@ export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filteredProducts, setFilteredProducts] = useState<NewArrivalProduct[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<NewArrivalProduct | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [filters, setFilters] = useState<FilterOptions>({
     searchQuery: '',
     minPrice: 0,
@@ -53,6 +57,7 @@ export default function CategoriesPage() {
   // Handle filter changes from SearchFilterBar
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
+    setSearchQuery(newFilters.searchQuery || '');
     
     // Filter products
     let products = [...newArrivalProducts];
@@ -117,6 +122,18 @@ export default function CategoriesPage() {
     setViewMode(mode);
   };
 
+  // Handle quick view
+  const handleQuickView = (product: NewArrivalProduct) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
+
   // Get product count by category
   const getProductCountByCategory = (category: string) => {
     if (category === 'All Products') {
@@ -139,8 +156,19 @@ export default function CategoriesPage() {
         </div>
       </div>
 
+      {/* Search and Filter Bar - Moved before category menu */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <SearchFilterBar
+          onFilterChange={handleFilterChange}
+          onViewModeChange={handleViewModeChange}
+          productCount={filteredProducts.length}
+          categories={allCategories.filter(cat => cat !== 'All Products')}
+          initialSearchQuery={searchQuery}
+        />
+      </div>
+
       {/* Category Menu Bar */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 mt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="overflow-x-auto">
             <div className="flex space-x-1 py-3">
@@ -169,43 +197,123 @@ export default function CategoriesPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search and Filter Bar */}
-        <SearchFilterBar
-          onFilterChange={handleFilterChange}
-          onViewModeChange={handleViewModeChange}
-          productCount={filteredProducts.length}
-          categories={allCategories.filter(cat => cat !== 'All Products')}
-          initialSearchQuery={searchQuery}
-        />
-
         {/* Results Header */}
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900">
-            {selectedCategory === 'All Products' ? 'All Products' : selectedCategory}
-          </h2>
-          <p className="text-gray-600 text-sm">
-            Showing {filteredProducts.length} products
-          </p>
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">
+              {selectedCategory === 'All Products' ? 'All Products' : selectedCategory}
+            </h2>
+            <p className="text-gray-600 text-sm">
+              Showing {filteredProducts.length} products
+            </p>
+          </div>
+          
+          {/* Sort Info */}
+          {filters.sortBy !== 'default' && (
+            <div className="text-sm text-gray-600 mt-2 sm:mt-0">
+              Sorted by: <span className="font-medium">
+                {filters.sortBy === 'price-low' && 'Price: Low to High'}
+                {filters.sortBy === 'price-high' && 'Price: High to Low'}
+                {filters.sortBy === 'rating' && 'Highest Rated'}
+                {filters.sortBy === 'name' && 'Name (A-Z)'}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Products Grid */}
+        {/* Products Display */}
         {filteredProducts.length > 0 ? (
-          <div className={viewMode === 'grid' 
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            : "space-y-4"
-          }>
-            {filteredProducts.map((product) => (
-              <div 
-                key={product.id} 
-                className={viewMode === 'list' 
-                  ? "bg-white rounded-lg border border-gray-200 p-4"
-                  : "bg-white rounded-lg border border-gray-200 overflow-hidden"
-                }
-              >
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
+          viewMode === 'grid' ? (
+            // Grid View
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            // List View with Quick View button
+            <div className="space-y-4">
+              {filteredProducts.map((product) => (
+                <div 
+                  key={product.id}
+                  className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow p-4"
+                >
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {/* Product Image */}
+                    <div className="w-full md:w-48 h-48 flex-shrink-0">
+                      <img 
+                        src={product.img}
+                        alt={product.nameEn}
+                        className="w-full h-full object-cover rounded-lg"
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/images/product.png';
+                        }}
+                      />
+                    </div>
+
+                    {/* Product Details */}
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                          {product.nameEn}
+                        </h3>
+                        <p className="text-lg text-gray-600 mb-3">{product.nameUr}</p>
+                        {product.description && (
+                          <p className="text-sm text-green-700 mb-4">{product.description}</p>
+                        )}
+
+                        {/* Rating & Reviews */}
+                        <div className="flex items-center gap-4 mb-4">
+                          <div className="flex items-center gap-1">
+                            <FaStar className="w-5 h-5 text-yellow-400" />
+                            <span className="font-semibold">{product.rating}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-green-600">
+                            <FaCheckCircle className="w-5 h-5" />
+                            <span>{product.reviews} Reviews</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Price and Quick View */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl font-bold text-gray-900">
+                            PKR {product.price.toLocaleString()}
+                          </span>
+                          {product.oldPrice && (
+                            <span className="text-lg text-gray-500 line-through">
+                              PKR {product.oldPrice.toLocaleString()}
+                            </span>
+                          )}
+                          {product.sale && (
+                            <span className="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-semibold">
+                              {product.sale}
+                            </span>
+                          )}
+                        </div>
+
+                        <button 
+                          className="px-8 py-3 bg-green-700 text-white rounded-full hover:bg-green-600 transition font-semibold flex items-center justify-center gap-2"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleQuickView(product);
+                          }}
+                        >
+                          <FaEye className="w-4 h-4" />
+                          Quick View
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         ) : (
           <div className="text-center py-12">
             <div className="text-gray-400 text-5xl mb-4">🔍</div>
@@ -236,35 +344,15 @@ export default function CategoriesPage() {
             </button>
           </div>
         )}
-
-        {/* Simple Stats */}
-        {filteredProducts.length > 0 && (
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
-              <div className="text-xl font-bold text-gray-900">{filteredProducts.length}</div>
-              <div className="text-sm text-gray-600">Products</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
-              <div className="text-xl font-bold text-gray-900">
-                {Math.round(filteredProducts.reduce((acc, p) => acc + p.rating, 0) / filteredProducts.length * 10) / 10}
-              </div>
-              <div className="text-sm text-gray-600">Avg Rating</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
-              <div className="text-xl font-bold text-gray-900">
-                PKR {Math.round(filteredProducts.reduce((acc, p) => acc + p.price, 0) / filteredProducts.length)}
-              </div>
-              <div className="text-sm text-gray-600">Avg Price</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
-              <div className="text-xl font-bold text-gray-900">
-                {filteredProducts.filter(p => p.isBestSeller).length}
-              </div>
-              <div className="text-sm text-gray-600">Best Sellers</div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Product Details Modal */}
+      {isModalOpen && selectedProduct && (
+        <ProductDetailsModal 
+          product={selectedProduct} 
+          onClose={handleCloseModal} 
+        />
+      )}
     </div>
   );
 }

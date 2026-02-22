@@ -424,27 +424,7 @@ export default function BlogPage() {
         </div>
       </section>
 
-      {/* Newsletter CTA */}
-      <section className="bg-gradient-to-r from-green-800 to-emerald-800 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Stay Updated with Our Latest Articles
-          </h2>
-          <p className="text-green-100 mb-8 max-w-2xl mx-auto">
-            Subscribe to our newsletter and get wellness tips, herbal remedies, and health advice delivered to your inbox.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <button className="px-6 py-3 bg-white text-green-800 font-semibold rounded-lg hover:bg-gray-100 transition">
-              Subscribe
-            </button>
-          </div>
-        </div>
-      </section>
+    
     </div>
   );
 }
