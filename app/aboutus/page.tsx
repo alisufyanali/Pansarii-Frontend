@@ -161,13 +161,13 @@ export default function AboutUsPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-green-50 to-emerald-50 py-16">
+      <section className="relative bg-gradient-to-r from-green-50 to-emerald-50 py-10 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               {pageData.hero.title} <span className="text-[#197B33]">{pageData.hero.highlight}</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto">
               {pageData.hero.subtitle}
             </p>
           </div>
@@ -175,49 +175,52 @@ export default function AboutUsPage() {
       </section>
 
       {/* Mission & Story Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">{pageData.mission.title}</h2>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          {/* Text first on mobile, left on desktop */}
+          <div className="order-2 lg:order-1">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">{pageData.mission.title}</h2>
             <div className="space-y-4 text-gray-700">
               {pageData.mission.paragraphs.map((paragraph, index) => (
-                <p key={index} className={index === 0 ? "text-lg" : ""}>
+                <p key={index} className={index === 0 ? "text-base sm:text-lg" : "text-sm sm:text-base"}>
                   {paragraph}
                 </p>
               ))}
             </div>
           </div>
 
-          <div className="rounded-2xl overflow-hidden shadow-2xl">
+          {/* Image first on mobile (shows above text), right on desktop */}
+          <div className="order-1 lg:order-2 rounded-2xl overflow-hidden shadow-2xl">
             <img
               src={pageData.mission.image}
               alt={pageData.mission.imageAlt}
-              className="w-full h-[400px] object-cover"
+              className="w-full h-56 sm:h-72 lg:h-[400px] object-cover"
             />
           </div>
         </div>
       </section>
 
       {/* Quality Assurance Section */}
-      <section className="bg-green-50 py-16">
+      <section className="bg-green-50 py-10 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">{pageData.quality.title}</h2>
-            <p className="text-gray-600 max-w-3xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{pageData.quality.title}</h2>
+            <p className="text-sm sm:text-base text-gray-600 max-w-3xl mx-auto">
               {pageData.quality.description}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* 2 col on mobile, 4 col on large */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {pageData.features.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
-                <div key={index} className="bg-white rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                  <div className="text-3xl text-[#197B33] mb-4 flex justify-center">
+                <div key={index} className="bg-white rounded-xl p-4 sm:p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="text-2xl sm:text-3xl text-[#197B33] mb-3 sm:mb-4 flex justify-center">
                     <IconComponent />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <h3 className="text-sm sm:text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">{feature.description}</p>
                 </div>
               );
             })}
@@ -226,16 +229,16 @@ export default function AboutUsPage() {
       </section>
 
       {/* Vision & Values Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {pageData.cards.map((card, index) => (
-            <div key={index} className={`bg-gradient-to-br ${card.gradient} rounded-2xl p-8 hover:scale-105 transition-transform duration-300`}>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">{card.title}</h3>
-              <p className="text-gray-700">{card.content}</p>
+            <div key={index} className={`bg-gradient-to-br ${card.gradient} rounded-2xl p-6 sm:p-8 hover:scale-105 transition-transform duration-300`}>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">{card.title}</h3>
+              <p className="text-sm sm:text-base text-gray-700">{card.content}</p>
               {card.list && (
                 <ul className="mt-4 space-y-2 text-gray-700">
                   {card.list.map((item, idx) => (
-                    <li key={idx} className="flex items-center">
+                    <li key={idx} className="flex items-center text-sm sm:text-base">
                       <FaCheckCircle className="text-green-600 mr-2 flex-shrink-0" />
                       {item}
                     </li>
@@ -248,14 +251,14 @@ export default function AboutUsPage() {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 py-10 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">{pageData.whyChooseUs.title}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8 sm:mb-12">{pageData.whyChooseUs.title}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {pageData.whyChooseUs.items.map((item, index) => (
               <div key={index} className="flex items-start bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                 <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
-                <span className="text-gray-700">{item}</span>
+                <span className="text-sm sm:text-base text-gray-700">{item}</span>
               </div>
             ))}
           </div>
@@ -263,9 +266,9 @@ export default function AboutUsPage() {
       </section>
 
       {/* Customer Testimonials */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">What Our Customers Say</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8 sm:mb-12">What Our Customers Say</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {pageData.testimonials.map((testimonial) => (
             <div key={testimonial.id} className="flex justify-center">
               <ReviewCard review={testimonial} />
@@ -274,8 +277,8 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Blog Section
-      <section className="bg-green-50 py-16">
+      {/* Blog Section - commented out exactly as original */}
+      {/* <section className="bg-green-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900">Latest From Our Blog</h2>
