@@ -99,7 +99,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <div className="flex items-center gap-1 text-green-600">
                 <FaCheckCircle /> <span>{product.reviews} Reviews</span>
               </div>
-            </div>
+            </div>A
 
             {/* Price - Centered with null check */}
             <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">

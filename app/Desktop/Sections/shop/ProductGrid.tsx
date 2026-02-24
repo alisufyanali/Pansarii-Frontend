@@ -1,19 +1,26 @@
 // app/shop/ProductGrid.tsx
 import { Product } from "../../utils/filterProducts";
-import ProductCard from "../../components/ProductCard";
-import ProductDetailsModal from "../../components/ProductDetailsModal";
-import { memo, useState } from 'react';
+import ProductCard from "../../../Desktop/components/ProductCard";
+import ProductCardMobile from "../../../Mobile/components/ProductCard";
+import ProductDetailsModal from "../../../Desktop/components/ProductDetailsModal";
+import { memo, useState, useEffect } from 'react';
 import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
 
 interface ProductGridProps {
   products: Product[];
   viewMode?: 'grid' | 'list';
   onAddToCart?: (product: Product) => void;
+  isMobile?: boolean;
 }
 
-function ProductGrid({ products, viewMode = 'grid', onAddToCart }: ProductGridProps) {
+function ProductGrid({ products, viewMode = 'grid', onAddToCart, isMobile = false }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleQuickView = (product: Product) => {
     setSelectedProduct(product);
@@ -25,18 +32,25 @@ function ProductGrid({ products, viewMode = 'grid', onAddToCart }: ProductGridPr
     setSelectedProduct(null);
   };
 
+  const handleAddToCart = (productId: string) => {
+    if (onAddToCart && selectedProduct) {
+      onAddToCart(selectedProduct);
+    }
+  };
+
+  // For list view (desktop only)
   if (viewMode === 'list') {
     return (
       <>
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {products.map((product) => (
             <div 
               key={`${product.id}-${product.nameEn}`}
-              className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow p-4"
+              className="bg-white rounded-lg sm:rounded-xl border border-gray-200 hover:border-green-300 hover:shadow-lg transition-all duration-300 p-3 sm:p-4 lg:p-6"
             >
-              <div className="flex gap-6">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                 {/* Product Image */}
-                <div className="w-48 h-48 flex-shrink-0">
+                <div className="w-full sm:w-36 lg:w-48 h-48 sm:h-36 lg:h-48 flex-shrink-0 relative group">
                   <img 
                     src={product.img}
                     alt={product.nameEn}
@@ -46,59 +60,64 @@ function ProductGrid({ products, viewMode = 'grid', onAddToCart }: ProductGridPr
                       (e.target as HTMLImageElement).src = '/images/product.png';
                     }}
                   />
+                  {product.sale && (
+                    <div className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white rounded-full text-xs font-bold shadow-md">
+                      {product.sale}
+                    </div>
+                  )}
                 </div>
 
                 {/* Product Details */}
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 mb-1 sm:mb-2 hover:text-green-700 transition-colors cursor-pointer">
                       {product.nameEn}
                     </h3>
-                    <p className="text-lg text-gray-600 mb-3">{product.nameUr}</p>
+                    <p className="text-sm sm:text-base text-gray-600 mb-2 sm:mb-3">{product.nameUr}</p>
                     {product.description && (
-                      <p className="text-sm text-green-700 mb-4">{product.description}</p>
+                      <p className="text-xs sm:text-sm text-green-700 mb-3 sm:mb-4 line-clamp-2">{product.description}</p>
                     )}
 
                     {/* Rating & Reviews */}
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="flex items-center gap-1">
-                        <FaStar className="w-5 h-5 text-yellow-400" />
-                        <span className="font-semibold">{product.rating}</span>
+                    <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                      <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded">
+                        <FaStar className="w-4 h-4 sm:w-4 sm:h-4 text-yellow-400" />
+                        <span className="text-sm sm:text-base font-semibold text-gray-900">{product.rating}</span>
                       </div>
                       <div className="flex items-center gap-1 text-green-600">
-                        <FaCheckCircle className="w-5 h-5" />
-                        <span>{product.reviews} Reviews</span>
+                        <FaCheckCircle className="w-4 h-4 sm:w-4 sm:h-4" />
+                        <span className="text-xs sm:text-sm font-medium">{product.reviews} Reviews</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Price and Action */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl font-bold text-gray-900">
+                  <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 mt-3 sm:mt-4 pt-3 border-t border-gray-100">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                      <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                         PKR {product.price.toLocaleString()}
                       </span>
                       {product.oldPrice && (
-                        <span className="text-lg text-gray-500 line-through">
-                          PKR {product.oldPrice.toLocaleString()}
-                        </span>
-                      )}
-                      {product.sale && (
-                        <span className="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-semibold">
-                          {product.sale}
-                        </span>
+                        <>
+                          <span className="text-sm sm:text-base text-gray-500 line-through">
+                            PKR {product.oldPrice.toLocaleString()}
+                          </span>
+                          <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm font-semibold">
+                            Save {Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}%
+                          </span>
+                        </>
                       )}
                     </div>
 
                     <button 
-                      className="px-8 py-3 bg-green-700 text-white rounded-full hover:bg-green-600 transition font-semibold flex items-center gap-2"
+                      className="px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 lg:py-3 bg-green-700 text-white rounded-lg hover:bg-green-800 active:scale-95 transition-all font-semibold flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-md hover:shadow-lg"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         handleQuickView(product);
                       }}
                     >
-                      <FaEye className="w-4 h-4" />
+                      <FaEye className="w-3 h-3 sm:w-4 sm:h-4" />
                       Quick View
                     </button>
                   </div>
@@ -119,19 +138,56 @@ function ProductGrid({ products, viewMode = 'grid', onAddToCart }: ProductGridPr
     );
   }
 
-  // Grid View - Default
+  // Grid View - Use mobile card on small screens, desktop card on larger screens
+  if (!isClient) {
+    // Server-side rendering fallback - Enhanced skeleton
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+        {products.map((product, index) => (
+          <div key={`skeleton-${index}`} className="w-full animate-pulse">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="aspect-square bg-gray-200 rounded-t-xl"></div>
+              <div className="p-3 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-8 bg-gray-200 rounded mt-3"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="grid grid-cols-2 
-                     md:grid-cols-2 
-                     lg:grid-cols-3 
-                     xl:grid-cols-4
-                     2xl:grid-cols-5
-                     gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
         {products.map((product) => (
-          <div key={`${product.id}-${product.nameEn}`} className="w-full group relative">
-            {/* Product Card */}
-            <ProductCard product={product} />
+          <div key={`${product.id}-${product.nameEn}`} className="w-full">
+            {/* FIXED: Use correct prop names */}
+            {isMobile ? (
+              <ProductCardMobile
+                id={product.id?.toString() || ''}
+                image={product.img}
+                hoverImg={product.hoverImg} // FIXED: Changed from hoverImage to hoverImg
+                name={product.nameEn}
+                nameUr={product.nameUr}
+                description={product.description}
+                features={product.features?.map((f: string | { text: string }) => typeof f === 'string' ? f : f.text) || []}
+                price={product.price}
+                oldPrice={product.oldPrice || undefined}
+                rating={product.rating}
+                reviews={product.reviews}
+                sale={product.sale || undefined}
+                onAddToCart={onAddToCart ? (id) => {
+                  const productToAdd = products.find(p => p.id?.toString() === id);
+                  if (productToAdd) onAddToCart(productToAdd);
+                } : undefined}
+                product={product} // Pass full product for modal
+              />
+            ) : (
+              <ProductCard product={product} />
+            )}
           </div>
         ))}
       </div>
@@ -151,6 +207,7 @@ export default memo(ProductGrid, (prevProps, nextProps) => {
   return (
     prevProps.products.length === nextProps.products.length &&
     prevProps.viewMode === nextProps.viewMode &&
+    prevProps.isMobile === nextProps.isMobile &&
     prevProps.products.every((product, index) => 
       product.id === nextProps.products[index]?.id
     )

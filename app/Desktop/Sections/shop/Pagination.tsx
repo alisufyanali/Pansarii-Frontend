@@ -1,3 +1,4 @@
+// app/shop/Pagination.tsx
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -30,7 +31,7 @@ export default function Pagination({
   // Generate page numbers to display
   const getPageNumbers = () => {
     const pages = [];
-    const maxVisiblePages = 5;
+    const maxVisiblePages = typeof window !== 'undefined' && window.innerWidth < 640 ? 3 : 5;
     
     if (totalPages <= maxVisiblePages) {
       // Show all pages if total pages is less than or equal to maxVisiblePages
@@ -47,12 +48,12 @@ export default function Pagination({
       
       // Adjust if we're near the beginning
       if (currentPage <= 3) {
-        end = 4;
+        end = maxVisiblePages - 1;
       }
       
       // Adjust if we're near the end
       if (currentPage >= totalPages - 2) {
-        start = totalPages - 3;
+        start = totalPages - (maxVisiblePages - 2);
       }
       
       // Add ellipsis after first page if needed
@@ -78,13 +79,13 @@ export default function Pagination({
   };
 
   return (
-    <div className="mt-8 flex items-center justify-center">
-      <div className="flex items-center gap-2">
+    <div className="mt-6 sm:mt-8 flex items-center justify-center">
+      <div className="flex items-center gap-1 sm:gap-2">
         {/* Previous arrow button */}
         <button
           onClick={prevPage}
           disabled={currentPage === 1}
-          className={`w-10 h-10 flex items-center justify-center rounded-lg border ${
+          className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg border ${
             currentPage === 1
               ? 'opacity-50 cursor-not-allowed border-gray-300'
               : 'border-gray-300 hover:bg-gray-50'
@@ -93,7 +94,7 @@ export default function Pagination({
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
-            className="h-5 w-5" 
+            className="h-4 w-4 sm:h-5 sm:w-5" 
             fill="none" 
             viewBox="0 0 24 24" 
             stroke="currentColor"
@@ -111,7 +112,7 @@ export default function Pagination({
         {getPageNumbers().map((pageNum, index) => {
           if (pageNum === '...') {
             return (
-              <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-500">
+              <span key={`ellipsis-${index}`} className="px-2 sm:px-3 py-1 sm:py-2 text-gray-500 text-sm sm:text-base">
                 ...
               </span>
             );
@@ -121,17 +122,15 @@ export default function Pagination({
             <button
               key={pageNum}
               onClick={() => goToPage(pageNum as number)}
-              className={`w-10 h-10 flex items-center justify-center rounded-lg border text-sm font-medium ${
+              className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg border text-xs sm:text-sm font-medium ${
                 currentPage === pageNum
-                  ? 'me-bgcolor-y text-white '
+                  ? 'bg-green-700 text-white border-green-700'
                   : 'border-gray-300 hover:bg-gray-50'
               }`}
               aria-label={`Go to page ${pageNum}`}
               aria-current={currentPage === pageNum ? 'page' : undefined}
             >
               {pageNum}
-
-              
             </button>
           );
         })}
@@ -140,7 +139,7 @@ export default function Pagination({
         <button
           onClick={nextPage}
           disabled={currentPage === totalPages}
-          className={`w-10 h-10 flex items-center justify-center rounded-lg border ${
+          className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg border ${
             currentPage === totalPages
               ? 'opacity-50 cursor-not-allowed border-gray-300'
               : 'border-gray-300 hover:bg-gray-50'
@@ -149,7 +148,7 @@ export default function Pagination({
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
-            className="h-5 w-5" 
+            className="h-4 w-4 sm:h-5 sm:w-5" 
             fill="none" 
             viewBox="0 0 24 24" 
             stroke="currentColor"

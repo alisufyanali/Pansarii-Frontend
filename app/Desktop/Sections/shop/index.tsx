@@ -57,22 +57,22 @@ function ShopLoading() {
           </div>
 
           {/* Product Grid Skeleton */}
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
             {[...Array(12)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
                 <div className="aspect-square bg-gray-200 rounded-t-lg"></div>
-                <div className="p-4 space-y-3">
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                  <div className="h-3 sm:h-4 bg-gray-200 rounded"></div>
+                  <div className="h-2 sm:h-3 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/2"></div>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Pagination Skeleton */}
-          <div className="mt-8 flex justify-center">
-            <div className="h-10 bg-gray-200 rounded-lg animate-pulse w-64"></div>
+          <div className="mt-6 sm:mt-8 flex justify-center">
+            <div className="h-8 sm:h-10 bg-gray-200 rounded-lg animate-pulse w-48 sm:w-64"></div>
           </div>
         </div>
       </div>
@@ -249,22 +249,22 @@ function ShopContent() {
               </div>
 
               {/* Product Grid Skeleton */}
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
                 {[...Array(12)].map((_, i) => (
                   <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
                     <div className="aspect-square bg-gray-200 rounded-t-lg"></div>
-                    <div className="p-4 space-y-3">
-                      <div className="h-4 bg-gray-200 rounded"></div>
-                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                      <div className="h-3 sm:h-4 bg-gray-200 rounded"></div>
+                      <div className="h-2 sm:h-3 bg-gray-200 rounded w-2/3"></div>
+                      <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/2"></div>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Pagination Skeleton */}
-              <div className="mt-8 flex justify-center">
-                <div className="h-10 bg-gray-200 rounded-lg animate-pulse w-64"></div>
+              <div className="mt-6 sm:mt-8 flex justify-center">
+                <div className="h-8 sm:h-10 bg-gray-200 rounded-lg animate-pulse w-48 sm:w-64"></div>
               </div>
             </div>
           </div>
@@ -304,22 +304,22 @@ function ShopContent() {
             </div>
 
             {/* Product Grid Skeleton */}
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
                   <div className="aspect-square bg-gray-200 rounded-t-lg"></div>
-                  <div className="p-4 space-y-3">
-                    <div className="h-4 bg-gray-200 rounded"></div>
-                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                    <div className="h-3 sm:h-4 bg-gray-200 rounded"></div>
+                    <div className="h-2 sm:h-3 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/2"></div>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Pagination Skeleton */}
-            <div className="mt-8 flex justify-center">
-              <div className="h-10 bg-gray-200 rounded-lg animate-pulse w-64"></div>
+            <div className="mt-6 sm:mt-8 flex justify-center">
+              <div className="h-8 sm:h-10 bg-gray-200 rounded-lg animate-pulse w-48 sm:w-64"></div>
             </div>
           </div>
         </div>
@@ -330,8 +330,6 @@ function ShopContent() {
   return (
     <div className="min-h-screen bg-white">
       <div className="pt-4">
-        
-
         {/* Main Shop Content */}
         <DynamicShopContent
           categories={categories}

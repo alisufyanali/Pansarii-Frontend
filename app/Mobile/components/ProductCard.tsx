@@ -2,63 +2,71 @@
 "use client";
 
 import Image from "next/image";
-import { FaStar, FaCheckCircle, FaShoppingCart, FaHeart, FaRegHeart } from "react-icons/fa";
 import { useState, MouseEvent } from "react";
+import { FaStar, FaCheckCircle, FaShoppingCart, FaHeart } from "react-icons/fa";
+import ProductDetailsModal from "../../Desktop/components/ProductDetailsModal";
 import { useRouter } from "next/navigation";
-import ProductDetailsModal from "../../Desktop/components/ProductDetailsModal"; // Import the modal
+import { useCart } from "../../context/CartContext";
+import { useWishlist } from "../../context/WishList";
+import { toast } from 'react-toastify';
 
 interface ProductCardProps {
-  id: string;
+  id: string | number;
   image: string;
-  hoverImage?: string;
+  hoverImg?: string;
   name: string;
   nameUr?: string;
+  description?: string;
   features: string[];
   price: number;
-  oldPrice?: number;
+  oldPrice?: number | null;
+  sale?: string | null;
   rating?: number;
   reviews?: number;
-  sale?: string;
-  description?: string;
-  inStock?: boolean;
   currency?: string;
   onAddToCart?: (id: string) => void;
-  onToggleWishlist?: (id: string) => void;
-  isInWishlist?: boolean;
   className?: string;
+  // Full product object for modal
+  product?: any;
 }
 
 export default function ProductCard({
   id,
   image,
-  hoverImage,
+  hoverImg,
   name,
   nameUr,
+  description,
   features,
   price,
   oldPrice,
+  sale,
   rating = 4.5,
   reviews = 0,
-  sale,
-  description,
-  inStock = true,
   currency = "PKR",
   onAddToCart,
-  onToggleWishlist,
-  isInWishlist = false,
-  className = ""
+  className = "",
+  product
 }: ProductCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isWishlist, setIsWishlist] = useState(isInWishlist);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const router = useRouter();
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  
+  const isInWishlistCheck = isInWishlist(id);
+
+  // Determine which image to display
+  const displayImage = isHovered && hoverImg ? hoverImg : image;
 
   // Format price with comma separators
   const formattedPrice = price.toLocaleString('en-PK');
-  const formattedOldPrice = oldPrice?.toLocaleString('en-PK');
+  const formattedOldPrice = oldPrice ? oldPrice.toLocaleString('en-PK') : null;
 
   // Calculate discount percentage
-  const discountPercentage = oldPrice ? Math.round(((oldPrice - price) / oldPrice) * 100) : 0;
+  const discountPercentage = oldPrice 
+    ? Math.round(((oldPrice - price) / oldPrice) * 100)
+    : null;
 
   // Handle card click - navigate to product details
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -69,29 +77,52 @@ export default function ProductCard({
     router.push(`/product/${productSlug}`);
   };
 
-  // Handle quick add click
+  // Handle quick add - open modal
   const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    if (onAddToCart && inStock) {
-      onAddToCart(id);
-      
-      // Optional: Show feedback
-      const button = e.currentTarget;
-      const originalText = button.innerHTML;
-      button.innerHTML = 'Added!';
-      setTimeout(() => {
-        button.innerHTML = originalText;
-      }, 1000);
-    }
+    setIsModalOpen(true);
   };
 
-  // Handle quick view click - opens modal
-  const handleQuickView = (e: MouseEvent<HTMLButtonElement>) => {
+  // Handle add to cart from button
+  const handleAddClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsModalOpen(true);
+    
+    if (onAddToCart) {
+      onAddToCart(id.toString());
+    } else {
+      // Default cart behavior
+      addToCart({
+        id: id,
+        img: image,
+        nameEn: name,
+        nameUr: nameUr || name,
+        price: price,
+       
+        size: 'Standard',
+      });
+
+      toast.success(
+        <div className="flex items-center gap-2">
+          <span className="text-xl">✓</span>
+          <div>
+            <div className="font-semibold">Added to cart!</div>
+            <div className="text-xs opacity-90">{name}</div>
+          </div>
+        </div>,
+        {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: true,
+          closeButton: false,
+          style: {
+            background: '#15803d',
+            color: 'white',
+          }
+        }
+      );
+    }
   };
 
   // Handle wishlist toggle
@@ -99,185 +130,179 @@ export default function ProductCard({
     e.preventDefault();
     e.stopPropagation();
     
-    if (onToggleWishlist) {
-      onToggleWishlist(id);
-      setIsWishlist(!isWishlist);
-    }
+    toggleWishlist({
+      id: id,
+      nameEn: name,
+      nameUr: nameUr || name,
+      price: price,
+      img: image,
+    });
+
+    toast.success(
+      isInWishlistCheck ? 'Removed from wishlist' : 'Added to wishlist',
+      {
+        position: "top-center",
+        autoClose: 1500,
+        hideProgressBar: true,
+        closeButton: false,
+      }
+    );
   };
 
-  // Determine which image to display
-  const displayImage = isHovered && hoverImage ? hoverImage : image;
-
-  // Create product object in the format expected by ProductDetailsModal
-  const modalProduct = {
-    id: id,
+  // Prepare product object for modal
+  const fullProduct = product || {
+    id,
     img: image,
-    hoverImg: hoverImage,
+    hoverImg,
     nameEn: name,
     nameUr: nameUr || name,
     description: description || features.join(' • '),
-    rating: rating,
-    reviews: reviews,
-    price: price,
-    oldPrice: oldPrice || null,
-    sale: sale || null,
-    inStock: inStock,
-    features: features
+    rating,
+    reviews,
+    price,
+    oldPrice,
+    sale,
+    features,
   };
 
   return (
     <>
       <div 
-        className={`w-full aspect-square bg-white rounded-xl overflow-hidden flex flex-col transition-all duration-300 cursor-pointer group ${className}`}
+        className={`bg-white rounded-xl overflow-hidden flex flex-col cursor-pointer transition-all duration-300 h-full relative group ${className}`}
         style={{ 
-          border: isHovered ? '2px solid #10B981' : '1px solid #E5E7EB',
-          boxShadow: isHovered ? '0 10px 25px -5px rgba(0, 0, 0, 0.1)' : '0 1px 3px rgba(0, 0, 0, 0.05)'
+          border: isHovered ? '2px solid #197B33' : '2px solid #E5E7EB',
+          boxShadow: isHovered ? '0 4px 12px rgba(25, 123, 51, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.1)'
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}
       >
-        {/* Image Section - Square proportion */}
-        <div className="relative w-full aspect-square bg-gradient-to-br from-gray-50 to-gray-100">
-          <Image
-            src={displayImage}
-            alt={name}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-          />
-          
-          {/* Sale Badge */}
-          {sale && (
-            <div className="absolute top-2 left-2 z-10">
-              <span className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
-                {sale}
-              </span>
-            </div>
-          )}
-          
-          {/* Discount Badge */}
-          {oldPrice && discountPercentage > 0 && (
-            <div className="absolute top-2 right-2 z-10">
-              <span className="px-2 py-1 bg-green-600 text-white text-xs font-bold rounded-full">
-                -{discountPercentage}%
-              </span>
-            </div>
-          )}
+        {/* Product Image */}
+        <div className="relative aspect-square bg-gray-50 border-b border-gray-100">
+          <div className="relative w-full h-full p-3">
+            <Image
+              src={displayImage}
+              alt={name}
+              fill
+              className="object-contain p-1 transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 768px) 50vw, 33vw"
+            />
+          </div>
 
-          {/* Out of Stock Badge */}
-          {!inStock && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-              <span className="px-3 py-1.5 bg-gray-800 text-white text-xs font-bold rounded-full">
-                Out of Stock
-              </span>
+          {/* Sale Badge */}
+          {(sale || discountPercentage) && (
+            <div className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white rounded-full text-[10px] font-bold shadow-md">
+              {sale || `-${discountPercentage}%`}
             </div>
           )}
 
           {/* Wishlist Button */}
-          {onToggleWishlist && (
-            <button
-              onClick={handleWishlistToggle}
-              className="absolute top-2 right-2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-all shadow-md z-20"
-              aria-label={isWishlist ? "Remove from wishlist" : "Add to wishlist"}
-            >
-              {isWishlist ? (
-                <FaHeart className="w-4 h-4 text-red-500 fill-red-500" />
-              ) : (
-                <FaRegHeart className="w-4 h-4 text-gray-600" />
-              )}
-            </button>
-          )}
-
-          {/* Quick View Button - Appears on Hover */}
           <button
-            onClick={handleQuickView}
-            className="absolute inset-x-0 bottom-0 py-2 bg-black/70 text-white text-xs font-medium text-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm z-20"
+            onClick={handleWishlistToggle}
+            className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-md ${
+              isInWishlistCheck 
+                ? 'bg-red-500 text-white' 
+                : 'bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500'
+            }`}
+            aria-label={isInWishlistCheck ? "Remove from wishlist" : "Add to wishlist"}
           >
-            Quick View
+            <FaHeart className="w-3 h-3" />
           </button>
-        </div>
 
-        {/* Product Details */}
-        <div className="flex-1 p-2 flex flex-col bg-white">
-          {/* Title and Urdu Name */}
-          <div className="text-center mb-1">
-            <h3 className="font-semibold text-xs sm:text-sm text-gray-900 line-clamp-1">
-              {name}
-            </h3>
-            {nameUr && (
-              <p className="text-[10px] sm:text-xs text-gray-600 line-clamp-1 font-arabic">
-                {nameUr}
-              </p>
-            )}
+          {/* Quick View on Hover - Desktop only */}
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center">
+            <button
+              onClick={handleQuickAdd}
+              className="px-4 py-2 bg-white text-gray-900 rounded-lg font-medium text-sm hover:bg-gray-100 transition-colors shadow-lg"
+            >
+              Quick View
+            </button>
           </div>
+        </div>
+        
+        {/* Product Details */}
+        <div className="p-3 flex flex-col flex-1">
+          {/* Product Name */}
+          <h3 className="font-semibold text-sm text-gray-900 mb-1 line-clamp-2 min-h-[40px] text-center">
+            {name}
+          </h3>
 
-          {/* Features / Tags */}
-          {features.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-1 mb-1">
-              {features.slice(0, 2).map((feature, index) => (
-                <span key={index} className="text-[8px] sm:text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
-                  {feature}
-                </span>
-              ))}
-              {features.length > 2 && (
-                <span className="text-[8px] sm:text-[10px] text-gray-500">+{features.length - 2}</span>
-              )}
-            </div>
-          )}
-
-          {/* Description */}
-          {description && (
-            <p className="text-[8px] sm:text-[10px] text-gray-500 text-center line-clamp-1 mb-1">
-              {description}
+          {/* Urdu Name */}
+          {nameUr && (
+            <p className="text-xs text-gray-600 mb-1 text-center line-clamp-1">
+              {nameUr}
             </p>
           )}
 
-          {/* Rating & Reviews */}
-          <div className="flex items-center justify-center gap-1 text-[8px] sm:text-[10px] mb-1">
-            <div className="flex items-center gap-0.5">
-              <FaStar className="w-2.5 h-2.5 text-yellow-400" />
-              <span className="font-medium text-gray-700">{rating.toFixed(1)}</span>
-            </div>
-            <span className="text-gray-300">|</span>
-            <div className="flex items-center gap-0.5">
-              <FaCheckCircle className="w-2.5 h-2.5 text-green-600" />
-              <span className="text-gray-600">{reviews}</span>
-            </div>
-          </div>
-
-          {/* Price */}
-          <div className="flex items-center justify-center gap-1 mb-2">
-            <span className="font-bold text-green-700 text-xs sm:text-sm">
-              {currency} {formattedPrice}
-            </span>
-            {oldPrice && (
-              <span className="text-[8px] sm:text-[10px] text-gray-400 line-through">
-                {currency} {formattedOldPrice}
+          {/* Description/Category */}
+          {description && (
+            <p className="text-xs text-green-700 mb-2 text-center line-clamp-1">
+              {description}
+            </p>
+          )}
+          
+          {/* Features - Show first 3 */}
+          <div className="flex flex-wrap gap-1 mb-2 justify-center">
+            {features.slice(0, 3).map((feature, index) => (
+              <span key={index} className="text-[10px] text-gray-500">
+                {feature}
+                {index < features.slice(0, 3).length - 1 && " • "}
               </span>
-            )}
+            ))}
           </div>
 
-          {/* Add to Cart Button */}
-          <button
-            onClick={handleQuickAdd}
-            disabled={!inStock}
-            className={`w-full py-1.5 sm:py-2 bg-gradient-to-r from-green-600 to-green-500 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-              inStock 
-                ? 'hover:from-green-700 hover:to-green-600 active:scale-95' 
-                : 'opacity-50 cursor-not-allowed'
-            }`}
-          >
-            <FaShoppingCart className="w-3 h-3" />
-            {inStock ? 'Add to Cart' : 'Out of Stock'}
-          </button>
+          {/* Rating & Reviews */}
+          {(rating || reviews) && (
+            <div className="flex items-center justify-center gap-2 mb-2 text-xs">
+              {rating && (
+                <div className="flex items-center gap-0.5 text-yellow-400">
+                  <FaStar className="w-3 h-3" />
+                  <span className="text-gray-700 font-medium">{rating}</span>
+                </div>
+              )}
+              {rating && reviews && <span className="text-gray-300">|</span>}
+              {reviews > 0 && (
+                <div className="flex items-center gap-0.5 text-green-600">
+                  <FaCheckCircle className="w-3 h-3" />
+                  <span className="text-gray-600">{reviews}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Spacer */}
+          <div className="flex-1"></div>
+          
+          {/* Price & Add Button */}
+          <div className="mt-auto">
+            {/* Price */}
+            <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+              <span className="text-base font-bold text-gray-900">
+                {currency} {formattedPrice}
+              </span>
+              {oldPrice && (
+                <span className="text-xs text-gray-500 line-through">
+                  {currency} {formattedOldPrice}
+                </span>
+              )}
+            </div>
+
+            {/* Quick Add Button */}
+            <button
+              onClick={handleQuickAdd}
+              className="w-full py-2 rounded-full bg-green-600 text-white flex items-center justify-center font-medium hover:bg-green-700 transition-all active:scale-95 shadow-sm text-sm"
+            >
+              <span className="flex-1 text-center">Quick Add</span>
+              <FaShoppingCart className="mr-3 w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Product Details Modal - Opens on Quick View */}
+      {/* Product Details Modal */}
       {isModalOpen && (
         <ProductDetailsModal 
-          product={modalProduct} 
+          product={fullProduct} 
           onClose={() => setIsModalOpen(false)} 
         />
       )}
