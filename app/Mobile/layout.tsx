@@ -24,7 +24,7 @@ export default function MobileLayout({ children }: { children: ReactNode }) {
         />
 
         {/* Main Content */}
-        <main className="min-h-screen bg-white pt-16 pb-24 px-4">
+        <main className="min-h-screen bg-white pt-16 pb-24 px-4 mt-7">
           {children}
         </main>
 

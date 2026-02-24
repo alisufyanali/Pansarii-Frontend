@@ -24,7 +24,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
   
   const menuLinks = [
     { name: 'Shop', href: '/shop', icon: <FaShoppingBag className="w-4 h-4" /> },
-    { name: 'Categories', href: '/categories', icon: <FaLeaf className="w-4 h-4" /> },
+    { name: 'Categories', href: '/category', icon: <FaLeaf className="w-4 h-4" /> },
     { name: 'Offers', href: '/offers', icon: <FaGift className="w-4 h-4" /> },
     { name: 'Rewards', href: '/rewards', icon: <FaStar className="w-4 h-4" /> },
     { name: 'Track Order', href: '/track-order', icon: <FaTruck className="w-4 h-4" /> },
@@ -130,7 +130,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
                 })}
               </div>
               <Link 
-                href="/categories" 
+                href="/category" 
                 onClick={onClose}
                 className="block w-full mt-3 py-2 text-center text-sm font-medium text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
               >
