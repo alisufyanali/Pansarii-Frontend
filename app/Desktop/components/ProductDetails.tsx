@@ -239,7 +239,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       return;
     }
 
-    // Add the product to cart with selected size and quantity
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: productId,
@@ -252,7 +251,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       });
     }
 
-    // Show success toast
     toast.success(`Added ${quantity} × ${product.nameEn} (${selectedSize}) to cart!`, {
       position: "top-right",
       autoClose: 3000,
@@ -291,7 +289,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       });
     }
 
-    // Show success toast with redirect message
     toast.success(
       <div>
         <div className="font-semibold">Added to cart! Redirecting...</div>
@@ -317,7 +314,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const handleWishlistToggle = () => {
     if (!productId) return;
     
-    // Check if user is logged in
     if (!isLoggedIn) {
       toast.warning(
         <div>
@@ -335,7 +331,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         }
       );
       
-      // Redirect to login after a delay
       setTimeout(() => {
         window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
       }, 1500);
@@ -403,13 +398,44 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
+  // Action Buttons - extracted as a shared component for reuse in both sticky bar and inline
+  const ActionButtons = () => (
+    <div className="flex flex-col gap-1.5">
+      {/* Primary Buttons Row */}
+      <div className="flex flex-col sm:flex-row gap-1.5">
+        <button 
+          onClick={handleAddToCart}
+          className="flex-1 flex items-center justify-center gap-1 me-bgcolor-g text-white font-semibold py-2 px-3 rounded-full hover:opacity-90 transition-opacity text-xs"
+        >
+          <FaShoppingCart className="w-3 h-3" />
+          Add to cart
+        </button>
+        <button 
+          onClick={handleBuyNow}
+          className="flex-1 flex items-center justify-center me-bgcolor-y text-gray-900 font-semibold py-2 px-3 rounded-full hover:opacity-90 transition-opacity text-xs"
+        >
+          Buy it now
+        </button>
+      </div>
+      
+      {/* WhatsApp Button Row */}
+      <button 
+        onClick={handleWhatsAppOrder}
+        className="w-full flex items-center justify-center gap-2 bg-white border-2 border-[#25D366] text-[#25D366] font-semibold py-2 px-3 rounded-full hover:bg-[#25D366] hover:text-white transition-all duration-300 text-xs"
+      >
+        <FaWhatsapp className="w-4 h-4" />
+        <span>Order on WhatsApp</span>
+      </button>
+    </div>
+  );
+
   return (
     <div className="h-screen max-h-screen overflow-hidden bg-white">
       <div className="h-full max-h-full flex flex-col lg:flex-row gap-2 lg:gap-3 p-2">
         
         {/* Left Column - Images */}
         <div className="lg:w-2/5 h-full flex flex-col relative">
-          {/* Wishlist Button with login check */}
+          {/* Wishlist Button */}
           <button
             onClick={handleWishlistToggle}
             className={`absolute top-2 left-2 z-20 p-2 rounded-full shadow-md transition-all duration-300 hover:scale-110 ${
@@ -429,7 +455,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           {/* Zoom Toggle Button */}
           <button
             onClick={toggleZoom}
-            className="absolute top-2 right-2 z-20 bg-white/90 hover:bg-white p-1.5 rounded-full shadow-md transition-all z-20 border border-gray-200"
+            className="absolute top-2 right-2 z-20 bg-white/90 hover:bg-white p-1.5 rounded-full shadow-md transition-all border border-gray-200"
             title={isZoomed ? "Disable zoom" : "Enable zoom"}
           >
             {isZoomed ? (
@@ -497,224 +523,204 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         {/* Right Column - Product Info */}
-        <div className="lg:w-3/5 h-full overflow-y-auto">
-          <div className="space-y-2">
-            {/* Product Names */}
-            <div className="mt-2">
-              <h1 className="text-lg font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
-              <p className="text-xs text-gray-700 mt-0.5">{product.nameUr}</p>
-            </div>
-            
-            {/* Benefits */}
-            {product.benefits && product.benefits.length > 0 && (
-              <div className="text-gray-600 text-[10px] flex flex-wrap items-center gap-x-1 mt-2">
-                {product.benefits.map((benefit, index) => (
-                  <span key={index}>
-                    {benefit}
-                    {index < product.benefits!.length - 1 && (
-                      <span className="mx-1 text-gray-300">|</span>
-                    )}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Rating & Reviews */}
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex items-center gap-1">
-                <FaStar className="w-3 h-3 text-yellow-400" />
-                <span className="font-semibold text-gray-900 text-xs">{product.rating}</span>
+        {/* KEY CHANGE: flex flex-col so we can split scrollable content from sticky buttons */}
+        <div className="lg:w-3/5 h-full flex flex-col">
+          
+          {/* Scrollable product info area — buttons are excluded from here */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="space-y-2">
+              {/* Product Names */}
+              <div className="mt-2">
+                <h1 className="text-lg font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
+                <p className="text-xs text-gray-700 mt-0.5">{product.nameUr}</p>
               </div>
               
-              <div className="flex items-center gap-1">
-                <FaCheckCircle className="w-3 h-3 text-green-500" />
-                <span className="text-gray-700 text-[10px]">{product.reviews} Reviews</span>
-              </div>
-            </div>
-
-            {/* Price */}
-            <div className="mt-2">
-              <div className="flex items-center gap-1 flex-wrap">
-                <span className="text-lg font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
-                {product.oldPrice && (
-                  <span className="text-sm text-gray-500 line-through">PKR {product.oldPrice.toLocaleString()}</span>
-                )}
-                {product.sale && (
-                  <span className="px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-medium">
-                    {product.sale}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Ayurvedic Info Section */}
-            {product.infoLines && product.infoLines.length > 0 && (
-              <div className="mt-2">
-                <div className="flex flex-wrap gap-1">
-                  {product.infoLines.map((line, index) => (
-                    <div 
-                      key={index} 
-                      className="text-gray-800 text-[10px] border border-[#5F5F5F] rounded px-2 py-1 bg-white"
-                    >
-                      {line}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Features */}
-            {product.features && product.features.length > 0 && (
-              <div className="mt-2">
-                <div className="grid grid-cols-2 gap-1">
-                  {product.features.map((feature, index) => {
-                    const hasCheck = feature.hasCheck !== undefined 
-                      ? feature.hasCheck 
-                      : feature.text.startsWith('✓');
-                    
-                    const featureText = feature.hasCheck !== undefined
-                      ? feature.text
-                      : feature.text.replace('✓', '').trim();
-                    
-                    return (
-                      <div 
-                        key={index} 
-                        className="rounded p-1 flex items-center gap-1 bg-white hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          {feature.icon ? (
-                            <img 
-                              src={feature.icon} 
-                              alt={featureText}
-                              className="w-3 h-3 object-contain"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                target.parentElement!.innerHTML = hasCheck ? 
-                                  '<div class="text-green-600 font-bold text-xs">✓</div>' : 
-                                  '<div class="text-gray-400 font-bold text-xs">○</div>';
-                              }}
-                            />
-                          ) : (
-                            hasCheck ? (
-                              <div className="text-green-600 font-bold text-xs">✓</div>
-                            ) : (
-                              <div className="text-gray-400 font-bold text-xs">○</div>
-                            )
-                          )}
-                        </div>
-                        
-                        <span className="text-gray-700 text-[10px] font-medium flex-1 leading-tight">
-                          {featureText}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Pansari Points */}
-            {product.points && (
-              <div className="mt-2">
-                <div className="bg-[#6464641A] rounded p-1.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FaBolt className="w-3 h-3 text-amber-600" />
-                    <span className="text-gray-800 text-[10px]">
-                      Earn {product.points * quantity} Pansari Inn Points
+              {/* Benefits */}
+              {product.benefits && product.benefits.length > 0 && (
+                <div className="text-gray-600 text-[10px] flex flex-wrap items-center gap-x-1 mt-2">
+                  {product.benefits.map((benefit, index) => (
+                    <span key={index}>
+                      {benefit}
+                      {index < product.benefits!.length - 1 && (
+                        <span className="mx-1 text-gray-300">|</span>
+                      )}
                     </span>
-                  </div>
-                  <div className="w-3 h-3 rounded-full bg-[#646464] flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-[8px] font-bold">!</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Size Selection */}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="mt-2">
-                <h3 className="font-semibold text-gray-900 text-xs mb-1">Size</h3>
-                <div className="flex flex-wrap gap-1">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-2 py-0.5 rounded-full border text-[10px] font-medium transition-all ${
-                        selectedSize === size
-                          ? 'bg-[#197B33] text-white border-[#197B33]'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-[#197B33]'
-                      }`}
-                    >
-                      {size}
-                    </button>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Quantity */}
-            <div className="mt-2">
-              <h3 className="font-semibold text-gray-900 text-xs mb-1">Quantity</h3>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border border-gray-300 rounded">
-                  <button
-                    onClick={decreaseQuantity}
-                    className="px-2 py-0.5 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
-                    disabled={quantity === 1}
-                  >
-                    -
-                  </button>
-                  <span className="px-2 py-0.5 border-x border-gray-300 min-w-[40px] text-center font-semibold text-xs">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={increaseQuantity}
-                    className="px-2 py-0.5 text-gray-600 hover:bg-gray-100 text-xs"
-                  >
-                    +
-                  </button>
+              {/* Rating & Reviews */}
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-1">
+                  <FaStar className="w-3 h-3 text-yellow-400" />
+                  <span className="font-semibold text-gray-900 text-xs">{product.rating}</span>
                 </div>
                 
-                {/* Subtotal Display */}
-                <div className="text-xs ml-auto">
-                  <div className="text-gray-700">Subtotal:</div>
-                  <div className="font-bold text-green-700">PKR {(product.price * quantity).toLocaleString()}</div>
+                <div className="flex items-center gap-1">
+                  <FaCheckCircle className="w-3 h-3 text-green-500" />
+                  <span className="text-gray-700 text-[10px]">{product.reviews} Reviews</span>
                 </div>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="mt-2 pt-2">
-              {/* Primary Buttons Row */}
-              <div className="flex flex-col sm:flex-row gap-1.5 mb-2">
-                <button 
-                  onClick={handleAddToCart}
-                  className="flex-1 flex items-center justify-center gap-1 me-bgcolor-g text-white font-semibold py-2 px-3 rounded-full hover:opacity-90 transition-opacity text-xs"
-                >
-                  <FaShoppingCart className="w-3 h-3" />
-                  Add to cart
-                </button>
-                <button 
-                  onClick={handleBuyNow}
-                  className="flex-1 flex items-center justify-center me-bgcolor-y text-gray-900 font-semibold py-2 px-3 rounded-full hover:opacity-90 transition-opacity text-xs"
-                >
-                  Buy it now
-                </button>
+              {/* Price */}
+              <div className="mt-2">
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-lg font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
+                  {product.oldPrice && (
+                    <span className="text-sm text-gray-500 line-through">PKR {product.oldPrice.toLocaleString()}</span>
+                  )}
+                  {product.sale && (
+                    <span className="px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-medium">
+                      {product.sale}
+                    </span>
+                  )}
+                </div>
               </div>
-              
-              {/* WhatsApp Button Row */}
-              <div className="w-full">
-                <button 
-                  onClick={handleWhatsAppOrder}
-                  className="w-full flex items-center justify-center gap-2 bg-white border-2 border-[#25D366] text-[#25D366] font-semibold py-2 px-3 rounded-full hover:bg-[#25D366] hover:text-white transition-all duration-300 text-xs group"
-                >
-                  <FaWhatsapp className="w-4 h-4" />
-                  <span>Order on WhatsApp</span>
-                </button>
+
+              {/* Ayurvedic Info Section */}
+              {product.infoLines && product.infoLines.length > 0 && (
+                <div className="mt-2">
+                  <div className="flex flex-wrap gap-1">
+                    {product.infoLines.map((line, index) => (
+                      <div 
+                        key={index} 
+                        className="text-gray-800 text-[10px] border border-[#5F5F5F] rounded px-2 py-1 bg-white"
+                      >
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Features */}
+              {product.features && product.features.length > 0 && (
+                <div className="mt-2">
+                  <div className="grid grid-cols-2 gap-1">
+                    {product.features.map((feature, index) => {
+                      const hasCheck = feature.hasCheck !== undefined 
+                        ? feature.hasCheck 
+                        : feature.text.startsWith('✓');
+                      
+                      const featureText = feature.hasCheck !== undefined
+                        ? feature.text
+                        : feature.text.replace('✓', '').trim();
+                      
+                      return (
+                        <div 
+                          key={index} 
+                          className="rounded p-1 flex items-center gap-1 bg-white hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
+                            {feature.icon ? (
+                              <img 
+                                src={feature.icon} 
+                                alt={featureText}
+                                className="w-3 h-3 object-contain"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.parentElement!.innerHTML = hasCheck ? 
+                                    '<div class="text-green-600 font-bold text-xs">✓</div>' : 
+                                    '<div class="text-gray-400 font-bold text-xs">○</div>';
+                                }}
+                              />
+                            ) : (
+                              hasCheck ? (
+                                <div className="text-green-600 font-bold text-xs">✓</div>
+                              ) : (
+                                <div className="text-gray-400 font-bold text-xs">○</div>
+                              )
+                            )}
+                          </div>
+                          
+                          <span className="text-gray-700 text-[10px] font-medium flex-1 leading-tight">
+                            {featureText}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Pansari Points */}
+              {product.points && (
+                <div className="mt-2">
+                  <div className="bg-[#6464641A] rounded p-1.5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FaBolt className="w-3 h-3 text-amber-600" />
+                      <span className="text-gray-800 text-[10px]">
+                        Earn {product.points * quantity} Pansari Inn Points
+                      </span>
+                    </div>
+                    <div className="w-3 h-3 rounded-full bg-[#646464] flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[8px] font-bold">!</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Size Selection */}
+              {product.sizes && product.sizes.length > 0 && (
+                <div className="mt-2">
+                  <h3 className="font-semibold text-gray-900 text-xs mb-1">Size</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {product.sizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-2 py-0.5 rounded-full border text-[10px] font-medium transition-all ${
+                          selectedSize === size
+                            ? 'bg-[#197B33] text-white border-[#197B33]'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-[#197B33]'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quantity */}
+              <div className="mt-2">
+                <h3 className="font-semibold text-gray-900 text-xs mb-1">Quantity</h3>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center border border-gray-300 rounded">
+                    <button
+                      onClick={decreaseQuantity}
+                      className="px-2 py-0.5 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                      disabled={quantity === 1}
+                    >
+                      -
+                    </button>
+                    <span className="px-2 py-0.5 border-x border-gray-300 min-w-[40px] text-center font-semibold text-xs">
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={increaseQuantity}
+                      className="px-2 py-0.5 text-gray-600 hover:bg-gray-100 text-xs"
+                    >
+                      +
+                    </button>
+                  </div>
+                  
+                  {/* Subtotal Display */}
+                  <div className="text-xs ml-auto">
+                    <div className="text-gray-700">Subtotal:</div>
+                    <div className="font-bold text-green-700">PKR {(product.price * quantity).toLocaleString()}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* ── Sticky Action Buttons ── always visible at the bottom, never scrolled away */}
+          <div className="flex-shrink-0 pt-2 border-t border-gray-100">
+            <ActionButtons />
+          </div>
+
         </div>
       </div>
     </div>
