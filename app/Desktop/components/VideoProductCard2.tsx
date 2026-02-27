@@ -29,10 +29,8 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
     const playVideo = async () => {
       if (videoRef.current && !videoError && videoLoaded) {
         try {
-          console.log('Attempting to play video:', product.video);
           videoRef.current.muted = true;
           await videoRef.current.play();
-          console.log('Video playback started');
         } catch (error) {
           console.log('Autoplay prevented:', error);
         }
@@ -44,22 +42,16 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
     }
   }, [videoError, videoLoaded, product.video]);
 
-  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('Video failed to load:', product.video, e);
+  const handleVideoError = () => {
     setVideoError(true);
   };
 
   const handleVideoLoaded = () => {
-    console.log('Video loaded successfully:', product.video);
     setVideoLoaded(true);
   };
 
   return (
-    <div className="relative w-full max-w-[274px] sm:w-[250px] md:w-[274px] 
-                    h-[250px] sm:h-[280px] md:h-[323px] 
-                    rounded-[14px] sm:rounded-[16px] md:rounded-[18px] 
-                    border border-gray-300 overflow-hidden bg-black
-                    mx-auto">
+    <div className="relative w-full aspect-[274/323] rounded-[18px] border border-gray-300 overflow-hidden bg-black">
       
       {/* Video Player */}
       {!videoError ? (
@@ -86,36 +78,26 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
         />
       )}
 
- 
-
       {/* Views badge bottom-left */}
       {product.views && (
-        <div className="absolute bottom-2 left-2 rounded-[4px] sm:rounded-[5px] 
-                       px-1.5 sm:px-2 py-0.5 sm:py-1 
-                       text-[10px] sm:text-xs font-medium 
-                       flex items-center justify-center 
-                       backdrop-blur-sm bg-white/20 text-white">
+        <div className="absolute bottom-2 left-2 rounded-[5px] px-2 py-1 text-xs font-medium backdrop-blur-sm bg-white/20 text-white">
           {product.views} Views
         </div>
       )}
 
       {/* Bottom-right icons: Share & Heart */}
-      <div className="absolute bottom-2 right-2 flex gap-1.5 sm:gap-2">
+      <div className="absolute bottom-2 right-2 flex gap-2">
         <button 
-          className="p-1 sm:p-1.5 rounded bg-white/20 text-white 
-                    hover:bg-white/30 transition-colors 
-                    active:scale-95"
+          className="p-1.5 rounded bg-white/20 text-white hover:bg-white/30 transition-colors active:scale-95"
           aria-label="Share"
         >
-          <FaShareAlt className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          <FaShareAlt className="w-3.5 h-3.5" />
         </button>
         <button 
-          className="p-1 sm:p-1.5 rounded bg-white/20 text-white 
-                    hover:bg-white/30 transition-colors 
-                    active:scale-95"
+          className="p-1.5 rounded bg-white/20 text-white hover:bg-white/30 transition-colors active:scale-95"
           aria-label="Add to favorites"
         >
-          <FaHeart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          <FaHeart className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

@@ -2,7 +2,7 @@ import VideoProductCard2 from "../../components/VideoProductCard2";
 import { videoProducts } from "../../data/videoProducts";
 
 export default function VideoProductsSection() {
-  // Take only first 4 products (or adjust as needed)
+  // Take only first 4 products
   const displayedProducts = videoProducts.slice(0, 4);
 
   return (
@@ -11,8 +11,8 @@ export default function VideoProductsSection() {
         Related Products
       </h2>
       
-      {/* Responsive grid - all cards visible at once */}
-      <div className="grid grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+      {/* Grid with exactly 4 columns on all screens */}
+      <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-5 lg:gap-6">
         {displayedProducts.map((videoProduct) => (
           <div 
             key={videoProduct.id} 
