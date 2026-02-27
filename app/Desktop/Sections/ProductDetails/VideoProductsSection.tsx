@@ -8,10 +8,13 @@ export default function VideoProductsSection() {
         Related Products
       </h2>
       
-      {/* Responsive Grid Layout */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Horizontal scroll container */}
+      <div className="flex overflow-x-auto gap-3 sm:gap-4 pb-4 snap-x scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {videoProducts.map((videoProduct) => (
-          <div key={videoProduct.id} className="w-full flex justify-center sm:justify-start">
+          <div 
+            key={videoProduct.id} 
+            className="flex-none w-[85%] xs:w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%] snap-start"
+          >
             <VideoProductCard2 product={videoProduct} />
           </div>
         ))}
