@@ -1,6 +1,6 @@
 "use client";
 
-import ProductCard from "../../components/ProductCard";
+import ProductCard from "../../../Mobile/components/ProductCard";
 import { recommendedProducts } from "../../data/recommendedProducts";
 
 export default function RecommendedProductsSection() {
@@ -13,14 +13,28 @@ export default function RecommendedProductsSection() {
         Recommended For You
       </h2>
       <div className="max-w-7xl mx-auto">
-        {/* Horizontal scroll container */}
-        <div className="flex overflow-x-auto gap-6 pb-4 snap-x scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        {/* Flex container without overflow - all cards visible */}
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5 lg:gap-6">
           {displayedProducts.map((product) => (
             <div 
               key={product.id} 
-              className="flex-none w-[85%] xs:w-[70%] sm:w-[45%] md:w-[30%] lg:w-[23%] snap-start"
+              className="w-[calc(50%-8px)] xs:w-[calc(50%-12px)] sm:w-[calc(33.333%-16px)] md:w-[calc(25%-18px)] lg:w-[calc(25%-24px)] min-w-[140px] max-w-[200px]"
             >
-              <ProductCard product={product} />
+              <ProductCard
+                id={product.id}
+                image={product.img}
+                name={product.nameEn}
+                nameUr={product.nameUr}
+                description={product.description}
+                features={[product.description]} // Convert description to features array
+                price={product.price}
+                oldPrice={product.oldPrice}
+                sale={product.sale}
+                rating={product.rating}
+                reviews={product.reviews}
+                currency="PKR"
+                product={product} // Pass full product for modal
+              />
             </div>
           ))}
         </div>

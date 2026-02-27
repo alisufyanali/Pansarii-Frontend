@@ -8,7 +8,7 @@ import ProductDetailsModal from "../../Desktop/components/ProductDetailsModal";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishList";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 interface ProductCardProps {
   id: string | number;
@@ -26,7 +26,6 @@ interface ProductCardProps {
   currency?: string;
   onAddToCart?: (id: string) => void;
   className?: string;
-  // Full product object for modal
   product?: any;
 }
 
@@ -46,63 +45,50 @@ export default function ProductCard({
   currency = "PKR",
   onAddToCart,
   className = "",
-  product
+  product,
 }: ProductCardProps) {
-  const [isHovered, setIsHovered] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
-  
+
   const isInWishlistCheck = isInWishlist(id);
-
-  // Determine which image to display
   const displayImage = isHovered && hoverImg ? hoverImg : image;
-
-  // Format price with comma separators
-  const formattedPrice = price.toLocaleString('en-PK');
-  const formattedOldPrice = oldPrice ? oldPrice.toLocaleString('en-PK') : null;
-
-  // Calculate discount percentage
-  const discountPercentage = oldPrice 
+  const formattedPrice = price.toLocaleString("en-PK");
+  const formattedOldPrice = oldPrice ? oldPrice.toLocaleString("en-PK") : null;
+  const discountPercentage = oldPrice
     ? Math.round(((oldPrice - price) / oldPrice) * 100)
     : null;
 
-  // Handle card click - navigate to product details
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const productSlug = name.toLowerCase().replace(/\s+/g, '-');
+    const productSlug = name.toLowerCase().replace(/\s+/g, "-");
     router.push(`/product/${productSlug}`);
   };
 
-  // Handle quick add - open modal
   const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsModalOpen(true);
   };
 
-  // Handle add to cart from button
   const handleAddClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (onAddToCart) {
       onAddToCart(id.toString());
     } else {
-      // Default cart behavior
       addToCart({
-        id: id,
+        id,
         img: image,
         nameEn: name,
         nameUr: nameUr || name,
-        price: price,
-       
-        size: 'Standard',
+        price,
+        size: "Standard",
       });
-
       toast.success(
         <div className="flex items-center gap-2">
           <span className="text-xl">✓</span>
@@ -116,47 +102,31 @@ export default function ProductCard({
           autoClose: 2000,
           hideProgressBar: true,
           closeButton: false,
-          style: {
-            background: '#15803d',
-            color: 'white',
-          }
+          style: { background: "#15803d", color: "white" },
         }
       );
     }
   };
 
-  // Handle wishlist toggle
   const handleWishlistToggle = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    toggleWishlist({
-      id: id,
-      nameEn: name,
-      nameUr: nameUr || name,
-      price: price,
-      img: image,
+    toggleWishlist({ id, nameEn: name, nameUr: nameUr || name, price, img: image });
+    toast.success(isInWishlistCheck ? "Removed from wishlist" : "Added to wishlist", {
+      position: "top-center",
+      autoClose: 1500,
+      hideProgressBar: true,
+      closeButton: false,
     });
-
-    toast.success(
-      isInWishlistCheck ? 'Removed from wishlist' : 'Added to wishlist',
-      {
-        position: "top-center",
-        autoClose: 1500,
-        hideProgressBar: true,
-        closeButton: false,
-      }
-    );
   };
 
-  // Prepare product object for modal
   const fullProduct = product || {
     id,
     img: image,
     hoverImg,
     nameEn: name,
     nameUr: nameUr || name,
-    description: description || features.join(' • '),
+    description: description || features.join(" • "),
     rating,
     reviews,
     price,
@@ -167,31 +137,33 @@ export default function ProductCard({
 
   return (
     <>
-      <div 
-        className={`bg-white rounded-xl overflow-hidden flex flex-col cursor-pointer transition-all duration-300 h-full relative group ${className}`}
-        style={{ 
-          border: isHovered ? '2px solid #197B33' : '2px solid #E5E7EB',
-          boxShadow: isHovered ? '0 4px 12px rgba(25, 123, 51, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.1)'
+      <div
+        className={`relative bg-white rounded-2xl overflow-hidden flex flex-col cursor-pointer h-full transition-all duration-300 ${className}`}
+        style={{
+          border: isHovered ? "1.5px solid #16a34a" : "1.5px solid #f0f0f0",
+          boxShadow: isHovered
+            ? "0 8px 24px rgba(22, 163, 74, 0.13)"
+            : "0 2px 8px rgba(0,0,0,0.07)",
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}
       >
-        {/* Product Image */}
-        <div className="relative aspect-square bg-gray-50 border-b border-gray-100">
+        {/* Image Container */}
+        <div className="relative w-full aspect-square bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
           <div className="relative w-full h-full p-3">
             <Image
               src={displayImage}
               alt={name}
               fill
-              className="object-contain p-1 transition-transform duration-300 group-hover:scale-105"
+              className="object-contain p-1 transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 50vw, 33vw"
             />
           </div>
 
-          {/* Sale Badge */}
+          {/* Discount / Sale Badge */}
           {(sale || discountPercentage) && (
-            <div className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white rounded-full text-[10px] font-bold shadow-md">
+            <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
               {sale || `-${discountPercentage}%`}
             </div>
           )}
@@ -199,112 +171,107 @@ export default function ProductCard({
           {/* Wishlist Button */}
           <button
             onClick={handleWishlistToggle}
-            className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-md ${
-              isInWishlistCheck 
-                ? 'bg-red-500 text-white' 
-                : 'bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500'
+            className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-all duration-200 ${
+              isInWishlistCheck
+                ? "bg-red-500 text-white scale-110"
+                : "bg-white/90 text-gray-400 hover:text-red-400 hover:bg-red-50"
             }`}
             aria-label={isInWishlistCheck ? "Remove from wishlist" : "Add to wishlist"}
           >
             <FaHeart className="w-3 h-3" />
           </button>
 
-          {/* Quick View on Hover - Desktop only */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center">
+          {/* Quick View overlay — desktop only */}
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center">
             <button
               onClick={handleQuickAdd}
-              className="px-4 py-2 bg-white text-gray-900 rounded-lg font-medium text-sm hover:bg-gray-100 transition-colors shadow-lg"
+              className="px-4 py-1.5 bg-white text-gray-900 rounded-lg font-medium text-sm hover:bg-gray-100 shadow-lg"
             >
               Quick View
             </button>
           </div>
         </div>
-        
-        {/* Product Details */}
-        <div className="p-3 flex flex-col flex-1">
-          {/* Product Name */}
-          <h3 className="font-semibold text-sm text-gray-900 mb-1 line-clamp-2 min-h-[40px] text-center">
+
+        {/* Details */}
+        <div className="flex flex-col flex-1 px-3 pt-2 pb-3 gap-1">
+          {/* Name */}
+          <h3 className="text-[13px] font-semibold text-gray-900 line-clamp-2 text-center leading-snug min-h-[36px]">
             {name}
           </h3>
 
-          {/* Urdu Name */}
+          {/* Urdu name */}
           {nameUr && (
-            <p className="text-xs text-gray-600 mb-1 text-center line-clamp-1">
-              {nameUr}
-            </p>
+            <p className="text-[11px] text-gray-500 text-center line-clamp-1">{nameUr}</p>
           )}
 
-          {/* Description/Category */}
+          {/* Description */}
           {description && (
-            <p className="text-xs text-green-700 mb-2 text-center line-clamp-1">
+            <p className="text-[11px] text-green-700 text-center line-clamp-1 font-medium">
               {description}
             </p>
           )}
-          
-          {/* Features - Show first 3 */}
-          <div className="flex flex-wrap gap-1 mb-2 justify-center">
-            {features.slice(0, 3).map((feature, index) => (
-              <span key={index} className="text-[10px] text-gray-500">
-                {feature}
-                {index < features.slice(0, 3).length - 1 && " • "}
-              </span>
-            ))}
-          </div>
 
-          {/* Rating & Reviews */}
-          {(rating || reviews) && (
-            <div className="flex items-center justify-center gap-2 mb-2 text-xs">
-              {rating && (
-                <div className="flex items-center gap-0.5 text-yellow-400">
+          {/* Features */}
+          {features.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-x-1">
+              {features.slice(0, 3).map((f, i) => (
+                <span key={i} className="text-[10px] text-gray-400">
+                  {f}
+                  {i < Math.min(features.length, 3) - 1 && " •"}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Rating & reviews */}
+          {(rating > 0 || reviews > 0) && (
+            <div className="flex items-center justify-center gap-2 text-[11px]">
+              {rating > 0 && (
+                <span className="flex items-center gap-0.5 text-yellow-400 font-medium">
                   <FaStar className="w-3 h-3" />
-                  <span className="text-gray-700 font-medium">{rating}</span>
-                </div>
+                  <span className="text-gray-700">{rating}</span>
+                </span>
               )}
-              {rating && reviews && <span className="text-gray-300">|</span>}
+              {rating > 0 && reviews > 0 && (
+                <span className="text-gray-200">|</span>
+              )}
               {reviews > 0 && (
-                <div className="flex items-center gap-0.5 text-green-600">
+                <span className="flex items-center gap-0.5 text-green-600">
                   <FaCheckCircle className="w-3 h-3" />
-                  <span className="text-gray-600">{reviews}</span>
-                </div>
+                  <span className="text-gray-500">{reviews}</span>
+                </span>
               )}
             </div>
           )}
 
           {/* Spacer */}
-          <div className="flex-1"></div>
-          
-          {/* Price & Add Button */}
-          <div className="mt-auto">
-            {/* Price */}
-            <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
-              <span className="text-base font-bold text-gray-900">
-                {currency} {formattedPrice}
-              </span>
-              {oldPrice && (
-                <span className="text-xs text-gray-500 line-through">
-                  {currency} {formattedOldPrice}
-                </span>
-              )}
-            </div>
+          <div className="flex-1" />
 
-            {/* Quick Add Button */}
-            <button
-              onClick={handleQuickAdd}
-              className="w-full py-2 rounded-full bg-green-600 text-white flex items-center justify-center font-medium hover:bg-green-700 transition-all active:scale-95 shadow-sm text-sm"
-            >
-              <span className="flex-1 text-center">Quick Add</span>
-              <FaShoppingCart className="mr-3 w-3.5 h-3.5" />
-            </button>
+          {/* Price row */}
+          <div className="flex items-baseline justify-center gap-2 mt-1">
+            <span className="text-[15px] font-bold text-gray-900">
+              {currency} {formattedPrice}
+            </span>
+            {oldPrice && (
+              <span className="text-[11px] text-gray-400 line-through">
+                {currency} {formattedOldPrice}
+              </span>
+            )}
           </div>
+
+          {/* Add to Cart Button */}
+          <button
+            onClick={handleQuickAdd}
+            className="mt-1 w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-green-600 hover:bg-green-700 active:scale-95 transition-all text-white text-[13px] font-semibold shadow-sm"
+          >
+            <FaShoppingCart className="w-3.5 h-3.5" />
+            Quick Add
+          </button>
         </div>
       </div>
 
-      {/* Product Details Modal */}
       {isModalOpen && (
-        <ProductDetailsModal 
-          product={fullProduct} 
-          onClose={() => setIsModalOpen(false)} 
-        />
+        <ProductDetailsModal product={fullProduct} onClose={() => setIsModalOpen(false)} />
       )}
     </>
   );
