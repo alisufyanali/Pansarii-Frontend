@@ -12,7 +12,7 @@ export default function VideoProductsSection() {
       </h2>
       
       {/* Responsive grid - all cards visible at once */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+      <div className="grid grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
         {displayedProducts.map((videoProduct) => (
           <div 
             key={videoProduct.id} 
