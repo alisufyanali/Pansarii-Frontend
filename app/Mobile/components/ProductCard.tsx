@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, MouseEvent } from "react";
-import { FaStar, FaCheckCircle, FaShoppingCart, FaHeart } from "react-icons/fa";
+import { FaStar, FaCheckCircle, FaHeart } from "react-icons/fa";
 import ProductDetailsModal from "../../Desktop/components/ProductDetailsModal";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../context/CartContext";
@@ -166,123 +166,115 @@ export default function ProductCard({
   return (
     <>
       <div 
-        className={`w-full rounded-[18px] overflow-hidden flex flex-col bg-white cursor-pointer transition-all duration-300 h-full ${className}`}
-        style={{ 
-          border: isHovered ? '2px solid #197B33' : '2px solid #E5E7EB'
-        }}
+        className={`bg-white rounded-xl shadow border border-gray-100 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg ${className}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}
-        role="article"
-        aria-label={`View details for ${name}`}
       >
-        
-        {/* Image Section with bottom border */}
-        <div className="relative w-full h-[200px] border-b border-gray-200 bg-gray-50">
+        {/* Product Image */}
+        <div className="relative aspect-square bg-gray-50 p-3 flex items-center justify-center">
           <div className="relative w-full h-full">
             <Image
               src={displayImage}
               alt={name}
               fill
-              className="object-cover transition-all duration-300"
+              className="object-contain p-2 transition-transform duration-300 hover:scale-105"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
 
           {/* Sale Badge */}
           {(sale || discountPercentage) && (
-            <div className="absolute top-3 right-3 w-[68px] h-[23px] rounded-[60px] bg-[#F83A3A] text-white text-xs flex items-center justify-center font-medium z-10">
-              {sale || `-${discountPercentage}% OFF`}
+            <div className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs rounded shadow-md">
+              {sale || `-${discountPercentage}%`}
             </div>
           )}
 
           {/* Wishlist Button */}
           <button
             onClick={handleWishlistToggle}
-            className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md z-10 ${
+            className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center transition-all ${
               isInWishlistCheck 
                 ? 'bg-red-500 text-white' 
-                : 'bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500'
+                : 'bg-white/80 text-gray-600 hover:bg-red-50 hover:text-red-500'
             }`}
             aria-label={isInWishlistCheck ? "Remove from wishlist" : "Add to wishlist"}
           >
-            <FaHeart className="w-4 h-4" />
+            <FaHeart className="w-3.5 h-3.5" />
           </button>
         </div>
+        
+        {/* Product Details */}
+        <div className="p-3">
+          {/* Product Name */}
+          <h3 className="font-semibold text-sm text-gray-900 mb-1 line-clamp-2 h-10">
+            {name}
+          </h3>
 
-        {/* Product Details - All content centered */}
-        <div className="flex-1 bg-white p-4 flex flex-col justify-between items-center">
+          {/* Urdu Name (optional) */}
+          {nameUr && (
+            <p className="text-xs text-gray-600 mb-1 line-clamp-1">
+              {nameUr}
+            </p>
+          )}
+
+          {/* Description (optional) */}
+          {description && (
+            <p className="text-xs text-green-700 mb-2 line-clamp-1">
+              {description}
+            </p>
+          )}
           
-          {/* Text Content - Centered */}
-          <div className="w-full text-center">
-            <h3 className="text-[17px] font-medium truncate text-center">{name}</h3>
-            {nameUr && (
-              <p className="text-[17px] font-medium truncate text-center text-gray-600">{nameUr}</p>
-            )}
-            {description && (
-              <p className="text-sm text-[#197B33] truncate text-center">{description}</p>
-            )}
-
-            {/* Features */}
-            {features && features.length > 0 && (
-              <div className="flex flex-wrap gap-1 justify-center mt-1">
-                {features.slice(0, 2).map((feature, index) => (
-                  <span key={index} className="text-xs text-gray-500">
-                    {feature}
-                    {index < Math.min(features.length, 2) - 1 && " • "}
-                  </span>
-                ))}
-                {features.length > 2 && (
-                  <span className="text-xs text-gray-400">
-                    +{features.length - 2} more
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Rating & Reviews - Centered */}
-            {(rating || reviews > 0) && (
-              <div className="flex items-center justify-center gap-4 mt-2 text-sm font-medium flex-wrap">
-                {rating && (
-                  <div className="flex items-center gap-1 text-yellow-400">
-                    <FaStar aria-hidden="true" /> 
-                    <span>{rating}</span>
-                  </div>
-                )}
-                {rating && reviews > 0 && (
-                  <span className="text-gray-300" aria-hidden="true">|</span>
-                )}
-                {reviews > 0 && (
-                  <div className="flex items-center gap-1 text-green-600">
-                    <FaCheckCircle aria-hidden="true" /> 
-                    <span>{reviews} Reviews</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Price - Centered */}
-            <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-              <p className="text-[17px] font-bold text-gray-900">
-                {currency} {formattedPrice}
-              </p>
-              {formattedOldPrice && (
-                <p className="text-sm text-gray-500 line-through">
-                  {currency} {formattedOldPrice}
-                </p>
-              )}
-            </div>
+          {/* Features */}
+          <div className="flex flex-wrap gap-1 mb-2">
+            {features.slice(0, 3).map((feature, index) => (
+              <span key={index} className="text-xs text-gray-500">
+                {feature}
+                {index < features.slice(0, 3).length - 1 && " • "}
+              </span>
+            ))}
           </div>
 
-          {/* Quick Add Button - Centered with icon on right */}
-          <div className="w-full flex justify-center">
-            <button 
+          {/* Rating & Reviews */}
+          {(rating || reviews > 0) && (
+            <div className="flex items-center gap-2 mb-2 text-xs">
+              {rating && (
+                <div className="flex items-center gap-0.5 text-yellow-400">
+                  <FaStar className="w-3 h-3" />
+                  <span className="text-gray-700">{rating}</span>
+                </div>
+              )}
+              {rating && reviews > 0 && <span className="text-gray-300">|</span>}
+              {reviews > 0 && (
+                <div className="flex items-center gap-0.5 text-green-600">
+                  <FaCheckCircle className="w-3 h-3" />
+                  <span className="text-gray-600">{reviews}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Price and Add to Cart Button */}
+          <div className="flex justify-between items-center">
+            <div>
+              {/* Price with old price if available */}
+              <span className="text-lg font-bold text-gray-900">
+                {currency} {formattedPrice}
+              </span>
+              {oldPrice && (
+                <span className="text-xs text-gray-500 line-through ml-2">
+                  {currency} {formattedOldPrice}
+                </span>
+              )}
+            </div>
+            
+            {/* Add to Cart Button - Quick Add opens modal */}
+            <button
               onClick={handleQuickAdd}
-              className="w-full h-[50px] mt-3 rounded-[57px] border border-gray-300 bg-[#50B46B] text-white flex items-center justify-center font-medium hover:bg-[#146128] transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-base"
+              className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center hover:bg-green-600 transition-colors active:scale-95"
               aria-label={`Quick add ${name} to cart`}
             >
-              <span className="flex-1 text-center">Quick Add</span>
-              <FaShoppingCart className="mr-6 w-5 h-5" aria-hidden="true" />
+              <span className="text-white text-lg font-bold">+</span>
             </button>
           </div>
         </div>
