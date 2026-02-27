@@ -1,120 +1,54 @@
-// app/Desktop/components/ProductDetails.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { 
-  FaStar, 
-  FaCheckCircle, 
-  FaShoppingCart, 
-  FaSearchPlus, 
+import {
+  FaStar,
+  FaCheckCircle,
+  FaShoppingCart,
+  FaSearchPlus,
   FaSearchMinus,
   FaWhatsapp,
   FaHeart,
   FaRegHeart,
   FaBolt,
-  FaTimes
+  FaTimes,
 } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishList";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 // Skeletal Loading Component for ProductDetails
 function ProductDetailsSkeleton() {
   return (
-    <div className="h-screen max-h-screen overflow-hidden bg-white animate-pulse">
-      <div className="h-full max-h-full flex flex-col lg:flex-row gap-2 lg:gap-3 p-2">
-        
+    <div className="animate-pulse p-4 md:p-6">
+      <div className="flex flex-col md:flex-row gap-6">
         {/* Left Column - Images Skeleton */}
-        <div className="lg:w-2/5 h-full flex flex-col relative">
-          <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-200 mb-3"></div>
-          
-          {/* Thumbnail Images Skeleton */}
-          <div className="flex gap-2">
+        <div className="w-full md:w-1/2">
+          <div className="bg-gray-200 rounded-xl w-full aspect-square" />
+          <div className="flex gap-2 mt-3">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="w-12 h-12 bg-gray-200 rounded"></div>
+              <div key={i} className="bg-gray-200 rounded w-12 h-12 flex-shrink-0" />
             ))}
           </div>
         </div>
 
-        {/* Right Column - Product Info Skeleton */}
-        <div className="lg:w-3/5 h-full overflow-y-auto">
-          <div className="space-y-4">
-            {/* Product Names Skeleton */}
-            <div className="space-y-2">
-              <div className="h-8 bg-gray-200 rounded w-48"></div>
-              <div className="h-4 bg-gray-200 rounded w-32"></div>
+        {/* Right Column Skeleton */}
+        <div className="w-full md:w-1/2 space-y-3">
+          <div className="h-6 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 rounded w-1/2" />
+          <div className="h-4 bg-gray-200 rounded w-1/3" />
+          <div className="h-8 bg-gray-200 rounded w-1/2" />
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-4 bg-gray-200 rounded w-full" />
+          ))}
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-gray-200 rounded-full" />
+              <div className="h-4 bg-gray-200 rounded w-2/3" />
             </div>
-            
-            {/* Rating & Reviews Skeleton */}
-            <div className="flex items-center gap-4">
-              <div className="h-4 bg-gray-200 rounded w-24"></div>
-              <div className="h-4 bg-gray-200 rounded w-20"></div>
-            </div>
-
-            {/* Price Skeleton */}
-            <div className="flex items-center gap-2">
-              <div className="h-8 bg-gray-200 rounded w-24"></div>
-              <div className="h-6 bg-gray-200 rounded w-16"></div>
-            </div>
-
-            {/* Ayurvedic Info Section Skeleton */}
-            <div className="flex flex-wrap gap-2">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="w-16 h-8 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-
-            {/* Features Skeleton */}
-            <div className="grid grid-cols-2 gap-2">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="rounded p-2 bg-gray-100">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gray-200 rounded"></div>
-                    <div className="h-4 bg-gray-200 rounded w-32"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Pansari Points Skeleton */}
-            <div className="p-2 bg-gray-100 rounded">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-40"></div>
-              </div>
-            </div>
-
-            {/* Size Selection Skeleton */}
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-16"></div>
-              <div className="flex gap-2">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="w-12 h-8 bg-gray-200 rounded-full"></div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quantity Skeleton */}
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-20"></div>
-              <div className="flex items-center gap-4">
-                <div className="w-32 h-8 bg-gray-200 rounded"></div>
-                <div className="space-y-1">
-                  <div className="h-3 bg-gray-200 rounded w-16"></div>
-                  <div className="h-4 bg-gray-200 rounded w-20"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons Skeleton */}
-            <div className="space-y-2 pt-4">
-              <div className="flex gap-2">
-                <div className="h-10 bg-gray-200 rounded-lg flex-1"></div>
-                <div className="h-10 bg-gray-200 rounded-lg flex-1"></div>
-              </div>
-              <div className="h-10 bg-gray-200 rounded-lg"></div>
-            </div>
-          </div>
+          ))}
+          <div className="h-10 bg-gray-200 rounded w-full" />
+          <div className="h-10 bg-gray-200 rounded w-full" />
         </div>
       </div>
     </div>
@@ -152,44 +86,40 @@ interface ProductDetailsProps {
 export default function ProductDetails({ product }: ProductDetailsProps) {
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
-  
+
   const [selectedImage, setSelectedImage] = useState(product.img);
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || '15ml');
+  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "15ml");
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Zoom state
-  const [isZoomed, setIsZoomed] = useState<boolean>(false);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPosition, setZoomPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
-  
+
   const additionalImages = product.additionalImages || [];
   const productId = product.productId;
 
-  // Check if user is logged in
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const user = localStorage.getItem('user');
+    const token = localStorage.getItem("authToken");
+    const user = localStorage.getItem("user");
     setIsLoggedIn(!!(token && user));
-    
-    // Simulate loading
+
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 800);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
-  // Check if product is in wishlist
   useEffect(() => {
     if (productId && isLoggedIn) {
       setIsWishlisted(isInWishlist(productId));
     }
   }, [productId, isInWishlist, isLoggedIn]);
 
-  // Show skeleton loading
   if (isLoading) {
     return <ProductDetailsSkeleton />;
   }
@@ -199,47 +129,26 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     setIsZoomed(false);
   };
 
-  const increaseQuantity = () => {
-    setQuantity(prev => prev + 1);
-  };
-
+  const increaseQuantity = () => setQuantity((prev) => prev + 1);
   const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(prev => prev - 1);
-    }
+    if (quantity > 1) setQuantity((prev) => prev - 1);
   };
 
-  // Image hover for zoom effect
-  const handleImageHover = (e: React.MouseEvent<HTMLDivElement>): void => {
+  const handleImageHover = (e: React.MouseEvent): void => {
     if (!isZoomed || !imageRef.current) return;
-
     const { left, top, width, height } = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
     const y = ((e.clientY - top) / height) * 100;
-
     setZoomPosition({ x, y });
   };
 
-  const toggleZoom = () => {
-    setIsZoomed(!isZoomed);
-  };
+  const toggleZoom = () => setIsZoomed(!isZoomed);
 
-  // Add to cart functionality
   const handleAddToCart = () => {
     if (!productId) {
-      toast.error('Failed to add item to cart!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-      });
+      toast.error("Failed to add item to cart!", { position: "top-right", autoClose: 3000, theme: "light" });
       return;
     }
-
-    // Add the product to cart with selected size and quantity
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: productId,
@@ -248,37 +157,21 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         nameUr: product.nameUr,
         price: product.price,
         size: selectedSize,
-        category: product.category || "Herbal Oils"
+        category: product.category || "Herbal Oils",
       });
     }
-
-    // Show success toast
     toast.success(`Added ${quantity} × ${product.nameEn} (${selectedSize}) to cart!`, {
       position: "top-right",
       autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
       theme: "light",
     });
   };
 
-  // Buy now functionality
   const handleBuyNow = () => {
     if (!productId) {
-      toast.error('Failed to add item to cart!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-      });
+      toast.error("Failed to add item to cart!", { position: "top-right", autoClose: 3000, theme: "light" });
       return;
     }
-
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: productId,
@@ -287,74 +180,44 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         nameUr: product.nameUr,
         price: product.price,
         size: selectedSize,
-        category: product.category || "Herbal Oils"
+        category: product.category || "Herbal Oils",
       });
     }
-
-    // Show success toast with redirect message
     toast.success(
       <div>
-        <div className="font-semibold">Added to cart! Redirecting...</div>
-        <div className="text-sm opacity-90">{product.nameEn} (×{quantity})</div>
-      </div>, 
-      {
-        position: "top-right",
-        autoClose: 1500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-        theme: "light",
-      }
+        <p className="font-semibold">Added to cart! Redirecting...</p>
+        <p className="text-sm">
+          {product.nameEn} (×{quantity})
+        </p>
+      </div>,
+      { position: "top-right", autoClose: 1500, theme: "light" }
     );
-
     setTimeout(() => {
-      window.location.href = '/cart';
+      window.location.href = "/cart";
     }, 1600);
   };
 
-  // Toggle wishlist with login check
   const handleWishlistToggle = () => {
     if (!productId) return;
-    
-    // Check if user is logged in
+
     if (!isLoggedIn) {
       toast.warning(
         <div>
-          <div className="font-semibold">Please login to add to wishlist</div>
-          <div className="text-sm opacity-90 mt-1">Save your favorite products by logging in</div>
+          <p className="font-semibold">Please login to add to wishlist</p>
+          <p className="text-sm">Save your favorite products by logging in</p>
         </div>,
-        {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "light",
-        }
+        { position: "top-right", autoClose: 3000, theme: "light" }
       );
-      
-      // Redirect to login after a delay
       setTimeout(() => {
-        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+        window.location.href = "/login?redirect=" + encodeURIComponent(window.location.pathname);
       }, 1500);
       return;
     }
-    
+
     if (isWishlisted) {
       removeFromWishlist(productId);
       setIsWishlisted(false);
-      
-      toast.info('Removed from wishlist', {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-      });
+      toast.info("Removed from wishlist", { position: "top-right", autoClose: 2000, theme: "light" });
     } else {
       addToWishlist({
         id: productId,
@@ -366,84 +229,66 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         rating: product.rating,
         reviews: product.reviews,
         inStock: true,
-        category: product.category || "Herbal Oils"
+        category: product.category || "Herbal Oils",
       });
       setIsWishlisted(true);
-      
-      toast.success('Added to wishlist!', {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-      });
+      toast.success("Added to wishlist!", { position: "top-right", autoClose: 2000, theme: "light" });
     }
   };
 
-  // WhatsApp order function
   const handleWhatsAppOrder = () => {
     const totalPrice = product.price * quantity;
-    
-    const message = `🌟 *New Order Request* 🌟\n\n` +
+    const message =
+      `🌟 *New Order Request* 🌟\n\n` +
       `*Product:* ${product.nameEn}\n` +
       `*Price:* PKR ${product.price.toLocaleString()}\n` +
       `*Size:* ${selectedSize}\n` +
       `*Quantity:* ${quantity}\n` +
       `*Total:* PKR ${totalPrice.toLocaleString()}\n\n` +
-      `*Customer Details:*\n` +
-      `Please provide your:\n` +
-      `1. Full Name\n` +
-      `2. Delivery Address\n` +
-      `3. Phone Number\n\n` +
+      `*Customer Details:*\nPlease provide your:\n1. Full Name\n2. Delivery Address\n3. Phone Number\n\n` +
       `_This order was placed via Pansari Inn website_`;
-    
     const whatsappUrl = `https://wa.me/923001234567?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden bg-white">
-      <div className="h-full max-h-full flex flex-col lg:flex-row gap-2 lg:gap-3 p-2">
-        
-        {/* Left Column - Images */}
-        <div className="lg:w-2/5 h-full flex flex-col relative">
-          {/* Wishlist Button with login check */}
+    <>
+      {/* ─── Main Content ─── */}
+      {/* pb-28 on mobile so sticky bar doesn't overlap content */}
+      <div className="relative flex flex-col md:flex-row gap-4 md:gap-6 p-3 md:p-6 pb-28 md:pb-6">
+
+        {/* ── Left Column – Images ── */}
+        <div className="relative w-full md:w-1/2 flex flex-col gap-2">
+
+          {/* Wishlist + Zoom buttons */}
           <button
             onClick={handleWishlistToggle}
-            className={`absolute top-2 left-2 z-20 p-2 rounded-full shadow-md transition-all duration-300 hover:scale-110 ${
-              isWishlisted 
-                ? 'bg-red-50 border border-red-200 hover:bg-red-100' 
-                : 'bg-white/90 border border-gray-200 hover:bg-white'
-            }`}
-            title={!isLoggedIn ? "Login to add to wishlist" : isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            className="absolute top-2 left-2 z-10 bg-white rounded-full p-1.5 shadow-md"
           >
             {isWishlisted ? (
-              <FaHeart className="w-4 h-4 text-red-500" />
+              <FaHeart className="text-red-500 text-base" />
             ) : (
-              <FaRegHeart className="w-4 h-4 text-gray-600" />
+              <FaRegHeart className="text-gray-400 text-base" />
             )}
           </button>
 
-          {/* Zoom Toggle Button */}
           <button
             onClick={toggleZoom}
-            className="absolute top-2 right-2 z-20 bg-white/90 hover:bg-white p-1.5 rounded-full shadow-md transition-all z-20 border border-gray-200"
-            title={isZoomed ? "Disable zoom" : "Enable zoom"}
+            className="absolute top-2 right-2 z-10 bg-white rounded-full p-1.5 shadow-md"
           >
             {isZoomed ? (
-              <FaSearchMinus className="w-3 h-3 text-gray-700" />
+              <FaSearchMinus className="text-[#197B33] text-base" />
             ) : (
-              <FaSearchPlus className="w-3 h-3 text-gray-700" />
+              <FaSearchPlus className="text-gray-500 text-base" />
             )}
           </button>
 
-          {/* Main Image Container with Zoom */}
-          <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50 mb-3">
-            <div 
+          {/* Main Image */}
+          <div className="relative w-full overflow-hidden rounded-xl border border-gray-100 bg-gray-50 aspect-square">
+            <div
               ref={imageRef}
-              className="relative w-full h-full cursor-zoom-in"
+              className={`w-full h-full cursor-${isZoomed ? "zoom-out" : "zoom-in"}`}
+              onClick={toggleZoom}
               onMouseEnter={() => setIsZoomed(true)}
               onMouseLeave={() => setIsZoomed(false)}
               onMouseMove={handleImageHover}
@@ -451,199 +296,170 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <img
                 src={selectedImage}
                 alt={product.nameEn}
-                className="w-full h-full object-contain p-4 transition-transform duration-200"
-                style={{
-                  transform: isZoomed ? 'scale(1.5)' : 'scale(1)',
-                  transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                }}
+                className="w-full h-full object-contain transition-transform duration-200"
+                style={
+                  isZoomed
+                    ? {
+                        transform: "scale(2)",
+                        transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                      }
+                    : {}
+                }
               />
-              
-              {/* Zoom Indicator */}
-              <div className="absolute bottom-3 right-3 bg-black/60 text-white p-2 rounded-full">
-                <FaSearchPlus className="w-4 h-4" />
+
+              {/* Zoom badge */}
+              <div className="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none">
+                {isZoomed ? "Zoom Active (2x)" : "Hover to zoom"}
               </div>
-              
-              {/* Zoom Preview */}
-              {isZoomed && (
-                <div className="absolute top-3 left-3 bg-green-600 text-white text-xs px-2 py-1 rounded">
-                  Zoom Active (2x)
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Thumbnail Images */}
+          {/* Thumbnails */}
           {additionalImages.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {[product.img, ...additionalImages].map((image, index) => (
                 <button
                   key={index}
                   onClick={() => handleImageClick(image)}
-                  className={`flex-shrink-0 w-12 h-12 rounded overflow-hidden border ${
-                    selectedImage === image 
-                      ? 'border-[#197B33] border-2' 
-                      : 'border-gray-200 hover:border-gray-400'
+                  className={`flex-shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-all ${
+                    selectedImage === image
+                      ? "border-[#197B33]"
+                      : "border-gray-200 hover:border-gray-400"
                   }`}
                 >
-                  <img
-                    src={image}
-                    alt={`${product.nameEn} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={image} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Right Column - Product Info */}
-        <div className="lg:w-3/5 h-full overflow-y-auto">
-          <div className="space-y-2">
-            {/* Product Names */}
-            <div className="mt-2">
-              <h1 className="text-lg font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
-              <p className="text-xs text-gray-700 mt-0.5">{product.nameUr}</p>
+        {/* ── Right Column – Product Info ── */}
+        <div className="w-full md:w-1/2">
+          <div className="space-y-3">
+
+            {/* Names */}
+            <div>
+              <h1 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">
+                {product.nameEn}
+              </h1>
+              <p className="text-sm text-gray-500 font-urdu mt-0.5">{product.nameUr}</p>
             </div>
-            
-            {/* Benefits */}
+
+            {/* Benefits tags */}
             {product.benefits && product.benefits.length > 0 && (
-              <div className="text-gray-600 text-[10px] flex flex-wrap items-center gap-x-1 mt-2">
+              <div className="flex flex-wrap gap-1">
                 {product.benefits.map((benefit, index) => (
-                  <span key={index}>
+                  <span
+                    key={index}
+                    className="text-[10px] bg-green-50 text-[#197B33] border border-green-200 px-2 py-0.5 rounded-full"
+                  >
                     {benefit}
-                    {index < product.benefits!.length - 1 && (
-                      <span className="mx-1 text-gray-300">|</span>
-                    )}
                   </span>
                 ))}
               </div>
             )}
 
-            {/* Rating & Reviews */}
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex items-center gap-1">
-                <FaStar className="w-3 h-3 text-yellow-400" />
-                <span className="font-semibold text-gray-900 text-xs">{product.rating}</span>
+            {/* Rating */}
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-1 bg-[#197B33] text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                <FaStar className="text-yellow-300 text-xs" />
+                {product.rating}
               </div>
-              
-              <div className="flex items-center gap-1">
-                <FaCheckCircle className="w-3 h-3 text-green-500" />
-                <span className="text-gray-700 text-[10px]">{product.reviews} Reviews</span>
-              </div>
+              <span className="text-gray-500">{product.reviews} Reviews</span>
             </div>
 
             {/* Price */}
-            <div className="mt-2">
-              <div className="flex items-center gap-1 flex-wrap">
-                <span className="text-lg font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
-                {product.oldPrice && (
-                  <span className="text-sm text-gray-500 line-through">PKR {product.oldPrice.toLocaleString()}</span>
-                )}
-                {product.sale && (
-                  <span className="px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-medium">
-                    {product.sale}
-                  </span>
-                )}
-              </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xl md:text-2xl font-bold text-[#197B33]">
+                PKR {product.price.toLocaleString()}
+              </span>
+              {product.oldPrice && (
+                <span className="text-sm text-gray-400 line-through">
+                  PKR {product.oldPrice.toLocaleString()}
+                </span>
+              )}
+              {product.sale && (
+                <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">
+                  {product.sale}
+                </span>
+              )}
             </div>
 
-            {/* Ayurvedic Info Section */}
+            {/* Info Lines */}
             {product.infoLines && product.infoLines.length > 0 && (
-              <div className="mt-2">
-                <div className="flex flex-wrap gap-1">
-                  {product.infoLines.map((line, index) => (
-                    <div 
-                      key={index} 
-                      className="text-gray-800 text-[10px] border border-[#5F5F5F] rounded px-2 py-1 bg-white"
-                    >
-                      {line}
-                    </div>
-                  ))}
-                </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 space-y-1">
+                {product.infoLines.map((line, index) => (
+                  <p key={index} className="text-xs text-amber-800">{line}</p>
+                ))}
               </div>
             )}
 
             {/* Features */}
             {product.features && product.features.length > 0 && (
-              <div className="mt-2">
-                <div className="grid grid-cols-2 gap-1">
-                  {product.features.map((feature, index) => {
-                    const hasCheck = feature.hasCheck !== undefined 
-                      ? feature.hasCheck 
-                      : feature.text.startsWith('✓');
-                    
-                    const featureText = feature.hasCheck !== undefined
+              <div className="space-y-1.5">
+                {product.features.map((feature, index) => {
+                  const hasCheck =
+                    feature.hasCheck !== undefined
+                      ? feature.hasCheck
+                      : feature.text.startsWith("✓");
+                  const featureText =
+                    feature.hasCheck !== undefined
                       ? feature.text
-                      : feature.text.replace('✓', '').trim();
-                    
-                    return (
-                      <div 
-                        key={index} 
-                        className="rounded p-1 flex items-center gap-1 bg-white hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          {feature.icon ? (
-                            <img 
-                              src={feature.icon} 
-                              alt={featureText}
-                              className="w-3 h-3 object-contain"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                target.parentElement!.innerHTML = hasCheck ? 
-                                  '<div class="text-green-600 font-bold text-xs">✓</div>' : 
-                                  '<div class="text-gray-400 font-bold text-xs">○</div>';
-                              }}
-                            />
-                          ) : (
-                            hasCheck ? (
-                              <div className="text-green-600 font-bold text-xs">✓</div>
-                            ) : (
-                              <div className="text-gray-400 font-bold text-xs">○</div>
-                            )
-                          )}
-                        </div>
-                        
-                        <span className="text-gray-700 text-[10px] font-medium flex-1 leading-tight">
-                          {featureText}
-                        </span>
+                      : feature.text.replace("✓", "").trim();
+
+                  return (
+                    <div key={index} className="flex items-start gap-2">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {feature.icon ? (
+                          <img
+                            src={feature.icon}
+                            alt=""
+                            className="w-4 h-4"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                            }}
+                          />
+                        ) : hasCheck ? (
+                          <FaCheckCircle className="text-[#197B33] text-sm" />
+                        ) : (
+                          <span className="text-gray-400 text-sm">○</span>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                      <p className="text-xs text-gray-700 leading-relaxed">{featureText}</p>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
             {/* Pansari Points */}
             {product.points && (
-              <div className="mt-2">
-                <div className="bg-[#6464641A] rounded p-1.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FaBolt className="w-3 h-3 text-amber-600" />
-                    <span className="text-gray-800 text-[10px]">
-                      Earn {product.points * quantity} Pansari Inn Points
-                    </span>
-                  </div>
-                  <div className="w-3 h-3 rounded-full bg-[#646464] flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-[8px] font-bold">!</span>
-                  </div>
+              <div className="bg-[#197B33]/10 border border-[#197B33]/20 rounded-lg px-3 py-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FaBolt className="text-[#197B33] text-sm" />
+                  <span className="text-xs font-semibold text-[#197B33]">
+                    Earn {product.points * quantity} Pansari Inn Points
+                  </span>
                 </div>
+                <span className="text-xs text-[#197B33] font-bold">!</span>
               </div>
             )}
 
             {/* Size Selection */}
             {product.sizes && product.sizes.length > 0 && (
-              <div className="mt-2">
-                <h3 className="font-semibold text-gray-900 text-xs mb-1">Size</h3>
-                <div className="flex flex-wrap gap-1">
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-1.5">Size</p>
+                <div className="flex flex-wrap gap-1.5">
                   {product.sizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-2 py-0.5 rounded-full border text-[10px] font-medium transition-all ${
+                      className={`px-3 py-1 rounded-full border text-[11px] font-medium transition-all ${
                         selectedSize === size
-                          ? 'bg-[#197B33] text-white border-[#197B33]'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-[#197B33]'
+                          ? "bg-[#197B33] text-white border-[#197B33]"
+                          : "bg-white text-gray-700 border-gray-300 hover:border-[#197B33]"
                       }`}
                     >
                       {size}
@@ -653,70 +469,141 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               </div>
             )}
 
-            {/* Quantity */}
-            <div className="mt-2">
-              <h3 className="font-semibold text-gray-900 text-xs mb-1">Quantity</h3>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border border-gray-300 rounded">
+            {/* Quantity + Subtotal */}
+            <div>
+              <p className="text-xs font-semibold text-gray-700 mb-1.5">Quantity</p>
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Stepper */}
+                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                   <button
                     onClick={decreaseQuantity}
-                    className="px-2 py-0.5 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
-                    disabled={quantity === 1}
+                    className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-light"
                   >
-                    -
+                    −
                   </button>
-                  <span className="px-2 py-0.5 border-x border-gray-300 min-w-[40px] text-center font-semibold text-xs">
-                    {quantity}
-                  </span>
+                  <span className="w-10 text-center text-sm font-semibold">{quantity}</span>
                   <button
                     onClick={increaseQuantity}
-                    className="px-2 py-0.5 text-gray-600 hover:bg-gray-100 text-xs"
+                    className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-light"
                   >
                     +
                   </button>
                 </div>
-                
-                {/* Subtotal Display */}
-                <div className="text-xs ml-auto">
-                  <div className="text-gray-700">Subtotal:</div>
-                  <div className="font-bold text-green-700">PKR {(product.price * quantity).toLocaleString()}</div>
+
+                {/* Subtotal */}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-500">Subtotal:</span>
+                  <span className="text-sm font-bold text-[#197B33]">
+                    PKR {(product.price * quantity).toLocaleString()}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="mt-2 pt-2">
-              {/* Primary Buttons Row */}
-              <div className="flex flex-col sm:flex-row gap-1.5 mb-2">
-                <button 
+            {/* ── Desktop-only Action Buttons ── */}
+            <div className="hidden md:flex flex-col gap-2 pt-1">
+              <div className="flex gap-2">
+                <button
                   onClick={handleAddToCart}
-                  className="flex-1 flex items-center justify-center gap-1 me-bgcolor-g text-white font-semibold py-2 px-3 rounded-full hover:opacity-90 transition-opacity text-xs"
+                  className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-[#197B33] text-[#197B33] font-semibold text-sm py-2.5 rounded-lg hover:bg-[#197B33] hover:text-white transition-all"
                 >
-                  <FaShoppingCart className="w-3 h-3" />
-                  Add to cart
+                  <FaShoppingCart className="text-sm" />
+                  Add to Cart
                 </button>
-                <button 
+                <button
                   onClick={handleBuyNow}
-                  className="flex-1 flex items-center justify-center me-bgcolor-y text-gray-900 font-semibold py-2 px-3 rounded-full hover:opacity-90 transition-opacity text-xs"
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#197B33] text-white font-semibold text-sm py-2.5 rounded-lg hover:bg-[#145d27] transition-all"
                 >
-                  Buy it now
+                  <FaBolt className="text-sm" />
+                  Buy it Now
                 </button>
               </div>
-              
-              {/* WhatsApp Button Row */}
-              <div className="w-full">
-                <button 
-                  onClick={handleWhatsAppOrder}
-                  className="w-full flex items-center justify-center gap-2 bg-white border-2 border-[#25D366] text-[#25D366] font-semibold py-2 px-3 rounded-full hover:bg-[#25D366] hover:text-white transition-all duration-300 text-xs group"
-                >
-                  <FaWhatsapp className="w-4 h-4" />
-                  <span>Order on WhatsApp</span>
-                </button>
-              </div>
+
+              <button
+                onClick={handleWhatsAppOrder}
+                className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white font-semibold text-sm py-2.5 rounded-lg hover:bg-[#1ebe5c] transition-all"
+              >
+                <FaWhatsapp className="text-base" />
+                Order on WhatsApp
+              </button>
             </div>
+
           </div>
         </div>
       </div>
-    </div>
+
+      {/* ─────────────────────────────────────────────
+          Mobile Sticky Bottom Bar
+          Shown only on mobile (md:hidden)
+      ───────────────────────────────────────────── */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+        {/* Subtotal strip */}
+        <div className="flex items-center justify-between px-4 pt-2 pb-1">
+          <div className="flex items-center gap-2">
+            {/* Compact quantity stepper */}
+            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+              <button
+                onClick={decreaseQuantity}
+                className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-base font-light"
+              >
+                −
+              </button>
+              <span className="w-8 text-center text-xs font-bold">{quantity}</span>
+              <button
+                onClick={increaseQuantity}
+                className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-base font-light"
+              >
+                +
+              </button>
+            </div>
+            <span className="text-xs text-gray-500">
+              Total:{" "}
+              <span className="font-bold text-[#197B33]">
+                PKR {(product.price * quantity).toLocaleString()}
+              </span>
+            </span>
+          </div>
+
+          {/* Wishlist */}
+          <button
+            onClick={handleWishlistToggle}
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200"
+          >
+            {isWishlisted ? (
+              <FaHeart className="text-red-500 text-sm" />
+            ) : (
+              <FaRegHeart className="text-gray-400 text-sm" />
+            )}
+          </button>
+        </div>
+
+        {/* Action buttons row */}
+        <div className="flex gap-2 px-3 pb-3">
+          <button
+            onClick={handleAddToCart}
+            className="flex-1 flex items-center justify-center gap-1.5 bg-white border-2 border-[#197B33] text-[#197B33] font-semibold text-xs py-2.5 rounded-lg active:scale-95 transition-transform"
+          >
+            <FaShoppingCart className="text-xs" />
+            Add to Cart
+          </button>
+
+          <button
+            onClick={handleBuyNow}
+            className="flex-1 flex items-center justify-center gap-1.5 bg-[#197B33] text-white font-semibold text-xs py-2.5 rounded-lg active:scale-95 transition-transform"
+          >
+            <FaBolt className="text-xs" />
+            Buy Now
+          </button>
+
+          <button
+            onClick={handleWhatsAppOrder}
+            className="flex-1 flex items-center justify-center gap-1.5 bg-[#25D366] text-white font-semibold text-xs py-2.5 rounded-lg active:scale-95 transition-transform"
+          >
+            <FaWhatsapp className="text-sm" />
+            WhatsApp
+          </button>
+        </div>
+      </div>
+    </>
   );
 }
