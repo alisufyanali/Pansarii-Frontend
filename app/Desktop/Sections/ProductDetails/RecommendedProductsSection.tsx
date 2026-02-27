@@ -1,6 +1,6 @@
 "use client";
 
-import ProductCard from "../../components/ProductCard";
+import ProductCard from "../../../Desktop/components/ProductCard";
 import { recommendedProducts } from "../../data/recommendedProducts";
 
 export default function RecommendedProductsSection() {
