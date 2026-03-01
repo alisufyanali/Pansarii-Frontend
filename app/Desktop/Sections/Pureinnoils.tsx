@@ -22,35 +22,46 @@ export default function PansariInn() {
     { img: productImg, hoverImg: productHoverImg, nameEn: 'Sesame Oil', nameUr: 'تل کا تیل', description: 'Cold Pressed Sesame Oil', rating: 4.5, reviews: 180, price: 699, oldPrice: 899, sale: '20% OFF' },
   ];
 
-  const [cardsToShow, setCardsToShow] = useState(4);
+  // Track container width for dynamic card sizing
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [cardsToShow, setCardsToShow] = useState(5);
 
-  const updateCardsToShow = () => {
+  const updateLayout = () => {
     const width = window.innerWidth;
-    if (width >= 2560) setCardsToShow(10);      // 4K
-    else if (width >= 1920) setCardsToShow(8);  // Large desktop
-    else if (width >= 1280) setCardsToShow(5);  // Laptop: 5 cards
-    else if (width >= 768) setCardsToShow(2);   // Tablet
-    else setCardsToShow(1);                     // Mobile
+    if (width >= 2560) setCardsToShow(10);
+    else if (width >= 1920) setCardsToShow(8);
+    else if (width >= 1280) setCardsToShow(5);
+    else if (width >= 768) setCardsToShow(2);
+    else setCardsToShow(1);
+
+    // Container = viewport - 8% margins, capped at 1920px
+    const containerW = Math.min(width, 1920) - width * 0.08;
+    setContainerWidth(containerW);
   };
 
   useEffect(() => {
-    updateCardsToShow();
-    window.addEventListener("resize", updateCardsToShow);
-    return () => window.removeEventListener("resize", updateCardsToShow);
+    updateLayout();
+    window.addEventListener("resize", updateLayout);
+    return () => window.removeEventListener("resize", updateLayout);
   }, []);
+
+  // Equal split card width: (container - gaps) / cardsToShow
+  // gaps = (cardsToShow - 1) * 24px (gap-6)
+  const cardWidth = containerWidth > 0
+    ? `${(containerWidth - (cardsToShow - 1) * 24) / cardsToShow}px`
+    : `calc((min(100vw, 1920px) - 8vw - ${(cardsToShow - 1) * 24}px) / ${cardsToShow})`;
 
   const renderSection = (title: string, bannerImg: string, products: any[]) => (
     <div className="mt-12">
-      {/* Banner - Full width */}
+      {/* Banner - Full width, 85vh */}
       <section
         className="w-full relative"
         style={{
           height: '85vh',
-           backgroundImage: `url(${bannerImg})`,
+          backgroundImage: `url(${bannerImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
-       
       />
 
       {/* Content */}
@@ -69,13 +80,15 @@ export default function PansariInn() {
             </div>
           </div>
 
-          {/* Product Cards Grid */}
-          <div
-            className="grid gap-6 2xl:gap-8 pb-20"
-            style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
-          >
+          {/* Product Cards — equal width grid matching NewArrivals style */}
+          <div className="flex gap-6 flex-wrap pb-20">
             {products.slice(0, cardsToShow).map((product, index) => (
-              <ProductCard key={index} product={product} />
+              <div
+                key={index}
+                style={{ width: cardWidth, minWidth: '200px' }}
+              >
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
         </div>
