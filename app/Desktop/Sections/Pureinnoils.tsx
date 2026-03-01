@@ -26,9 +26,9 @@ export default function PansariInn() {
 
   const updateCardsToShow = () => {
     const width = window.innerWidth;
-    if (width >= 2560) setCardsToShow(8);       // 4K
-    else if (width >= 1920) setCardsToShow(6);  // Large desktop
-    else if (width >= 1280) setCardsToShow(4);  // Laptop minimum 4
+    if (width >= 2560) setCardsToShow(10);      // 4K
+    else if (width >= 1920) setCardsToShow(8);  // Large desktop
+    else if (width >= 1280) setCardsToShow(5);  // Laptop: 5 cards
     else if (width >= 768) setCardsToShow(2);   // Tablet
     else setCardsToShow(1);                     // Mobile
   };
@@ -43,12 +43,14 @@ export default function PansariInn() {
     <div className="mt-12">
       {/* Banner - Full width */}
       <section
-        className="w-full h-[680px] 2xl:h-[800px] relative"
+        className="w-full relative"
         style={{
-          backgroundImage: `url(${bannerImg})`,
+          height: '85vh',
+           backgroundImage: `url(${bannerImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
+       
       />
 
       {/* Content */}
