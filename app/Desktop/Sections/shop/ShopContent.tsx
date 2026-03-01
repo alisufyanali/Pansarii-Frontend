@@ -9,20 +9,18 @@ import Pagination from "./Pagination";
 import { useCart } from "../../../context/CartContext";
 import { toast } from 'react-toastify';
 
-// Lazy load ProductGrid to avoid circular dependencies
 const ProductGrid = lazy(() => import('./ProductGrid'));
 
-// Loading component for ProductGrid
-function ProductGridLoading() {
+function ProductGridLoading({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
-      {[...Array(12)].map((_, i) => (
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8">
+      {[...Array(count)].map((_, i) => (
         <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
-          <div className="aspect-square bg-gray-200 rounded-t-lg"></div>
+          <div className="aspect-square bg-gray-200 rounded-t-lg" />
           <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
-            <div className="h-3 sm:h-4 bg-gray-200 rounded"></div>
-            <div className="h-2 sm:h-3 bg-gray-200 rounded w-2/3"></div>
-            <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-3 sm:h-4 bg-gray-200 rounded" />
+            <div className="h-2 sm:h-3 bg-gray-200 rounded w-2/3" />
+            <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/2" />
           </div>
         </div>
       ))}
@@ -30,39 +28,29 @@ function ProductGridLoading() {
   );
 }
 
-// Skeletal loading for the entire ShopContent
 function ShopContentLoading() {
   return (
-    <div className="mx-auto max-w-screen-2xl px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-      {/* Search and Filter Bar Skeleton */}
+    <div className="mx-auto max-w-screen-2xl px-3 sm:px-4 lg:px-6 2xl:px-10 py-4 sm:py-6">
       <div className="mb-4 sm:mb-6">
-        <div className="h-12 sm:h-14 bg-gray-200 rounded-lg animate-pulse"></div>
+        <div className="h-12 sm:h-14 bg-gray-200 rounded-lg animate-pulse" />
       </div>
-
-      {/* Category Tabs Skeleton */}
       <div className="mb-4 sm:mb-6">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-2">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-8 sm:h-10 bg-gray-200 rounded-full animate-pulse w-16 sm:w-24 flex-shrink-0"></div>
+            <div key={i} className="h-8 sm:h-10 bg-gray-200 rounded-full animate-pulse w-16 sm:w-24 flex-shrink-0" />
           ))}
         </div>
       </div>
-
-      {/* Results Info Skeleton */}
       <div className="my-4 sm:my-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="space-y-1 sm:space-y-2">
-          <div className="h-5 sm:h-6 bg-gray-200 rounded animate-pulse w-48 sm:w-64"></div>
-          <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse w-36 sm:w-48"></div>
+          <div className="h-5 sm:h-6 bg-gray-200 rounded animate-pulse w-48 sm:w-64" />
+          <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse w-36 sm:w-48" />
         </div>
-        <div className="h-4 sm:h-5 bg-gray-200 rounded animate-pulse w-32 sm:w-40"></div>
+        <div className="h-4 sm:h-5 bg-gray-200 rounded animate-pulse w-32 sm:w-40" />
       </div>
-
-      {/* Product Grid Skeleton */}
-      <ProductGridLoading />
-
-      {/* Pagination Skeleton */}
+      <ProductGridLoading count={25} />
       <div className="mt-6 sm:mt-8 flex justify-center">
-        <div className="h-8 sm:h-10 bg-gray-200 rounded-lg animate-pulse w-48 sm:w-64"></div>
+        <div className="h-8 sm:h-10 bg-gray-200 rounded-lg animate-pulse w-48 sm:w-64" />
       </div>
     </div>
   );
@@ -99,32 +87,20 @@ function ShopContent({
   onPageChange,
   initialSearchQuery = '',
   allProducts = [],
-  isLoading = false
+  isLoading = false,
 }: ShopContentProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isMobile, setIsMobile] = useState(false);
   const { addToCart } = useCart();
 
-  // Check if mobile on mount and resize
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Show loading skeleton if isLoading is true
-  if (isLoading) {
-    return <ShopContentLoading />;
-  }
-
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode);
-  };
+  if (isLoading) return <ShopContentLoading />;
 
   const clearAllFilters = () => {
     setFilters({
@@ -140,105 +116,64 @@ function ShopContent({
     });
   };
 
-  // Handle category change from tabs
   const handleCategoryChange = (category: string) => {
-    setFilters({
-      ...filters,
-      categories: category ? [category] : [],
-    });
+    setFilters({ ...filters, categories: category ? [category] : [] });
   };
 
-  // Handle add to cart
   const handleAddToCart = (product: Product) => {
     if (!product || !product.id) {
-      toast.error('Failed to add item to cart!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-      });
+      toast.error('Failed to add item to cart!', { position: "top-right", autoClose: 3000 });
       return;
     }
-
-    console.log('🛒 Adding to cart from shop:', {
-      id: product.id,
-      nameEn: product.nameEn,
-      price: product.price
-    });
-
-    // Add the product to cart
     addToCart({
       id: product.id,
       img: product.img,
       nameEn: product.nameEn,
       nameUr: product.nameUr,
       price: product.price,
-      size: product.sizes?.[0] || 'Default'
+      size: product.sizes?.[0] || 'Default',
     });
-
-    // Show success toast
     toast.success(
-      <div>
-        <div className="font-semibold">Added to Cart!</div>
-        <div className="text-sm opacity-90">{product.nameEn}</div>
-      </div>,
-      {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-      }
+      <div><div className="font-semibold">Added to Cart!</div><div className="text-sm opacity-90">{product.nameEn}</div></div>,
+      { position: "top-right", autoClose: 3000 }
     );
   };
 
-  // Generate category data with product counts for tabs
-  const categoryData = (categories || []).map(category => {
-    const count = (allProducts || []).filter(product => 
-      product?.category?.toLowerCase() === category.toLowerCase()
-    ).length;
-    
-    return {
-      name: category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-      count: count,
-      slug: category
-    };
-  });
+  const categoryData = (categories || []).map(category => ({
+    name: category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    count: (allProducts || []).filter(p => p?.category?.toLowerCase() === category.toLowerCase()).length,
+    slug: category,
+  }));
 
-  // Get sort label
   const getSortLabel = () => {
     switch (filters.sortBy) {
-      case 'price-low':
-        return 'Price: Low to High';
-      case 'price-high':
-        return 'Price: High to Low';
-      case 'rating':
-        return 'Highest Rated';
-      case 'name':
-        return 'Name (A-Z)';
-      default:
-        return 'Default';
+      case 'price-low': return 'Price: Low to High';
+      case 'price-high': return 'Price: High to Low';
+      case 'rating': return 'Highest Rated';
+      case 'name': return 'Name (A-Z)';
+      default: return 'Default';
     }
   };
 
   return (
-    <div className="mx-auto max-w-screen-2xl px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+    /*
+      Container:
+      - lg and below (laptop): max-w-screen-2xl, px-3..px-6   ← unchanged
+      - 2xl (1536px+):         max-w-screen-2xl, px-10        ← wider padding for large screens
+      - The grid inside always stays 5 cols on xl+ so cards get bigger naturally
+    */
+    <div className="mx-auto max-w-screen-2xl px-3 sm:px-4 lg:px-6 2xl:px-10 py-4 sm:py-6">
       {/* Search and Filter Bar */}
       <SearchFilterBar
         onFilterChange={setFilters}
         productCount={filteredProducts.length}
         categories={categories}
-        onViewModeChange={handleViewModeChange}
+        onViewModeChange={setViewMode}
         initialSearchQuery={initialSearchQuery}
       />
 
       {/* Category Tabs */}
-      <CategoryTabs 
+      <CategoryTabs
         categories={categoryData}
         activeCategory={filters.categories[0] || 'all'}
         onCategoryChange={handleCategoryChange}
@@ -247,8 +182,8 @@ function ShopContent({
       {/* Results Info */}
       <div className="my-4 sm:my-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
-            Showing {indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, filteredProducts.length)} of {filteredProducts.length} products
+          <h2 className="text-sm sm:text-base lg:text-lg 2xl:text-xl font-semibold text-gray-900">
+            Showing {indexOfFirstProduct + 1}–{Math.min(indexOfLastProduct, filteredProducts.length)} of {filteredProducts.length} products
           </h2>
           {filters.searchQuery && (
             <p className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
@@ -259,40 +194,36 @@ function ShopContent({
             <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
               {filters.categories.length > 0 && `${filters.categories.length} category selected • `}
               {filters.showOnSale && `On sale only • `}
-              {(filters.minPrice > 0 || filters.maxPrice < 5000) && `Price: PKR ${filters.minPrice} - PKR ${filters.maxPrice}`}
+              {(filters.minPrice > 0 || filters.maxPrice < 5000) && `Price: PKR ${filters.minPrice} – PKR ${filters.maxPrice}`}
             </p>
           )}
         </div>
         {filters.sortBy !== 'default' && (
           <div className="text-xs sm:text-sm text-gray-600">
-            Sorted by: <span className="font-medium">
-              {getSortLabel()}
-            </span>
+            Sorted by: <span className="font-medium">{getSortLabel()}</span>
           </div>
         )}
       </div>
 
-      {/* Product Grid with Suspense */}
-      <Suspense fallback={<ProductGridLoading />}>
-        <ProductGrid 
-          products={currentProducts} 
-          viewMode={viewMode} 
+      {/* Product Grid */}
+      <Suspense fallback={<ProductGridLoading count={productsPerPage} />}>
+        <ProductGrid
+          products={currentProducts}
+          viewMode={viewMode}
           onAddToCart={handleAddToCart}
-          isMobile={isMobile} // Pass mobile state to ProductGrid
+          isMobile={isMobile}
         />
       </Suspense>
 
-      {/* No Results State */}
+      {/* No Results */}
       {filteredProducts.length === 0 && (
         <div className="text-center py-8 sm:py-12 lg:py-16">
           <div className="text-gray-400 text-4xl sm:text-5xl mb-3 sm:mb-4">🔍</div>
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3">
-            No products found
-          </h3>
+          <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3">No products found</h3>
           <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 max-w-md mx-auto px-4">
-            {filters.searchQuery 
+            {filters.searchQuery
               ? `No results found for "${filters.searchQuery}". Try adjusting your search term.`
-              : 'Try adjusting your filters to find what you\'re looking for.'}
+              : "Try adjusting your filters to find what you're looking for."}
           </p>
           <button
             onClick={clearAllFilters}
@@ -305,11 +236,7 @@ function ShopContent({
 
       {/* Pagination */}
       {filteredProducts.length > 0 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
       )}
     </div>
   );
