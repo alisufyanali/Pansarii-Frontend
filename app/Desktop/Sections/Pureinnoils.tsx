@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import ProductCard from '@components/ProductCard';
 
 export default function PansariInn() {
-  // Use public folder paths
   const banner2Img = '/images/Banner2.png';
   const banner3Img = '/images/Banner3.png';
-  const productImg = '/images/product.png'; // Separate image for products
-  const productHoverImg = '/images/product-hover.png'; // ADD: Hover image path
+  const productImg = '/images/product.png';
+  const productHoverImg = '/images/product-hover.png';
 
   const productsRow = [
     { img: productImg, hoverImg: productHoverImg, nameEn: 'Cold Pressed Almond Oil', nameUr: 'بادام کا تیل', description: 'Pure & Organic Almond Oil', rating: 4.8, reviews: 320, price: 899, oldPrice: 1099, sale: '15% OFF' },
@@ -27,10 +26,11 @@ export default function PansariInn() {
 
   const updateCardsToShow = () => {
     const width = window.innerWidth;
-    if (width >= 2560) setCardsToShow(8);
-    else if (width >= 1280) setCardsToShow(4);
-    else if (width >= 768) setCardsToShow(2);
-    else setCardsToShow(1);
+    if (width >= 2560) setCardsToShow(8);       // 4K
+    else if (width >= 1920) setCardsToShow(6);  // Large desktop
+    else if (width >= 1280) setCardsToShow(4);  // Laptop minimum 4
+    else if (width >= 768) setCardsToShow(2);   // Tablet
+    else setCardsToShow(1);                     // Mobile
   };
 
   useEffect(() => {
@@ -43,34 +43,39 @@ export default function PansariInn() {
     <div className="mt-12">
       {/* Banner - Full width */}
       <section
-        className="w-full h-[680px] relative"
+        className="w-full h-[680px] 2xl:h-[800px] relative"
         style={{
           backgroundImage: `url(${bannerImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
-      ></section>
+      />
 
-      {/* Content with 4% margins */}
+      {/* Content */}
       <div className="mx-[4%]">
-        {/* Heading and View All */}
-        <div className="mt-16 mb-6 flex items-center justify-between">
-          <h2 className="text-3xl font-semibold font-poppins me-color-g">{title}</h2>
-          <div className="flex items-center gap-4 cursor-pointer group">
-            <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors">
-              View All
-            </span>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
-              <span className="text-lg font-bold">{'>'}</span>
+        <div className="max-w-[1920px] mx-auto">
+          {/* Heading */}
+          <div className="mt-16 mb-6 flex items-center justify-between">
+            <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">{title}</h2>
+            <div className="flex items-center gap-4 cursor-pointer group">
+              <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
+                View All
+              </span>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
+                <span className="text-lg font-bold">{'>'}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Product Cards */}
-        <div className="grid gap-6 pb-20" style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}>
-          {products.slice(0, cardsToShow).map((product, index) => (
-            <ProductCard key={index} product={product} />
-          ))}
+          {/* Product Cards Grid */}
+          <div
+            className="grid gap-6 2xl:gap-8 pb-20"
+            style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
+          >
+            {products.slice(0, cardsToShow).map((product, index) => (
+              <ProductCard key={index} product={product} />
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -78,10 +83,7 @@ export default function PansariInn() {
 
   return (
     <>
-      {/* First section with Banner2 */}
       {renderSection('Pansari Inn Oils', banner2Img, productsRow.slice(0, 6))}
-      
-      {/* Second section with Banner3 */}
       {renderSection('Pansari Inn Oils', banner3Img, productsRow.slice(6))}
     </>
   );

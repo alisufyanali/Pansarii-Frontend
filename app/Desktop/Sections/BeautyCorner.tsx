@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
-
 import ProductCard from "@components/ProductCard";
 
 export default function BeautyCorner() {
   const beautyCornerImg = '/images/beautycorner.png';
   const productimg = '/images/product.png';
-  const productHoverImg = '/images/product-hover.png'; // ADD: Hover image path
+  const productHoverImg = '/images/product-hover.png';
 
   const products = [
     { img: productimg, hoverImg: productHoverImg, nameEn: 'Organic Lavender Essential Oil', nameUr: 'روغن باکان بيد', description: 'Natural DHT Blocker | With Saw...', rating: 4.7, reviews: 406, price: 1149, oldPrice: 1499, sale: '20% OFF' },
@@ -25,15 +24,11 @@ export default function BeautyCorner() {
 
   const updateCardsToShow = () => {
     const width = window.innerWidth;
-    if (width >= 2560) {
-      setCardsToShow(8); // 4K screens
-    } else if (width >= 1280) {
-      setCardsToShow(4); // Laptop
-    } else if (width >= 768) {
-      setCardsToShow(2); // Tablet
-    } else {
-      setCardsToShow(1); // Mobile
-    }
+    if (width >= 2560) setCardsToShow(8);       // 4K: 8 cards
+    else if (width >= 1920) setCardsToShow(6);  // Large desktop: 6 cards
+    else if (width >= 1280) setCardsToShow(4);  // Laptop: 4 cards (minimum)
+    else if (width >= 768) setCardsToShow(2);   // Tablet: 2 cards
+    else setCardsToShow(1);                     // Mobile: 1 card
   };
 
   useEffect(() => {
@@ -44,41 +39,44 @@ export default function BeautyCorner() {
 
   return (
     <div className="mt-12">
-      {/* Banner Section - No side margins, full width */}
+      {/* Banner - Full width */}
       <section
-        className="w-full h-[680px] relative"
+        className="w-full h-[680px] 2xl:h-[800px] relative"
         style={{
           backgroundImage: `url(${beautyCornerImg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
-      >
-      
-      </section>
+      />
 
-      {/* Content Section with 4% margins */}
+      {/* Content Section */}
       <div className="mx-[4%]">
-        {/* Heading and Read More */}
-        <div className="mt-16 mb-6 flex items-center justify-between">
-          <h2 className="text-3xl font-semibold font-poppins me-color-g">
-            Beauty <span className="text-[#197B33]">Corner</span>
-          </h2>
-          
-          <div className="flex items-center gap-4 cursor-pointer group">
-            <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors">
-              View All
-            </span>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
-              <span className="text-lg font-bold">{'>'}</span>
+        <div className="max-w-[1920px] mx-auto">
+          {/* Heading and View All */}
+          <div className="mt-16 mb-6 flex items-center justify-between">
+            <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">
+              Beauty <span className="text-[#197B33]">Corner</span>
+            </h2>
+
+            <div className="flex items-center gap-4 cursor-pointer group">
+              <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
+                View All
+              </span>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
+                <span className="text-lg font-bold">{'>'}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Product Cards */}
-        <div className="grid gap-6 pb-20" style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}>
-          {products.slice(0, cardsToShow).map((product, index) => (
-            <ProductCard key={index} product={product} />
-          ))}
+          {/* Product Cards Grid */}
+          <div
+            className="grid gap-6 2xl:gap-8 pb-20"
+            style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
+          >
+            {products.slice(0, cardsToShow).map((product, index) => (
+              <ProductCard key={index} product={product} />
+            ))}
+          </div>
         </div>
       </div>
     </div>
