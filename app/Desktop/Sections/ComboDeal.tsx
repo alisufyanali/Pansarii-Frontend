@@ -59,14 +59,14 @@ export default function ComboDeal() {
 
   return (
     <div className="mt-12">
-      {/* Banner - Full width */}
+      {/* Banner - Full width with 85vh height */}
       <section
         className="w-full relative"
         style={{
           backgroundImage: `url(${banner4Img})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          height: '1104px',
+          height: '85vh',
         }}
       />
 
@@ -84,7 +84,7 @@ export default function ComboDeal() {
             </div>
           </div>
 
-          {/* Product Cards */}
+          {/* Product Cards - Horizontal Slider */}
           <div
             ref={sliderRef}
             className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-20"
