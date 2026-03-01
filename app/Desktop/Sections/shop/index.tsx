@@ -11,7 +11,7 @@ import { allProducts } from "@/app/Desktop/data/products";
 
 function ProductGridSkeleton({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8">
       {[...Array(count)].map((_, i) => (
         <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
           <div className="aspect-square bg-gray-200 rounded-t-lg" />
@@ -120,9 +120,10 @@ function ShopContent() {
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      if (w >= 2560) setProductsPerPage(25);       // 4K: 5 cols × 5 rows
-      else if (w >= 1920) setProductsPerPage(20);  // Large desktop: 5 cols × 4 rows
-      else setProductsPerPage(12);                 // Laptop and below: unchanged
+      if (w >= 2560) setProductsPerPage(25);      // 4K: 5 cols × 5 rows
+      else if (w >= 1280) setProductsPerPage(20); // Laptop+: 5 cols × 4 rows
+      else if (w >= 768) setProductsPerPage(12);  // Tablet: 3 cols × 4 rows
+      else setProductsPerPage(10);                // Mobile: 2 cols × 5 rows
     };
     update();
     window.addEventListener('resize', update);

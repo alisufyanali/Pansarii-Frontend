@@ -13,7 +13,7 @@ const ProductGrid = lazy(() => import('./ProductGrid'));
 
 function ProductGridLoading({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8 2xl:gap-8">
       {[...Array(count)].map((_, i) => (
         <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
           <div className="aspect-square bg-gray-200 rounded-t-lg" />

@@ -7,6 +7,7 @@ import { WishlistProvider } from "../context/WishList";
 import Header from "./components/header";
 import Navbar from "./components/navbar";
 import MenuModal from "./components/MenuModal";
+import Footer from "./components/footer"; // Fixed import (capital F)
 
 export default function MobileLayout({ children }: { children: ReactNode }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,7 +29,10 @@ export default function MobileLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
 
-        {/* Floating Bottom Navbar */}
+        {/* Footer Section */}
+        <Footer />
+
+        {/* Floating Bottom Navbar - Uncomment if needed */}
         {/* <Navbar 
           setIsMenuOpen={setIsMenuOpen}
           // setIsSearchOpen={setIsSearchOpen}
