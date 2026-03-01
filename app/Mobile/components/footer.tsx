@@ -1,5 +1,5 @@
-import footer from "../../Desktop/components/footer/Footer";
+import Mobilefooter from "../../Desktop/components/footer/Footer";
 
 export default function Footer() {
-  return <footer />;
+  return <Mobilefooter />;
 }
