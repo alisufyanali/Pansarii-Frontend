@@ -1,4 +1,3 @@
-// Desktop/components/footer/ContactInfo.tsx
 import Image from 'next/image';
 import { FaFacebook, FaTwitter, FaYoutube, FaInstagram } from 'react-icons/fa';
 
@@ -23,22 +22,22 @@ interface ContactInfoProps {
 const defaultSocialMedia: SocialMediaItem[] = [
   { 
     name: 'Facebook', 
-    icon: <FaFacebook className="w-5 h-5" />, // Increased icon size
+    icon: <FaFacebook className="w-4 h-4 sm:w-5 sm:h-5" />,
     url: 'https://facebook.com'
   },
   { 
-    name: 'X', 
-    icon: <FaTwitter className="w-5 h-5" />, // Increased icon size
+    name: 'Twitter', 
+    icon: <FaTwitter className="w-4 h-4 sm:w-5 sm:h-5" />,
     url: 'https://twitter.com'
   },
   { 
     name: 'YouTube', 
-    icon: <FaYoutube className="w-5 h-5" />, // Increased icon size
+    icon: <FaYoutube className="w-4 h-4 sm:w-5 sm:h-5" />,
     url: 'https://youtube.com'
   },
   { 
     name: 'Instagram', 
-    icon: <FaInstagram className="w-5 h-5" />, // Increased icon size
+    icon: <FaInstagram className="w-4 h-4 sm:w-5 sm:h-5" />,
     url: 'https://instagram.com'
   }
 ];
@@ -50,57 +49,61 @@ export default function ContactInfo({
   phone = '+923045779900',
   socialMedia = defaultSocialMedia,
   logoUrl = '/images/logo.png',
-  logoAlt = 'Logo',
-  logoWidth = 150, // INCREASED from 100 to 150
-  logoHeight = 48  // INCREASED from 32 to 48 (maintains aspect ratio)
+  logoAlt = 'Pansari Inn Logo',
+  logoWidth = 140, // Responsive - will be controlled by CSS
+  logoHeight = 45
 }: ContactInfoProps) {
   
   return (
-    <div className="md:w-1/6 flex flex-col items-start">
-      <Image 
-        src={logoUrl} 
-        alt={logoAlt} 
-        width={logoWidth} 
-        height={logoHeight} 
-        className="mb-3" // Increased margin bottom
-        priority // Optional: ensures logo loads quickly
-      />
-      <p style={{ ...textStyle, fontSize: '12px' }} className="mb-1">
-        <a 
-          href={`mailto:${email}`} 
-          style={{ color: buttonColor, fontSize: '12px' }}
-          className="hover:opacity-80 transition-opacity"
-        >
-          {email}
-        </a>
-      </p>
-      <p style={{ ...textStyle, fontSize: '12px' }} className="mb-3"> {/* Increased margin */}
-        <a 
-          href={`tel:${phone}`} 
-          style={{ color: buttonColor, fontSize: '12px' }}
-          className="hover:opacity-80 transition-opacity"
-        >
-          {phone}
-        </a>
-      </p>
-      <div className="flex gap-4 mt-3"> {/* Increased gap and margin */}
-        {socialMedia && socialMedia.length > 0 ? (
-          socialMedia.map((platform) => (
-            <a
-              key={platform.name}
-              href={platform.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: buttonColor }}
-              className="hover:opacity-80 transition-opacity hover:scale-110 transition-transform duration-200" // Added hover effect
-              aria-label={platform.name}
-            >
-              {platform.icon}
-            </a>
-          ))
-        ) : (
-          <p style={{ ...textStyle, fontSize: '11px' }}>No social media links available</p>
-        )}
+    <div className="flex flex-col items-start w-full">
+      {/* Responsive Logo */}
+      <div className="relative w-[120px] sm:w-[140px] md:w-[160px] lg:w-[180px] h-auto mb-3 sm:mb-4">
+        <Image 
+          src={logoUrl} 
+          alt={logoAlt} 
+          width={logoWidth}
+          height={logoHeight}
+          className="w-full h-auto object-contain"
+          priority
+        />
+      </div>
+      
+      {/* Contact Info */}
+      <div className="space-y-2 sm:space-y-3">
+        <p style={{ ...textStyle, fontSize: 'clamp(11px, 2vw, 14px)' }} className="hover:opacity-80 transition-opacity">
+          <a 
+            href={`mailto:${email}`} 
+            style={{ color: buttonColor }}
+            className="break-all"
+          >
+            {email}
+          </a>
+        </p>
+        <p style={{ ...textStyle, fontSize: 'clamp(11px, 2vw, 14px)' }} className="hover:opacity-80 transition-opacity">
+          <a 
+            href={`tel:${phone}`} 
+            style={{ color: buttonColor }}
+          >
+            {phone}
+          </a>
+        </p>
+      </div>
+      
+      {/* Social Media Icons */}
+      <div className="flex gap-3 sm:gap-4 mt-4 sm:mt-5">
+        {socialMedia.map((platform) => (
+          <a
+            key={platform.name}
+            href={platform.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: buttonColor }}
+            className="hover:opacity-80 transition-all duration-300 hover:scale-110"
+            aria-label={platform.name}
+          >
+            {platform.icon}
+          </a>
+        ))}
       </div>
     </div>
   );

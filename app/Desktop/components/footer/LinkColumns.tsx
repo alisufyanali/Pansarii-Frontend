@@ -6,48 +6,64 @@ interface LinkColumnsProps {
 const linkGroups = [
   {
     title: 'Quick Links',
-    links: ['About Us', 'Our Story', 'Ingredients', 'Blog', 'Careers']
+    links: [
+      { name: 'About Us', url: '/about' },
+      { name: 'Our Story', url: '/story' },
+      { name: 'Ingredients', url: '/ingredients' },
+      { name: 'Blog', url: '/blog' },
+      { name: 'Careers', url: '/careers' }
+    ]
   },
   {
     title: 'Shop',
-    links: ['Skincare', 'Haircare', 'Oils', 'Supplements', 'Best Sellers']
+    links: [
+      { name: 'Skincare', url: '/shop/skincare' },
+      { name: 'Haircare', url: '/shop/haircare' },
+      { name: 'Oils', url: '/shop/oils' },
+      { name: 'Supplements', url: '/shop/supplements' },
+      { name: 'Best Sellers', url: '/shop/best-sellers' }
+    ]
   },
   {
     title: 'Customer Service',
-    links: ['Track Order', 'Returns', 'Shipping Info', 'FAQs']
+    links: [
+      { name: 'Track Order', url: '/track-order' },
+      { name: 'Returns', url: '/returns' },
+      { name: 'Shipping Info', url: '/shipping' },
+      { name: 'FAQs', url: '/faqs' }
+    ]
   }
 ];
 
 export default function LinkColumns({ textStyle, buttonColor }: LinkColumnsProps) {
   return (
-    <div className="md:w-1/3 flex flex-col sm:flex-row justify-between gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-4 lg:gap-8 w-full">
       {linkGroups.map((group) => (
-        <div key={group.title}>
+        <div key={group.title} className="min-w-0">
           <h4 
-            className="text-sm font-bold mb-3 whitespace-nowrap" 
+            className="font-bold mb-3 sm:mb-4 text-sm sm:text-base lg:text-lg"
             style={{ 
               fontFamily: 'Poppins',
               letterSpacing: '0.4px',
-              textTransform: 'uppercase'
+              textTransform: 'uppercase',
+              color: buttonColor
             }}
           >
             {group.title}
           </h4>
-          <ul className="space-y-1">
+          <ul className="space-y-2 sm:space-y-3">
             {group.links.map((link) => (
-              <li key={link}>
+              <li key={link.name}>
                 <a 
-                  href="#" 
+                  href={link.url}
                   style={{ 
                     ...textStyle, 
-                    fontSize: '14px',
-                    letterSpacing: '0.1px',
-                    fontWeight: 400,
-                    lineHeight: '1.3'
+                    fontSize: 'clamp(12px, 2vw, 14px)',
+                    lineHeight: '1.5'
                   }} 
-                  className="hover:text-[#197B33] transition-colors duration-200"
+                  className="hover:text-[#197B33] transition-colors duration-200 inline-block"
                 >
-                  {link}
+                  {link.name}
                 </a>
               </li>
             ))}

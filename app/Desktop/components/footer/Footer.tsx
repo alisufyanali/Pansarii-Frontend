@@ -2,14 +2,15 @@ import ContactInfo from './ContactInfo';
 import LinkColumns from './LinkColumns';
 import Newsletter from './Newsletter';
 import FooterBanner from './FooterBanner';
+import FooterIcons from './FooterIcons';
 
 export default function Footer() {
   const textStyle = {
     fontFamily: 'Poppins',
     fontWeight: 400,
     fontStyle: 'normal',
-    fontSize: '16px',
-    lineHeight: '29px',
+    fontSize: 'clamp(12px, 1vw, 16px)', // Responsive font size
+    lineHeight: '1.5',
     letterSpacing: '0%',
   };
 
@@ -18,82 +19,44 @@ export default function Footer() {
 
   return (
     <>
-      {/* Footer Banner placed above the main footer */}
+      {/* Footer Banner */}
       <div className="w-full">
         <FooterBanner />
       </div>
       
-      {/* Icons Section */}
-      <div className="me-bgcolor-g w-full p-6">
-        <div className="flex justify-between items-center">
-          {/* Div 1 */}
-          <div className="flex flex-col items-center flex-1">
-            <div className="mb-2">
-              {/* Replace with your image */}
-              <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
-            </div>
-            <div className="text-center text-white px-2">
-              Tell your customers about your shipping offer.
-            </div>
-          </div>
-
-          {/* Div 2 */}
-          <div className="flex flex-col items-center flex-1">
-            <div className="mb-2">
-              {/* Replace with your image */}
-              <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
-            </div>
-            <div className="text-center text-white px-2">
-              Delivering on 11000+ Pincodes
-            </div>
-          </div>
-
-          {/* Div 3 */}
-          <div className="flex flex-col items-center flex-1">
-            <div className="mb-2">
-              {/* Replace with your image */}
-              <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
-            </div>
-            <div className="text-center text-white px-2">
-              Tell your customers about your shipping offer.
-            </div>
-          </div>
-
-          {/* Div 4 */}
-          <div className="flex flex-col items-center flex-1">
-            <div className="mb-2">
-              {/* Replace with your image */}
-              <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
-            </div>
-            <div className="text-center text-white px-2">
-              Tell your customers about your shipping offer.
-            </div>
-          </div>
-
-          {/* Div 5 */}
-          <div className="flex flex-col items-center flex-1">
-            <div className="mb-2">
-              {/* Replace with your image */}
-              <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
-            </div>
-            <div className="text-center text-white px-2">
-              Tell your customers about your shipping offer.
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Icons Section - Fully Responsive */}
+      <FooterIcons buttonColor={buttonColor} textStyle={textStyle} />
       
       {/* Main Footer */}
-      <footer className="bg-white text-gray-900 px-6 sm:px-12 pt-10">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-12 md:gap-8">
-          <ContactInfo textStyle={textStyle} buttonColor={buttonColor}/>
-          <LinkColumns textStyle={textStyle} buttonColor={buttonColor}/>
-          <Newsletter textStyle={textStyle} buttonColor={buttonColor}/>
-        </div>
-        <div className="mt-5 p-2 border-t border-gray-300 text-center">
-          <p style={textStyle}>
-            ©2019-{currentYear} PansariInn. All rights reserved.
-          </p>
+      <footer className="bg-white text-gray-900 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24 py-8 md:py-10 lg:py-12">
+        <div className="max-w-[1920px] mx-auto">
+          {/* Responsive Grid Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-6 xl:gap-8">
+            {/* Contact Info - Takes 2 columns on lg+ */}
+            <div className="lg:col-span-2">
+              <ContactInfo textStyle={textStyle} buttonColor={buttonColor} />
+            </div>
+            
+            {/* Link Columns - Takes 7 columns on lg+ */}
+            <div className="lg:col-span-7">
+              <LinkColumns textStyle={textStyle} buttonColor={buttonColor} />
+            </div>
+            
+            {/* Newsletter - Takes 3 columns on lg+ */}
+            <div className="lg:col-span-3">
+              <Newsletter textStyle={textStyle} buttonColor={buttonColor} />
+            </div>
+          </div>
+          
+          {/* Copyright Section */}
+          <div className="mt-8 md:mt-10 lg:mt-12 pt-4 md:pt-6 border-t border-gray-300">
+            <p 
+              style={textStyle} 
+              className="text-center text-xs sm:text-sm md:text-base"
+            >
+              ©2019-{currentYear} PansariInn. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
     </>

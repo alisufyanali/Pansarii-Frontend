@@ -1,7 +1,7 @@
-// Desktop/components/footer/Newsletter.tsx
 "use client";
 
 import { FormEvent, useState } from 'react';
+import { FaCheckCircle } from 'react-icons/fa';
 
 interface NewsletterProps {
   textStyle: React.CSSProperties;
@@ -11,117 +11,120 @@ interface NewsletterProps {
 export default function Newsletter({ textStyle, buttonColor }: NewsletterProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [subscribedEmail, setSubscribedEmail] = useState<string | null>(null);
+  const [subscribed, setSubscribed] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault(); // Prevent page refresh
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
     
-    if (!email.trim()) return;
+    if (!email.trim()) {
+      setError('Email is required');
+      return;
+    }
+    
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email');
+      return;
+    }
     
     setIsSubmitting(true);
     
-    // Create JSON data
-    const formData = {
-      email: email.trim(),
-      timestamp: new Date().toISOString(),
-      source: 'newsletter',
-      status: 'subscribed'
-    };
-    
-    // Output JSON to console
-    console.log('Newsletter Subscription Data:', JSON.stringify(formData, null, 2));
-    
-    // You can also:
-    // 1. Send to an API endpoint
-    // 2. Store in localStorage
-    // 3. Display a success message
-    
-    // Simulate API call delay
+    // Simulate API call
     setTimeout(() => {
-      setSubscribedEmail(email);
+      console.log('Newsletter Subscription:', { email, timestamp: new Date().toISOString() });
+      setSubscribed(true);
       setEmail('');
       setIsSubmitting(false);
       
-      // Show success alert
-      alert(`Subscription successful!\n\nJSON Data:\n${JSON.stringify(formData, null, 2)}`);
-    }, 500);
+      // Reset success message after 5 seconds
+      setTimeout(() => setSubscribed(false), 5000);
+    }, 1000);
   };
 
   return (
-    <div className="md:w-1/4 flex flex-col">
-      <h3 
-        className="text-sm font-bold mb-2" 
+    <div className="flex flex-col w-full">
+      <h4 
+        className="font-bold mb-3 text-sm sm:text-base lg:text-lg"
         style={{ 
           fontFamily: 'Poppins',
           letterSpacing: '0.4px',
-          textTransform: 'uppercase'
+          textTransform: 'uppercase',
+          color: buttonColor
         }}
       >
         Newsletter
-      </h3>
+      </h4>
+      
       <p 
         style={{ 
           ...textStyle, 
-          fontSize: '12px',
-          lineHeight: '1.5',
-          letterSpacing: '0.1px',
-          fontWeight: 400 
+          fontSize: 'clamp(11px, 2vw, 13px)',
+          lineHeight: '1.5'
         }} 
-        className="mb-3"
+        className="mb-4"
       >
-        Get updates on new products and exclusive offers!
+        Subscribe to get updates on new products and exclusive offers!
       </p>
       
-      {subscribedEmail ? (
-        <div className="bg-green-50 text-green-700 p-3 rounded-md mb-3">
-          <p className="text-sm font-medium">
-            Thank you for subscribing with: 
-          </p>
-          <p className="text-xs mt-1">{subscribedEmail}</p>
-          <button 
-            onClick={() => setSubscribedEmail(null)}
-            className="text-xs mt-2 text-green-600 hover:text-green-800 underline"
-          >
-            Subscribe another email
-          </button>
+      {subscribed ? (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4 flex items-start gap-3">
+          <FaCheckCircle className="text-green-500 w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-green-700 font-medium text-sm sm:text-base">
+              Successfully subscribed!
+            </p>
+            <p className="text-green-600 text-xs sm:text-sm mt-1">
+              Thank you for joining our newsletter.
+            </p>
+          </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="p-2 rounded text-gray-900 w-full text-xs"
-            style={{ 
-              backgroundColor: '#D9D9D9A6', 
-              ...textStyle, 
-              fontSize: '12px',
-              letterSpacing: '0.1px',
-              fontWeight: 400 
-            }}
-            required
-          />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-gray-900 text-sm
+                ${error ? 'border-red-500 border-2' : 'border border-gray-300'}
+                focus:outline-none focus:ring-2 focus:ring-[#197B33] focus:border-transparent
+                transition-all duration-200`}
+              style={{ 
+                backgroundColor: '#F5F5F5',
+                fontFamily: 'Poppins',
+                fontSize: 'clamp(12px, 2vw, 14px)'
+              }}
+              disabled={isSubmitting}
+            />
+            {error && (
+              <p className="text-red-500 text-xs sm:text-sm mt-1">{error}</p>
+            )}
+          </div>
+          
           <button
             type="submit"
             disabled={isSubmitting}
-            className="text-white hover:opacity-90 transition-opacity font-semibold w-full disabled:opacity-70"
+            className="text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg
+                     hover:opacity-90 transition-all duration-300 transform hover:scale-105
+                     disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100
+                     text-sm sm:text-base"
             style={{
-              height: '36px',
-              borderRadius: '30px',
-              fontFamily: 'Poppins',
-              fontWeight: 600,
-              fontSize: '12px',
-              lineHeight: '100%',
               backgroundColor: buttonColor,
-              letterSpacing: '0.2px'
+              fontFamily: 'Poppins',
+              fontSize: 'clamp(12px, 2vw, 14px)',
+              letterSpacing: '0.3px'
             }}
           >
             {isSubmitting ? 'Subscribing...' : 'Subscribe'}
           </button>
         </form>
       )}
-  
     </div>
   );
 }
