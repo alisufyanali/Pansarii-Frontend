@@ -2,7 +2,7 @@ import ContactInfo from './ContactInfo';
 import LinkColumns from './LinkColumns';
 import Newsletter from './Newsletter';
 import FooterBanner from './FooterBanner';
-import FooterIcons from './FooterIcons';
+import FooterIcons from './Footericons';
 
 export default function Footer() {
   const textStyle = {
