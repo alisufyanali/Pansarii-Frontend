@@ -140,19 +140,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
           </div>
         </div>
         
-        {/* Contact Info */}
-        <div className="px-6 py-4 bg-gray-50 border-t">
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">Need help? Call us</p>
-            <a 
-              href="tel:+923001234567" 
-              className="text-green-600 font-bold text-lg hover:text-green-700 active:text-green-800"
-            >
-              +92 300 1234567
-            </a>
-            <p className="text-xs text-gray-500 mt-2">Available 9 AM - 11 PM</p>
-          </div>
-        </div>
+      
       </div>
 
       {/* CSS Animations */}
