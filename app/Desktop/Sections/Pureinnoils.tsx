@@ -22,7 +22,6 @@ export default function PansariInn() {
     { img: productImg, hoverImg: productHoverImg, nameEn: 'Sesame Oil', nameUr: 'تل کا تیل', description: 'Cold Pressed Sesame Oil', rating: 4.5, reviews: 180, price: 699, oldPrice: 899, sale: '20% OFF' },
   ];
 
-  // Determine number of cards to show based on screen size
   const [cardsToShow, setCardsToShow] = useState(4);
 
   const updateLayout = () => {
@@ -41,25 +40,27 @@ export default function PansariInn() {
     return () => window.removeEventListener("resize", updateLayout);
   }, []);
 
-  // Calculate card width based on NewArrivals pattern
   const getCardWidth = () => {
-    // Formula from NewArrivals: calc((min(100vw, 1920px) - 8vw - (gaps)) / cardsToShow)
-    // Gaps = (cardsToShow - 1) * 24px
     return `calc((min(100vw, 1920px) - 8vw - ${(cardsToShow - 1) * 24}px) / ${cardsToShow})`;
   };
 
   const renderSection = (title: string, bannerImg: string, products: any[]) => (
     <div className="mt-12">
-      {/* Banner - Full width, 85vh */}
-      <section
-        className="w-full relative"
-        style={{
-          height: '85vh',
-          backgroundImage: `url(${bannerImg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      />
+      {/* Banner - Full image with min-height and max-height */}
+      <div className="w-full bg-gray-100 flex items-center justify-center">
+        <div 
+          className="w-full"
+          style={{
+            minHeight: '400px',
+            maxHeight: '800px',
+            height: 'auto',
+            backgroundImage: `url(${bannerImg})`,
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+      </div>
 
       {/* Content */}
       <div className="mx-[4%]">
@@ -77,7 +78,7 @@ export default function PansariInn() {
             </div>
           </div>
 
-          {/* Product Cards — responsive grid matching NewArrivals sizing */}
+          {/* Product Cards */}
           <div className="flex gap-6 flex-wrap pb-20">
             {products.slice(0, cardsToShow).map((product, index) => (
               <div
@@ -85,7 +86,7 @@ export default function PansariInn() {
                 className="flex-shrink-0"
                 style={{
                   width: getCardWidth(),
-                  minWidth: '200px' // Prevent cards from becoming too small
+                  minWidth: '200px'
                 }}
               >
                 <ProductCard product={product} />

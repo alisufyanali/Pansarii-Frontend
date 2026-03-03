@@ -48,17 +48,17 @@ export default function Category() {
 
   return (
     <div className="p-4 mx-[4%]">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold my-5 mb-5">
+      <div className="flex items-center gap-8 mb-6 flex-wrap">
+        <h1 className="text-2xl font-semibold whitespace-nowrap my-5">
           Shop By <span className="text-green-700">Category</span>
         </h1>
-      </div>
-      <div className="flex flex-wrap gap-6 justify-center">
-        {cards.map((card, index) => (
-          <div key={index} className="flex-1 min-w-[120px] max-w-[200px]">
-            {card}
-          </div>
-        ))}
+        <div className="flex-1 flex flex-wrap gap-6 justify-start">
+          {cards.map((card, index) => (
+            <div key={index} className="flex-1 min-w-[120px] max-w-[200px]">
+              {card}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

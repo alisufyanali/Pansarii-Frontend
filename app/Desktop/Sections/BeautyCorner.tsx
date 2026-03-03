@@ -39,15 +39,21 @@ export default function BeautyCorner() {
 
   return (
     <div className="mt-12">
-      {/* Banner - Full width */}
-      <section
-        className="w-full h-[680px] 2xl:h-[800px] relative"
-        style={{
-          backgroundImage: `url(${beautyCornerImg})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
+      {/* Banner - Full image with min-height and max-height */}
+      <div className="w-full bg-gray-100 flex items-center justify-center">
+        <div 
+          className="w-full"
+          style={{
+            minHeight: '400px',
+            maxHeight: '800px',
+            height: 'auto',
+            backgroundImage: `url(${beautyCornerImg})`,
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+      </div>
 
       {/* Content Section */}
       <div className="mx-[4%]">
