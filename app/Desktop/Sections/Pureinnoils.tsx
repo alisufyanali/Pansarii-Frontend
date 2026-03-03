@@ -22,6 +22,7 @@ export default function PansariInn() {
     { img: productImg, hoverImg: productHoverImg, nameEn: 'Sesame Oil', nameUr: 'تل کا تیل', description: 'Cold Pressed Sesame Oil', rating: 4.5, reviews: 180, price: 699, oldPrice: 899, sale: '20% OFF' },
   ];
 
+  // Determine number of cards to show based on screen size
   const [cardsToShow, setCardsToShow] = useState(4);
 
   const updateLayout = () => {
@@ -40,58 +41,55 @@ export default function PansariInn() {
     return () => window.removeEventListener("resize", updateLayout);
   }, []);
 
+ 
   const getCardWidth = () => {
+   
     return `calc((min(100vw, 1920px) - 8vw - ${(cardsToShow - 1) * 24}px) / ${cardsToShow})`;
   };
 
   const renderSection = (title: string, bannerImg: string, products: any[]) => (
     <div className="mt-12">
-      {/* Banner - Full image with min-height and max-height */}
-      <div className="w-full bg-gray-100 flex items-center justify-center">
-        <div 
-          className="w-full"
-          style={{
-            minHeight: '400px',
-            maxHeight: '800px',
-            height: 'auto',
-            backgroundImage: `url(${bannerImg})`,
-            backgroundSize: 'contain',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        />
-      </div>
+      {/* Banner - Full width, 85vh */}
+      <section
+        className="w-full relative"
+        style={{
+          height: '85vh',
+          backgroundImage: `url(${bannerImg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
 
-     {/* Content Section */}
-          <div className="mx-[4%]">
-            <div className="max-w-[1920px] mx-auto">
-              {/* Heading and View All */}
-              <div className="mt-16 mb-6 flex items-center justify-between">
-                <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">
-                  PureInn <span className="text-[#197B33]">Oils</span>
-                </h2>
-    
-                <div className="flex items-center gap-4 cursor-pointer group">
-                  <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
-                    View All
-                  </span>
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
-                    <span className="text-lg font-bold">{'>'}</span>
-                  </div>
-                </div>
-              </div>
-    
-              {/* Product Cards Grid */}
-              <div
-                className="grid gap-6 2xl:gap-8 pb-20"
-                style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
-              >
-                {products.slice(0, cardsToShow).map((product, index) => (
-                  <ProductCard key={index} product={product} />
-                ))}
-              </div>
-            </div>
-          </div>
+        {/* Content Section */}
+           <div className="mx-[4%]">
+             <div className="max-w-[1920px] mx-auto">
+               {/* Heading and View All */}
+               <div className="mt-16 mb-6 flex items-center justify-between">
+                 <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">
+                   Beauty <span className="text-[#197B33]">Corner</span>
+                 </h2>
+     
+                 <div className="flex items-center gap-4 cursor-pointer group">
+                   <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
+                     View All
+                   </span>
+                   <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
+                     <span className="text-lg font-bold">{'>'}</span>
+                   </div>
+                 </div>
+               </div>
+     
+               {/* Product Cards Grid */}
+               <div
+                 className="grid gap-6 2xl:gap-8 pb-20"
+                 style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
+               >
+                 {products.slice(0, cardsToShow).map((product, index) => (
+                   <ProductCard key={index} product={product} />
+                 ))}
+               </div>
+             </div>
+           </div>
     </div>
   );
 
