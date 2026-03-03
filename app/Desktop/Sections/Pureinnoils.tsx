@@ -62,39 +62,36 @@ export default function PansariInn() {
         />
       </div>
 
-      {/* Content */}
-      <div className="mx-[4%]">
-        <div className="max-w-[1920px] mx-auto">
-          {/* Heading */}
-          <div className="mt-16 mb-6 flex items-center justify-between">
-            <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">{title}</h2>
-            <div className="flex items-center gap-4 cursor-pointer group">
-              <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
-                View All
-              </span>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
-                <span className="text-lg font-bold">{'>'}</span>
+     {/* Content Section */}
+          <div className="mx-[4%]">
+            <div className="max-w-[1920px] mx-auto">
+              {/* Heading and View All */}
+              <div className="mt-16 mb-6 flex items-center justify-between">
+                <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">
+                  PureInn <span className="text-[#197B33]">Oils</span>
+                </h2>
+    
+                <div className="flex items-center gap-4 cursor-pointer group">
+                  <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
+                    View All
+                  </span>
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
+                    <span className="text-lg font-bold">{'>'}</span>
+                  </div>
+                </div>
+              </div>
+    
+              {/* Product Cards Grid */}
+              <div
+                className="grid gap-6 2xl:gap-8 pb-20"
+                style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
+              >
+                {products.slice(0, cardsToShow).map((product, index) => (
+                  <ProductCard key={index} product={product} />
+                ))}
               </div>
             </div>
           </div>
-
-          {/* Product Cards */}
-          <div className="flex gap-6 flex-wrap pb-20">
-            {products.slice(0, cardsToShow).map((product, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0"
-                style={{
-                  width: getCardWidth(),
-                  minWidth: '200px'
-                }}
-              >
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 
