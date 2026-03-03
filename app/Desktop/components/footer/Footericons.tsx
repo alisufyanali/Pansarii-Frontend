@@ -8,27 +8,27 @@ interface FooterIconsProps {
 
 const iconData = [
   {
-    icon: <FaTruck className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />,
+    icon: <FaTruck className="w-4 h-4 sm:w-5 sm:h-5" />,
     title: "Free Shipping",
     description: "On orders above ₹499"
   },
   {
-    icon: <FaMapMarkerAlt className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />,
+    icon: <FaMapMarkerAlt className="w-4 h-4 sm:w-5 sm:h-5" />,
     title: "11000+ Pincodes",
     description: "Nationwide Delivery"
   },
   {
-    icon: <FaShieldAlt className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />,
+    icon: <FaShieldAlt className="w-4 h-4 sm:w-5 sm:h-5" />,
     title: "100% Authentic",
     description: "Certified Products"
   },
   {
-    icon: <FaClock className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />,
+    icon: <FaClock className="w-4 h-4 sm:w-5 sm:h-5" />,
     title: "Quick Delivery",
     description: "2-4 Business Days"
   },
   {
-    icon: <FaLeaf className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />,
+    icon: <FaLeaf className="w-4 h-4 sm:w-5 sm:h-5" />,
     title: "Eco-Friendly",
     description: "Sustainable Packaging"
   }
@@ -36,18 +36,18 @@ const iconData = [
 
 export default function FooterIcons({ buttonColor, textStyle }: FooterIconsProps) {
   return (
-    <div className="w-full me-bgcolor-g py-4 sm:py-6 md:py-8 lg:py-10 px-4 sm:px-6 md:px-8 lg:px-12">
+    <div className="w-full me-bgcolor-g py-3 sm:py-4 md:py-6 lg:py-8 px-2 sm:px-4 md:px-6 lg:px-8">
       <div className="max-w-[1920px] mx-auto">
-        {/* Single row with flexbox - horizontal scroll on very small screens if needed */}
-        <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-4 md:gap-6 lg:gap-8 overflow-x-auto pb-2 scrollbar-hide">
+        {/* Single row with flex - no scroll, smaller items */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-6">
           {iconData.map((item, index) => (
             <div 
               key={index} 
-              className="flex flex-col items-center text-center group cursor-pointer min-w-[100px] sm:min-w-[120px] md:min-w-[140px] flex-shrink-0"
+              className="flex flex-col items-center text-center group min-w-[65px] sm:min-w-[80px] md:min-w-[100px] lg:min-w-[120px]"
             >
               {/* Icon Container */}
               <div 
-                className="mb-1 sm:mb-2 p-2 sm:p-3 rounded-full bg-white/10 group-hover:bg-white/20 transition-all duration-300"
+                className="mb-1 p-1.5 sm:p-2 rounded-full bg-white/10 group-hover:bg-white/20 transition-all duration-300"
                 style={{ color: buttonColor }}
               >
                 {item.icon}
@@ -55,10 +55,10 @@ export default function FooterIcons({ buttonColor, textStyle }: FooterIconsProps
               
               {/* Title */}
               <h4 
-                className="text-white font-semibold text-[10px] sm:text-xs md:text-sm lg:text-base mb-0.5 sm:mb-1"
+                className="text-white font-semibold text-[9px] sm:text-[10px] md:text-xs lg:text-sm mb-0.5 whitespace-nowrap"
                 style={{ 
                   fontFamily: 'Poppins',
-                  letterSpacing: '0.3px'
+                  letterSpacing: '0.2px'
                 }}
               >
                 {item.title}
@@ -66,7 +66,7 @@ export default function FooterIcons({ buttonColor, textStyle }: FooterIconsProps
               
               {/* Description */}
               <p 
-                className="text-white/80 text-[8px] sm:text-[10px] md:text-xs"
+                className="text-white/80 text-[7px] sm:text-[8px] md:text-[10px] lg:text-xs whitespace-nowrap"
                 style={{ 
                   fontFamily: 'Poppins',
                   lineHeight: '1.2'

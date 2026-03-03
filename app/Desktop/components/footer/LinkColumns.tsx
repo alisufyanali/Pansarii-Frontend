@@ -53,39 +53,38 @@ export default function LinkColumns({ textStyle, buttonColor, isMobile = false }
     );
   };
 
-  // Mobile view with dropdowns
+  // Mobile view with simple bottom border dropdowns
   if (isMobile) {
     return (
-      <div className="w-full space-y-4 lg:hidden">
+      <div className="w-full space-y-2 lg:hidden">
         {linkGroups.map((group) => {
           const isOpen = openDropdowns.includes(group.title);
           
           return (
-            <div key={group.title} className="border border-gray-200 rounded-lg overflow-hidden">
+            <div key={group.title} className="border-b border-gray-200">
               <button
                 onClick={() => toggleDropdown(group.title)}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
-                style={{ color: buttonColor }}
+                className="w-full flex items-center justify-between py-3 text-black hover:text-[#197B33] transition-colors"
               >
-                <span className="font-bold text-sm uppercase tracking-wide">
+                <span className="font-semibold text-sm uppercase tracking-wide">
                   {group.title}
                 </span>
                 {isOpen ? (
-                  <FaChevronUp className="w-4 h-4" />
+                  <FaChevronUp className="w-3 h-3 text-gray-600" />
                 ) : (
-                  <FaChevronDown className="w-4 h-4" />
+                  <FaChevronDown className="w-3 h-3 text-gray-600" />
                 )}
               </button>
               
               {isOpen && (
-                <div className="p-4 bg-white">
-                  <ul className="space-y-3">
+                <div className="pb-3">
+                  <ul className="space-y-2">
                     {group.links.map((link) => (
                       <li key={link.name}>
                         <a 
                           href={link.url}
-                          style={{ ...textStyle, fontSize: '14px' }}
-                          className="hover:text-[#197B33] transition-colors duration-200 inline-block"
+                          style={{ ...textStyle, fontSize: '13px' }}
+                          className="text-gray-600 hover:text-[#197B33] transition-colors duration-200 inline-block"
                         >
                           {link.name}
                         </a>
@@ -127,7 +126,7 @@ export default function LinkColumns({ textStyle, buttonColor, isMobile = false }
                     fontSize: 'clamp(12px, 2vw, 14px)',
                     lineHeight: '1.5'
                   }} 
-                  className="hover:text-[#197B33] transition-colors duration-200 inline-block"
+                  className="text-gray-600 hover:text-[#197B33] transition-colors duration-200 inline-block"
                 >
                   {link.name}
                 </a>
