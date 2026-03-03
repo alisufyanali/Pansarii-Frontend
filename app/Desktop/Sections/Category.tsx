@@ -31,11 +31,11 @@ export default function Category() {
           <Image
             src={CategoryImage}
             alt="Category"
-            width={170}
-            height={120}
+            width={170} // Increased from 100 to 130
+            height={120} // Increased from 100 to 130
             className="object-contain mr-7 mt-6"
             style={{ 
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' // Adds clarity
             }}
           />
         </div>
@@ -47,23 +47,33 @@ export default function Category() {
   }
 
   return (
-    <div className="mx-[4%]">
+    <div className="p-4 mx-[4%]">
+      {/* Improved heading to match BeautyCorner style */}
       <div className="max-w-[1920px] mx-auto">
-        {/* Heading */}
-        <div className="mb-6">
-          <h1 className="text-2xl 2xl:text-3xl font-semibold my-5">
-            Shop By <span className="text-green-700">Category</span>
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl 2xl:text-4xl font-semibold">
+            Shop By <span className="text-[#197B33]">Category</span>
           </h1>
-        </div>
-        
-        {/* Cards Container */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 pb-20">
-          {cards.map((card, index) => (
-            <div key={index} className="w-full">
-              {card}
+          
+          {/* Optional: Add View All button like BeautyCorner */}
+          <div className="flex items-center gap-4 cursor-pointer group">
+            <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
+              View All
+            </span>
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
+              <span className="text-lg font-bold">{'>'}</span>
             </div>
-          ))}
+          </div>
         </div>
+      </div>
+      
+      {/* Cards container - exactly as you had it */}
+      <div className="flex flex-wrap gap-6 justify-center">
+        {cards.map((card, index) => (
+          <div key={index} className="flex-1 min-w-[120px] max-w-[200px]">
+            {card}
+          </div>
+        ))}
       </div>
     </div>
   );

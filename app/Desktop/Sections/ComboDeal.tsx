@@ -66,7 +66,7 @@ export default function ComboDeal() {
           backgroundImage: `url(${banner4Img})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          height: '85vh',
+          height: '100vh',
         }}
       />
 

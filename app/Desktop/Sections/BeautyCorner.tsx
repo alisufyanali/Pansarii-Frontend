@@ -41,11 +41,12 @@ export default function BeautyCorner() {
     <div className="mt-12">
       {/* Banner - Full width */}
       <section
-        className="w-full h-[680px] 2xl:h-[800px] relative"
+        className="w-full relative"
         style={{
           backgroundImage: `url(${beautyCornerImg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
+          height:"100vh",
         }}
       />
 

@@ -53,7 +53,7 @@ export default function PansariInn() {
       <section
         className="w-full relative"
         style={{
-          height: '85vh',
+          height: '100vh',
           backgroundImage: `url(${bannerImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -66,7 +66,7 @@ export default function PansariInn() {
                {/* Heading and View All */}
                <div className="mt-16 mb-6 flex items-center justify-between">
                  <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">
-                   Beauty <span className="text-[#197B33]">Corner</span>
+                   PureInn <span className="text-[#197B33]">Oils</span>
                  </h2>
      
                  <div className="flex items-center gap-4 cursor-pointer group">
@@ -96,7 +96,7 @@ export default function PansariInn() {
   return (
     <>
       {renderSection('Pansari Inn Oils', banner2Img, productsRow.slice(0, 6))}
-      {renderSection('Pansari Inn Oils', banner3Img, productsRow.slice(6))}
+      {renderSection('Pansari Inn Oils', banner3Img, productsRow.slice(0,6))}
     </>
   );
 }
