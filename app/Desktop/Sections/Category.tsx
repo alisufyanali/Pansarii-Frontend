@@ -31,11 +31,11 @@ export default function Category() {
           <Image
             src={CategoryImage}
             alt="Category"
-            width={170} // Increased from 100 to 130
-            height={120} // Increased from 100 to 130
+            width={170}
+            height={120}
             className="object-contain mr-7 mt-6"
             style={{ 
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' // Adds clarity
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
             }}
           />
         </div>
@@ -47,18 +47,23 @@ export default function Category() {
   }
 
   return (
-    <div className="p-4 mx-[4%]">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold my-5 mb-5">
-          Shop By <span className="text-green-700">Category</span>
-        </h1>
-      </div>
-      <div className="flex flex-wrap gap-6 justify-center">
-        {cards.map((card, index) => (
-          <div key={index} className="flex-1 min-w-[120px] max-w-[200px]">
-            {card}
-          </div>
-        ))}
+    <div className="mx-[4%]">
+      <div className="max-w-[1920px] mx-auto">
+        {/* Heading */}
+        <div className="mb-6">
+          <h1 className="text-2xl 2xl:text-3xl font-semibold my-5">
+            Shop By <span className="text-green-700">Category</span>
+          </h1>
+        </div>
+        
+        {/* Cards Container */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 pb-20">
+          {cards.map((card, index) => (
+            <div key={index} className="w-full">
+              {card}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
