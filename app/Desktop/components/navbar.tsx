@@ -190,7 +190,7 @@ export default function Navbar() {
               {/* COL 2 — Search bar */}
               <SearchBarWrapper
                 placeholder="Search for products..."
-                variant="desktop"
+              
                 mockProducts={mockProducts}
                 className="w-full"
               />

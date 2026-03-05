@@ -28,7 +28,6 @@ export interface ProductSuggestion {
 export interface SearchBarProps {
   placeholder?: string;
   className?: string;
-  variant?: 'desktop' | 'mobile';
   onSearch?: (query: string) => void;
   mockProducts?: ProductSuggestion[];
   initialQuery?: string;
@@ -36,24 +35,16 @@ export interface SearchBarProps {
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
   }, [value, delay]);
-
   return debouncedValue;
 }
 
 export default function SearchBar({ 
-  placeholder = "Search for products, categories, brands...", 
+  placeholder = "Search for products...", 
   className = "",
-  variant = 'desktop',
   onSearch,
   mockProducts = [],
   initialQuery = ''
@@ -67,9 +58,7 @@ export default function SearchBar({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (initialQuery) {
-      setQuery(initialQuery);
-    }
+    if (initialQuery) setQuery(initialQuery);
   }, [initialQuery]);
 
   const debouncedQuery = useDebounce(query, 300);
@@ -80,22 +69,19 @@ export default function SearchBar({
         setSuggestions([]);
         return;
       }
-
       setIsLoading(true);
       try {
         if (mockProducts.length > 0) {
-          const filtered = mockProducts.filter(product => 
+          const filtered = mockProducts.filter(product =>
             product.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
             product.category?.toLowerCase().includes(debouncedQuery.toLowerCase())
           ).slice(0, 5);
-          
           setSuggestions(filtered);
           setIsOpen(true);
         } else {
           const response = await fetch(
             `/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}&limit=5`
           );
-          
           if (response.ok) {
             const data = await response.json();
             setSuggestions(data.suggestions || []);
@@ -108,18 +94,13 @@ export default function SearchBar({
         setIsLoading(false);
       }
     };
-
     fetchSuggestions();
   }, [debouncedQuery, mockProducts]);
 
   useEffect(() => {
     const stored = localStorage.getItem('recentSearches');
     if (stored) {
-      try {
-        setRecentSearches(JSON.parse(stored));
-      } catch (error) {
-        console.error('Error parsing recent searches:', error);
-      }
+      try { setRecentSearches(JSON.parse(stored)); } catch {}
     }
   }, []);
 
@@ -129,27 +110,19 @@ export default function SearchBar({
         setIsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleSearch = useCallback((searchQuery: string) => {
     if (!searchQuery.trim()) return;
-
     const updatedSearches = [
       searchQuery,
       ...recentSearches.filter(s => s.toLowerCase() !== searchQuery.toLowerCase())
     ].slice(0, 5);
-
     setRecentSearches(updatedSearches);
     localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
-
-    if (onSearch) {
-      onSearch(searchQuery);
-    }
-
-    // Redirect to shop page with search query
+    if (onSearch) onSearch(searchQuery);
     window.location.href = `/shop?search=${encodeURIComponent(searchQuery)}`;
     setIsOpen(false);
   }, [recentSearches, onSearch]);
@@ -181,82 +154,70 @@ export default function SearchBar({
     localStorage.removeItem('recentSearches');
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-PK', {
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat('en-PK', {
       style: 'currency',
       currency: 'PKR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
-  };
 
   return (
     <div ref={searchRef} className={`relative ${className}`}>
-      <form onSubmit={handleSubmit} className="relative">
+      <form onSubmit={handleSubmit} className="relative flex items-center">
+        {/* Search icon on the left — purely decorative */}
+        <FiSearch className="absolute left-3 w-[14px] h-[14px] text-gray-400 pointer-events-none" />
+
         <input
           ref={inputRef}
           type="search"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            if (e.target.value.trim()) {
-              setIsOpen(true);
-            }
+            if (e.target.value.trim()) setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className={`
-            w-full px-6 py-3 pr-12 border-2 border-gray-200 rounded-full 
-            focus:outline-none focus:border-green-700 focus:ring-2 focus:ring-green-500/20 
-            transition-all duration-200 text-gray-900 placeholder-gray-500
-            ${variant === 'mobile' ? 'text-sm py-2.5 px-4' : ''}
-          `}
+          // py-1.5 gives ~34px total height — same visual weight as nav link text rows
+          className="w-full pl-8 pr-16 py-1.5 text-sm border border-gray-200 rounded-full bg-gray-50
+            focus:outline-none focus:border-green-600 focus:bg-white focus:ring-1 focus:ring-green-500/20
+            transition-all duration-200 text-gray-900 placeholder-gray-400"
           aria-label="Search products"
           aria-expanded={isOpen}
           aria-controls="search-suggestions"
         />
-        
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
+
+        {/* Right side: clear + submit */}
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
           {query && (
             <button
               type="button"
               onClick={clearSearch}
-              className="p-1.5 text-gray-400 hover:text-gray-600 transition rounded-full hover:bg-gray-100"
+              className="p-1 text-gray-400 hover:text-gray-600 transition rounded-full hover:bg-gray-100"
               aria-label="Clear search"
             >
-              <FiX className="w-4 h-4" />
+              <FiX className="w-3.5 h-3.5" />
             </button>
           )}
-          
-          <button 
+          <button
             type="submit"
-            className={`
-              flex items-center justify-center text-white rounded-full 
-              hover:bg-green-600 transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
-              ${variant === 'mobile' ? 'w-9 h-9' : 'w-10 h-10'}
-              ${isLoading ? 'bg-green-600' : 'bg-green-700'}
-            `}
-            aria-label="Search"
             disabled={isLoading}
+            className="w-7 h-7 flex items-center justify-center bg-green-700 hover:bg-green-600 text-white rounded-full transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+            aria-label="Search"
           >
-            {isLoading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <FiSearch className={variant === 'mobile' ? 'w-4 h-4' : 'w-4 h-4'} />
-            )}
+            {isLoading
+              ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              : <FiSearch className="w-3.5 h-3.5" />
+            }
           </button>
         </div>
       </form>
 
       {/* Suggestions Dropdown */}
       {isOpen && (
-        <div 
+        <div
           id="search-suggestions"
-          className={`
-            absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl 
-            border border-gray-200 z-50 max-h-[65vh] overflow-y-auto
-            ${variant === 'mobile' ? 'max-h-[80vh]' : ''}
-          `}
+          className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[65vh] overflow-y-auto"
         >
           {/* Recent Searches */}
           {!query && recentSearches.length > 0 && (
@@ -297,7 +258,6 @@ export default function SearchBar({
               <h3 className="text-sm font-semibold text-gray-700 mb-3">
                 Products ({suggestions.length})
               </h3>
-              
               <div className="space-y-2">
                 {suggestions.map((product) => (
                   <button
@@ -325,7 +285,6 @@ export default function SearchBar({
                         <HiOutlineShoppingBag className="w-5 h-5 text-gray-400" />
                       </div>
                     )}
-                    
                     <div className="flex-1 text-left min-w-0">
                       <p className="text-sm font-medium text-gray-900 group-hover:text-green-700 truncate">
                         {product.name}
@@ -333,7 +292,6 @@ export default function SearchBar({
                       {product.category && (
                         <p className="text-xs text-gray-500 truncate">{product.category}</p>
                       )}
-                      
                       {product.rating && (
                         <div className="flex items-center gap-1 mt-1">
                           <BsStar className="w-3 h-3 text-amber-400 fill-current" />
@@ -341,33 +299,29 @@ export default function SearchBar({
                         </div>
                       )}
                     </div>
-                    
                     <div className="flex flex-col items-end flex-shrink-0">
-                      <div className="flex items-center gap-1">
-                        {product.salePrice ? (
-                          <>
-                            <span className="text-sm font-semibold text-green-700">
-                              {formatPrice(product.salePrice)}
-                            </span>
-                            <span className="text-xs text-gray-400 line-through">
-                              {formatPrice(product.price)}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-sm font-semibold text-gray-900">
+                      {product.salePrice ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm font-semibold text-green-700">
+                            {formatPrice(product.salePrice)}
+                          </span>
+                          <span className="text-xs text-gray-400 line-through">
                             {formatPrice(product.price)}
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <span className="text-sm font-semibold text-gray-900">
+                          {formatPrice(product.price)}
+                        </span>
+                      )}
                     </div>
                   </button>
                 ))}
               </div>
-
               <div className="mt-4 pt-4 border-t">
                 <Link
                   href={`/shop?search=${encodeURIComponent(query)}`}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 text-center text-sm font-semibold text-green-700 hover:text-green-800 hover:bg-green-50 rounded-lg transition"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 text-sm font-semibold text-green-700 hover:text-green-800 hover:bg-green-50 rounded-lg transition"
                   onClick={() => setIsOpen(false)}
                 >
                   View all results for "{query}"
@@ -377,7 +331,7 @@ export default function SearchBar({
             </div>
           )}
 
-          {/* Loading State */}
+          {/* Loading */}
           {query && isLoading && (
             <div className="p-8 text-center">
               <div className="inline-block w-6 h-6 border-2 border-green-700 border-t-transparent rounded-full animate-spin mb-3" />
@@ -393,8 +347,6 @@ export default function SearchBar({
               </div>
               <p className="text-gray-900 font-medium">No products found</p>
               <p className="text-sm text-gray-600 mt-1">Try different keywords or check spelling</p>
-              
-              {/* Show recent searches when no results are found */}
               {recentSearches.length > 0 && (
                 <div className="mt-4 pt-4 border-t">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Recent searches:</h4>

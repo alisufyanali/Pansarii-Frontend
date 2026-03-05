@@ -1,100 +1,40 @@
 // components/navbar/SearchBarWrapper.tsx
 'use client';
 
-import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
+import SearchBar, { type ProductSuggestion } from './searchbar';
 
-// Create a component that uses useSearchParams
-function SearchBarWithParams({
-  placeholder = "Search for products...",
-  variant = 'desktop',
-  mockProducts = [],
-  className = ""
-}: {
+interface SearchBarWrapperProps {
   placeholder?: string;
-  variant?: 'desktop' | 'mobile';
-  mockProducts?: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    price: number;
-    salePrice?: number;
-    image?: string;
-    category?: string;
-    rating?: number;
-    isBestSeller?: boolean;
-  }>;
   className?: string;
-}) {
-  // Dynamically import useSearchParams only on client
-  const { useSearchParams } = require('next/navigation');
-  const searchParams = useSearchParams();
-  
-  // Get search query from URL to pre-populate the search bar
-  const initialQuery = searchParams.get('search') || '';
+  mockProducts?: ProductSuggestion[];
+  initialQuery?: string;
+  onSearch?: (query: string) => void;
+}
 
-  const SearchBar = dynamic(() => import('./searchbar'), {
-    ssr: false,
-    loading: () => (
-      <div className="relative w-full">
-        <input
-          type="search"
-          placeholder="Search for products..."
-          className="w-full px-6 py-3 pr-12 border-2 border-gray-200 rounded-full bg-gray-50 animate-pulse"
-          disabled
-        />
-      </div>
-    ),
-  });
-
+function SearchBarFallback({ className }: { className?: string }) {
   return (
-    <SearchBar 
-      placeholder={placeholder}
-      variant={variant}
-      mockProducts={mockProducts}
-      className={className}
-      initialQuery={initialQuery}
-    />
+    <div className={`relative ${className ?? ''}`}>
+      <div className="w-full h-[34px] bg-gray-100 rounded-full animate-pulse" />
+    </div>
   );
 }
 
 export default function SearchBarWrapper({
-  placeholder = "Search for products...",
-  variant = 'desktop',
-  mockProducts = [],
-  className = ""
-}: {
-  placeholder?: string;
-  variant?: 'desktop' | 'mobile';
-  mockProducts?: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    price: number;
-    salePrice?: number;
-    image?: string;
-    category?: string;
-    rating?: number;
-    isBestSeller?: boolean;
-  }>;
-  className?: string;
-}) {
+  placeholder,
+  className,
+  mockProducts,
+  initialQuery,
+  onSearch,
+}: SearchBarWrapperProps) {
   return (
-    <Suspense fallback={
-      <div className="relative w-full">
-        <input
-          type="search"
-          placeholder="Search for products..."
-          className="w-full px-6 py-3 pr-12 border-2 border-gray-200 rounded-full bg-gray-50 animate-pulse"
-          disabled
-        />
-      </div>
-    }>
-      <SearchBarWithParams 
+    <Suspense fallback={<SearchBarFallback className={className} />}>
+      <SearchBar
         placeholder={placeholder}
-        variant={variant}
-        mockProducts={mockProducts}
         className={className}
+        mockProducts={mockProducts}
+        initialQuery={initialQuery}
+        onSearch={onSearch}
       />
     </Suspense>
   );
