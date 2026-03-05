@@ -54,17 +54,20 @@ export default function VideoProducts() {
   };
 
   return (
-    <section className="my-12 mx-[4%]">
+    <section className="my-8 md:my-10 lg:my-12 2xl:my-16 mx-[4%]">
       <div className="max-w-[1920px] mx-auto">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins">
+        <div className="text-center mb-6 md:mb-8 lg:mb-10">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl 2xl:text-5xl font-semibold font-poppins">
             Video <span className="text-[#197B33]">Products</span>
           </h2>
+          <p className="text-sm md:text-base lg:text-lg 2xl:text-xl text-gray-600 mt-2">
+            Watch and explore our featured products
+          </p>
         </div>
 
         <div
           ref={carouselRef}
-          className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar cursor-grab select-none pb-4"
+          className="flex gap-4 md:gap-5 lg:gap-6 overflow-x-auto overflow-y-hidden scroll-smooth no-scrollbar cursor-grab select-none pb-4"
           onMouseDown={onMouseDown}
           onMouseLeave={onMouseLeave}
           onMouseUp={onMouseUp}
@@ -74,11 +77,7 @@ export default function VideoProducts() {
           {videoProducts.map((product) => (
             <div
               key={product.id}
-              className="flex-shrink-0"
-              style={{
-                // Scale card width proportionally on larger screens
-                width: 'clamp(280px, calc((min(100vw, 1920px) - 8vw - 96px) / 4), 440px)',
-              }}
+              className="flex-shrink-0 w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] xl:w-[340px] 2xl:w-[380px]"
             >
               <VideoProductCard product={product} />
             </div>
