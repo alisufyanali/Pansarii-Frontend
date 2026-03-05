@@ -9,11 +9,12 @@ import SearchBarWrapper from './navbar/SearchBarWrapper';
 import CartSidebar from './sidebar';
 import { useCart } from '../../context/CartContext';
 
-import {
-  FaFacebookF,
-  FaInstagram,
-  FaTwitter,
-  FaYoutube,
+// Import React Icons
+import { 
+  FaFacebookF, 
+  FaInstagram, 
+  FaTwitter, 
+  FaYoutube, 
   FaWhatsapp,
   FaShoppingCart,
   FaUser,
@@ -27,20 +28,28 @@ import {
   FaSearch
 } from 'react-icons/fa';
 
+// Import all products from data
 import { allProducts } from '@/app/Desktop/data/products';
 
+// Categories data - dynamically generated from products
 const getCategoriesFromProducts = () => {
   const categoriesSet = new Set<string>();
   allProducts.forEach(product => {
-    if (product.category) categoriesSet.add(product.category);
+    if (product.category) {
+      categoriesSet.add(product.category);
+    }
   });
-  return Array.from(categoriesSet).sort().map(category => ({
-    name: category,
-    slug: category,
-    count: allProducts.filter(p => p.category === category).length
-  }));
+  
+  return Array.from(categoriesSet)
+    .sort()
+    .map(category => ({
+      name: category,
+      slug: category,
+      count: allProducts.filter(p => p.category === category).length
+    }));
 };
 
+// Navigation links
 const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'Shop', href: '/shop' },
@@ -62,12 +71,18 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const lastScrollY = useRef(0);
 
+  // Get categories from products
   const categories = getCategoriesFromProducts();
+  
+  // Get current category from URL
   const currentCategory = searchParams.get('category');
-  const filteredCategories = categories.filter(category =>
+  
+  // Filter categories based on search
+  const filteredCategories = categories.filter(category => 
     category.name.toLowerCase().includes(categorySearch.toLowerCase())
   );
-
+  
+  // Format mock products for search suggestions
   const mockProducts = allProducts.map(product => ({
     id: product.id.toString(),
     name: product.nameEn,
@@ -81,12 +96,18 @@ export default function Navbar() {
     description: product.description,
   }));
 
+  // Scroll listener
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      setScrolled(currentScrollY > 60);
+      if (currentScrollY > 60) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
       lastScrollY.current = currentScrollY;
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -115,25 +136,27 @@ export default function Navbar() {
       params.set('category', slug);
     }
     const queryString = params.toString();
-    router.push(queryString ? `/shop?${queryString}` : '/shop');
+    const url = queryString ? `/shop?${queryString}` : '/shop';
+    router.push(url);
     closeCategorySidebar();
   };
-
+  
   const totalProducts = categories.reduce((sum, cat) => sum + cat.count, 0);
 
   /*
-   * ALL THREE BARS share this exact grid so every column locks across rows:
+   * Shared 3-column grid used across ALL THREE BARS so columns lock perfectly:
    *
-   *  Col A (auto) │ Col B (1fr)          │ Col C (auto)
-   *  ─────────────┼──────────────────────┼───────────────────────────
-   *  TOP    social icons (left)  │ tagline (center) │ whatsapp+phone (right)
-   *  MIDDLE logo                 │ search bar       │ track + signin + cart
-   *  BOTTOM all-categories btn   │ nav links        │ affiliate btn
+   *  Col A (auto)  │  Col B (fit-content / shrink)  │  Col C (auto)
+   *  ──────────────┼────────────────────────────────┼──────────────────────
+   *  TOP:  social icons          │ tagline centered  │ whatsapp + phone
+   *  MID:  logo                  │ search bar        │ track + signin + cart
+   *  BOT:  all-categories btn    │ nav links         │ affiliate btn
    *
-   * "auto" columns size to their content — the widest item in each column
-   * sets the width for ALL rows automatically via CSS grid.
+   *  Col B uses "minmax(0,max-content)" so it shrinks to exactly the content
+   *  width — search bar fills this, nav links are centered within it.
+   *  Col A and Col C are "auto" — sized by their widest row item.
    */
-  const GRID = "grid grid-cols-[auto_1fr_auto] items-center gap-x-6";
+  const GRID = "grid grid-cols-[auto_minmax(0,max-content)_auto] items-center gap-x-8 justify-between";
 
   return (
     <>
@@ -151,7 +174,7 @@ export default function Navbar() {
           <div className="w-full max-w-[1600px] mx-auto px-6 py-2">
             <div className={GRID}>
 
-              {/* COL A — Social icons (auto → aligns with logo / categories btn) */}
+              {/* COL A — Social Icons */}
               <div className="flex items-center gap-4">
                 <a href="https://facebook.com/pansariin.pk" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition hover:scale-110" aria-label="Facebook">
                   <FaFacebookF className="w-4 h-4" />
@@ -167,13 +190,13 @@ export default function Navbar() {
                 </a>
               </div>
 
-              {/* COL B — Tagline centered (1fr → aligns with searchbar / nav links) */}
-              <p className="text-sm font-semibold flex items-center justify-center gap-2">
+              {/* COL B — Tagline (no bold) */}
+              <p className="text-sm flex items-center justify-center gap-2 whitespace-nowrap">
                 <FaLeaf className="w-4 h-4" />
                 100% Ayurvedic &amp; Herbal Products
               </p>
 
-              {/* COL C — WhatsApp + phone (auto → aligns with icon actions / affiliate btn) */}
+              {/* COL C — WhatsApp + phone */}
               <a
                 href="https://wa.me/923001234567"
                 target="_blank"
@@ -208,42 +231,58 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              {/* COL B — Search bar (same 1fr column as nav links) */}
+              {/* COL B — Search bar: same column as nav links, fills their width */}
               <SearchBarWrapper
                 placeholder="Search for products..."
+                variant="desktop"
                 mockProducts={mockProducts}
                 className="w-full"
               />
 
-              {/* COL C — Icon actions (icons only, no labels) */}
-              <div className="flex items-center justify-end gap-1">
+              {/* COL C — Icon actions */}
+              <div className="flex items-center gap-1">
                 <Link
                   href="/track-order"
-                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition group"
+                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition group"
                   aria-label="Track Order"
                 >
                   <FaTruck className="w-[18px] h-[18px] text-gray-600 group-hover:text-green-700 transition" />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition whitespace-nowrap">
+                    Track Order
+                  </span>
                 </Link>
 
                 <Link
                   href="/login"
-                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition group"
+                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition group"
                   aria-label="Sign In"
                 >
                   <FaUser className="w-[18px] h-[18px] text-gray-600 group-hover:text-green-700 transition" />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition">
+                    Sign In
+                  </span>
                 </Link>
 
                 <button
                   onClick={openCartSidebar}
-                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition group relative"
+                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition group relative"
                   aria-label="Shopping Cart"
                 >
                   <div className="relative">
                     <FaShoppingCart className="w-[18px] h-[18px] text-gray-600 group-hover:text-green-700 transition" />
                     {cartCount > 0 && (
-                      <span className="absolute -top-2 -right-2 w-4 h-4 bg-green-700 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                      <span
+                        className="absolute -top-2 -right-2 w-5 h-5 bg-green-700 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                        aria-label={`${cartCount} items in cart`}
+                      >
                         {cartCount > 9 ? '9+' : cartCount}
                       </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-start leading-tight">
+                    <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition">Cart</span>
+                    {cartCount > 0 && (
+                      <span className="text-xs text-gray-500">PKR {cartTotal.toLocaleString()}</span>
                     )}
                   </div>
                 </button>
@@ -268,7 +307,7 @@ export default function Navbar() {
               {/* COL A — All Categories btn */}
               <button
                 onClick={() => setIsCategorySidebarOpen(true)}
-                className="flex items-center gap-2 px-5 py-2 bg-green-700 text-white rounded-full hover:bg-green-600 transition font-medium shadow-sm whitespace-nowrap"
+                className="flex items-center gap-2 px-5 py-2 bg-green-700 text-white rounded-full hover:bg-green-600 transition font-medium shadow-sm whitespace-nowrap flex-shrink-0"
                 aria-label="Browse Categories"
               >
                 <FaBars className="w-4 h-4" />
@@ -276,7 +315,7 @@ export default function Navbar() {
                 <FaChevronDown className="w-3 h-3" />
               </button>
 
-              {/* COL B — Nav links centered in the same 1fr as search bar */}
+              {/* COL B — Nav links centered inside same column as search bar */}
               <nav className="flex items-center justify-center gap-6" aria-label="Main navigation">
                 {navLinks.map((link) => (
                   <Link
@@ -294,17 +333,15 @@ export default function Navbar() {
                 ))}
               </nav>
 
-              {/* COL C — Affiliate btn right-aligned to match icon actions */}
-              <div className="flex justify-end">
-                <Link
-                  href="/affiliate"
-                  className="flex items-center gap-2 px-5 py-2 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition font-semibold text-sm shadow-sm hover:shadow-md whitespace-nowrap"
-                  aria-label="Become an Affiliate"
-                >
-                  <FaGift className="w-4 h-4" />
-                  Become an Affiliate
-                </Link>
-              </div>
+              {/* COL C — Affiliate btn aligned to same column as icon actions */}
+              <Link
+                href="/affiliate"
+                className="flex items-center justify-end gap-2 px-5 py-2 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition font-semibold text-sm shadow-sm hover:shadow-md whitespace-nowrap flex-shrink-0"
+                aria-label="Become an Affiliate"
+              >
+                <FaGift className="w-4 h-4" />
+                Become an Affiliate
+              </Link>
 
             </div>
           </div>
@@ -312,11 +349,12 @@ export default function Navbar() {
 
       </header>
 
-      {/* ── CATEGORY SIDEBAR ── */}
+      {/* Category Sidebar */}
       {isCategorySidebarOpen && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/50" onClick={closeCategorySidebar} />
-          <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl overflow-y-auto">
+          
+          <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 overflow-y-auto">
             <div className="bg-green-700 text-white p-5 sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold flex items-center gap-3">
@@ -327,6 +365,7 @@ export default function Navbar() {
                   <FaTimes className="w-4 h-4" />
                 </button>
               </div>
+              
               <div className="mt-4 relative">
                 <input
                   type="text"
@@ -335,8 +374,9 @@ export default function Navbar() {
                   placeholder="Search categories..."
                   className="w-full px-4 py-2.5 pl-10 bg-white/10 text-white placeholder-white/70 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/20"
                 />
-                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70" />
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/70" />
               </div>
+
               <button
                 onClick={() => handleCategorySelect('all')}
                 className={`mt-3 w-full text-left px-4 py-2.5 rounded-lg transition flex items-center justify-between ${
