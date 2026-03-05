@@ -40,7 +40,7 @@ function SearchBarWithParams({
         <input
           type="search"
           placeholder="Search for products..."
-          className="w-full px-6 py-1.5 pr-12 border border-gray-200 rounded-full bg-gray-50 animate-pulse text-sm"
+          className="w-full px-5 py-1.5 pr-8 border border-gray-200 rounded-full bg-gray-50 animate-pulse text-sm"
           disabled
         />
       </div>
@@ -85,7 +85,7 @@ export default function SearchBarWrapper({
         <input
           type="search"
           placeholder="Search for products..."
-          className="w-full px-6 py-1.5 pr-12 border border-gray-200 rounded-full bg-gray-50 animate-pulse text-sm"
+          className="w-full px-5 py-1.5 pr-8 border border-gray-200 rounded-full bg-gray-50 animate-pulse text-sm"
           disabled
         />
       </div>

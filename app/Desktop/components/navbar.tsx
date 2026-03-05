@@ -156,7 +156,7 @@ export default function Navbar() {
    *  width — search bar fills this, nav links are centered within it.
    *  Col A and Col C are "auto" — sized by their widest row item.
    */
-  const GRID = "grid grid-cols-[auto_minmax(0,max-content)_auto] items-center gap-x-8 justify-between";
+  const GRID = "grid grid-cols-[auto_30vw_auto] items-center gap-x-8 justify-between";
 
   return (
     <>
