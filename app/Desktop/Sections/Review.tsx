@@ -48,14 +48,14 @@ export default function Review() {
   };
 
   return (
-    <section className="my-12 mx-[4%]">
+    <section className="my-8 md:my-10 lg:my-12 2xl:my-16 mx-[4%]">
       <div className="max-w-[1920px] mx-auto">
         {/* Heading */}
-        <div className="text-center mb-16">
-          <h1 className="font-poppins font-semibold text-[45px] 2xl:text-[56px] leading-[1.2] capitalize">
+        <div className="text-center mb-8 md:mb-10 lg:mb-12 2xl:mb-16">
+          <h1 className="font-poppins font-semibold text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl leading-tight capitalize">
             Loved By Over +70,000 Smiles!
           </h1>
-          <p className="font-poppins font-normal text-[18px] 2xl:text-[22px] leading-[25.6px] capitalize mt-4 text-gray-700">
+          <p className="font-poppins font-normal text-sm md:text-base lg:text-lg 2xl:text-xl leading-relaxed mt-2 md:mt-3 lg:mt-4 text-gray-700 max-w-4xl mx-auto">
             Herbal care so natural and effective, you'll love using it every day — just ask our customers.
           </p>
         </div>
@@ -63,7 +63,7 @@ export default function Review() {
         {/* Reviews Slider */}
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto overflow-y-hidden no-scrollbar cursor-grab pb-4"
+          className="flex gap-4 md:gap-5 lg:gap-6 overflow-x-auto overflow-y-hidden no-scrollbar cursor-grab pb-4"
           onMouseDown={onMouseDown}
           onMouseLeave={onMouseLeave}
           onMouseUp={onMouseUp}
@@ -73,13 +73,7 @@ export default function Review() {
           {reviews.map((review, index) => (
             <div
               key={index}
-              className="flex-shrink-0"
-              style={{
-                // Review card scales up on larger screens
-                width: 'clamp(340px, calc((min(100vw, 1920px) - 8vw - 120px) / 3), 560px)',
-                height: 'auto',
-                minHeight: '303px',
-              }}
+              className="flex-shrink-0 w-[280px] sm:w-[320px] md:w-[360px] lg:w-[400px] xl:w-[440px] 2xl:w-[500px]"
             >
               <ReviewCard review={review} />
             </div>

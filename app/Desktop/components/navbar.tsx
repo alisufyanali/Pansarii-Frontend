@@ -9,12 +9,11 @@ import SearchBarWrapper from './navbar/SearchBarWrapper';
 import CartSidebar from './sidebar';
 import { useCart } from '../../context/CartContext';
 
-// Import React Icons
-import { 
-  FaFacebookF, 
-  FaInstagram, 
-  FaTwitter, 
-  FaYoutube, 
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaTwitter,
+  FaYoutube,
   FaWhatsapp,
   FaShoppingCart,
   FaUser,
@@ -28,28 +27,20 @@ import {
   FaSearch
 } from 'react-icons/fa';
 
-// Import all products from data
 import { allProducts } from '@/app/Desktop/data/products';
 
-// Categories data - dynamically generated from products
 const getCategoriesFromProducts = () => {
   const categoriesSet = new Set<string>();
   allProducts.forEach(product => {
-    if (product.category) {
-      categoriesSet.add(product.category);
-    }
+    if (product.category) categoriesSet.add(product.category);
   });
-  
-  return Array.from(categoriesSet)
-    .sort()
-    .map(category => ({
-      name: category,
-      slug: category,
-      count: allProducts.filter(p => p.category === category).length
-    }));
+  return Array.from(categoriesSet).sort().map(category => ({
+    name: category,
+    slug: category,
+    count: allProducts.filter(p => p.category === category).length
+  }));
 };
 
-// Navigation links
 const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'Shop', href: '/shop' },
@@ -71,18 +62,12 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const lastScrollY = useRef(0);
 
-  // Get categories from products
   const categories = getCategoriesFromProducts();
-  
-  // Get current category from URL
   const currentCategory = searchParams.get('category');
-  
-  // Filter categories based on search
-  const filteredCategories = categories.filter(category => 
+  const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(categorySearch.toLowerCase())
   );
-  
-  // Format mock products for search suggestions
+
   const mockProducts = allProducts.map(product => ({
     id: product.id.toString(),
     name: product.nameEn,
@@ -96,18 +81,12 @@ export default function Navbar() {
     description: product.description,
   }));
 
-  // Scroll listener — hide top & bottom bars after scrolling down
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (currentScrollY > 60) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(currentScrollY > 60);
       lastScrollY.current = currentScrollY;
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -136,12 +115,25 @@ export default function Navbar() {
       params.set('category', slug);
     }
     const queryString = params.toString();
-    const url = queryString ? `/shop?${queryString}` : '/shop';
-    router.push(url);
+    router.push(queryString ? `/shop?${queryString}` : '/shop');
     closeCategorySidebar();
   };
-  
+
   const totalProducts = categories.reduce((sum, cat) => sum + cat.count, 0);
+
+  /*
+   * ALL THREE BARS share this exact grid so every column locks across rows:
+   *
+   *  Col A (auto) │ Col B (1fr)          │ Col C (auto)
+   *  ─────────────┼──────────────────────┼───────────────────────────
+   *  TOP    social icons (left)  │ tagline (center) │ whatsapp+phone (right)
+   *  MIDDLE logo                 │ search bar       │ track + signin + cart
+   *  BOTTOM all-categories btn   │ nav links        │ affiliate btn
+   *
+   * "auto" columns size to their content — the widest item in each column
+   * sets the width for ALL rows automatically via CSS grid.
+   */
+  const GRID = "grid grid-cols-[auto_1fr_auto] items-center gap-x-6";
 
   return (
     <>
@@ -156,10 +148,10 @@ export default function Navbar() {
             pointerEvents: scrolled ? 'none' : 'auto',
           }}
         >
-          {/* Container: centered, max-width capped for 4K */}
           <div className="w-full max-w-[1600px] mx-auto px-6 py-2">
-            <div className="flex items-center justify-between">
-              {/* Left - Social Icons */}
+            <div className={GRID}>
+
+              {/* COL A — Social icons (auto → aligns with logo / categories btn) */}
               <div className="flex items-center gap-4">
                 <a href="https://facebook.com/pansariin.pk" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition hover:scale-110" aria-label="Facebook">
                   <FaFacebookF className="w-4 h-4" />
@@ -175,30 +167,34 @@ export default function Navbar() {
                 </a>
               </div>
 
-              {/* Center */}
-              <div className="hidden md:block">
-                <p className="text-sm font-semibold flex items-center gap-2">
-                  <FaLeaf className="w-4 h-4" />
-                  100% Ayurvedic &amp; Herbal Products
-                </p>
-              </div>
+              {/* COL B — Tagline centered (1fr → aligns with searchbar / nav links) */}
+              <p className="text-sm font-semibold flex items-center justify-center gap-2">
+                <FaLeaf className="w-4 h-4" />
+                100% Ayurvedic &amp; Herbal Products
+              </p>
 
-              {/* Right - WhatsApp */}
-              <a href="https://wa.me/923001234567" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:opacity-80 transition group" aria-label="WhatsApp">
-                <FaWhatsapp className="w-5 h-5" />
-                <span className="text-sm font-medium hidden sm:block">+92 300 1234567</span>
+              {/* COL C — WhatsApp + phone (auto → aligns with icon actions / affiliate btn) */}
+              <a
+                href="https://wa.me/923001234567"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-end gap-2 hover:opacity-80 transition"
+                aria-label="WhatsApp"
+              >
+                <FaWhatsapp className="w-4 h-4" />
+                <span className="text-sm font-medium whitespace-nowrap">+92 300 1234567</span>
               </a>
+
             </div>
           </div>
         </div>
 
-        {/* ── MIDDLE BAR: logo + search + actions ── */}
+        {/* ── MIDDLE BAR ── */}
         <div className="bg-white shadow-sm">
-          {/* Container: centered, max-width capped for 4K */}
           <div className="w-full max-w-[1600px] mx-auto px-6 py-3">
-            <div className="flex items-center gap-6">
+            <div className={GRID}>
 
-              {/* Logo — fixed width so it doesn't push search bar */}
+              {/* COL A — Logo */}
               <Link href="/" className="flex-shrink-0" aria-label="Pansariin.pk Home">
                 <div className="relative w-44 h-11">
                   <Image
@@ -212,75 +208,48 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              {/* Search Bar — grows to fill remaining space between logo and actions */}
-              <div className="flex-1 hidden lg:block">
-                <SearchBarWrapper 
-                  placeholder="Search for products..."
-                  variant="desktop"
-                  mockProducts={mockProducts}
-                  className="w-full"
-                />
-              </div>
+              {/* COL B — Search bar (same 1fr column as nav links) */}
+              <SearchBarWrapper
+                placeholder="Search for products..."
+                mockProducts={mockProducts}
+                className="w-full"
+              />
 
-              {/* Right actions — fixed, no wrapping, all vertically centered */}
-              <div className="flex-shrink-0 flex items-center gap-1">
+              {/* COL C — Icon actions (icons only, no labels) */}
+              <div className="flex items-center justify-end gap-1">
                 <Link
                   href="/track-order"
-                  className="hidden xl:flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition group"
+                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition group"
                   aria-label="Track Order"
                 >
                   <FaTruck className="w-[18px] h-[18px] text-gray-600 group-hover:text-green-700 transition" />
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition whitespace-nowrap">
-                    Track Order
-                  </span>
                 </Link>
 
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition group"
+                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition group"
                   aria-label="Sign In"
                 >
                   <FaUser className="w-[18px] h-[18px] text-gray-600 group-hover:text-green-700 transition" />
-                  <span className="hidden lg:block text-sm font-medium text-gray-700 group-hover:text-green-700 transition">
-                    Sign In
-                  </span>
                 </Link>
 
                 <button
                   onClick={openCartSidebar}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition group relative"
+                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition group relative"
                   aria-label="Shopping Cart"
                 >
                   <div className="relative">
                     <FaShoppingCart className="w-[18px] h-[18px] text-gray-600 group-hover:text-green-700 transition" />
                     {cartCount > 0 && (
-                      <span
-                        className="absolute -top-2 -right-2 w-5 h-5 bg-green-700 text-white text-xs rounded-full flex items-center justify-center font-bold"
-                        aria-label={`${cartCount} items in cart`}
-                      >
+                      <span className="absolute -top-2 -right-2 w-4 h-4 bg-green-700 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
                         {cartCount > 9 ? '9+' : cartCount}
                       </span>
                     )}
                   </div>
-                  <div className="hidden lg:flex flex-col items-start leading-tight">
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition">Cart</span>
-                    {cartCount > 0 && (
-                      <span className="text-xs text-gray-500">PKR {cartTotal.toLocaleString()}</span>
-                    )}
-                  </div>
                 </button>
               </div>
-            </div>
-          </div>
 
-          {/* Mobile Search Bar */}
-          <div className="lg:hidden px-4 pb-3">
-            <SearchBarWrapper 
-              placeholder="Search for products..."
-              variant="mobile"
-              mockProducts={mockProducts}
-              className="w-full"
-            />
+            </div>
           </div>
         </div>
 
@@ -288,70 +257,34 @@ export default function Navbar() {
         <div
           className="bg-white border-t border-gray-100 overflow-hidden transition-all duration-300 ease-in-out"
           style={{
-            maxHeight: scrolled ? '0px' : '120px',
+            maxHeight: scrolled ? '0px' : '56px',
             opacity: scrolled ? 0 : 1,
             pointerEvents: scrolled ? 'none' : 'auto',
           }}
         >
-          {/* Desktop bottom nav */}
-          <div className="hidden lg:block">
-            {/* Same container as middle bar so columns line up perfectly */}
-            <div className="w-full max-w-[1600px] mx-auto px-6 py-3">
-              <div className="flex items-center justify-between">
+          <div className="w-full max-w-[1600px] mx-auto px-6 py-3">
+            <div className={GRID}>
 
-                {/* Left: All Categories button — same left edge as logo */}
-                <button
-                  onClick={() => setIsCategorySidebarOpen(true)}
-                  className="flex items-center gap-2 px-5 py-2 bg-green-700 text-white rounded-full hover:bg-green-600 transition font-medium shadow-sm whitespace-nowrap flex-shrink-0"
-                  aria-label="Browse Categories"
-                >
-                  <FaBars className="w-4 h-4" />
-                  <span>All Categories</span>
-                  <FaChevronDown className="w-3 h-3" />
-                </button>
+              {/* COL A — All Categories btn */}
+              <button
+                onClick={() => setIsCategorySidebarOpen(true)}
+                className="flex items-center gap-2 px-5 py-2 bg-green-700 text-white rounded-full hover:bg-green-600 transition font-medium shadow-sm whitespace-nowrap"
+                aria-label="Browse Categories"
+              >
+                <FaBars className="w-4 h-4" />
+                <span>All Categories</span>
+                <FaChevronDown className="w-3 h-3" />
+              </button>
 
-                {/* Center: Nav links — centered over the search bar area */}
-                <nav className="flex items-center gap-6" aria-label="Main navigation">
-                  {navLinks.map((link) => (
-                    <Link 
-                      key={link.href}
-                      href={link.href} 
-                      className={`text-sm font-medium transition whitespace-nowrap ${
-                        isActive(link.href) 
-                          ? 'text-green-700 font-semibold' 
-                          : 'text-gray-700 hover:text-green-700'
-                      }`}
-                      aria-current={isActive(link.href) ? 'page' : undefined}
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </nav>
-
-                {/* Right: Affiliate button — same right edge as cart */}
-                <Link 
-                  href="/affiliate" 
-                  className="flex items-center gap-2 px-5 py-2 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition font-semibold text-sm shadow-sm hover:shadow-md group whitespace-nowrap flex-shrink-0"
-                  aria-label="Become an Affiliate"
-                >
-                  <FaGift className="w-4 h-4" />
-                  Become an Affiliate
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile bottom nav */}
-          <div className="lg:hidden">
-            <div className="w-full max-w-[1600px] mx-auto px-4 py-2">
-              <nav className="flex items-center justify-around" aria-label="Mobile navigation">
-                {navLinks.slice(0, 4).map((link) => (
-                  <Link 
+              {/* COL B — Nav links centered in the same 1fr as search bar */}
+              <nav className="flex items-center justify-center gap-6" aria-label="Main navigation">
+                {navLinks.map((link) => (
+                  <Link
                     key={link.href}
-                    href={link.href} 
-                    className={`text-xs font-medium transition px-2 py-1 ${
-                      isActive(link.href) 
-                        ? 'text-green-700' 
+                    href={link.href}
+                    className={`text-sm font-medium transition whitespace-nowrap ${
+                      isActive(link.href)
+                        ? 'text-green-700 font-semibold'
                         : 'text-gray-700 hover:text-green-700'
                     }`}
                     aria-current={isActive(link.href) ? 'page' : undefined}
@@ -360,17 +293,30 @@ export default function Navbar() {
                   </Link>
                 ))}
               </nav>
+
+              {/* COL C — Affiliate btn right-aligned to match icon actions */}
+              <div className="flex justify-end">
+                <Link
+                  href="/affiliate"
+                  className="flex items-center gap-2 px-5 py-2 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition font-semibold text-sm shadow-sm hover:shadow-md whitespace-nowrap"
+                  aria-label="Become an Affiliate"
+                >
+                  <FaGift className="w-4 h-4" />
+                  Become an Affiliate
+                </Link>
+              </div>
+
             </div>
           </div>
         </div>
+
       </header>
 
-      {/* Category Sidebar */}
+      {/* ── CATEGORY SIDEBAR ── */}
       {isCategorySidebarOpen && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/50" onClick={closeCategorySidebar} />
-          
-          <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 overflow-y-auto">
+          <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl overflow-y-auto">
             <div className="bg-green-700 text-white p-5 sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold flex items-center gap-3">
@@ -381,7 +327,6 @@ export default function Navbar() {
                   <FaTimes className="w-4 h-4" />
                 </button>
               </div>
-              
               <div className="mt-4 relative">
                 <input
                   type="text"
@@ -390,9 +335,8 @@ export default function Navbar() {
                   placeholder="Search categories..."
                   className="w-full px-4 py-2.5 pl-10 bg-white/10 text-white placeholder-white/70 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/20"
                 />
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/70" />
+                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70" />
               </div>
-
               <button
                 onClick={() => handleCategorySelect('all')}
                 className={`mt-3 w-full text-left px-4 py-2.5 rounded-lg transition flex items-center justify-between ${
