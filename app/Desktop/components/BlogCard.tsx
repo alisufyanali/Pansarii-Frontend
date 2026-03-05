@@ -1,4 +1,3 @@
-// components/BlogCard.tsx
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -34,30 +33,32 @@ export default function BlogCard({ blog }: BlogCardProps) {
   const cleanTitle = stripHtmlTags(blog.title);
 
   return (
-    <article className="w-[408px] h-[476px] rounded-[14px] border border-gray-300 overflow-hidden flex-shrink-0 hover:shadow-lg transition-shadow">
-      {/* Image */}
-      <div className="w-[384px] h-[217px] mx-auto mt-4 rounded-[14px] overflow-hidden">
-        <Image
-          src={blog.image}
-          alt={cleanTitle}
-          width={384}
-          height={217}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
+    <article className="w-full h-auto rounded-[14px] border border-gray-300 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+      {/* Image - Responsive container */}
+      <div className="relative w-full aspect-[384/217] mt-4 px-4">
+        <div className="relative w-full h-full rounded-[14px] overflow-hidden">
+          <Image
+            src={blog.image}
+            alt={cleanTitle}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            loading="lazy"
+          />
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4 flex flex-col justify-between h-[239px]">
-        <h3 className="font-poppins font-semibold text-[20px] leading-[25.6px] capitalize mb-2 line-clamp-2">
+      {/* Content - Responsive padding and text */}
+      <div className="p-4 md:p-5 lg:p-6 2xl:p-8 flex flex-col flex-grow">
+        <h3 className="font-poppins font-semibold text-lg md:text-xl lg:text-2xl 2xl:text-3xl leading-tight capitalize mb-2 line-clamp-2">
           {cleanTitle}
         </h3>
-        <p className="font-poppins font-normal text-[15px] leading-[18.6px] capitalize mb-4 line-clamp-3">
+        <p className="font-poppins font-normal text-sm md:text-base lg:text-lg 2xl:text-xl leading-relaxed capitalize mb-4 line-clamp-3">
           {cleanContent}
         </p>
         <Link
           href={`/blog/${blog.slug}`}
-          className="font-poppins font-medium text-[18px] underline capitalize hover:text-blue-600 transition-colors inline-flex items-center"
+          className="font-poppins font-medium text-base md:text-lg lg:text-xl 2xl:text-2xl underline capitalize hover:text-blue-600 transition-colors inline-flex items-center mt-auto"
         >
           Read More
           <span className="ml-2">→</span>
