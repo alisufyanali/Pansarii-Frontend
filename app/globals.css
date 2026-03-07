@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -10,39 +11,42 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-poppins: 'Poppins', sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #ffffff;
-  --foreground: #171717;
+    --foreground: #171717;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Poppins', Arial, Helvetica, sans-serif;
 }
 
 
 /* STYLING BY MIND THAT I HAVE */
 
-
-.me-bgcolor-g{
+.me-bgcolor-g {
   background: #197B33;
+}
 
-}
-.me-bgcolor-y{
+.me-bgcolor-y {
   background: #FAA944;
-color: white;
+  color: white;
 }
-.me-color-g{
-  color:#197B33 ;
+
+.me-color-g {
+  color: #197B33;
 }
-.me-color-y{
-  color: ;
+
+.me-color-y {
+  color: #FAA944;  /* Fixed: Added the yellow color value */
 }
+
 /* SolutionBar.css */
 
 .SolutionBar .slide {
@@ -50,6 +54,7 @@ color: white;
   gap: 10px;                /* space between cards */
   overflow-x: auto;         /* scroll if too many cards */
   padding: 10px 0;
+  font-family: 'Poppins', sans-serif; /* Added Poppins to SolutionBar */
 }
 
 .SolutionBar .card-solution {
@@ -66,12 +71,16 @@ color: white;
   color: white;
   font-weight: 500;
   font-size: 16px;
+  font-family: 'Poppins', sans-serif; /* Added Poppins to cards */
 }
-.solution-text{
+
+.solution-text {
   font-size: 40px;
   font-weight: 600;
   line-height: 26.5px;
+  font-family: 'Poppins', sans-serif; /* Added Poppins to solution text */
 }
+
 /* Hide scrollbar but keep scroll functionality */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

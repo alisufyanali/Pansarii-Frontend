@@ -148,7 +148,8 @@ function ProductGrid({ products, viewMode = 'grid', onAddToCart, isMobile = fals
         - 2xl (1536px+): 5 cols  ← large desktop / 4K: 5 cols always
         Gap scales up on 2xl for more breathing room on large screens
       */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8 2xl:gap-8">
+      {/* <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8 2xl:gap-8"> */}
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8">
         {products.map((product) => (
           <div key={`${product.id}-${product.nameEn}`} className="w-full">
             {isMobile ? (
