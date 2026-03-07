@@ -1,3 +1,4 @@
+// components/navbar/searchbar.tsx
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -191,10 +192,9 @@ export default function SearchBar({
   return (
     <div ref={searchRef} className={`relative ${className}`}>
       <form onSubmit={handleSubmit} className="relative">
-        {/* type="text" instead of "search" removes the browser's native X button */}
         <input
           ref={inputRef}
-          type="text"
+          type="search"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -204,8 +204,9 @@ export default function SearchBar({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full px-5 py-2.5 pr-12 border-none outline-none rounded-full text-sm
-            bg-gray-100 focus:bg-gray-50
+          className="w-full px-5 py-2.5 pr-12 border border-gray-200 rounded-full text-sm
+            focus:outline-none focus:border-green-700 focus:ring-1 focus:ring-green-500/20 
+            bg-gray-50 focus:bg-white
             transition-all duration-200 text-gray-900 placeholder-gray-400"
           aria-label="Search products"
           aria-expanded={isOpen}
@@ -217,7 +218,7 @@ export default function SearchBar({
             <button
               type="button"
               onClick={clearSearch}
-              className="p-1 text-gray-400 hover:text-gray-600 transition rounded-full hover:bg-gray-200"
+              className="p-1 text-gray-400 hover:text-gray-600 transition rounded-full hover:bg-gray-100"
               aria-label="Clear search"
             >
               <FiX className="w-3.5 h-3.5" />

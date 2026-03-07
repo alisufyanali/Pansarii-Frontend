@@ -9,6 +9,7 @@ import SearchBarWrapper from './navbar/SearchBarWrapper';
 import CartSidebar from './sidebar';
 import { useCart } from '../../context/CartContext';
 
+// Import React Icons
 import { 
   FaFacebookF, 
   FaInstagram, 
@@ -27,8 +28,10 @@ import {
   FaSearch
 } from 'react-icons/fa';
 
+// Import all products from data
 import { allProducts } from '@/app/Desktop/data/products';
 
+// Categories data - dynamically generated from products
 const getCategoriesFromProducts = () => {
   const categoriesSet = new Set<string>();
   allProducts.forEach(product => {
@@ -46,6 +49,7 @@ const getCategoriesFromProducts = () => {
     }));
 };
 
+// Navigation links
 const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'Shop', href: '/shop' },
@@ -67,13 +71,18 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const lastScrollY = useRef(0);
 
+  // Get categories from products
   const categories = getCategoriesFromProducts();
+  
+  // Get current category from URL
   const currentCategory = searchParams.get('category');
   
+  // Filter categories based on search
   const filteredCategories = categories.filter(category => 
     category.name.toLowerCase().includes(categorySearch.toLowerCase())
   );
   
+  // Format mock products for search suggestions
   const mockProducts = allProducts.map(product => ({
     id: product.id.toString(),
     name: product.nameEn,
@@ -87,6 +96,7 @@ export default function Navbar() {
     description: product.description,
   }));
 
+  // Scroll listener
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -133,8 +143,23 @@ export default function Navbar() {
   
   const totalProducts = categories.reduce((sum, cat) => sum + cat.count, 0);
 
-  // Shared 3-column grid — px-10 gives breathing room from screen edges
-  const GRID = "grid grid-cols-[auto_480px_auto] items-center gap-x-6 justify-between";
+  /*
+   * Shared 3-column grid used across ALL THREE BARS so columns lock perfectly:
+   *
+   *  Col A (auto)  │  Col B (fit-content / shrink)  │  Col C (auto)
+   *  ──────────────┼────────────────────────────────┼──────────────────────
+   *  TOP:  social icons          │ tagline centered  │ whatsapp + phone
+   *  MID:  logo                  │ search bar        │ track + signin + cart
+   *  BOT:  all-categories btn    │ nav links         │ affiliate btn
+   *
+   *  Col B uses "minmax(0,max-content)" so it shrinks to exactly the content
+   *  width — search bar fills this, nav links are centered within it.
+   *  Col A and Col C are "auto" — sized by their widest row item.
+   */
+
+// REPLACE:
+const GRID = "grid grid-cols-[auto_480px_auto] items-center gap-x-6 justify-between";
+
 
   return (
     <>
@@ -149,7 +174,7 @@ export default function Navbar() {
             pointerEvents: scrolled ? 'none' : 'auto',
           }}
         >
-          <div className="w-full max-w-[1600px] mx-auto px-10 py-2">
+          <div className="w-full max-w-[1600px] mx-auto px-6 py-2">
             <div className={GRID}>
 
               {/* COL A — Social Icons */}
@@ -168,7 +193,7 @@ export default function Navbar() {
                 </a>
               </div>
 
-              {/* COL B — Tagline */}
+              {/* COL B — Tagline (no bold) */}
               <p className="text-sm flex items-center justify-center gap-2 whitespace-nowrap">
                 <FaLeaf className="w-4 h-4" />
                 100% Ayurvedic &amp; Herbal Products
@@ -192,7 +217,7 @@ export default function Navbar() {
 
         {/* ── MIDDLE BAR ── */}
         <div className="bg-white shadow-sm">
-          <div className="w-full max-w-[1600px] mx-auto px-10 py-3">
+          <div className="w-full max-w-[1600px] mx-auto px-6 py-3">
             <div className={GRID}>
 
               {/* COL A — Logo */}
@@ -209,16 +234,16 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              {/* COL B — Search bar */}
+              {/* COL B — Search bar: same column as nav links, fills their width */}
               <SearchBarWrapper
                 placeholder="Search for products..."
                 variant="desktop"
                 mockProducts={mockProducts}
-                className="w-full"
+                className="w-full ml-10"
               />
 
               {/* COL C — Icon actions */}
-              <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
+           <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
                 <Link
                   href="/track-order"
                   className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition group"
@@ -236,9 +261,9 @@ export default function Navbar() {
                   aria-label="Sign In"
                 >
                   <FaUser className="w-[18px] h-[18px] text-gray-600 group-hover:text-green-700 transition" />
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition whitespace-nowrap">
-                    Sign In
-                  </span>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition whitespace-nowrap">
+  Sign In
+</span>
                 </Link>
 
                 <button
@@ -257,10 +282,11 @@ export default function Navbar() {
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col items-start leading-tight flex-shrink-0">
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition whitespace-nowrap">Cart</span>
+             
+<div className="flex flex-col items-start leading-tight flex-shrink-0">
+  <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition whitespace-nowrap">Cart</span>
                     {cartCount > 0 && (
-                      <span className="text-xs text-gray-500 whitespace-nowrap">PKR {cartTotal.toLocaleString()}</span>
+                      <span className="text-xs text-gray-500">PKR {cartTotal.toLocaleString()}</span>
                     )}
                   </div>
                 </button>
@@ -279,7 +305,7 @@ export default function Navbar() {
             pointerEvents: scrolled ? 'none' : 'auto',
           }}
         >
-          <div className="w-full max-w-[1600px] mx-auto px-10 py-3">
+          <div className="w-full max-w-[1600px] mx-auto px-6 py-3">
             <div className={GRID}>
 
               {/* COL A — All Categories btn */}
@@ -289,12 +315,12 @@ export default function Navbar() {
                 aria-label="Browse Categories"
               >
                 <FaBars className="w-4 h-4" />
-                <span>Categories</span>
+                <span> Categories</span>
                 <FaChevronDown className="w-3 h-3" />
               </button>
 
-              {/* COL B — Nav links */}
-              <nav className="flex items-center justify-center gap-4" aria-label="Main navigation">
+              {/* COL B — Nav links centered inside same column as search bar */}
+              <nav className="flex items-center justify-center gap-4 mr-7" aria-label="Main navigation">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
@@ -311,7 +337,7 @@ export default function Navbar() {
                 ))}
               </nav>
 
-              {/* COL C — Affiliate btn */}
+              {/* COL C — Affiliate btn aligned to same column as icon actions */}
               <Link
                 href="/affiliate"
                 className="flex items-center justify-end gap-2 px-5 py-2 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition font-semibold text-sm shadow-sm hover:shadow-md whitespace-nowrap flex-shrink-0"
