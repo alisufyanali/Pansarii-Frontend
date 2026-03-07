@@ -68,7 +68,7 @@ export default function SolutionBar() {
     router.push(`/shop?category=${category}`);
     if (autoSlideIntervalRef.current) {
       clearInterval(autoSlideIntervalRef.current);
-      setTimeout(() => startAutoSlide(), 2000);
+      setTimeout(() => startAutoSlide(), 5000);
     }
   };
 
