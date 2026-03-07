@@ -204,7 +204,7 @@ export default function SearchBar({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full px-5 py-1.5 pr-12 border border-gray-200 rounded-full text-sm
+          className="w-full px-5 py-2.5 pr-12 border border-gray-200 rounded-full text-sm
             focus:outline-none focus:border-green-700 focus:ring-1 focus:ring-green-500/20 
             bg-gray-50 focus:bg-white
             transition-all duration-200 text-gray-900 placeholder-gray-400"

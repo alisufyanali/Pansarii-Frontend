@@ -156,8 +156,9 @@ export default function Navbar() {
    *  width — search bar fills this, nav links are centered within it.
    *  Col A and Col C are "auto" — sized by their widest row item.
    */
-// REPLACE with:
-const GRID = "grid grid-cols-[auto_660px_auto] items-center gap-x-8 justify-between";
+
+// REPLACE:
+const GRID = "grid grid-cols-[auto_480px_auto] items-center gap-x-6 justify-between";
 
 
   return (
@@ -242,7 +243,7 @@ const GRID = "grid grid-cols-[auto_660px_auto] items-center gap-x-8 justify-betw
               />
 
               {/* COL C — Icon actions */}
-              <div className="flex items-center gap-1">
+           <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
                 <Link
                   href="/track-order"
                   className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition group"
@@ -260,9 +261,9 @@ const GRID = "grid grid-cols-[auto_660px_auto] items-center gap-x-8 justify-betw
                   aria-label="Sign In"
                 >
                   <FaUser className="w-[18px] h-[18px] text-gray-600 group-hover:text-green-700 transition" />
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition">
-                    Sign In
-                  </span>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition whitespace-nowrap">
+  Sign In
+</span>
                 </Link>
 
                 <button
@@ -281,8 +282,9 @@ const GRID = "grid grid-cols-[auto_660px_auto] items-center gap-x-8 justify-betw
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col items-start leading-tight">
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition">Cart</span>
+             
+<div className="flex flex-col items-start leading-tight flex-shrink-0">
+  <span className="text-sm font-medium text-gray-700 group-hover:text-green-700 transition whitespace-nowrap">Cart</span>
                     {cartCount > 0 && (
                       <span className="text-xs text-gray-500">PKR {cartTotal.toLocaleString()}</span>
                     )}

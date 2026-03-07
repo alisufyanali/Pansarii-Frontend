@@ -24,11 +24,11 @@ export default function BeautyCorner() {
 
   const updateCardsToShow = () => {
     const width = window.innerWidth;
-    if (width >= 2560) setCardsToShow(8);       // 4K: 8 cards
-    else if (width >= 1920) setCardsToShow(6);  // Large desktop: 6 cards
-    else if (width >= 1280) setCardsToShow(4);  // Laptop: 4 cards (minimum)
-    else if (width >= 768) setCardsToShow(2);   // Tablet: 2 cards
-    else setCardsToShow(1);                     // Mobile: 1 card
+    if (width >= 2560) setCardsToShow(8);
+    else if (width >= 1920) setCardsToShow(6);
+    else if (width >= 1280) setCardsToShow(4);
+    else if (width >= 768) setCardsToShow(2);
+    else setCardsToShow(1);
   };
 
   useEffect(() => {
@@ -39,16 +39,93 @@ export default function BeautyCorner() {
 
   return (
     <div className="mt-12">
-      {/* Banner - Full width */}
-      <section
-        className="w-full relative"
-        style={{
-          backgroundImage: `url(${beautyCornerImg})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          height:"100vh",
-        }}
-      />
+      {/* Banner - Following the same structure as the first banner */}
+      <section className="relative w-full h-[90vh] flex">
+        {/* Background Image */}
+        <div className="absolute inset-0 w-full h-full">
+          <Image
+            src={beautyCornerImg}
+            alt="Beauty Corner Banner"
+            fill
+            className="object-cover object-top"
+            priority
+          />
+        </div>
+
+        {/* Dark overlay - keep empty as per original */}
+        <div className="absolute inset-0 z-[1]"></div>
+
+        {/* Content Overlay */}
+        <div className="relative z-10 flex w-full mt-auto mb-auto px-[4%]">
+          <div className="w-full max-w-[1920px] mx-auto flex">
+            {/* Left Column */}
+            <div className="w-1/2 flex flex-col justify-center px-4 xl:px-12 gap-4">
+              <p
+                className="text-[18px] 2xl:text-[22px] 4xl:text-[28px] font-bold"
+                style={{
+                  fontFamily: "Lexend, sans-serif",
+                  lineHeight: "100%",
+                  letterSpacing: "0%",
+                  color: "#6C3F3F",
+                }}
+              >
+                ✨ Natural Beauty
+              </p>
+
+              <h1
+                className="text-5xl md:text-6xl 2xl:text-7xl 4xl:text-8xl font-bold"
+                style={{ color: "#005316", fontFamily: "Lexend, sans-serif" }}
+              >
+                Beauty Corner
+              </h1>
+
+              <p
+                className="text-[18px] 2xl:text-[22px] 4xl:text-[26px] font-medium max-w-lg 2xl:max-w-2xl"
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  lineHeight: "140%",
+                  letterSpacing: "0%",
+                  color: "#000000",
+                }}
+              >
+                Discover natural beauty products 🌸 | Organic Skincare | Herbal Cosmetics | Cruelty-free
+              </p>
+
+              <div className="mt-6 flex gap-4">
+                <a
+                  href="/shop"
+                  className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base 4xl:text-lg"
+                  style={{
+                    backgroundColor: "#FAA944",
+                    color: "#000000",
+                    padding: "16px 24px",
+                    borderRadius: "45px",
+                    fontFamily: "Poppins, sans-serif",
+                  }}
+                >
+                  Shop Now <span className="ml-2 text-lg">&gt;</span>
+                </a>
+                <a
+                  href="/beauty-tips"
+                  className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base 4xl:text-lg"
+                  style={{
+                    backgroundColor: "#197B33",
+                    color: "#ffffff",
+                    padding: "16px 24px",
+                    borderRadius: "45px",
+                    fontFamily: "Poppins, sans-serif",
+                  }}
+                >
+                  Beauty Tips <span className="ml-2 text-lg">&gt;</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Right Column - Empty */}
+            <div className="w-1/2"></div>
+          </div>
+        </div>
+      </section>
 
       {/* Content Section */}
       <div className="mx-[4%]">
