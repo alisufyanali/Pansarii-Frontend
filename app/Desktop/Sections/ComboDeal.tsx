@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import Image from "next/image";
 import ProductCard2 from '@components/ProductCard2';
 import ForwardArrow from '@components/ForwardArrow';
 import BackwardArrow from '@components/BackwardArrow';
@@ -59,160 +58,27 @@ export default function ComboDeal() {
   }, []);
 
   return (
-    <div style={{ marginTop: '3rem' }}>
-      {/* Banner with exact structure from sample */}
-      <div 
-        className="banner"
+    <div className="mt-12">
+      {/* Banner - Full width with 85vh height */}
+      <section
+        className="w-full relative"
         style={{
-          height: '90vh',
-          minHeight: '50rem',
-          maxHeight: '90rem',
-          width: '100%',
-          position: 'relative'
+          backgroundImage: `url(${banner4Img})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          height: '100vh',
         }}
-      >
-        <Image
-          src={banner4Img}
-          alt="Combo Deals Banner"
-          width={1920}
-          height={1080}
-          style={{
-            height: '100%',
-            width: '100%',
-            objectFit: 'cover'
-          }}
-          priority
-        />
-        
-        {/* Dark overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1
-        }}></div>
-
-        {/* Content Overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 4%'
-        }}>
-          <div style={{
-            width: '100%',
-            maxWidth: '1920px',
-            margin: '0 auto',
-            display: 'flex'
-          }}>
-            <div style={{
-              width: '50%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              padding: '0 1rem',
-              gap: '1rem'
-            }}>
-              <p style={{
-                fontSize: '18px',
-                fontWeight: 'bold',
-                fontFamily: 'Lexend, sans-serif',
-                lineHeight: '100%',
-                letterSpacing: '0%',
-                color: '#6C3F3F'
-              }}>
-                🎉 Special Offers
-              </p>
-
-              <h1 style={{
-                fontSize: '3rem',
-                fontWeight: 'bold',
-                fontFamily: 'Lexend, sans-serif',
-                color: '#005316'
-              }}>
-                Combo Deals
-              </h1>
-
-              <p style={{
-                fontSize: '18px',
-                fontWeight: 500,
-                fontFamily: 'Poppins, sans-serif',
-                lineHeight: '140%',
-                letterSpacing: '0%',
-                color: '#000000',
-                maxWidth: '32rem'
-              }}>
-                Save big with our exclusive combos 🛒 | Buy 2 Get 1 Free | Limited time offers | Free shipping
-              </p>
-
-              <div style={{
-                marginTop: '1.5rem',
-                display: 'flex',
-                gap: '1rem'
-              }}>
-                <a
-                  href="/combo-deals"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 600,
-                    backgroundColor: '#FAA944',
-                    color: '#000000',
-                    padding: '16px 24px',
-                    borderRadius: '45px',
-                    fontFamily: 'Poppins, sans-serif',
-                    textDecoration: 'none',
-                    transition: 'opacity 0.2s'
-                  }}
-                >
-                  View Combos <span style={{ marginLeft: '0.5rem', fontSize: '1.125rem' }}>&gt;</span>
-                </a>
-                <a
-                  href="/all-products"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 600,
-                    backgroundColor: '#197B33',
-                    color: '#ffffff',
-                    padding: '16px 24px',
-                    borderRadius: '45px',
-                    fontFamily: 'Poppins, sans-serif',
-                    textDecoration: 'none',
-                    transition: 'opacity 0.2s'
-                  }}
-                >
-                  All Products <span style={{ marginLeft: '0.5rem', fontSize: '1.125rem' }}>&gt;</span>
-                </a>
-              </div>
-            </div>
-            <div style={{ width: '50%' }}></div>
-          </div>
-        </div>
-      </div>
+      />
 
       {/* Content */}
-      <div style={{ padding: '0 4%' }}>
-        <div style={{ maxWidth: '1920px', margin: '0 auto' }}>
+      <div className="mx-[4%]">
+        <div className="max-w-[1920px] mx-auto">
           {/* Section Heading */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginTop: '3rem',
-            marginBottom: '1rem'
-          }}>
-            <h2 style={{
-              fontSize: '1.875rem',
-              fontWeight: 600,
-              fontFamily: 'Poppins, sans-serif'
-            }}>
-              Combo <span style={{ color: '#197B33' }}>Deals</span>
+          <div className="flex items-center justify-between mt-12 mb-4">
+            <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins">
+              Combo <span className="text-[#197B33]">Deals</span>
             </h2>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div className="flex gap-2">
               <BackwardArrow disabled={!canScrollLeft} onClick={() => scroll("left")} />
               <ForwardArrow disabled={!canScrollRight} onClick={() => scroll("right")} />
             </div>
@@ -221,23 +87,16 @@ export default function ComboDeal() {
           {/* Product Cards - Horizontal Slider */}
           <div
             ref={sliderRef}
-            style={{
-              display: 'flex',
-              gap: '1.5rem',
-              overflowX: 'auto',
-              scrollBehavior: 'smooth',
-              paddingBottom: '5rem',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none'
-            }}
+            className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-20"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {comboProducts.map((product, index) => (
               <div
                 key={index}
-                className="card-item"
+                className="card-item flex-shrink-0"
                 style={{
-                  flexShrink: 0,
-                  width: 'clamp(260px, calc((min(100vw, 1920px) - 8vw - 72px) / 4), 460px)'
+                  // 4 cards visible on laptop, scales with container on larger screens
+                  width: 'clamp(260px, calc((min(100vw, 1920px) - 8vw - 72px) / 4), 460px)',
                 }}
               >
                 <ProductCard2 product={product} />
