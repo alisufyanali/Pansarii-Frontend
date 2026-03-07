@@ -194,7 +194,7 @@ export default function SearchBar({
       <form onSubmit={handleSubmit} className="relative">
         <input
           ref={inputRef}
-          type="search"
+          type="text"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -204,10 +204,9 @@ export default function SearchBar({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full px-5 py-2.5 pr-12 border border-gray-200 rounded-full text-sm
-            focus:outline-none focus:border-green-700 focus:ring-1 focus:ring-green-500/20 
-            bg-gray-50 focus:bg-white
-            transition-all duration-200 text-gray-900 placeholder-gray-400"
+     className="w-full px-5 py-2.5 pr-12 border-0 outline-none rounded-full text-sm
+  bg-gray-100 focus:bg-gray-50
+  transition-all duration-200 text-gray-900 placeholder-gray-400"
           aria-label="Search products"
           aria-expanded={isOpen}
           aria-controls="search-suggestions"
