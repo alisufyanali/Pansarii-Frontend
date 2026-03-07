@@ -5,137 +5,91 @@ export default function Banner() {
   const bannerImg = '/images/Banner.png';
 
   return (
-    <div 
-      className="banner"
-      style={{
-        height: '90vh',
-        minHeight: '50rem',
-        maxHeight: '90rem',
-        width: '100%',
-        position: 'relative'
-      }}
-    >
-      <Image
-        src={bannerImg}
-        alt="Pansari Inn Banner"
-        width={1920}
-        height={1080}
-        style={{
-          height: '100%',
-          width: '100%',
-          objectFit: 'cover'
-        }}
-        priority
-      />
-      
-      {/* Dark overlay */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        zIndex: 1
-      }}></div>
+    <section className="relative w-full flex" style={{ height: '90vh', minHeight: '50rem', maxHeight: '90rem' }}>
+      {/* Background Image */}
+      <div className="absolute inset-0 w-full h-full">
+        <Image
+          src={bannerImg}
+          alt="Pansari Inn Banner"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+      </div>
 
-      {/* Content Overlay */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        zIndex: 10,
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 4%'
-      }}>
-        <div style={{
-          width: '100%',
-          maxWidth: '1920px',
-          margin: '0 auto',
-          display: 'flex'
-        }}>
-          <div style={{
-            width: '50%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            padding: '0 1rem',
-            gap: '1rem'
-          }}>
-            <p style={{
-              fontSize: '18px',
-              fontWeight: 'bold',
-              fontFamily: 'Lexend, sans-serif',
-              lineHeight: '100%',
-              letterSpacing: '0%',
-              color: '#6C3F3F'
-            }}>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 z-[1]"></div>
+
+      {/* Content Overlay — contained within max-width container */}
+      <div className="relative z-10 flex w-full mt-auto mb-auto px-[4%]">
+        <div className="w-full max-w-[1920px] mx-auto flex">
+          {/* Left Column */}
+          <div className="w-1/2 flex flex-col justify-center px-4 xl:px-12 gap-4">
+            <p
+              className="text-[18px] 2xl:text-[22px] 4xl:text-[28px] font-bold"
+              style={{
+                fontFamily: "Lexend, sans-serif",
+                lineHeight: "100%",
+                letterSpacing: "0%",
+                color: "#6C3F3F",
+              }}
+            >
               ✨ 100% Natural & Authentic
             </p>
 
-            <h1 style={{
-              fontSize: '3rem',
-              fontWeight: 'bold',
-              fontFamily: 'Lexend, sans-serif',
-              color: '#005316'
-            }}>
+            <h1
+              className="text-5xl md:text-6xl 2xl:text-7xl 4xl:text-8xl font-bold"
+              style={{ color: "#005316", fontFamily: "Lexend, sans-serif" }}
+            >
               Pansari Inn
             </h1>
 
-            <p style={{
-              fontSize: '18px',
-              fontWeight: 500,
-              fontFamily: 'Poppins, sans-serif',
-              lineHeight: '140%',
-              letterSpacing: '0%',
-              color: '#000000',
-              maxWidth: '32rem'
-            }}>
+            <p
+              className="text-[18px] 2xl:text-[22px] 4xl:text-[26px] font-medium max-w-lg 2xl:max-w-2xl"
+              style={{
+                fontFamily: "Poppins, sans-serif",
+                lineHeight: "140%",
+                letterSpacing: "0%",
+                color: "#000000",
+              }}
+            >
               Nature heals 🌿 Handmade | Herbal Haircare | Plant Based Skincare | Women owned family business
             </p>
 
-            <div style={{
-              marginTop: '1.5rem',
-              display: 'flex',
-              gap: '1rem'
-            }}>
+            <div className="mt-6 flex gap-4">
               <a
                 href="/shop"
+                className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base 4xl:text-lg"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 600,
-                  backgroundColor: '#FAA944',
-                  color: '#000000',
-                  padding: '16px 24px',
-                  borderRadius: '45px',
-                  fontFamily: 'Poppins, sans-serif',
-                  textDecoration: 'none',
-                  transition: 'opacity 0.2s'
+                  backgroundColor: "#FAA944",
+                  color: "#000000",
+                  padding: "16px 24px",
+                  borderRadius: "45px",
+                  fontFamily: "Poppins, sans-serif",
                 }}
               >
-                Shop Now <span style={{ marginLeft: '0.5rem', fontSize: '1.125rem' }}>&gt;</span>
+                Shop Now <span className="ml-2 text-lg">&gt;</span>
               </a>
               <a
                 href="/remedies"
+                className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base 4xl:text-lg"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 600,
-                  backgroundColor: '#197B33',
-                  color: '#ffffff',
-                  padding: '16px 24px',
-                  borderRadius: '45px',
-                  fontFamily: 'Poppins, sans-serif',
-                  textDecoration: 'none',
-                  transition: 'opacity 0.2s'
+                  backgroundColor: "#197B33",
+                  color: "#ffffff",
+                  padding: "16px 24px",
+                  borderRadius: "45px",
+                  fontFamily: "Poppins, sans-serif",
                 }}
               >
-                Explore Remedies <span style={{ marginLeft: '0.5rem', fontSize: '1.125rem' }}>&gt;</span>
+                Explore Remedies <span className="ml-2 text-lg">&gt;</span>
               </a>
             </div>
           </div>
-          <div style={{ width: '50%' }}></div>
+
+          {/* Right Column */}
+          <div className="w-1/2"></div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

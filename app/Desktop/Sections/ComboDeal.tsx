@@ -59,16 +59,13 @@ export default function ComboDeal() {
 
   return (
     <div className="mt-12">
-      {/* Banner - Full width with 85vh height */}
+      {/* Banner */}
       <section
         className="w-full relative"
-        style={{
-          backgroundImage: `url(${banner4Img})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          height: '100vh',
-        }}
-      />
+        style={{ height: '90vh', minHeight: '50rem', maxHeight: '90rem' }}
+      >
+        <img src={banner4Img} alt="Combo Deals" className="w-full h-full object-cover" />
+      </section>
 
       {/* Content */}
       <div className="mx-[4%]">
@@ -95,7 +92,6 @@ export default function ComboDeal() {
                 key={index}
                 className="card-item flex-shrink-0"
                 style={{
-                  // 4 cards visible on laptop, scales with container on larger screens
                   width: 'clamp(260px, calc((min(100vw, 1920px) - 8vw - 72px) / 4), 460px)',
                 }}
               >

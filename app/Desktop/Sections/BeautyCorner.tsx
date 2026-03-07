@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import ProductCard from "@components/ProductCard";
 
@@ -24,11 +23,11 @@ export default function BeautyCorner() {
 
   const updateCardsToShow = () => {
     const width = window.innerWidth;
-    if (width >= 2560) setCardsToShow(8);       // 4K: 8 cards
-    else if (width >= 1920) setCardsToShow(6);  // Large desktop: 6 cards
-    else if (width >= 1280) setCardsToShow(4);  // Laptop: 4 cards (minimum)
-    else if (width >= 768) setCardsToShow(2);   // Tablet: 2 cards
-    else setCardsToShow(1);                     // Mobile: 1 card
+    if (width >= 2560) setCardsToShow(8);
+    else if (width >= 1920) setCardsToShow(6);
+    else if (width >= 1280) setCardsToShow(4);
+    else if (width >= 768) setCardsToShow(2);
+    else setCardsToShow(1);
   };
 
   useEffect(() => {
@@ -39,16 +38,13 @@ export default function BeautyCorner() {
 
   return (
     <div className="mt-12">
-      {/* Banner - Full width */}
+      {/* Banner */}
       <section
         className="w-full relative"
-        style={{
-          backgroundImage: `url(${beautyCornerImg})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          height:"100vh",
-        }}
-      />
+        style={{ height: '90vh', minHeight: '50rem', maxHeight: '90rem' }}
+      >
+        <img src={beautyCornerImg} alt="Beauty Corner" className="w-full h-full object-cover" />
+      </section>
 
       {/* Content Section */}
       <div className="mx-[4%]">

@@ -239,7 +239,7 @@ const GRID = "grid grid-cols-[auto_480px_auto] items-center gap-x-6 justify-betw
                 placeholder="Search for products..."
                 variant="desktop"
                 mockProducts={mockProducts}
-                className="w-full"
+                className="w-full ml-6"
               />
 
               {/* COL C — Icon actions */}
