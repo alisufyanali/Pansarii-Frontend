@@ -315,12 +315,12 @@ const GRID = "grid grid-cols-[auto_480px_auto] items-center gap-x-6 justify-betw
                 aria-label="Browse Categories"
               >
                 <FaBars className="w-4 h-4" />
-                <span>All Categories</span>
+                <span> Categories</span>
                 <FaChevronDown className="w-3 h-3" />
               </button>
 
               {/* COL B — Nav links centered inside same column as search bar */}
-              <nav className="flex items-center justify-center gap-6" aria-label="Main navigation">
+              <nav className="flex items-center justify-center gap-4 mr-10" aria-label="Main navigation">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}

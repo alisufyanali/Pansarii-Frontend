@@ -42,119 +42,194 @@ export default function PansariInn() {
   }, []);
 
   const renderSection = (bannerTitle: string, bannerImg: string, title: string, products: any[]) => (
-    <div className="mt-12">
-      {/* Banner - Following the same structure as the first banner */}
-      <section className="relative w-full h-[90vh] flex">
-        {/* Background Image */}
-        <div className="absolute inset-0 w-full h-full">
-          <Image
-            src={bannerImg}
-            alt={`${bannerTitle} Banner`}
-            fill
-            className="object-cover object-top"
-            priority
-          />
-        </div>
-
+    <div style={{ marginTop: '3rem' }}>
+      {/* Banner with exact structure from sample */}
+      <div 
+        className="banner"
+        style={{
+          height: '90vh',
+          minHeight: '50rem',
+          maxHeight: '90rem',
+          width: '100%',
+          position: 'relative'
+        }}
+      >
+        <Image
+          src={bannerImg}
+          alt={`${bannerTitle} Banner`}
+          width={1920}
+          height={1080}
+          style={{
+            height: '100%',
+            width: '100%',
+            objectFit: 'cover'
+          }}
+          priority
+        />
+        
         {/* Dark overlay */}
-        <div className="absolute inset-0 z-[1]"></div>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1
+        }}></div>
 
         {/* Content Overlay */}
-        <div className="relative z-10 flex w-full mt-auto mb-auto px-[4%]">
-          <div className="w-full max-w-[1920px] mx-auto flex">
-            {/* Left Column */}
-            <div className="w-1/2 flex flex-col justify-center px-4 xl:px-12 gap-4">
-              <p
-                className="text-[18px] 2xl:text-[22px] 4xl:text-[28px] font-bold"
-                style={{
-                  fontFamily: "Lexend, sans-serif",
-                  lineHeight: "100%",
-                  letterSpacing: "0%",
-                  color: "#6C3F3F",
-                }}
-              >
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 4%'
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '1920px',
+            margin: '0 auto',
+            display: 'flex'
+          }}>
+            <div style={{
+              width: '50%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              padding: '0 1rem',
+              gap: '1rem'
+            }}>
+              <p style={{
+                fontSize: '18px',
+                fontWeight: 'bold',
+                fontFamily: 'Lexend, sans-serif',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                color: '#6C3F3F'
+              }}>
                 🌿 Pure & Natural
               </p>
 
-              <h1
-                className="text-5xl md:text-6xl 2xl:text-7xl 4xl:text-8xl font-bold"
-                style={{ color: "#005316", fontFamily: "Lexend, sans-serif" }}
-              >
+              <h1 style={{
+                fontSize: '3rem',
+                fontWeight: 'bold',
+                fontFamily: 'Lexend, sans-serif',
+                color: '#005316'
+              }}>
                 {title}
               </h1>
 
-              <p
-                className="text-[18px] 2xl:text-[22px] 4xl:text-[26px] font-medium max-w-lg 2xl:max-w-2xl"
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  lineHeight: "140%",
-                  letterSpacing: "0%",
-                  color: "#000000",
-                }}
-              >
+              <p style={{
+                fontSize: '18px',
+                fontWeight: 500,
+                fontFamily: 'Poppins, sans-serif',
+                lineHeight: '140%',
+                letterSpacing: '0%',
+                color: '#000000',
+                maxWidth: '32rem'
+              }}>
                 Cold pressed oils for health & beauty | 100% Organic | Chemical-free | Family tradition since 1980
               </p>
 
-              <div className="mt-6 flex gap-4">
+              <div style={{
+                marginTop: '1.5rem',
+                display: 'flex',
+                gap: '1rem'
+              }}>
                 <a
                   href="/shop/oils"
-                  className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base 4xl:text-lg"
                   style={{
-                    backgroundColor: "#FAA944",
-                    color: "#000000",
-                    padding: "16px 24px",
-                    borderRadius: "45px",
-                    fontFamily: "Poppins, sans-serif",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 600,
+                    backgroundColor: '#FAA944',
+                    color: '#000000',
+                    padding: '16px 24px',
+                    borderRadius: '45px',
+                    fontFamily: 'Poppins, sans-serif',
+                    textDecoration: 'none',
+                    transition: 'opacity 0.2s'
                   }}
                 >
-                  Shop Oils <span className="ml-2 text-lg">&gt;</span>
+                  Shop Oils <span style={{ marginLeft: '0.5rem', fontSize: '1.125rem' }}>&gt;</span>
                 </a>
                 <a
                   href="/oil-guide"
-                  className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base 4xl:text-lg"
                   style={{
-                    backgroundColor: "#197B33",
-                    color: "#ffffff",
-                    padding: "16px 24px",
-                    borderRadius: "45px",
-                    fontFamily: "Poppins, sans-serif",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 600,
+                    backgroundColor: '#197B33',
+                    color: '#ffffff',
+                    padding: '16px 24px',
+                    borderRadius: '45px',
+                    fontFamily: 'Poppins, sans-serif',
+                    textDecoration: 'none',
+                    transition: 'opacity 0.2s'
                   }}
                 >
-                  Oil Guide <span className="ml-2 text-lg">&gt;</span>
+                  Oil Guide <span style={{ marginLeft: '0.5rem', fontSize: '1.125rem' }}>&gt;</span>
                 </a>
               </div>
             </div>
-
-            {/* Right Column - Empty */}
-            <div className="w-1/2"></div>
+            <div style={{ width: '50%' }}></div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Content Section */}
-      <div className="mx-[4%]">
-        <div className="max-w-[1920px] mx-auto">
+      <div style={{ padding: '0 4%' }}>
+        <div style={{ maxWidth: '1920px', margin: '0 auto' }}>
           {/* Heading and View All */}
-          <div className="mt-16 mb-6 flex items-center justify-between">
-            <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">
-              PureInn <span className="text-[#197B33]">Oils</span>
+          <div style={{
+            marginTop: '4rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <h2 style={{
+              fontSize: '1.875rem',
+              fontWeight: 600,
+              fontFamily: 'Poppins, sans-serif'
+            }}>
+              PureInn <span style={{ color: '#197B33' }}>Oils</span>
             </h2>
 
-            <div className="flex items-center gap-4 cursor-pointer group">
-              <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
-                View All
-              </span>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
-                <span className="text-lg font-bold">{'>'}</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              cursor: 'pointer'
+            }}>
+              <span style={{
+                color: '#000',
+                fontWeight: 600,
+                transition: 'color 0.2s'
+              }}>View All</span>
+              <div style={{
+                width: '2.5rem',
+                height: '2.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                backgroundColor: '#1A1A1A1A',
+                color: '#000',
+                transition: 'all 0.2s'
+              }}>
+                <span style={{ fontSize: '1.125rem', fontWeight: 'bold' }}>&gt;</span>
               </div>
             </div>
           </div>
 
           {/* Product Cards Grid */}
-          <div
-            className="grid gap-6 2xl:gap-8 pb-20"
-            style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
-          >
+          <div style={{
+            display: 'grid',
+            gap: '1.5rem',
+            paddingBottom: '5rem',
+            gridTemplateColumns: `repeat(${cardsToShow}, 1fr)`
+          }}>
             {products.slice(0, cardsToShow).map((product, index) => (
               <ProductCard key={index} product={product} />
             ))}

@@ -59,104 +59,160 @@ export default function ComboDeal() {
   }, []);
 
   return (
-    <div className="mt-12">
-      {/* Banner - Following the same structure as the first banner */}
-      <section className="relative w-full h-[90vh] flex">
-        {/* Background Image */}
-        <div className="absolute inset-0 w-full h-full">
-          <Image
-            src={banner4Img}
-            alt="Combo Deals Banner"
-            fill
-            className="object-cover object-top"
-            priority
-          />
-        </div>
-
+    <div style={{ marginTop: '3rem' }}>
+      {/* Banner with exact structure from sample */}
+      <div 
+        className="banner"
+        style={{
+          height: '90vh',
+          minHeight: '50rem',
+          maxHeight: '90rem',
+          width: '100%',
+          position: 'relative'
+        }}
+      >
+        <Image
+          src={banner4Img}
+          alt="Combo Deals Banner"
+          width={1920}
+          height={1080}
+          style={{
+            height: '100%',
+            width: '100%',
+            objectFit: 'cover'
+          }}
+          priority
+        />
+        
         {/* Dark overlay */}
-        <div className="absolute inset-0 z-[1]"></div>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1
+        }}></div>
 
         {/* Content Overlay */}
-        <div className="relative z-10 flex w-full mt-auto mb-auto px-[4%]">
-          <div className="w-full max-w-[1920px] mx-auto flex">
-            {/* Left Column */}
-            <div className="w-1/2 flex flex-col justify-center px-4 xl:px-12 gap-4">
-              <p
-                className="text-[18px] 2xl:text-[22px] 4xl:text-[28px] font-bold"
-                style={{
-                  fontFamily: "Lexend, sans-serif",
-                  lineHeight: "100%",
-                  letterSpacing: "0%",
-                  color: "#6C3F3F",
-                }}
-              >
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 4%'
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '1920px',
+            margin: '0 auto',
+            display: 'flex'
+          }}>
+            <div style={{
+              width: '50%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              padding: '0 1rem',
+              gap: '1rem'
+            }}>
+              <p style={{
+                fontSize: '18px',
+                fontWeight: 'bold',
+                fontFamily: 'Lexend, sans-serif',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                color: '#6C3F3F'
+              }}>
                 🎉 Special Offers
               </p>
 
-              <h1
-                className="text-5xl md:text-6xl 2xl:text-7xl 4xl:text-8xl font-bold"
-                style={{ color: "#005316", fontFamily: "Lexend, sans-serif" }}
-              >
+              <h1 style={{
+                fontSize: '3rem',
+                fontWeight: 'bold',
+                fontFamily: 'Lexend, sans-serif',
+                color: '#005316'
+              }}>
                 Combo Deals
               </h1>
 
-              <p
-                className="text-[18px] 2xl:text-[22px] 4xl:text-[26px] font-medium max-w-lg 2xl:max-w-2xl"
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  lineHeight: "140%",
-                  letterSpacing: "0%",
-                  color: "#000000",
-                }}
-              >
+              <p style={{
+                fontSize: '18px',
+                fontWeight: 500,
+                fontFamily: 'Poppins, sans-serif',
+                lineHeight: '140%',
+                letterSpacing: '0%',
+                color: '#000000',
+                maxWidth: '32rem'
+              }}>
                 Save big with our exclusive combos 🛒 | Buy 2 Get 1 Free | Limited time offers | Free shipping
               </p>
 
-              <div className="mt-6 flex gap-4">
+              <div style={{
+                marginTop: '1.5rem',
+                display: 'flex',
+                gap: '1rem'
+              }}>
                 <a
                   href="/combo-deals"
-                  className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base 4xl:text-lg"
                   style={{
-                    backgroundColor: "#FAA944",
-                    color: "#000000",
-                    padding: "16px 24px",
-                    borderRadius: "45px",
-                    fontFamily: "Poppins, sans-serif",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 600,
+                    backgroundColor: '#FAA944',
+                    color: '#000000',
+                    padding: '16px 24px',
+                    borderRadius: '45px',
+                    fontFamily: 'Poppins, sans-serif',
+                    textDecoration: 'none',
+                    transition: 'opacity 0.2s'
                   }}
                 >
-                  View Combos <span className="ml-2 text-lg">&gt;</span>
+                  View Combos <span style={{ marginLeft: '0.5rem', fontSize: '1.125rem' }}>&gt;</span>
                 </a>
                 <a
                   href="/all-products"
-                  className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base 4xl:text-lg"
                   style={{
-                    backgroundColor: "#197B33",
-                    color: "#ffffff",
-                    padding: "16px 24px",
-                    borderRadius: "45px",
-                    fontFamily: "Poppins, sans-serif",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 600,
+                    backgroundColor: '#197B33',
+                    color: '#ffffff',
+                    padding: '16px 24px',
+                    borderRadius: '45px',
+                    fontFamily: 'Poppins, sans-serif',
+                    textDecoration: 'none',
+                    transition: 'opacity 0.2s'
                   }}
                 >
-                  All Products <span className="ml-2 text-lg">&gt;</span>
+                  All Products <span style={{ marginLeft: '0.5rem', fontSize: '1.125rem' }}>&gt;</span>
                 </a>
               </div>
             </div>
-
-            {/* Right Column - Empty */}
-            <div className="w-1/2"></div>
+            <div style={{ width: '50%' }}></div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Content */}
-      <div className="mx-[4%]">
-        <div className="max-w-[1920px] mx-auto">
+      <div style={{ padding: '0 4%' }}>
+        <div style={{ maxWidth: '1920px', margin: '0 auto' }}>
           {/* Section Heading */}
-          <div className="flex items-center justify-between mt-12 mb-4">
-            <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins">
-              Combo <span className="text-[#197B33]">Deals</span>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: '3rem',
+            marginBottom: '1rem'
+          }}>
+            <h2 style={{
+              fontSize: '1.875rem',
+              fontWeight: 600,
+              fontFamily: 'Poppins, sans-serif'
+            }}>
+              Combo <span style={{ color: '#197B33' }}>Deals</span>
             </h2>
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               <BackwardArrow disabled={!canScrollLeft} onClick={() => scroll("left")} />
               <ForwardArrow disabled={!canScrollRight} onClick={() => scroll("right")} />
             </div>
@@ -165,15 +221,23 @@ export default function ComboDeal() {
           {/* Product Cards - Horizontal Slider */}
           <div
             ref={sliderRef}
-            className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-20"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            style={{
+              display: 'flex',
+              gap: '1.5rem',
+              overflowX: 'auto',
+              scrollBehavior: 'smooth',
+              paddingBottom: '5rem',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }}
           >
             {comboProducts.map((product, index) => (
               <div
                 key={index}
-                className="card-item flex-shrink-0"
+                className="card-item"
                 style={{
-                  width: 'clamp(260px, calc((min(100vw, 1920px) - 8vw - 72px) / 4), 460px)',
+                  flexShrink: 0,
+                  width: 'clamp(260px, calc((min(100vw, 1920px) - 8vw - 72px) / 4), 460px)'
                 }}
               >
                 <ProductCard2 product={product} />
