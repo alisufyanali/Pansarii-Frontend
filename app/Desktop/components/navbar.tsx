@@ -239,7 +239,7 @@ const GRID = "grid grid-cols-[auto_480px_auto] items-center gap-x-6 justify-betw
                 placeholder="Search for products..."
                 variant="desktop"
                 mockProducts={mockProducts}
-                className="w-full ml-6"
+                className="w-full ml-10"
               />
 
               {/* COL C — Icon actions */}
@@ -320,7 +320,7 @@ const GRID = "grid grid-cols-[auto_480px_auto] items-center gap-x-6 justify-betw
               </button>
 
               {/* COL B — Nav links centered inside same column as search bar */}
-              <nav className="flex items-center justify-center gap-4 mr-16" aria-label="Main navigation">
+              <nav className="flex items-center justify-center gap-4 mr-7" aria-label="Main navigation">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}

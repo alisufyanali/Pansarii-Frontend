@@ -41,7 +41,7 @@ export default function BeautyCorner() {
       {/* Banner */}
       <section
         className="w-full relative"
-        style={{ height: '90vh', minHeight: '50rem', maxHeight: '90rem' }}
+        style={{ height: '90vh', minHeight: '40rem', maxHeight: '90rem' }}
       >
         <img src={beautyCornerImg} alt="Beauty Corner" className="w-full h-full object-cover" />
       </section>

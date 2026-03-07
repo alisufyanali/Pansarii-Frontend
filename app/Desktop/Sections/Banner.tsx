@@ -5,7 +5,7 @@ export default function Banner() {
   const bannerImg = '/images/Banner.png';
 
   return (
-    <section className="relative w-full flex" style={{ height: '90vh', minHeight: '50rem', maxHeight: '90rem' }}>
+    <section className="relative w-full flex" style={{ height: '90vh', minHeight: '40rem', maxHeight: '90rem' }}>
       {/* Background Image */}
       <div className="absolute inset-0 w-full h-full">
         <Image
