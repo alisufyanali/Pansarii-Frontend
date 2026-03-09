@@ -56,7 +56,7 @@ export default function PansariInn() {
           {/* Heading and View All */}
           <div className="mt-16 mb-6 flex items-center justify-between">
             <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">
-              PureInn <span className="text-[#197B33]">Oils</span>
+              PureInn <span className="me-color-y">Oils</span>
             </h2>
 
             <div className="flex items-center gap-4 cursor-pointer group">

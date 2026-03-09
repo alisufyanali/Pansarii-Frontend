@@ -1,23 +1,28 @@
-// components/SearchFilterBar-Enhanced.tsx
+// components/SearchFilterBar.tsx
 'use client';
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { FilterOptions } from '../utils/filterProducts';
-import { 
-  FiFilter, 
-  FiSearch, 
-  FiX, 
-  FiGrid, 
+import {
+  FiFilter,
+  FiSearch,
+  FiX,
+  FiGrid,
   FiList,
   FiChevronDown,
   FiSliders,
   FiChevronUp,
-  FiCheck
+  FiCheck,
+  FiRefreshCw,
 } from 'react-icons/fi';
-import { FaStar, FaTag, FaBox } from 'react-icons/fa';
+import {
+  FaStar,
+  FaTag,
+  FaBox,
+  FaSortAmountDown,
+} from 'react-icons/fa';
 
-// Create an inner component that uses useSearchParams
 function SearchFilterBarContent({
   onFilterChange,
   onViewModeChange,
@@ -35,10 +40,11 @@ function SearchFilterBarContent({
   const pathname = usePathname();
   const { useSearchParams } = require('next/navigation');
   const searchParams = useSearchParams();
-  
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
   const [filters, setFilters] = useState<FilterOptions>({
     searchQuery: initialSearchQuery,
     minPrice: 0,
@@ -47,137 +53,86 @@ function SearchFilterBarContent({
     sortBy: 'default',
     showOnSale: false,
     showInStock: true,
+    showNewArrivals: false,
+    showBestSellers: false,
   });
+
   const [tempFilters, setTempFilters] = useState<FilterOptions>(filters);
   const [showMobileSort, setShowMobileSort] = useState(false);
 
   const isInitialMount = useRef(true);
   const initialSearchQueryRef = useRef(initialSearchQuery);
   const filterPanelRef = useRef<HTMLDivElement>(null);
-  
-  // Update local filters when initialSearchQuery changes
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const sortOptions = [
+    { value: 'default',    label: 'Default' },
+    { value: 'price-low',  label: 'Price: Low to High' },
+    { value: 'price-high', label: 'Price: High to Low' },
+    { value: 'rating',     label: 'Highest Rated' },
+    { value: 'name',       label: 'Alphabetically A-Z' },
+  ];
+
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    
+    if (isInitialMount.current) { isInitialMount.current = false; return; }
     if (initialSearchQuery !== initialSearchQueryRef.current) {
       initialSearchQueryRef.current = initialSearchQuery;
-      setFilters(prev => ({ 
-        ...prev, 
-        searchQuery: initialSearchQuery 
-      }));
+      setFilters(prev => ({ ...prev, searchQuery: initialSearchQuery }));
     }
   }, [initialSearchQuery]);
 
-  // Initialize categories from URL on mount only
   useEffect(() => {
     const urlCategory = searchParams.get('category');
-    const urlCategories = searchParams.get('categories')?.split(',') || [];
-    
-    const initialCategories = urlCategory 
-      ? [urlCategory] 
-      : urlCategories.length > 0 
-        ? urlCategories 
-        : [];
-    
-    setFilters(prev => ({ 
-      ...prev, 
-      categories: initialCategories 
-    }));
-    setTempFilters(prev => ({ 
-      ...prev, 
-      categories: initialCategories 
-    }));
+    const urlCategories = searchParams.get('categories')?.split(',').filter(Boolean) || [];
+    const initial = urlCategory ? [urlCategory] : urlCategories;
+    setFilters(prev => ({ ...prev, categories: initial }));
+    setTempFilters(prev => ({ ...prev, categories: initial }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Listen for URL changes to update categories
   useEffect(() => {
     const urlCategory = searchParams.get('category');
-    const urlCategories = searchParams.get('categories')?.split(',') || [];
-    
-    const newCategories = urlCategory 
-      ? [urlCategory] 
-      : urlCategories.length > 0 
-        ? urlCategories 
-        : [];
-    
-    if (JSON.stringify(newCategories) !== JSON.stringify(filters.categories)) {
-      setFilters(prev => ({ 
-        ...prev, 
-        categories: newCategories 
-      }));
-      setTempFilters(prev => ({ 
-        ...prev, 
-        categories: newCategories 
-      }));
-    }
+    const urlCategories = searchParams.get('categories')?.split(',').filter(Boolean) || [];
+    const newCats = urlCategory ? [urlCategory] : urlCategories;
+    setFilters(prev => {
+      if (JSON.stringify(prev.categories) === JSON.stringify(newCats)) return prev;
+      return { ...prev, categories: newCats };
+    });
+    setTempFilters(prev => {
+      if (JSON.stringify(prev.categories) === JSON.stringify(newCats)) return prev;
+      return { ...prev, categories: newCats };
+    });
   }, [searchParams]);
 
-  // Close filter panel when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (filterPanelRef.current && !filterPanelRef.current.contains(event.target as Node)) {
+    function onOutside(e: MouseEvent) {
+      if (filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node)) {
         setIsFilterOpen(false);
       }
     }
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
   }, []);
 
-  // FIXED: Prevent body scroll when mobile filter is open
   useEffect(() => {
-    if (isMobileFilterOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
-      
-      return () => {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        window.scrollTo(0, scrollY);
-      };
-    }
+    if (!isMobileFilterOpen) return;
+    const y = window.scrollY;
+    document.body.style.cssText = `position:fixed;top:-${y}px;width:100%;overflow:hidden`;
+    return () => {
+      document.body.style.cssText = '';
+      window.scrollTo(0, y);
+    };
   }, [isMobileFilterOpen]);
 
-  const sortOptions = [
-    { value: 'default', label: 'Default', icon: '🔄' },
-    { value: 'price-low', label: 'Price: Low to High', icon: '💰' },
-    { value: 'price-high', label: 'Price: High to Low', icon: '💎' },
-    { value: 'rating', label: 'Highest Rated', icon: '⭐' },
-    { value: 'name', label: 'Alphabetically A-Z', icon: '🔤' },
-  ];
-
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-    
-    debounceTimeoutRef.current = setTimeout(() => {
-      onFilterChange(filters);
-    }, 300);
-
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    debounceTimeoutRef.current = setTimeout(() => onFilterChange(filters), 300);
+    return () => { if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current); };
   }, [filters, onFilterChange]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, searchQuery: e.target.value }));
-  };
-
-  const handlePriceChange = (min: number, max: number) => {
-    setTempFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }));
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+    onViewModeChange(mode);
   };
 
   const handleSortChange = (sortBy: FilterOptions['sortBy']) => {
@@ -185,204 +140,157 @@ function SearchFilterBarContent({
     setShowMobileSort(false);
   };
 
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode);
-    onViewModeChange(mode);
-  };
-
   const applyMobileFilters = () => {
     setFilters(tempFilters);
-    setIsMobileFilterOpen(false);
     onFilterChange(tempFilters);
+    setIsMobileFilterOpen(false);
   };
 
   const clearFilters = useCallback(() => {
-    const newFilters = {
+    const reset: FilterOptions = {
       searchQuery: '',
       minPrice: 0,
       maxPrice: 5000,
       categories: [],
-      sortBy: 'default' as const,
+      sortBy: 'default',
       showOnSale: false,
       showInStock: true,
+      showNewArrivals: false,
+      showBestSellers: false,
     };
-    setFilters(newFilters);
-    setTempFilters(newFilters);
-    
+    setFilters(reset);
+    setTempFilters(reset);
     const params = new URLSearchParams(searchParams.toString());
     params.delete('search');
+    params.delete('category');
     params.delete('categories');
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(params.toString() ? `${pathname}?${params.toString()}` : pathname);
   }, [router, pathname, searchParams]);
 
-  const getActiveFilterCount = () => {
-    let count = 0;
-    if (filters.searchQuery) count++;
-    if (filters.minPrice > 0 || filters.maxPrice < 5000) count++;
-    if (filters.categories.length > 0) count++;
-    if (filters.sortBy !== 'default') count++;
-    if (filters.showOnSale) count++;
-    if (!filters.showInStock) count++;
-    return count;
+  const getActiveFilterCount = (f = filters) => {
+    let n = 0;
+    if (f.searchQuery) n++;
+    if (f.minPrice > 0 || f.maxPrice < 5000) n++;
+    if (f.categories.length > 0) n++;
+    if (f.sortBy !== 'default') n++;
+    if (f.showOnSale) n++;
+    if (!f.showInStock) n++;
+    if (f.showBestSellers) n++;
+    if (f.showNewArrivals) n++;
+    return n;
   };
 
   const currentCategory = searchParams.get('category');
 
   return (
     <div className="mb-4 sm:mb-6 relative">
-      {/* Main Search Input Container - ENHANCED */}
+
+      {/* ══ MAIN BAR ══ */}
       <div className="relative">
         <div className="flex flex-col sm:flex-row sm:items-center border-2 border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
-          
-          {/* Mobile Layout - ENHANCED */}
+
+          {/* MOBILE */}
           <div className="flex items-center w-full sm:hidden">
-            {/* Filter Button - Mobile */}
             <button
-              onClick={() => setIsMobileFilterOpen(true)}
-              className="flex items-center justify-center gap-1.5 px-3 py-3.5 border-r-2 border-gray-200 text-gray-700 hover:bg-green-50 transition-colors active:scale-95"
-              aria-label="Open filters"
+              onClick={() => { setTempFilters(filters); setIsMobileFilterOpen(true); }}
+              className="flex items-center justify-center gap-1.5 px-3 py-3.5 border-r-2 border-gray-200 text-gray-700 hover:bg-green-50 transition-colors"
             >
               <FiSliders className="w-5 h-5" />
               <span className="text-sm font-semibold">Filter</span>
               {getActiveFilterCount() > 0 && (
-                <span className="ml-1 px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-bold animate-pulse">
-                  {getActiveFilterCount()}
-                </span>
+                <span className="ml-1 px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-bold">{getActiveFilterCount()}</span>
               )}
             </button>
 
-            {/* Search Input - Mobile */}
             <div className="flex-1 flex items-center px-3">
               <FiSearch className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0" />
               <input
                 type="text"
                 placeholder="Search products..."
-                className="flex-1 w-full py-3.5 outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm font-medium"
+                className="flex-1 py-3.5 outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm"
                 value={filters.searchQuery}
-                onChange={handleSearchChange}
-                aria-label="Search products"
+                onChange={e => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
               />
               {filters.searchQuery && (
-                <button
-                  onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))}
-                  className="ml-1 p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label="Clear search"
-                >
+                <button onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))} className="p-1.5 hover:bg-gray-100 rounded-full">
                   <FiX className="w-4 h-4 text-gray-500" />
                 </button>
               )}
             </div>
 
-            {/* Sort Button - Mobile */}
             <button
-              onClick={() => setShowMobileSort(!showMobileSort)}
-              className="flex items-center gap-1 px-3 py-3.5 border-l-2 border-gray-200 text-gray-700 hover:bg-green-50 transition-colors"
+              onClick={() => setShowMobileSort(v => !v)}
+              className="flex items-center gap-1 px-3 py-3.5 border-l-2 border-gray-200 text-gray-700 hover:bg-green-50"
             >
               <span className="text-sm font-semibold">Sort</span>
-              {showMobileSort ? (
-                <FiChevronUp className="w-4 h-4" />
-              ) : (
-                <FiChevronDown className="w-4 h-4" />
-              )}
+              {showMobileSort ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}
             </button>
           </div>
 
-          {/* Desktop Layout - ENHANCED */}
+          {/* DESKTOP */}
           <div className="hidden sm:flex items-center w-full">
-            {/* Left: Filter Button */}
-            <div className="flex items-center gap-3 px-5 py-1">
+            <div className="flex items-center gap-3 px-5 py-1 flex-shrink-0">
               <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-2 text-gray-700 hover:text-green-700 transition-colors relative group"
-                aria-label="Open filters"
+                onClick={() => setIsFilterOpen(v => !v)}
+                className="flex items-center gap-2 text-gray-700 hover:text-green-700 transition-colors group"
               >
                 <div className="p-2 rounded-lg group-hover:bg-green-50 transition-colors">
                   <FiFilter className="w-5 h-5" />
                 </div>
                 <span className="text-sm font-semibold">Filters</span>
                 {getActiveFilterCount() > 0 && (
-                  <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-bold animate-pulse">
-                    {getActiveFilterCount()}
-                  </span>
+                  <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-bold">{getActiveFilterCount()}</span>
                 )}
               </button>
-              
-              <span className="hidden lg:inline text-sm text-gray-500 ml-2 font-medium">
-                <FaBox className="inline w-3.5 h-3.5 mr-1" />
+              <span className="hidden lg:flex items-center gap-1 text-sm text-gray-500 ml-2 font-medium">
+                <FaBox className="w-3.5 h-3.5" />
                 {productCount} {productCount === 1 ? 'item' : 'items'}
               </span>
             </div>
 
-            {/* Center: Search Input */}
             <div className="flex-1 flex items-center border-l-2 border-gray-200 pl-5 pr-4">
-              <div className="p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                <FiSearch className="w-5 h-5 text-gray-400" />
-              </div>
-              
+              <FiSearch className="w-5 h-5 text-gray-400 flex-shrink-0" />
               <input
                 type="text"
                 placeholder="Search products..."
-                className="flex-1 w-full py-4 px-3 outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm font-medium"
+                className="flex-1 py-4 px-3 outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm font-medium"
                 value={filters.searchQuery}
-                onChange={handleSearchChange}
-                aria-label="Search products"
+                onChange={e => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
               />
-              
               {filters.searchQuery && (
-                <button
-                  onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))}
-                  className="ml-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label="Clear search"
-                >
+                <button onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))} className="p-2 hover:bg-gray-100 rounded-full">
                   <FiX className="w-4 h-4 text-gray-400" />
                 </button>
               )}
             </div>
 
-            {/* Right: View Mode and Sort */}
-            <div className="flex items-center gap-4 ml-4 border-l-2 border-gray-200 pl-5 pr-4">
-              {/* View Mode Toggle - ENHANCED */}
+            <div className="flex items-center gap-4 border-l-2 border-gray-200 pl-5 pr-4 flex-shrink-0">
               <div className="flex items-center gap-1 border-2 border-gray-200 rounded-lg p-0.5 bg-gray-50">
                 <button
                   onClick={() => handleViewModeChange('list')}
-                  className={`p-2 rounded-md transition-all ${
-                    viewMode === 'list' 
-                      ? 'bg-green-600 text-white shadow-md' 
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-white'
-                  }`}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-green-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-700 hover:bg-white'}`}
                   title="List View"
-                  aria-label="Switch to list view"
                 >
                   <FiList className="w-5 h-5" />
                 </button>
-                
                 <button
                   onClick={() => handleViewModeChange('grid')}
-                  className={`p-2 rounded-md transition-all ${
-                    viewMode === 'grid' 
-                      ? 'bg-green-600 text-white shadow-md' 
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-white'
-                  }`}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-green-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-700 hover:bg-white'}`}
                   title="Grid View"
-                  aria-label="Switch to grid view"
                 >
                   <FiGrid className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Sort Dropdown - ENHANCED */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 hidden xl:inline font-medium">Sort:</span>
                 <select
-                  className="border-2 border-gray-200 outline-none bg-white text-sm text-gray-700 cursor-pointer focus:ring-2 focus:ring-green-500 focus:border-green-500 py-2 px-3 pr-8 rounded-lg font-medium hover:border-gray-300 transition-all"
+                  className="border-2 border-gray-200 outline-none bg-white text-sm text-gray-700 cursor-pointer focus:ring-2 focus:ring-green-500 focus:border-green-500 py-2 px-3 rounded-lg font-medium hover:border-gray-300 transition-all"
                   value={filters.sortBy}
-                  onChange={(e) => handleSortChange(e.target.value as FilterOptions['sortBy'])}
-                  aria-label="Sort products by"
+                  onChange={e => handleSortChange(e.target.value as FilterOptions['sortBy'])}
                 >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.icon} {option.label}
-                    </option>
+                  {sortOptions.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
               </div>
@@ -390,199 +298,216 @@ function SearchFilterBarContent({
           </div>
         </div>
 
-        {/* Mobile Sort Dropdown - ENHANCED */}
+        {/* Mobile sort dropdown */}
         {showMobileSort && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl z-50 sm:hidden animate-slideDown">
             <div className="p-2">
-              {sortOptions.map((option) => (
+              {sortOptions.map(o => (
                 <button
-                  key={option.value}
-                  onClick={() => handleSortChange(option.value as FilterOptions['sortBy'])}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                    filters.sortBy === option.value
-                      ? 'bg-green-600 text-white shadow-md'
-                      : 'text-gray-700 hover:bg-gray-50'
+                  key={o.value}
+                  onClick={() => { handleSortChange(o.value as FilterOptions['sortBy']); setShowMobileSort(false); }}
+                  className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center justify-between ${
+                    filters.sortBy === o.value ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <span>{option.icon}</span>
-                  <span className="flex-1">{option.label}</span>
-                  {filters.sortBy === option.value && (
-                    <FiCheck className="w-4 h-4" />
-                  )}
+                  {o.label}
+                  {filters.sortBy === o.value && <FiCheck className="w-4 h-4" />}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Desktop Filter Panel - ENHANCED */}
+        {/* ══ DESKTOP FILTER PANEL ══ */}
         {isFilterOpen && (
-          <div 
+          <div
             ref={filterPanelRef}
             className="absolute top-full left-0 right-0 mt-2 border-2 border-gray-200 rounded-xl bg-white shadow-2xl z-50 hidden sm:block animate-slideDown"
           >
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                
-                {/* Price Range - ENHANCED */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+                {/* Price Range */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-3">
+                  <label className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-4">
                     <FaTag className="w-4 h-4 text-green-600" />
                     Price Range
                   </label>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm bg-green-50 px-3 py-2 rounded-lg">
-                      <span className="text-gray-700 font-semibold">PKR {filters.minPrice}</span>
-                      <span className="text-gray-400">—</span>
-                      <span className="text-gray-700 font-semibold">PKR {filters.maxPrice}</span>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-sm bg-green-50 px-3 py-2.5 rounded-lg border border-green-100">
+                      <span className="text-gray-700 font-semibold">PKR {filters.minPrice.toLocaleString()}</span>
+                      <span className="text-gray-400 text-xs">to</span>
+                      <span className="text-gray-700 font-semibold">PKR {filters.maxPrice.toLocaleString()}</span>
                     </div>
-                    <div className="space-y-2">
-                      <input
-                        type="range"
-                        min="0"
-                        max="5000"
-                        step="100"
-                        value={filters.minPrice}
-                        onChange={(e) => handlePriceChange(Number(e.target.value), filters.maxPrice)}
-                        className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-green-600"
-                      />
-                      <input
-                        type="range"
-                        min="0"
-                        max="5000"
-                        step="100"
-                        value={filters.maxPrice}
-                        onChange={(e) => handlePriceChange(filters.minPrice, Number(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-green-600"
-                      />
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                          <span>Min Price</span>
+                          <span className="font-medium">PKR {filters.minPrice.toLocaleString()}</span>
+                        </div>
+                        <input
+                          type="range" min={0} max={5000} step={100}
+                          value={filters.minPrice}
+                          onChange={e => {
+                            const val = Math.min(Number(e.target.value), filters.maxPrice - 100);
+                            setFilters(prev => ({ ...prev, minPrice: val }));
+                          }}
+                          className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-green-600"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                          <span>Max Price</span>
+                          <span className="font-medium">PKR {filters.maxPrice.toLocaleString()}</span>
+                        </div>
+                        <input
+                          type="range" min={0} max={5000} step={100}
+                          value={filters.maxPrice}
+                          onChange={e => {
+                            const val = Math.max(Number(e.target.value), filters.minPrice + 100);
+                            setFilters(prev => ({ ...prev, maxPrice: val }));
+                          }}
+                          className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-green-600"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: 'Under 500',   min: 0,    max: 500  },
+                        { label: '500–1,000',   min: 500,  max: 1000 },
+                        { label: '1,000–2,000', min: 1000, max: 2000 },
+                        { label: 'Above 2,000', min: 2000, max: 5000 },
+                      ].map(preset => {
+                        const active = filters.minPrice === preset.min && filters.maxPrice === preset.max;
+                        return (
+                          <button
+                            key={preset.label}
+                            onClick={() => setFilters(prev => ({ ...prev, minPrice: preset.min, maxPrice: preset.max }))}
+                            className={`text-xs px-2 py-2 rounded-lg border font-medium transition-all ${
+                              active ? 'bg-green-600 text-white border-green-600' : 'border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700'
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
 
-                {/* Categories - ENHANCED */}
+                {/* Categories */}
                 {categories.length > 0 && (
                   <div>
-                    <label className="block text-sm font-bold text-gray-900 mb-3">
-                      Categories
-                    </label>
-                    <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                      {categories.map((category) => {
-                        const isSelected = filters.categories.includes(category) || currentCategory === category;
+                    <label className="block text-sm font-bold text-gray-900 mb-4">Categories</label>
+                    <div className="space-y-1 max-h-52 overflow-y-auto pr-1 custom-scrollbar">
+                      {categories.map(cat => {
+                        const isSelected = filters.categories.includes(cat) || currentCategory === cat;
                         return (
-                          <div key={category} className="flex items-center">
-                            <label 
-                              htmlFor={`cat-${category}`} 
-                              className={`flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors w-full ${
-                                isSelected ? 'bg-green-50' : ''
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                id={`cat-${category}`}
-                                checked={isSelected}
-                                onChange={() => {
-                                  const params = new URLSearchParams(searchParams.toString());
-                                  if (isSelected) {
-                                    params.delete('category');
-                                  } else {
-                                    params.set('category', category);
-                                  }
-                                  router.push(`${pathname}?${params.toString()}`);
-                                }}
-                                className="h-4 w-4 rounded border-2 border-gray-300 text-green-600 focus:ring-green-500 focus:ring-2"
-                              />
-                              <span className={`ml-3 text-sm capitalize font-medium ${
-                                isSelected ? 'text-green-700' : 'text-gray-700'
-                              }`}>
-                                {category.replace('-', ' ')}
-                              </span>
-                            </label>
-                          </div>
+                          <label
+                            key={cat}
+                            className={`flex items-center gap-3 cursor-pointer px-2 py-2.5 rounded-lg hover:bg-gray-50 transition-colors ${isSelected ? 'bg-green-50' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {
+                                const already = filters.categories.includes(cat);
+                                const newCats = already
+                                  ? filters.categories.filter(c => c !== cat)
+                                  : [...filters.categories, cat];
+                                setFilters(prev => ({ ...prev, categories: newCats }));
+                                const params = new URLSearchParams(searchParams.toString());
+                                if (newCats.length === 1) {
+                                  params.set('category', newCats[0]);
+                                  params.delete('categories');
+                                } else if (newCats.length > 1) {
+                                  params.set('categories', newCats.join(','));
+                                  params.delete('category');
+                                } else {
+                                  params.delete('category');
+                                  params.delete('categories');
+                                }
+                                router.push(`${pathname}?${params.toString()}`, { scroll: false });
+                              }}
+                              className="h-4 w-4 rounded border-2 border-gray-300 accent-green-600 cursor-pointer flex-shrink-0"
+                            />
+                            <span className={`text-sm capitalize font-medium ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>
+                              {cat.replace(/-/g, ' ')}
+                            </span>
+                          </label>
                         );
                       })}
                     </div>
                   </div>
                 )}
 
-                {/* Availability - ENHANCED */}
+                {/* Availability */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-3">
-                    Availability
-                  </label>
-                  <div className="space-y-3">
-                    <label className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                      <input
-                        type="checkbox"
-                        id="in-stock"
-                        checked={filters.showInStock}
-                        onChange={(e) => setFilters(prev => ({ ...prev, showInStock: e.target.checked }))}
-                        className="h-4 w-4 rounded border-2 border-gray-300 text-green-600 focus:ring-green-500 focus:ring-2"
-                      />
-                      <span className="ml-3 text-sm text-gray-700 font-medium">In Stock Only</span>
-                    </label>
-                    <label className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                      <input
-                        type="checkbox"
-                        id="on-sale"
-                        checked={filters.showOnSale}
-                        onChange={(e) => setFilters(prev => ({ ...prev, showOnSale: e.target.checked }))}
-                        className="h-4 w-4 rounded border-2 border-gray-300 text-green-600 focus:ring-green-500 focus:ring-2"
-                      />
-                      <span className="ml-3 text-sm text-gray-700 font-medium">On Sale Only</span>
-                    </label>
+                  <label className="block text-sm font-bold text-gray-900 mb-4">Availability</label>
+                  <div className="space-y-1">
+                    {[
+                      { key: 'showInStock',     label: 'In Stock Only' },
+                      { key: 'showOnSale',      label: 'On Sale Only' },
+                      { key: 'showBestSellers', label: 'Best Sellers' },
+                      { key: 'showNewArrivals', label: 'New Arrivals' },
+                    ].map(item => (
+                      <label
+                        key={item.key}
+                        className={`flex items-center gap-3 cursor-pointer px-2 py-2.5 rounded-lg hover:bg-gray-50 transition-colors ${(filters as any)[item.key] ? 'bg-green-50' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={(filters as any)[item.key] || false}
+                          onChange={e => setFilters(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                          className="h-4 w-4 rounded border-2 border-gray-300 accent-green-600 cursor-pointer flex-shrink-0"
+                        />
+                        <span className={`text-sm font-medium ${(filters as any)[item.key] ? 'text-green-700' : 'text-gray-700'}`}>
+                          {item.label}
+                        </span>
+                      </label>
+                    ))}
                   </div>
                 </div>
 
-                {/* Rating Filter - ENHANCED */}
+                {/* Rating */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-3">
-                    Minimum Rating
-                  </label>
-                  <div className="space-y-2">
-                    {[4.5, 4.0, 3.5, 3.0].map((rating) => (
+                  <label className="block text-sm font-bold text-gray-900 mb-4">Minimum Rating</label>
+                  <div className="space-y-1">
+                    {[4.5, 4.0, 3.5, 3.0].map(rating => (
                       <button
                         key={rating}
-                        onClick={() => {
-                          handleSortChange('rating');
-                          setIsFilterOpen(false);
-                        }}
-                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 transition-colors group"
+                        onClick={() => { setFilters(prev => ({ ...prev, sortBy: 'rating' })); setIsFilterOpen(false); }}
+                        className="flex items-center gap-2 w-full text-left px-2 py-2.5 rounded-lg hover:bg-green-50 transition-colors group"
                       >
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-0.5">
                           {[...Array(5)].map((_, i) => (
-                            <FaStar
-                              key={i}
-                              className={`w-4 h-4 ${i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'}`}
-                            />
+                            <FaStar key={i} className={`w-3.5 h-3.5 ${i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-200'}`} />
                           ))}
                         </div>
-                        <span className="text-sm text-gray-600 font-medium group-hover:text-green-700">& above</span>
+                        <span className="text-sm text-gray-600 font-medium group-hover:text-green-700">{rating}+ stars</span>
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
 
-              {/* Filter Actions - ENHANCED */}
-              <div className="flex items-center justify-between mt-6 pt-5 border-t-2 border-gray-200">
-                <span className="text-sm text-gray-600 font-medium">
+              {/* Actions */}
+              <div className="flex items-center justify-between mt-6 pt-5 border-t border-gray-100">
+                <span className="text-sm text-gray-500 font-medium">
                   {getActiveFilterCount()} {getActiveFilterCount() === 1 ? 'filter' : 'filters'} active
                 </span>
                 <div className="flex gap-3">
                   <button
-                    onClick={() => {
-                      clearFilters();
-                      setIsFilterOpen(false);
-                    }}
-                    className="px-5 py-2.5 text-sm text-gray-700 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold active:scale-95"
+                    onClick={() => { clearFilters(); setIsFilterOpen(false); }}
+                    className="px-5 py-2.5 text-sm text-gray-700 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition-all font-semibold"
                   >
                     Reset All
                   </button>
                   <button
                     onClick={() => setIsFilterOpen(false)}
-                    className="px-5 py-2.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold shadow-md hover:shadow-lg active:scale-95"
+                    className="px-5 py-2.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold shadow-md"
                   >
-                    Apply Filters
+                    Done
                   </button>
                 </div>
               </div>
@@ -590,51 +515,163 @@ function SearchFilterBarContent({
           </div>
         )}
 
-        {/* Mobile Filter Modal - ENHANCED (rest remains same but with better animations) */}
+        {/* ══ MOBILE FILTER MODAL ══ */}
         {isMobileFilterOpen && (
           <div className="fixed inset-0 z-50 sm:hidden">
-            <div 
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn"
-              onClick={() => setIsMobileFilterOpen(false)}
-            />
-            
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn" onClick={() => setIsMobileFilterOpen(false)} />
             <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-slideUp">
-              <div className="sticky top-0 bg-white border-b-2 border-gray-200 p-4 flex items-center justify-between z-10">
-                <h3 className="text-xl font-bold text-gray-900">Filters</h3>
-                <button
-                  onClick={() => setIsMobileFilterOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <FiX className="w-6 h-6 text-gray-500" />
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between z-10">
+                <h3 className="text-lg font-bold text-gray-900">Filters & Sort</h3>
+                <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                  <FiX className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
-              
-              <div className="p-4 space-y-6">
-                {/* Mobile filter content same as before but with enhanced styling */}
-                {/* ... (keeping existing mobile filter content for brevity) ... */}
+
+              <div className="p-5 space-y-7">
+                {/* Sort */}
+                <div>
+                  <p className="text-sm font-bold text-gray-900 mb-3">Sort By</p>
+                  <div className="space-y-1">
+                    {sortOptions.map(o => (
+                      <button
+                        key={o.value}
+                        onClick={() => setTempFilters(prev => ({ ...prev, sortBy: o.value as FilterOptions['sortBy'] }))}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                          tempFilters.sortBy === o.value ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-50 border border-gray-100'
+                        }`}
+                      >
+                        {o.label}
+                        {tempFilters.sortBy === o.value && <FiCheck className="w-4 h-4" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Price Range */}
+                <div>
+                  <p className="text-sm font-bold text-gray-900 mb-3">Price Range</p>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between bg-green-50 px-3 py-2.5 rounded-lg border border-green-100">
+                      <span className="text-sm font-semibold text-gray-700">PKR {tempFilters.minPrice.toLocaleString()}</span>
+                      <span className="text-xs text-gray-400">to</span>
+                      <span className="text-sm font-semibold text-gray-700">PKR {tempFilters.maxPrice.toLocaleString()}</span>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                          <span>Min</span><span className="font-medium">PKR {tempFilters.minPrice.toLocaleString()}</span>
+                        </div>
+                        <input type="range" min={0} max={5000} step={100} value={tempFilters.minPrice}
+                          onChange={e => {
+                            const val = Math.min(Number(e.target.value), tempFilters.maxPrice - 100);
+                            setTempFilters(prev => ({ ...prev, minPrice: val }));
+                          }}
+                          className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-green-600"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                          <span>Max</span><span className="font-medium">PKR {tempFilters.maxPrice.toLocaleString()}</span>
+                        </div>
+                        <input type="range" min={0} max={5000} step={100} value={tempFilters.maxPrice}
+                          onChange={e => {
+                            const val = Math.max(Number(e.target.value), tempFilters.minPrice + 100);
+                            setTempFilters(prev => ({ ...prev, maxPrice: val }));
+                          }}
+                          className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-green-600"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: 'Under 500',   min: 0,    max: 500  },
+                        { label: '500–1,000',   min: 500,  max: 1000 },
+                        { label: '1,000–2,000', min: 1000, max: 2000 },
+                        { label: 'Above 2,000', min: 2000, max: 5000 },
+                      ].map(preset => {
+                        const active = tempFilters.minPrice === preset.min && tempFilters.maxPrice === preset.max;
+                        return (
+                          <button key={preset.label}
+                            onClick={() => setTempFilters(prev => ({ ...prev, minPrice: preset.min, maxPrice: preset.max }))}
+                            className={`text-xs px-2 py-2 rounded-lg border font-medium transition-all ${
+                              active ? 'bg-green-600 text-white border-green-600' : 'border-gray-200 text-gray-600 hover:border-green-400'
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Categories */}
+                {categories.length > 0 && (
+                  <div>
+                    <p className="text-sm font-bold text-gray-900 mb-3">Categories</p>
+                    <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
+                      {categories.map(cat => {
+                        const isSelected = tempFilters.categories.includes(cat);
+                        return (
+                          <label key={cat} className={`flex items-center gap-3 cursor-pointer px-2 py-2.5 rounded-lg hover:bg-gray-50 ${isSelected ? 'bg-green-50' : ''}`}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {
+                                const already = tempFilters.categories.includes(cat);
+                                setTempFilters(prev => ({
+                                  ...prev,
+                                  categories: already ? prev.categories.filter(c => c !== cat) : [...prev.categories, cat],
+                                }));
+                              }}
+                              className="h-4 w-4 rounded border-2 border-gray-300 accent-green-600 cursor-pointer flex-shrink-0"
+                            />
+                            <span className={`text-sm capitalize font-medium ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>
+                              {cat.replace(/-/g, ' ')}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Availability */}
+                <div>
+                  <p className="text-sm font-bold text-gray-900 mb-3">Availability</p>
+                  <div className="space-y-1">
+                    {[
+                      { key: 'showInStock',     label: 'In Stock Only' },
+                      { key: 'showOnSale',      label: 'On Sale Only' },
+                      { key: 'showBestSellers', label: 'Best Sellers' },
+                      { key: 'showNewArrivals', label: 'New Arrivals' },
+                    ].map(item => (
+                      <label key={item.key} className={`flex items-center gap-3 cursor-pointer px-2 py-2.5 rounded-lg hover:bg-gray-50 ${(tempFilters as any)[item.key] ? 'bg-green-50' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={(tempFilters as any)[item.key] || false}
+                          onChange={e => setTempFilters(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                          className="h-4 w-4 rounded border-2 border-gray-300 accent-green-600 cursor-pointer flex-shrink-0"
+                        />
+                        <span className={`text-sm font-medium ${(tempFilters as any)[item.key] ? 'text-green-700' : 'text-gray-700'}`}>
+                          {item.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <div className="sticky bottom-0 bg-white border-t-2 border-gray-200 p-4 flex gap-3 shadow-2xl">
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex gap-3">
                 <button
-                  onClick={() => {
-                    clearFilters();
-                    setTempFilters({
-                      searchQuery: '',
-                      minPrice: 0,
-                      maxPrice: 5000,
-                      categories: [],
-                      sortBy: 'default',
-                      showOnSale: false,
-                      showInStock: true,
-                    });
-                  }}
-                  className="flex-1 py-3 text-sm text-gray-700 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-semibold"
+                  onClick={() => setTempFilters({ searchQuery: '', minPrice: 0, maxPrice: 5000, categories: [], sortBy: 'default', showOnSale: false, showInStock: true, showNewArrivals: false, showBestSellers: false })}
+                  className="flex-1 py-3 text-sm text-gray-700 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition-all"
                 >
                   Reset
                 </button>
                 <button
                   onClick={applyMobileFilters}
-                  className="flex-1 py-3 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold shadow-md"
+                  className="flex-1 py-3 text-sm bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all shadow-md"
                 >
                   Apply Filters
                 </button>
@@ -644,166 +681,91 @@ function SearchFilterBarContent({
         )}
       </div>
 
-      {/* Active Filters Display - ENHANCED */}
+      {/* ══ ACTIVE FILTER TAGS ══ */}
       {getActiveFilterCount() > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mt-4 animate-slideDown">
-          <span className="text-xs text-gray-600 font-semibold">Active filters:</span>
-          
+        <div className="flex flex-wrap items-center gap-2 mt-4">
+          <span className="text-xs text-gray-500 font-semibold">Active:</span>
+
           {filters.searchQuery && (
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-xs font-medium shadow-sm">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-xs font-medium">
               <FiSearch className="w-3 h-3" />
-              Search: {filters.searchQuery}
-              <button
-                onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))}
-                className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors"
-              >
-                <FiX className="w-3 h-3" />
-              </button>
+              "{filters.searchQuery}"
+              <button onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))} className="hover:bg-green-200 rounded-full p-0.5 ml-0.5"><FiX className="w-2.5 h-2.5" /></button>
             </span>
           )}
-          
+
           {(filters.minPrice > 0 || filters.maxPrice < 5000) && (
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium shadow-sm">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
               <FaTag className="w-3 h-3" />
-              PKR {filters.minPrice} - {filters.maxPrice}
-              <button
-                onClick={() => setFilters(prev => ({ ...prev, minPrice: 0, maxPrice: 5000 }))}
-                className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-              >
-                <FiX className="w-3 h-3" />
-              </button>
+              PKR {filters.minPrice.toLocaleString()} – {filters.maxPrice.toLocaleString()}
+              <button onClick={() => setFilters(prev => ({ ...prev, minPrice: 0, maxPrice: 5000 }))} className="hover:bg-blue-200 rounded-full p-0.5 ml-0.5"><FiX className="w-2.5 h-2.5" /></button>
             </span>
           )}
-          
+
           {filters.categories.map(cat => (
-            <span key={cat} className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium capitalize shadow-sm">
-              {cat.replace('-', ' ')}
-              <button
-                onClick={() => {
-                  const newCategories = filters.categories.filter(c => c !== cat);
-                  setFilters(prev => ({ ...prev, categories: newCategories }));
-                }}
-                className="ml-1 hover:bg-purple-200 rounded-full p-0.5 transition-colors"
-              >
-                <FiX className="w-3 h-3" />
-              </button>
+            <span key={cat} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium capitalize">
+              {cat.replace(/-/g, ' ')}
+              <button onClick={() => setFilters(prev => ({ ...prev, categories: prev.categories.filter(c => c !== cat) }))} className="hover:bg-purple-200 rounded-full p-0.5 ml-0.5"><FiX className="w-2.5 h-2.5" /></button>
             </span>
           ))}
-          
+
           {filters.sortBy !== 'default' && (
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-full text-xs font-medium shadow-sm">
-              {sortOptions.find(o => o.value === filters.sortBy)?.icon}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
+              <FaSortAmountDown className="w-3 h-3" />
               {sortOptions.find(o => o.value === filters.sortBy)?.label}
-              <button
-                onClick={() => setFilters(prev => ({ ...prev, sortBy: 'default' }))}
-                className="ml-1 hover:bg-amber-200 rounded-full p-0.5 transition-colors"
-              >
-                <FiX className="w-3 h-3" />
-              </button>
+              <button onClick={() => setFilters(prev => ({ ...prev, sortBy: 'default' }))} className="hover:bg-amber-200 rounded-full p-0.5 ml-0.5"><FiX className="w-2.5 h-2.5" /></button>
             </span>
           )}
-          
+
           {filters.showOnSale && (
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-xs font-medium shadow-sm">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-xs font-medium">
               On Sale
-              <button
-                onClick={() => setFilters(prev => ({ ...prev, showOnSale: false }))}
-                className="ml-1 hover:bg-red-200 rounded-full p-0.5 transition-colors"
-              >
-                <FiX className="w-3 h-3" />
-              </button>
+              <button onClick={() => setFilters(prev => ({ ...prev, showOnSale: false }))} className="hover:bg-red-200 rounded-full p-0.5 ml-0.5"><FiX className="w-2.5 h-2.5" /></button>
             </span>
           )}
-          
-          <button
-            onClick={clearFilters}
-            className="text-xs text-red-600 hover:text-red-700 font-bold ml-2 hover:underline"
-          >
-            Clear all
+
+          {filters.showBestSellers && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+              Best Sellers
+              <button onClick={() => setFilters(prev => ({ ...prev, showBestSellers: false }))} className="hover:bg-yellow-200 rounded-full p-0.5 ml-0.5"><FiX className="w-2.5 h-2.5" /></button>
+            </span>
+          )}
+
+          {filters.showNewArrivals && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-100 text-sky-800 rounded-full text-xs font-medium">
+              New Arrivals
+              <button onClick={() => setFilters(prev => ({ ...prev, showNewArrivals: false }))} className="hover:bg-sky-200 rounded-full p-0.5 ml-0.5"><FiX className="w-2.5 h-2.5" /></button>
+            </span>
+          )}
+
+          <button onClick={clearFilters} className="text-xs text-red-500 hover:text-red-700 font-bold ml-1 hover:underline flex items-center gap-1">
+            <FiRefreshCw className="w-3 h-3" /> Clear all
           </button>
         </div>
       )}
 
-      {/* Mobile Product Count */}
-      <div className="sm:hidden mt-3 text-sm text-gray-600 font-medium flex items-center gap-2">
+      <div className="sm:hidden mt-3 text-sm text-gray-500 font-medium flex items-center gap-1.5">
         <FaBox className="w-3.5 h-3.5" />
         {productCount} {productCount === 1 ? 'item' : 'items'} found
       </div>
 
       <style jsx global>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(100%);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #16a34a;
-          border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #15803d;
-        }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes slideUp   { from { opacity:0; transform:translateY(100%); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeIn    { from { opacity:0; } to { opacity:1; } }
+        .animate-slideDown { animation: slideDown 0.25s ease-out; }
+        .animate-slideUp   { animation: slideUp   0.3s  ease-out; }
+        .animate-fadeIn    { animation: fadeIn    0.2s  ease-out; }
+        .custom-scrollbar::-webkit-scrollbar { width:5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background:#f1f5f9; border-radius:10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background:#16a34a; border-radius:10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:#15803d; }
       `}</style>
     </div>
   );
 }
 
-// Main component with Suspense wrapper
-export default function SearchFilterBar({
-  onFilterChange,
-  onViewModeChange,
-  productCount = 0,
-  categories = [],
-  initialSearchQuery = '',
-}: {
+export default function SearchFilterBar(props: {
   onFilterChange: (filters: FilterOptions) => void;
   onViewModeChange: (mode: 'grid' | 'list') => void;
   productCount?: number;
@@ -813,18 +775,12 @@ export default function SearchFilterBar({
   return (
     <Suspense fallback={
       <div className="mb-4 sm:mb-6">
-        <div className="flex items-center border-2 border-gray-200 rounded-xl px-4 py-3 bg-white animate-pulse">
-          <div className="flex-1 h-6 bg-gray-200 rounded"></div>
+        <div className="flex items-center border-2 border-gray-200 rounded-xl px-4 py-4 bg-white animate-pulse">
+          <div className="flex-1 h-5 bg-gray-200 rounded" />
         </div>
       </div>
     }>
-      <SearchFilterBarContent
-        onFilterChange={onFilterChange}
-        onViewModeChange={onViewModeChange}
-        productCount={productCount}
-        categories={categories}
-        initialSearchQuery={initialSearchQuery}
-      />
+      <SearchFilterBarContent {...props} />
     </Suspense>
   );
 }

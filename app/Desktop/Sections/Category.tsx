@@ -52,7 +52,7 @@ export default function Category() {
       <div className="max-w-[1920px] mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl 2xl:text-4xl font-semibold">
-            Shop By <span className="text-[#197B33]">Category</span>
+            Shop By <span className="me-color-y">Category</span>
           </h1>
           
           {/* Optional: Add View All button like BeautyCorner */}

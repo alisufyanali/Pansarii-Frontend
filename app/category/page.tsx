@@ -270,7 +270,9 @@ export default function CategoriesPage() {
                 ))}
               </div>
               {/* Desktop grid — exactly matches shop: lg:grid-cols-5 */}
-              <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 2xl:gap-8">
+             <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
+              
+              {/* <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 2xl:gap-8"> */}
                 {paginatedProducts.map((product) => (
                   <div key={product.id} className="w-full">
                     <ProductCard product={product} />

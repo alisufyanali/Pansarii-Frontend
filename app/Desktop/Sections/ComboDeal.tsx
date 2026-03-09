@@ -73,7 +73,7 @@ export default function ComboDeal() {
           {/* Section Heading */}
           <div className="flex items-center justify-between mt-12 mb-4">
             <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins">
-              Combo <span className="text-[#197B33]">Deals</span>
+              Combo <span className="me-color-y">Deals</span>
             </h2>
             <div className="flex gap-2">
               <BackwardArrow disabled={!canScrollLeft} onClick={() => scroll("left")} />

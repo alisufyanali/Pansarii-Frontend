@@ -65,7 +65,7 @@ export default function FeaturedProducts() {
       <div className="max-w-[1920px] mx-auto">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl 2xl:text-3xl font-semibold my-4 mb-4">
-            Featured <span className="text-green-700">Products</span>
+            Featured <span className="me-color-y">Products</span>
           </h2>
           <div className="flex gap-2">
             <BackwardArrow disabled={!canScrollLeft} onClick={() => scroll("left")} />

@@ -52,7 +52,7 @@ export default function BeautyCorner() {
           {/* Heading and View All */}
           <div className="mt-16 mb-6 flex items-center justify-between">
             <h2 className="text-3xl 2xl:text-4xl font-semibold font-poppins me-color-g">
-              Beauty <span className="text-[#197B33]">Corner</span>
+              Beauty <span className="me-color-y">Corner</span>
             </h2>
 
             <div className="flex items-center gap-4 cursor-pointer group">

@@ -52,7 +52,7 @@ export default function NewArrivals() {
       <div className="max-w-[1920px] mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl 2xl:text-3xl font-semibold">
-            New <span className="text-green-700">Arrivals</span>
+            New <span className="me-color-y">Arrivals</span>
           </h2>
           <div className="flex gap-2">
             <BackwardArrow disabled={!canScrollLeft} onClick={() => scroll("left")} />
