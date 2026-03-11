@@ -296,7 +296,7 @@ export default function AboutUsPage() {
         </div>
       </section> */}
 
-      <Footer />
+      
     </div>
   );
 }
