@@ -1,7 +1,6 @@
 import ContactInfo from './ContactInfo';
 import LinkColumns from './LinkColumns';
 import Newsletter from './Newsletter';
-import FooterBanner from './FooterBanner';
 import FooterIcons from './Footericons';
 
 export default function Footer() {
@@ -19,10 +18,7 @@ export default function Footer() {
 
   return (
     <>
-      {/* Footer Banner */}
-      <div className="w-full">
-        <FooterBanner />
-      </div>
+  
       
       {/* Icons Section - Fully Responsive */}
       <FooterIcons buttonColor={buttonColor} textStyle={textStyle} />

@@ -1,62 +1,40 @@
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { categories } from "@/app/Desktop/data/categories";
 
 export default function Category() {
-  const cards = [];
+  const router = useRouter();
   const CategoryImage = '/images/category.png';
-  
-  // Different background colors for each card
+
   const bgColors = [
-    '#FFEBEE', // Red
-    '#F3E5F5', // Purple
-    '#E8EAF6', // Indigo
-    '#E3F2FD', // Blue
-    '#E8F5E9', // Green
-    '#FFF3E0', // Orange
+    '#FFEBEE',
+    '#F3E5F5',
+    '#E8EAF6',
+    '#E3F2FD',
+    '#E8F5E9',
+    '#FFF3E0',
   ];
-  
-  for (let i = 0; i < 6; i++) {
-    cards.push(
-      <div
-        key={i}
-        className="flex flex-col items-center w-full"
-      >
-        <div
-          className="w-full aspect-[191/201] mb-2 flex items-center justify-center"
-          style={{
-            borderTopLeftRadius: "113px",
-            borderTopRightRadius: "113px",
-            backgroundColor: bgColors[i], // Dynamic background color
-          }}
-        >
-          <Image
-            src={CategoryImage}
-            alt="Category"
-            width={170} // Increased from 100 to 130
-            height={120} // Increased from 100 to 130
-            className="object-contain mr-7 mt-6"
-            style={{ 
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' // Adds clarity
-            }}
-          />
-        </div>
-        <div className="w-full h-[50px] bg-white shadow-[0_4px_13.3px_0_rgba(0,0,0,0.24)] flex items-center justify-center rounded text-[16px] font-medium">
-          Product {i + 1}
-        </div>
-      </div>
-    );
-  }
+
+  // Show first 6 categories (or fewer if not enough)
+  const displayCategories = categories.slice(0, 6);
 
   return (
     <div className="p-4 mx-[4%]">
-      {/* Improved heading to match BeautyCorner style */}
       <div className="max-w-[1920px] mx-auto">
+
+        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl 2xl:text-4xl font-semibold">
             Shop By <span className="me-color-y">Category</span>
           </h1>
-          
-          {/* Optional: Add View All button like BeautyCorner */}
-          <div className="flex items-center gap-4 cursor-pointer group">
+
+          {/* View All → /category */}
+          <div
+            className="flex items-center gap-4 cursor-pointer group"
+            onClick={() => router.push('/category')}
+          >
             <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
               View All
             </span>
@@ -65,15 +43,42 @@ export default function Category() {
             </div>
           </div>
         </div>
-      </div>
-      
-      {/* Cards container - exactly as you had it */}
-      <div className="flex flex-wrap gap-6 justify-center">
-        {cards.map((card, index) => (
-          <div key={index} className="flex-1 min-w-[120px] max-w-[200px]">
-            {card}
-          </div>
-        ))}
+
+        {/* Cards */}
+        <div className="flex flex-wrap gap-6 justify-center">
+          {displayCategories.map((card, index) => (
+            <div
+              key={index}
+              className="flex-1 min-w-[120px] max-w-[200px] flex flex-col items-center w-full cursor-pointer group"
+              onClick={() => router.push(`/shop?category=${card.category}`)}
+            >
+              {/* Image container */}
+              <div
+                className="w-full aspect-[191/201] mb-2 flex items-center justify-center transition-transform duration-300 group-hover:scale-[1.03]"
+                style={{
+                  borderTopLeftRadius: "113px",
+                  borderTopRightRadius: "113px",
+                  backgroundColor: bgColors[index % bgColors.length],
+                }}
+              >
+                <Image
+                  src={CategoryImage}
+                  alt={card.title}
+                  width={170}
+                  height={120}
+                  className="object-contain mr-7 mt-6"
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
+                />
+              </div>
+
+              {/* Label */}
+              <div className="w-full h-[50px] bg-white shadow-[0_4px_13.3px_0_rgba(0,0,0,0.24)] flex items-center justify-center rounded text-[16px] font-medium group-hover:text-[#197B33] transition-colors">
+                {card.title}
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ProductDetailsModal from "./ProductDetailsModal";
 
 // EXACT SAME interface as ProductCard
@@ -32,8 +33,22 @@ interface ProductCard2Props {
 export default function ProductCard2({ product }: ProductCard2Props) {
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const router = useRouter();
 
-  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+  // Handle entire card click (navigates to product details page)
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Navigate to product details page with product ID or slug
+    const productSlug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
+    router.push(`/product/${productSlug}`);
+    
+    // Alternative: if you want to use ID instead
+    // router.push(`/product/${product.id || productSlug}`);
+  };
+
+  const handleQuickView = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsModalOpen(true);
@@ -45,6 +60,7 @@ export default function ProductCard2({ product }: ProductCard2Props) {
         className="featured-card w-full max-w-[320px] h-auto rounded-lg overflow-hidden flex flex-col bg-white relative group cursor-pointer"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={handleCardClick} // Add click handler here
       >
         {/* Image Section */}
         <div className="w-full aspect-[4/3] relative flex-shrink-0 overflow-hidden">
@@ -60,7 +76,7 @@ export default function ProductCard2({ product }: ProductCard2Props) {
           {/* Add to Cart Button - CENTERED in image div */}
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <button
-              onClick={handleAddToCart}
+              onClick={handleQuickView} // Renamed for clarity
               className="flex items-center justify-between px-6 py-3 rounded-full shadow-lg transition-all duration-300 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 bg-[#1E7B4D] hover:bg-green-700"
               style={{ minWidth: "180px" }}
             >
