@@ -237,6 +237,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <img src={selectedImage} alt={product.nameEn}
                 className="w-full h-full object-contain p-3 transition-transform duration-200"
                 style={{ transform: isZoomed ? "scale(1.5)" : "scale(1)", transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%` }} />
+              {/* % off badge — only on image */}
+              {product.oldPrice && (
+                <div className="absolute bottom-2 left-2 bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow">
+                  {Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}% OFF
+                </div>
+              )}
               {isZoomed && (
                 <div className="absolute top-2 left-2 bg-green-600 text-white text-[10px] px-2 py-0.5 rounded">Zoom 2×</div>
               )}
@@ -262,10 +268,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pr-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
 
         {/* Product names */}
-        <h1 className="text-2xl font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
+        <h1 className="text-xl font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
         <p className="text-sm text-gray-500 mt-0.5">{product.nameUr}</p>
 
-        {/* Rating & reviews inline — no backgrounds, | separator */}
+        {/* Rating & reviews — plain, | separator */}
         <div className="flex items-center gap-2 mt-1.5 text-sm text-gray-600 flex-wrap">
           <FaStar className="w-3.5 h-3.5 text-yellow-400" />
           <span className="font-semibold text-gray-800">{product.rating}</span>
@@ -278,16 +284,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </>}
         </div>
 
-        {/* Price */}
+        {/* Price — no % off here, only price + strikethrough */}
         <div className="flex items-baseline gap-2 mt-2 flex-wrap">
           <span className="text-2xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
           {product.oldPrice && (
-            <>
-              <span className="text-sm text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>
-              <span className="text-xs text-red-500 font-semibold">
-                Save {Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}%
-              </span>
-            </>
+            <span className="text-sm text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>
           )}
         </div>
 
@@ -295,27 +296,27 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         {(product.benefits?.length || product.infoLines?.length) ? (
           <div className="flex gap-2 overflow-x-auto mt-3 flex-shrink-0 pb-0.5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {[...(product.benefits || []), ...(product.infoLines || [])].map((item, i) => (
-              <span key={i} className="flex-shrink-0 px-2.5 py-1 border border-gray-200 rounded-full text-xs text-gray-700 whitespace-nowrap">
+              <span key={i} className="flex-shrink-0 px-2.5 py-1 border border-gray-200 rounded-full text-xs text-gray-600 whitespace-nowrap">
                 {item}
               </span>
             ))}
           </div>
         ) : null}
 
-        {/* Key features — max 3, shown as compact cards */}
+        {/* Key features — max 3 */}
         {product.features && product.features.length > 0 && (
           <div className="mt-3">
-            <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Key Features</p>
+            <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-widest">Key Features</p>
             <div className="grid grid-cols-3 gap-2">
               {product.features.slice(0, 3).map((feature, i) => {
                 const hasCheck = feature.hasCheck !== undefined ? feature.hasCheck : feature.text.startsWith("✓");
                 const featureText = feature.hasCheck !== undefined ? feature.text : feature.text.replace("✓", "").trim();
                 return (
-                  <div key={i} className="flex items-start gap-1.5 p-2 bg-gray-50 rounded-lg text-xs text-gray-700">
-                    <span className={`mt-0.5 flex-shrink-0 ${hasCheck ? "text-green-600" : "text-gray-400"}`}>
+                  <div key={i} className="flex items-start gap-1.5 p-2 bg-gray-50 rounded-lg">
+                    <span className={`mt-0.5 flex-shrink-0 text-xs ${hasCheck ? "text-green-600" : "text-gray-400"}`}>
                       {hasCheck ? "✓" : "○"}
                     </span>
-                    <span className="leading-snug">{featureText}</span>
+                    <span className="text-xs text-gray-700 leading-snug">{featureText}</span>
                   </div>
                 );
               })}
@@ -323,40 +324,37 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         )}
 
-        {/* Size + Quantity in one row */}
-        <div className="mt-3 flex items-end gap-6">
-          {/* Size */}
-          {product.sizes && product.sizes.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Size</p>
-              <div className="flex flex-wrap gap-1.5">
-                {product.sizes.map(size => (
-                  <button key={size} onClick={() => setSelectedSize(size)}
-                    className={`px-3.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${selectedSize === size ? "bg-green-600 text-white border-green-600 shadow-sm" : "border-gray-300 text-gray-700 hover:border-green-500"}`}>
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Quantity + subtotal */}
-          <div>
-            <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Quantity</p>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center border border-gray-300 rounded-lg">
-                <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                  className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm disabled:opacity-40" disabled={quantity === 1}>−</button>
-                <span className="px-4 py-1.5 border-x border-gray-300 text-sm font-semibold min-w-[40px] text-center">{quantity}</span>
-                <button onClick={() => setQuantity(q => q + 1)}
-                  className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm">+</button>
-              </div>
-              <div>
-                <span className="text-xs text-gray-500">Subtotal: </span>
-                <span className="text-base font-bold text-green-700">PKR {(product.price * quantity).toLocaleString()}</span>
-              </div>
+        {/* Size — own row */}
+        {product.sizes && product.sizes.length > 0 && (
+          <div className="mt-3">
+            <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-widest">Size</p>
+            <div className="flex flex-wrap gap-1.5">
+              {product.sizes.map(size => (
+                <button key={size} onClick={() => setSelectedSize(size)}
+                  className={`px-3.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${selectedSize === size ? "bg-green-600 text-white border-green-600 shadow-sm" : "border-gray-300 text-gray-700 hover:border-green-500"}`}>
+                  {size}
+                </button>
+              ))}
             </div>
           </div>
+        )}
+
+        {/* Quantity — own row */}
+        <div className="mt-3">
+          <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-widest">Quantity</p>
+          <div className="flex items-center border border-gray-300 rounded-lg w-fit">
+            <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
+              className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm disabled:opacity-40" disabled={quantity === 1}>−</button>
+            <span className="px-4 py-1.5 border-x border-gray-300 text-sm font-semibold min-w-[40px] text-center">{quantity}</span>
+            <button onClick={() => setQuantity(q => q + 1)}
+              className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm">+</button>
+          </div>
+        </div>
+
+        {/* Total — own row */}
+        <div className="mt-3">
+          <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-widest">Total</p>
+          <span className="text-xl font-bold text-gray-900">PKR {(product.price * quantity).toLocaleString()}</span>
         </div>
 
         {/* Action buttons */}
