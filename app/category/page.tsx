@@ -105,7 +105,6 @@ export default function CategoriesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Matches shop: 20 on laptop, 25 on 4K
   const [productsPerPage, setProductsPerPage] = useState(20);
   useEffect(() => {
     const update = () => {
@@ -218,10 +217,13 @@ export default function CategoriesPage() {
         />
       </div>
 
-      {/* Category pill bar — sticky */}
+      {/* Category pill bar — sticky, NO scrollbar */}
       <div className="bg-white border-b border-gray-200 mt-4 sm:mt-6 sticky top-0 z-10 shadow-sm">
         <div className="max-w-[1920px] mx-auto px-[4%]">
-          <div className="overflow-x-auto">
+          <div
+            className="overflow-x-auto"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             <div className="flex space-x-2 py-3">
               {allCategories.map((cat) => (
                 <button key={cat} onClick={() => handleCategorySelect(cat)}
@@ -269,10 +271,8 @@ export default function CategoriesPage() {
                   <MobileCard key={product.id} {...toMobileProps(product, handleMobileAdd)} />
                 ))}
               </div>
-              {/* Desktop grid — exactly matches shop: lg:grid-cols-5 */}
-             <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
-              
-              {/* <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 2xl:gap-8"> */}
+              {/* Desktop grid */}
+              <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
                 {paginatedProducts.map((product) => (
                   <div key={product.id} className="w-full">
                     <ProductCard product={product} />
@@ -355,6 +355,12 @@ export default function CategoriesPage() {
       {isModalOpen && selectedProduct && (
         <ProductDetailsModal product={selectedProduct} onClose={() => { setIsModalOpen(false); setSelectedProduct(null); }} />
       )}
+
+      <style jsx global>{`
+        /* Hide scrollbar on category pill bar across all browsers */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }

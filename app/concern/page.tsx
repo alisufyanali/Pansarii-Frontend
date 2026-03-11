@@ -242,7 +242,7 @@ export default function ByConcernPage() {
             </Link>
           </div>
           {isProductsLoading ? <GridSkeleton /> : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 2xl:gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
               {matchedProducts.map((product) => (
                 <div key={product.id} className="w-full"><ProductCard product={product} /></div>
               ))}

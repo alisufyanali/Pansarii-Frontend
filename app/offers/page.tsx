@@ -399,7 +399,7 @@ export default function OffersPage() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Products On Sale Now</h2>
               <Link href="/shop" className="text-sm text-[#197B33] font-semibold hover:underline">View All →</Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
               {saleProducts.map((product) => (
                 <div key={product.id} className="w-full"><ProductCard product={product} /></div>
               ))}
