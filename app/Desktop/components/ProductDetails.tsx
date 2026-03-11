@@ -256,16 +256,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         )}
 
-        {/* ── Horizontal scrollable info chips (benefits / infoLines) ── */}
-        {(product.benefits?.length || product.infoLines?.length) ? (
-          <div className="flex gap-2 overflow-x-auto flex-shrink-0 pb-0.5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            {[...(product.benefits || []), ...(product.infoLines || [])].map((item, i) => (
-              <span key={i} className="flex-shrink-0 px-2.5 py-1 border border-gray-200 rounded-full text-xs text-gray-700 whitespace-nowrap">
-                {item}
-              </span>
-            ))}
-          </div>
-        ) : null}
       </div>
 
       {/* ── RIGHT: info column — scrollable internally ── */}
@@ -286,11 +276,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             <span className="text-gray-300">|</span>
             <span className="text-red-500 font-semibold">{product.sale}</span>
           </>}
-          {product.points && <>
-            <span className="text-gray-300">|</span>
-            <FaBolt className="w-3 h-3 text-amber-500" />
-            <span className="text-amber-600">+{product.points * quantity} pts</span>
-          </>}
         </div>
 
         {/* Price */}
@@ -306,20 +291,16 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           )}
         </div>
 
-        {/* Size */}
-        {product.sizes && product.sizes.length > 0 && (
-          <div className="mt-3">
-            <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Size</p>
-            <div className="flex flex-wrap gap-1.5">
-              {product.sizes.map(size => (
-                <button key={size} onClick={() => setSelectedSize(size)}
-                  className={`px-3.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${selectedSize === size ? "bg-green-600 text-white border-green-600 shadow-sm" : "border-gray-300 text-gray-700 hover:border-green-500"}`}>
-                  {size}
-                </button>
-              ))}
-            </div>
+        {/* ── Horizontal scrollable info chips (benefits / infoLines) ── */}
+        {(product.benefits?.length || product.infoLines?.length) ? (
+          <div className="flex gap-2 overflow-x-auto mt-3 flex-shrink-0 pb-0.5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            {[...(product.benefits || []), ...(product.infoLines || [])].map((item, i) => (
+              <span key={i} className="flex-shrink-0 px-2.5 py-1 border border-gray-200 rounded-full text-xs text-gray-700 whitespace-nowrap">
+                {item}
+              </span>
+            ))}
           </div>
-        )}
+        ) : null}
 
         {/* Key features — max 3, shown as compact cards */}
         {product.features && product.features.length > 0 && (
@@ -342,20 +323,38 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         )}
 
-        {/* Quantity + subtotal */}
-        <div className="mt-3">
-          <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Quantity</p>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center border border-gray-300 rounded-lg">
-              <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm disabled:opacity-40" disabled={quantity === 1}>−</button>
-              <span className="px-4 py-1.5 border-x border-gray-300 text-sm font-semibold min-w-[40px] text-center">{quantity}</span>
-              <button onClick={() => setQuantity(q => q + 1)}
-                className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm">+</button>
-            </div>
+        {/* Size + Quantity in one row */}
+        <div className="mt-3 flex items-end gap-6">
+          {/* Size */}
+          {product.sizes && product.sizes.length > 0 && (
             <div>
-              <span className="text-xs text-gray-500">Subtotal: </span>
-              <span className="text-lg font-bold text-green-700">PKR {(product.price * quantity).toLocaleString()}</span>
+              <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Size</p>
+              <div className="flex flex-wrap gap-1.5">
+                {product.sizes.map(size => (
+                  <button key={size} onClick={() => setSelectedSize(size)}
+                    className={`px-3.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${selectedSize === size ? "bg-green-600 text-white border-green-600 shadow-sm" : "border-gray-300 text-gray-700 hover:border-green-500"}`}>
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quantity + subtotal */}
+          <div>
+            <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Quantity</p>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center border border-gray-300 rounded-lg">
+                <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm disabled:opacity-40" disabled={quantity === 1}>−</button>
+                <span className="px-4 py-1.5 border-x border-gray-300 text-sm font-semibold min-w-[40px] text-center">{quantity}</span>
+                <button onClick={() => setQuantity(q => q + 1)}
+                  className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm">+</button>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500">Subtotal: </span>
+                <span className="text-base font-bold text-green-700">PKR {(product.price * quantity).toLocaleString()}</span>
+              </div>
             </div>
           </div>
         </div>
