@@ -4,30 +4,12 @@ import { useRef, useState, useEffect } from "react";
 import ProductCard2 from "@components/ProductCard2";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
-
-interface Product {
-  id: string | number;
-  nameEn: string;
-  nameUr: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  oldPrice?: number | null;
-  img: string;
-  hoverimg: string;
-}
+import { bestSellers } from "@/app/Desktop/data/products";
 
 export default function FeaturedProducts() {
-  const featuredProducts: Product[] = [
-    { id: 1, nameEn: "Hibiscus Tea", nameUr: "ہیبسکس چائے", rating: 4.7, reviews: 406, price: 1149, oldPrice: 1499, img: "/images/category.png", hoverimg: "/images/product.png" },
-    { id: 2, nameEn: "Green Oil", nameUr: "سبز تیل", rating: 4.5, reviews: 210, price: 999, oldPrice: 1299, img: "/images/category.png", hoverimg: "/images/product.png" },
-    { id: 3, nameEn: "Orange Oil", nameUr: "نارنجی کا تیل", rating: 4.8, reviews: 320, price: 1149, img: "/images/category.png", hoverimg: "/images/product.png" },
-    { id: 4, nameEn: "Herbal Soap", nameUr: "جڑی بوٹیوں کا صابن", rating: 4.6, reviews: 150, price: 599, oldPrice: 799, img: "/images/category.png", hoverimg: "/images/product.png" },
-    { id: 5, nameEn: "Hibiscus Tea", nameUr: "ہیبسکس چائے", rating: 4.7, reviews: 406, price: 1149, oldPrice: 1499, img: "/images/category.png", hoverimg: "/images/product.png" },
-    { id: 6, nameEn: "Green Oil", nameUr: "سبز تیل", rating: 4.5, reviews: 210, price: 999, oldPrice: 1299, img: "/images/category.png", hoverimg: "/images/product.png" },
-    { id: 7, nameEn: "Orange Oil", nameUr: "نارنجی کا تیل", rating: 4.8, reviews: 320, price: 1149, img: "/images/category.png", hoverimg: "/images/product.png" },
-    { id: 8, nameEn: "Herbal Soap", nameUr: "جڑی بوٹیوں کا صابن", rating: 4.6, reviews: 150, price: 599, oldPrice: 799, img: "/images/category.png", hoverimg: "/images/product.png" },
-  ];
+  // Real best sellers from products data (isBestSeller: true)
+  // ProductCard2 expects `hoverimg` (lowercase) — fallback to same img
+  const featuredProducts = bestSellers.map(p => ({ ...p, hoverimg: p.img }));
 
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
@@ -45,7 +27,7 @@ export default function FeaturedProducts() {
     if (!el) return;
     const cardElement = el.querySelector('.card-item') as HTMLElement;
     if (!cardElement) return;
-    const cardWidth = cardElement.clientWidth + 24; // 24 = gap-6
+    const cardWidth = cardElement.clientWidth + 24;
     el.scrollBy({
       left: direction === "right" ? cardWidth : -cardWidth,
       behavior: "smooth",
@@ -73,6 +55,7 @@ export default function FeaturedProducts() {
           </div>
         </div>
 
+        {/* ProductCard2 handles its own click → /product/:id */}
         <div
           ref={sliderRef}
           className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-4"
@@ -83,7 +66,6 @@ export default function FeaturedProducts() {
               key={product.id}
               className="flex-shrink-0 card-item"
               style={{
-                // 4 cards on laptop minimum, grows with screen on larger displays
                 width: 'clamp(260px, calc((min(100vw, 1920px) - 8vw - 72px) / 4), 440px)',
               }}
             >

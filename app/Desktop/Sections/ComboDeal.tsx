@@ -4,28 +4,16 @@ import { useRef, useState, useEffect } from "react";
 import ProductCard2 from '@components/ProductCard2';
 import ForwardArrow from '@components/ForwardArrow';
 import BackwardArrow from '@components/BackwardArrow';
+import { allProducts } from "@/app/Desktop/data/products";
 
 export default function ComboDeal() {
   const banner4Img = '/images/Banner4.png';
-  const productImg = '/images/product.png';
-  const hoverimg = '/images/category.png';
 
-  const comboProducts = [
-    { img: productImg, nameEn: 'Hibiscus Tea', nameUr: 'ہیبسکس چائے', description: 'Natural Tea', rating: 4.7, reviews: 406, price: 1149, oldPrice: 1299, sale: '20% OFF', hoverimg },
-    { img: productImg, nameEn: 'Green Tea', nameUr: 'گرین ٹی', description: 'Organic Tea', rating: 4.5, reviews: 320, price: 999, oldPrice: 1200, sale: '15% OFF', hoverimg },
-    { img: productImg, nameEn: 'Black Tea', nameUr: 'کالی چائے', description: 'Strong Tea', rating: 4.8, reviews: 512, price: 1149, oldPrice: 1399, sale: '18% OFF', hoverimg },
-    { img: productImg, nameEn: 'Chamomile Tea', nameUr: 'کملی چائے', description: 'Relaxing Tea', rating: 4.6, reviews: 280, price: 899, oldPrice: 1099, sale: '10% OFF', hoverimg },
-    { img: productImg, nameEn: 'Hibiscus Tea', nameUr: 'ہیبسکس چائے', description: 'Natural Tea', rating: 4.7, reviews: 406, price: 1149, oldPrice: 1299, sale: '20% OFF', hoverimg },
-    { img: productImg, nameEn: 'Green Tea', nameUr: 'گرین ٹی', description: 'Organic Tea', rating: 4.5, reviews: 320, price: 999, oldPrice: 1200, sale: '15% OFF', hoverimg },
-    { img: productImg, nameEn: 'Black Tea', nameUr: 'کالی چائے', description: 'Strong Tea', rating: 4.8, reviews: 512, price: 1149, oldPrice: 1399, sale: '18% OFF', hoverimg },
-    { img: productImg, nameEn: 'Hibiscus Tea', nameUr: 'ہیبسکس چائے', description: 'Natural Tea', rating: 4.7, reviews: 406, price: 1149, oldPrice: 1299, sale: '20% OFF', hoverimg },
-    { img: productImg, nameEn: 'Green Tea', nameUr: 'گرین ٹی', description: 'Organic Tea', rating: 4.5, reviews: 320, price: 999, oldPrice: 1200, sale: '15% OFF', hoverimg },
-    { img: productImg, nameEn: 'Black Tea', nameUr: 'کالی چائے', description: 'Strong Tea', rating: 4.8, reviews: 512, price: 1149, oldPrice: 1399, sale: '18% OFF', hoverimg },
-    { img: productImg, nameEn: 'Green Tea', nameUr: 'گرین ٹی', description: 'Organic Tea', rating: 4.5, reviews: 320, price: 999, oldPrice: 1200, sale: '15% OFF', hoverimg },
-    { img: productImg, nameEn: 'Black Tea', nameUr: 'کالی چائے', description: 'Strong Tea', rating: 4.8, reviews: 512, price: 1149, oldPrice: 1399, sale: '18% OFF', hoverimg },
-    { img: productImg, nameEn: 'Green Tea', nameUr: 'گرین ٹی', description: 'Organic Tea', rating: 4.5, reviews: 320, price: 999, oldPrice: 1200, sale: '15% OFF', hoverimg },
-    { img: productImg, nameEn: 'Black Tea', nameUr: 'کالی چائے', description: 'Strong Tea', rating: 4.8, reviews: 512, price: 1149, oldPrice: 1399, sale: '18% OFF', hoverimg },
-  ];
+  // Real products filtered by category
+  // ProductCard2 expects `hoverimg` (lowercase), products.ts has `img` only — fallback to same img
+  const comboProducts = allProducts
+    .filter(p => p.category === 'Tea & Beverages')
+    .map(p => ({ ...p, hoverimg: p.img }));
 
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -81,15 +69,15 @@ export default function ComboDeal() {
             </div>
           </div>
 
-          {/* Product Cards - Horizontal Slider */}
+          {/* Product Cards - Horizontal Slider — ProductCard2 handles its own click → /product/:id */}
           <div
             ref={sliderRef}
             className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-20"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {comboProducts.map((product, index) => (
+            {comboProducts.map((product) => (
               <div
-                key={index}
+                key={product.id}
                 className="card-item flex-shrink-0"
                 style={{
                   width: 'clamp(260px, calc((min(100vw, 1920px) - 8vw - 72px) / 4), 460px)',

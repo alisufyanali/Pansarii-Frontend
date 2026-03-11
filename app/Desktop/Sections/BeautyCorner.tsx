@@ -1,23 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ProductCard from "@components/ProductCard";
+import { allProducts } from "@/app/Desktop/data/products";
 
 export default function BeautyCorner() {
+  const router = useRouter();
   const beautyCornerImg = '/images/beautycorner.png';
-  const productimg = '/images/product.png';
-  const productHoverImg = '/images/product-hover.png';
 
-  const products = [
-    { img: productimg, hoverImg: productHoverImg, nameEn: 'Organic Lavender Essential Oil', nameUr: 'روغن باکان بيد', description: 'Natural DHT Blocker | With Saw...', rating: 4.7, reviews: 406, price: 1149, oldPrice: 1499, sale: '20% OFF' },
-    { img: productimg, hoverImg: productHoverImg, nameEn: 'Green Tea Extract', nameUr: 'گرین ٹی کا عرق', description: 'Boosts metabolism...', rating: 4.6, reviews: 320, price: 999 },
-    { img: productimg, hoverImg: productHoverImg, nameEn: 'Chamomile Essential Oil', nameUr: 'کیمومائل تیل', description: 'Relaxing & soothing oil...', rating: 4.8, reviews: 210, price: 1199, sale: '15% OFF' },
-    { img: productimg, hoverImg: productHoverImg, nameEn: 'Mint Herbal Oil', nameUr: 'پودینے کا تیل', description: 'Refreshing oil...', rating: 4.5, reviews: 180, price: 899 },
-    { img: productimg, hoverImg: productHoverImg, nameEn: 'Rosehip Oil', nameUr: 'گلاب ہپ تیل', description: 'Anti-aging...', rating: 4.6, reviews: 220, price: 1099 },
-    { img: productimg, hoverImg: productHoverImg, nameEn: 'Argan Oil', nameUr: 'ارگن کا تیل', description: 'Hair & skin care...', rating: 4.7, reviews: 150, price: 1299 },
-    { img: productimg, hoverImg: productHoverImg, nameEn: 'Jojoba Oil', nameUr: 'جوجوبا تیل', description: 'Moisturizing...', rating: 4.5, reviews: 180, price: 999 },
-    { img: productimg, hoverImg: productHoverImg, nameEn: 'Tea Tree Oil', nameUr: 'ٹی ٹری آئل', description: 'Acne control...', rating: 4.6, reviews: 210, price: 1199 },
-  ];
+  // Real products filtered by category
+  const products = allProducts.filter(p => p.category === 'Beauty & Skincare');
 
   const [cardsToShow, setCardsToShow] = useState(4);
 
@@ -55,7 +48,11 @@ export default function BeautyCorner() {
               Beauty <span className="me-color-y">Corner</span>
             </h2>
 
-            <div className="flex items-center gap-4 cursor-pointer group">
+            {/* View All → /shop filtered by Beauty & Skincare */}
+            <div
+              className="flex items-center gap-4 cursor-pointer group"
+              onClick={() => router.push('/shop?category=Beauty+%26+Skincare')}
+            >
               <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
                 View All
               </span>
@@ -65,13 +62,13 @@ export default function BeautyCorner() {
             </div>
           </div>
 
-          {/* Product Cards Grid */}
+          {/* Product Cards Grid — ProductCard handles its own click → /product/:id */}
           <div
             className="grid gap-6 2xl:gap-8 pb-20"
             style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
           >
-            {products.slice(0, cardsToShow).map((product, index) => (
-              <ProductCard key={index} product={product} />
+            {products.slice(0, cardsToShow).map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </div>

@@ -87,10 +87,29 @@ export default function RegisterPage() {
       newErrors.email = "Email is invalid";
     }
 
+    // Pakistan phone number validation
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/\D/g, ''))) {
-      newErrors.phone = "Phone number is invalid";
+    } else {
+      // Remove all non-digit characters
+      const cleaned = formData.phone.replace(/\D/g, '');
+      
+      // Pakistan phone number validation
+      // Valid formats: 
+      // 03XXXXXXXXX (11 digits starting with 03)
+      // 3XXXXXXXXX (10 digits starting with 3)
+      // +923XXXXXXXXX (13 digits with country code)
+      const pakistanPhoneRegex = /^(?:\+92|0)?3[0-9]{9}$/;
+      
+      if (!pakistanPhoneRegex.test(cleaned)) {
+        newErrors.phone = "Please enter a valid Pakistan mobile number (e.g., 03XXXXXXXXX or +923XXXXXXXXX)";
+      } else if (cleaned.length === 10 && !cleaned.startsWith('3')) {
+        newErrors.phone = "Invalid Pakistan number format";
+      } else if (cleaned.length === 11 && !cleaned.startsWith('03')) {
+        newErrors.phone = "Invalid Pakistan number format";
+      } else if (cleaned.length === 13 && !cleaned.startsWith('923')) {
+        newErrors.phone = "Invalid Pakistan number format";
+      }
     }
 
     if (!formData.password) {
@@ -129,6 +148,9 @@ export default function RegisterPage() {
     setErrors({});
 
     try {
+      // Clean phone number before sending to API
+      const cleanedPhone = formData.phone.replace(/\D/g, '');
+      
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -137,7 +159,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           fullName: formData.fullName.trim(),
           email: formData.email.trim(),
-          phone: formData.phone.trim(),
+          phone: cleanedPhone.startsWith('0') ? cleanedPhone : `0${cleanedPhone}`,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
           agreeToTerms: formData.agreeToTerms
@@ -227,25 +249,67 @@ export default function RegisterPage() {
 
   const pwdStrength = passwordStrength(formData.password);
 
-  const formatPhoneNumber = (value: string) => {
+  const formatPakistanPhoneNumber = (value: string) => {
     // Remove all non-digit characters
     const cleaned = value.replace(/\D/g, '');
     
-    // Format based on length
-    if (cleaned.length <= 3) {
-      return cleaned;
-    } else if (cleaned.length <= 6) {
-      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
-    } else if (cleaned.length <= 10) {
-      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
-    } else {
-      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+    // Format Pakistan mobile numbers
+    if (cleaned.startsWith('92')) {
+      // Format with country code: +92 3XX XXXXXXX
+      if (cleaned.length >= 3) {
+        const code = cleaned.slice(0, 2);
+        const operator = cleaned.slice(2, 3);
+        const firstPart = cleaned.slice(3, 6);
+        const lastPart = cleaned.slice(6, 11);
+        if (lastPart) {
+          return `+${code} ${operator}${firstPart} ${lastPart}`;
+        } else if (firstPart) {
+          return `+${code} ${operator}${firstPart}`;
+        } else if (operator) {
+          return `+${code} ${operator}`;
+        }
+        return `+${code}`;
+      }
+    } else if (cleaned.startsWith('0')) {
+      // Format without country code: 03XX XXXXXXX
+      if (cleaned.length >= 4) {
+        const firstPart = cleaned.slice(0, 4);
+        const lastPart = cleaned.slice(4, 11);
+        if (lastPart) {
+          return `${firstPart} ${lastPart}`;
+        }
+        return firstPart;
+      }
+    } else if (cleaned.startsWith('3')) {
+      // Format without leading zero: 3XX XXXXXXX
+      if (cleaned.length >= 4) {
+        const firstPart = `0${cleaned.slice(0, 3)}`;
+        const lastPart = cleaned.slice(3, 10);
+        if (lastPart) {
+          return `${firstPart} ${lastPart}`;
+        }
+        return firstPart;
+      }
     }
+    
+    return value;
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
+    const input = e.target.value;
+    // Allow only digits, spaces, and plus sign
+    const cleaned = input.replace(/[^\d\s+]/g, '');
+    const formatted = formatPakistanPhoneNumber(cleaned);
     setFormData(prev => ({ ...prev, phone: formatted }));
+    
+    // Clear phone error if any
+    if (errors.phone) {
+      setErrors(prev => ({ ...prev, phone: "" }));
+    }
+  };
+
+  const getPhonePlaceholder = () => {
+    return "03XX XXXXXXX or +92 3XX XXXXXXX";
   };
 
   return (
@@ -335,10 +399,10 @@ export default function RegisterPage() {
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
 
-            {/* Phone Field */}
+            {/* Phone Field - Pakistan Only */}
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number *
+                Phone Number (Pakistan) *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -350,7 +414,7 @@ export default function RegisterPage() {
                   required
                   value={formData.phone}
                   onChange={handlePhoneChange}
-                  placeholder="(123) 456-7890"
+                  placeholder={getPhonePlaceholder()}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#197B33] focus:border-transparent outline-none transition-all ${
                     errors.phone ? "border-red-500" : "border-gray-300"
                   }`}
@@ -358,6 +422,9 @@ export default function RegisterPage() {
                 />
               </div>
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+              <p className="mt-1 text-xs text-gray-500">
+                Enter Pakistan mobile number (e.g., 03001234567 or +923001234567)
+              </p>
             </div>
 
             {/* Password Field */}

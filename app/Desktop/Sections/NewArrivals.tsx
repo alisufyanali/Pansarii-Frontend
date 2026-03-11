@@ -1,23 +1,17 @@
 "use client";
+
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ProductCard from "@components/ProductCard";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
+import { newArrivals } from "@/app/Desktop/data/products";
 
 export default function NewArrivals() {
-  const productImage = '/images/product.png';
-  const productHoverImage = '/images/product-hover.png';
+  const router = useRouter();
 
-  const products = [
-    { img: productImage, hoverImg: productHoverImage, nameEn: "Organic Lavender Essential Oil", nameUr: "روغن باكان بيد", description: "Natural DHT Blocker | With Saw...", rating: 4.7, reviews: 406, price: 1149, sale: "20% OFF" },
-    { img: productImage, hoverImg: productHoverImage, nameEn: "Green Tea Extract", nameUr: "گرین ٹی کا عرق", description: "Boosts metabolism and energy...", rating: 4.6, reviews: 320, price: 999 },
-    { img: productImage, hoverImg: productHoverImage, nameEn: "Chamomile Essential Oil", nameUr: "کیمومائل تیل", description: "Relaxing & soothing oil...", rating: 4.8, reviews: 210, price: 1199, sale: "15% OFF" },
-    { img: productImage, hoverImg: productHoverImage, nameEn: "Mint Herbal Oil", nameUr: "پودینے کا تیل", description: "Refreshing oil for daily use...", rating: 4.5, reviews: 180, price: 899 },
-    { img: productImage, hoverImg: productHoverImage, nameEn: "Organic Lavender Essential Oil", nameUr: "روغن باكان بيد", description: "Natural DHT Blocker | With Saw...", rating: 4.7, reviews: 406, price: 1149, sale: "20% OFF" },
-    { img: productImage, hoverImg: productHoverImage, nameEn: "Green Tea Extract", nameUr: "گرین ٹی کا عرق", description: "Boosts metabolism and energy...", rating: 4.6, reviews: 320, price: 999 },
-    { img: productImage, hoverImg: productHoverImage, nameEn: "Chamomile Essential Oil", nameUr: "کیمومائل تیل", description: "Relaxing & soothing oil...", rating: 4.8, reviews: 210, price: 1199, sale: "15% OFF" },
-    { img: productImage, hoverImg: productHoverImage, nameEn: "Mint Herbal Oil", nameUr: "پودینے کا تیل", description: "Refreshing oil for daily use...", rating: 4.5, reviews: 180, price: 899 },
-  ];
+  // Real new arrivals from products data (isNew: true)
+  const products = newArrivals;
 
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -33,9 +27,8 @@ export default function NewArrivals() {
   const scroll = (direction: "left" | "right") => {
     const el = sliderRef.current;
     if (!el) return;
-    // Calculate card width dynamically based on container
     const cardEl = el.querySelector('.card-item') as HTMLElement;
-    const cardWidth = cardEl ? cardEl.offsetWidth + 24 : 344; // 24 = gap-6
+    const cardWidth = cardEl ? cardEl.offsetWidth + 24 : 344;
     el.scrollBy({ left: direction === "right" ? cardWidth : -cardWidth, behavior: "smooth" });
   };
 
@@ -60,21 +53,15 @@ export default function NewArrivals() {
           </div>
         </div>
 
+        {/* ProductCard handles its own click → /product/:id */}
         <div
           ref={sliderRef}
           className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-4"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {products.map((product, i) => (
-            /*
-              Card width responsive:
-              - Mobile: 280px
-              - md: 260px
-              - lg (laptop): fills 4 cards per view = calc((100vw * 0.92 - 3 * 24px) / 4)
-              - 2xl: calc((min(100vw, 1920px) * 0.92 - 3 * 24px) / 4)
-            */
+          {products.map((product) => (
             <div
-              key={i}
+              key={product.id}
               className="card-item flex-shrink-0"
               style={{
                 width: 'clamp(260px, calc((min(100vw, 1920px) - 8vw - 72px) / 4), 460px)',
