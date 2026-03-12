@@ -57,7 +57,7 @@ export default function ProductCard2({ product }: ProductCard2Props) {
   return (
     <>
       <div 
-        className="featured-card w-full max-w-[320px] h-auto rounded-lg overflow-hidden flex flex-col bg-white relative group cursor-pointer"
+        className="featured-card w-full max-w-[320px] h-auto rounded-lg overflow-hidden flex flex-col bg-white relative group cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick} // Add click handler here
@@ -108,12 +108,12 @@ export default function ProductCard2({ product }: ProductCard2Props) {
           <div className="w-full">
             {/* Product Names */}
             <div className="mb-2">
-              <p className="text-[17px] font-medium leading-tight">{product.nameEn}</p>
-              <p className="text-[17px] font-medium leading-tight">{product.nameUr}</p>
+              <p className="text-base font-medium leading-tight">{product.nameEn}</p>
+              <p className="text-base font-medium leading-tight">{product.nameUr}</p>
             </div>
 
-            {/* Rating and Reviews */}
-            <div className="flex items-center justify-center gap-3 mb-2 text-sm text-gray-600">
+            {/* Rating and Reviews - Separated by | */}
+            <div className="flex items-center justify-center gap-1 mb-2 text-sm text-gray-600">
               <div className="flex items-center gap-1">
                 {/* Star Icon */}
                 <svg
@@ -126,6 +126,8 @@ export default function ProductCard2({ product }: ProductCard2Props) {
                 </svg>
                 <span>{product.rating}</span>
               </div>
+
+              <span className="text-gray-400">|</span>
 
               <div className="flex items-center gap-1">
                 {/* Green Circle with White Tick */}
@@ -149,7 +151,7 @@ export default function ProductCard2({ product }: ProductCard2Props) {
           {/* Price - Fixed to handle null properly */}
           <div className="w-full">
             <div className="flex items-center justify-center gap-2">
-              <p className="text-[17px] font-bold">PKR {product.price}</p>
+              <p className="text-base font-bold">PKR {product.price}</p>
               {product.oldPrice !== null && product.oldPrice !== undefined && (
                 <p className="text-sm text-gray-500 line-through">PKR {product.oldPrice}</p>
               )}
