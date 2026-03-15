@@ -36,7 +36,7 @@ export default function PansariInn() {
       {/* Banner */}
       <section
         className="w-full relative"
-        style={{ height: '90vh', minHeight: '40rem', maxHeight: '90rem' }}
+        style={{ height: "70vh", minHeight: "30rem", maxHeight: "45rem" }}
       >
         <img src={bannerImg} alt={title} className="w-full h-full object-cover" />
       </section>

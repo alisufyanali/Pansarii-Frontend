@@ -50,7 +50,7 @@ export default function ComboDeal() {
       {/* Banner */}
       <section
         className="w-full relative"
-        style={{ height: '90vh', minHeight: '40rem', maxHeight: '90rem' }}
+        style={{ height: "70vh", minHeight: "30rem", maxHeight: "45rem"}}
       >
         <img src={banner4Img} alt="Combo Deals" className="w-full h-full object-cover" />
       </section>

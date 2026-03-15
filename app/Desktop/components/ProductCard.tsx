@@ -3,12 +3,12 @@
 import { FaStar, FaCheckCircle, FaShoppingCart } from "react-icons/fa";
 import { useState, MouseEvent } from "react";
 import ProductDetailsModal from "./ProductDetailsModal";
-import { useRouter } from "next/navigation"; // Add this import
+import { useRouter } from "next/navigation";
 
 interface Product {
   id?: string | number;
   img: string;
-  hoverImg?: string; // ADD: Hover image property
+  hoverImg?: string;
   nameEn: string;
   nameUr: string;
   description: string;
@@ -27,20 +27,14 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const router = useRouter(); // Add router
+  const router = useRouter();
 
-  // Handle entire card click (navigates to product details page)
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Navigate to product details page with product ID
-    // You should add a slug or ID to your product for better URLs
     const productSlug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
     router.push(`/product/${productSlug}`);
-    
-    // OR if you want to pass the entire product as query params:
-    // router.push(`/product-details?product=${encodeURIComponent(JSON.stringify(product))}`);
   };
 
   const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {
@@ -49,7 +43,6 @@ export default function ProductCard({ product }: ProductCardProps) {
     setIsModalOpen(true);
   };
 
-  // Determine which image to display
   const displayImage = isHovered && product.hoverImg 
     ? product.hoverImg 
     : product.img;
@@ -63,11 +56,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={handleCardClick} // Add click handler here
+        onClick={handleCardClick}
       >
         
         {/* Image Section with bottom border */}
-        <div className="relative w-full h-[200px] border-b border-gray-200">
+        <div className="relative w-full h-[180px] border-b border-gray-200">
           <img
             src={displayImage}
             alt={product.nameEn}
@@ -76,48 +69,55 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           {/* Sale Badge - Check for null/undefined */}
           {product.sale && product.sale !== null && product.sale !== undefined && (
-            <div className="absolute top-3 right-3 w-[68px] h-[23px] rounded-[60px] bg-[#F83A3A] text-white text-xs flex items-center justify-center font-medium">
+            <div className="absolute top-2 right-2 w-[60px] h-[22px] rounded-[60px] bg-[#F83A3A] text-white text-[11px] flex items-center justify-center font-medium">
               {product.sale}
             </div>
           )}
         </div>
 
         {/* Product Details - All content centered */}
-        <div className="flex-1 bg-white p-4 flex flex-col justify-between items-center">
+        <div className="flex-1 bg-white p-3 flex flex-col justify-between items-center">
           
           {/* Text Content - Centered */}
           <div className="w-full text-center">
-            <p className="text-[17px] font-medium truncate text-center">{product.nameEn}</p>
-            <p className="text-[17px] font-medium truncate text-center">{product.nameUr}</p>
-            <p className="text-sm text-[#197B33] truncate text-center">{product.description}</p>
+            {/* English name - smaller */}
+            <p className="text-[14px] font-medium truncate text-center text-gray-800">{product.nameEn}</p>
+            
+            {/* Urdu name - visible with proper font and spacing */}
+            <p className="text-[16px] font-medium truncate text-center text-gray-900 mt-0.5 mb-1" style={{ fontFamily: 'system-ui, -apple-system, "Noto Nastaliq Urdu", "Traditional Arabic", sans-serif' }}>
+              {product.nameUr}
+            </p>
+            
+            {/* Description - smaller */}
+            <p className="text-xs text-[#197B33] truncate text-center">{product.description}</p>
 
-            {/* Rating & Reviews - Centered */}
-            <div className="flex items-center justify-center gap-4 mt-1 text-sm font-medium flex-wrap">
+            {/* Rating & Reviews - Centered - smaller text */}
+            <div className="flex items-center justify-center gap-3 mt-1 text-xs font-medium flex-wrap">
               <div className="flex items-center gap-1 text-yellow-400">
-                <FaStar /> <span>{product.rating}</span>
+                <FaStar size={12} /> <span>{product.rating}</span>
               </div>|
               <div className="flex items-center gap-1 text-green-600">
-                <FaCheckCircle /> <span>{product.reviews} Reviews</span>
+                <FaCheckCircle size={12} /> <span>{product.reviews} Reviews</span>
               </div>
             </div>
 
-            {/* Price - Centered with null check */}
-            <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-              <p className="text-[17px] font-bold">PKR {product.price}</p>
+            {/* Price - Centered with null check - smaller */}
+            <div className="flex items-center justify-center gap-2 mt-1.5 flex-wrap">
+              <p className="text-[15px] font-bold">PKR {product.price}</p>
               {product.oldPrice !== null && product.oldPrice !== undefined && (
-                <p className="text-sm text-gray-500 line-through">PKR {product.oldPrice}</p>
+                <p className="text-xs text-gray-500 line-through">PKR {product.oldPrice}</p>
               )}
             </div>
           </div>
 
-          {/* Quick Add Button - Centered with icon on right */}
+          {/* Quick Add Button - Centered with icon on right - smaller height */}
           <div className="w-full flex justify-center">
             <button 
               onClick={handleQuickAdd}
-              className="w-[100%] h-[50px] mt-3 rounded-[57px] border border-gray-300 bg-[#50B46B] text-white flex items-center font-medium hover:bg-[#146128] transition-colors"
+              className="w-[100%] h-[42px] mt-2 rounded-[57px] border border-gray-300 bg-[#50B46B] text-white flex items-center font-medium text-sm hover:bg-[#146128] transition-colors"
             >
               <span className="flex-1 text-center">Quick Add</span>
-              <FaShoppingCart className="mr-6" />
+              <FaShoppingCart className="mr-5" size={16} />
             </button>
           </div>
         </div>
@@ -132,4 +132,4 @@ export default function ProductCard({ product }: ProductCardProps) {
       )}
     </>
   );
-} 
+}

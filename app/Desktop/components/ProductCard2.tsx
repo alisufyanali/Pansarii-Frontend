@@ -14,8 +14,8 @@ interface Product {
   rating: number;
   reviews: number;
   price: number;
-  oldPrice?: number | null; // Must match exactly
-  sale?: string | null; // Add null here too
+  oldPrice?: number | null;
+  sale?: string | null;
   additionalImages?: string[];
   sizes?: string[];
   benefits?: string[];
@@ -57,10 +57,10 @@ export default function ProductCard2({ product }: ProductCard2Props) {
   return (
     <>
       <div 
-        className="featured-card w-full max-w-[320px] h-auto rounded-lg overflow-hidden flex flex-col bg-white relative group cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300"
+        className="featured-card w-full max-w-[320px] h-auto rounded-lg overflow-hidden flex flex-col bg-white relative group cursor-pointer shadow-md hover:shadow-xl transition-shadow duration-300"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={handleCardClick} // Add click handler here
+        onClick={handleCardClick}
       >
         {/* Image Section */}
         <div className="w-full aspect-[4/3] relative flex-shrink-0 overflow-hidden">
@@ -76,17 +76,17 @@ export default function ProductCard2({ product }: ProductCard2Props) {
           {/* Add to Cart Button - CENTERED in image div */}
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <button
-              onClick={handleQuickView} // Renamed for clarity
-              className="flex items-center justify-between px-6 py-3 rounded-full shadow-lg transition-all duration-300 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 bg-[#1E7B4D] hover:bg-green-700"
-              style={{ minWidth: "180px" }}
+              onClick={handleQuickView}
+              className="flex items-center justify-between px-5 py-2.5 rounded-full shadow-lg transition-all duration-300 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 bg-[#1E7B4D] hover:bg-green-700"
+              style={{ minWidth: "160px" }}
             >
-              <span className="text-white font-medium text-sm">
+              <span className="text-white font-medium text-xs">
                 Quick View
               </span>
-              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center ml-2">
+              <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center ml-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-white"
+                  className="h-3.5 w-3.5 text-white"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -104,21 +104,26 @@ export default function ProductCard2({ product }: ProductCard2Props) {
         </div>
 
         {/* Product Details */}
-        <div className="flex-1 bg-[#F3F3F3] p-4 flex flex-col justify-between items-center text-center min-h-[140px] border-t-0">
+        <div className="flex-1 bg-[#F3F3F3] p-3 flex flex-col justify-between items-center text-center min-h-[120px] border-t-0">
           <div className="w-full">
             {/* Product Names */}
-            <div className="mb-2">
-              <p className="text-base font-medium leading-tight">{product.nameEn}</p>
-              <p className="text-base font-medium leading-tight">{product.nameUr}</p>
+            <div className="mb-1.5">
+              {/* English name - smaller */}
+              <p className="text-[14px] font-medium leading-tight text-gray-800">{product.nameEn}</p>
+              
+              {/* Urdu name - visible with proper font and spacing */}
+              <p className="text-[16px] font-medium leading-tight text-gray-900 mt-0.5" style={{ fontFamily: 'system-ui, -apple-system, "Noto Nastaliq Urdu", "Traditional Arabic", sans-serif' }}>
+                {product.nameUr}
+              </p>
             </div>
 
-            {/* Rating and Reviews - Separated by | */}
-            <div className="flex items-center justify-center gap-1 mb-2 text-sm text-gray-600">
+            {/* Rating and Reviews - Separated by | - smaller text */}
+            <div className="flex items-center justify-center gap-1 mb-1.5 text-xs text-gray-600">
               <div className="flex items-center gap-1">
-                {/* Star Icon */}
+                {/* Star Icon - smaller */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-yellow-400"
+                  className="h-3.5 w-3.5 text-yellow-400"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -127,11 +132,11 @@ export default function ProductCard2({ product }: ProductCard2Props) {
                 <span>{product.rating}</span>
               </div>
 
-              <span className="text-gray-400">|</span>
+              <span className="text-gray-400 text-xs">|</span>
 
               <div className="flex items-center gap-1">
-                {/* Green Circle with White Tick */}
-                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                {/* Green Circle with White Tick - smaller */}
+                <div className="w-3.5 h-3.5 bg-green-500 rounded-full flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-2 w-2 text-white"
@@ -148,12 +153,12 @@ export default function ProductCard2({ product }: ProductCard2Props) {
             </div>
           </div>
 
-          {/* Price - Fixed to handle null properly */}
+          {/* Price - Fixed to handle null properly - smaller */}
           <div className="w-full">
             <div className="flex items-center justify-center gap-2">
-              <p className="text-base font-bold">PKR {product.price}</p>
+              <p className="text-[15px] font-bold">PKR {product.price}</p>
               {product.oldPrice !== null && product.oldPrice !== undefined && (
-                <p className="text-sm text-gray-500 line-through">PKR {product.oldPrice}</p>
+                <p className="text-xs text-gray-500 line-through">PKR {product.oldPrice}</p>
               )}
             </div>
           </div>
