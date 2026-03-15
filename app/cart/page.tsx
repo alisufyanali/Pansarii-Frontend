@@ -135,13 +135,17 @@ function CartContent() {
                           {/* Quantity + price row */}
                           <div className="flex items-center justify-between mt-3">
                             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                              <button onClick={() => updateQuantity(item.id, item.size, -1)}
-                                className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition text-gray-600 text-sm disabled:opacity-30"
-                                disabled={item.quantity === 1}>−</button>
+                              <button
+                                onClick={() => {
+                                  if (item.quantity <= 1) removeFromCart(item.id, item.size);
+                                  else updateQuantity(item.id, item.size, item.quantity - 1);
+                                }}
+                                className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition text-gray-600 text-sm">−</button>
                               <span className="w-8 h-8 flex items-center justify-center border-x border-gray-200 text-sm font-semibold text-gray-900">
                                 {item.quantity}
                               </span>
-                              <button onClick={() => updateQuantity(item.id, item.size, 1)}
+                              <button
+                                onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
                                 className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition text-gray-600 text-sm">+</button>
                             </div>
                             <div className="text-right">
