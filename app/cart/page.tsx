@@ -126,9 +126,7 @@ function CartContent() {
                                 className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Remove">
                                 <FaTrash className="w-3.5 h-3.5" />
                               </button>
-                              <button className="p-1.5 text-gray-300 hover:text-pink-500 hover:bg-pink-50 rounded-lg transition" title="Save for later">
-                                <FaHeart className="w-3.5 h-3.5" />
-                              </button>
+                              
                             </div>
                           </div>
 
