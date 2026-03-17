@@ -10,7 +10,7 @@ export default function DesktopLayout({ children }: { children: ReactNode }) {
     <CartProvider>
       <WishlistProvider>
         <Navbar />
-        <main className="min-h-screen bg-white pt-44">
+        <main className="min-h-screen bg-white">
           {children}
         </main>
         <Footer />

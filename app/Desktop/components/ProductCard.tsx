@@ -1,135 +1,116 @@
 "use client";
 
-import { FaStar, FaCheckCircle, FaShoppingCart } from "react-icons/fa";
-import { useState, MouseEvent } from "react";
-import ProductDetailsModal from "./ProductDetailsModal";
-import { useRouter } from "next/navigation";
+import React, { useRef, useEffect, useState, MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
-interface Product {
-  id?: string | number;
-  img: string;
-  hoverImg?: string;
+interface VideoProduct {
+  video: string;
+  topImage: string;
+  productImage: string;
   nameEn: string;
   nameUr: string;
-  description: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  oldPrice?: number | null;
-  sale?: string | null;
+  price: number | string;
+  oldPrice?: number | string;
+  sale?: string;
+  views?: string;
   [key: string]: any;
 }
 
-interface ProductCardProps {
-  product: Product;
+interface VideoProductCardProps {
+  product: VideoProduct;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
-  const [isHovered, setIsHovered] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+export default function VideoProductCard({ product }: VideoProductCardProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoError, setVideoError] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const playVideo = async () => {
+      if (videoRef.current && !videoError && videoLoaded) {
+        try {
+          videoRef.current.muted = true;
+          await videoRef.current.play();
+        } catch (error) {
+          console.log('Autoplay prevented:', error);
+        }
+      }
+    };
+    if (videoLoaded) playVideo();
+  }, [videoError, videoLoaded, product.video]);
 
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const productSlug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/product/${productSlug}`);
+    const slug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
+    router.push(`/product/${slug}`);
   };
-
-  const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsModalOpen(true);
-  };
-
-  const displayImage = isHovered && product.hoverImg 
-    ? product.hoverImg 
-    : product.img;
 
   return (
-    <>
-      <div 
-        className="w-full rounded-[18px] overflow-hidden flex flex-col bg-white cursor-pointer transition-all duration-300 h-full"
-        style={{ 
-          border: isHovered ? '2px solid #197B33' : '2px solid #E5E7EB'
-        }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onClick={handleCardClick}
-      >
-        
-        {/* Image Section with bottom border */}
-        <div className="relative w-full h-[180px] border-b border-gray-200">
-          <img
-            src={displayImage}
-            alt={product.nameEn}
-            className="w-full h-full object-cover transition-all duration-300"
+    <div
+      onClick={handleCardClick}
+      className="w-full rounded-[18px] border border-gray-300 overflow-hidden flex flex-col bg-white hover:shadow-lg hover:border-[#197B33] transition-all duration-300 cursor-pointer"
+      style={{ height: '50vh', minHeight: '280px', maxHeight: '420px' }}
+    >
+      {/* Video section */}
+      <div className="relative w-full flex-1 overflow-hidden bg-black rounded-t-[18px]">
+        {!videoError ? (
+          <video
+            ref={videoRef}
+            src={product.video}
+            className="w-full h-full object-cover"
+            loop muted autoPlay playsInline
+            onError={() => setVideoError(true)}
+            onLoadedData={() => setVideoLoaded(true)}
+            onCanPlay={() => setVideoLoaded(true)}
+            disablePictureInPicture
+            disableRemotePlayback
+            preload="auto"
           />
+        ) : (
+          <img src={product.topImage} alt="Product" className="w-full h-full object-cover" />
+        )}
 
-          {/* Sale Badge - Check for null/undefined */}
-          {product.sale && product.sale !== null && product.sale !== undefined && (
-            <div className="absolute top-2 right-2 w-[60px] h-[22px] rounded-[60px] bg-[#F83A3A] text-white text-[11px] flex items-center justify-center font-medium">
+        {!videoLoaded && !videoError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50">
+            <div className="text-white text-xs">Loading...</div>
+          </div>
+        )}
+
+        {product.views && (
+          <div className="absolute bottom-2 left-2 rounded-[5px] px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm bg-black/30 text-white">
+            {product.views} Views
+          </div>
+        )}
+      </div>
+
+      {/* Info strip */}
+      <div className="flex p-2 gap-2 flex-shrink-0">
+        <div className="flex flex-col items-start gap-1 flex-shrink-0">
+          <img
+            src={product.productImage}
+            alt={product.nameEn}
+            className="w-[44px] h-[40px] rounded-[4px] object-cover"
+          />
+          {product.sale && (
+            <div className="text-[9px] font-medium text-center text-black px-1 py-0.5 rounded bg-white border border-gray-300 leading-tight">
               {product.sale}
             </div>
           )}
         </div>
 
-        {/* Product Details - All content centered */}
-        <div className="flex-1 bg-white p-3 flex flex-col justify-between items-center">
-          
-          {/* Text Content - Centered */}
-          <div className="w-full text-center">
-            {/* English name - smaller */}
-            <p className="text-[14px] font-medium truncate text-center text-gray-800">{product.nameEn}</p>
-            
-            {/* Urdu name - visible with proper font and spacing */}
-            <p className="text-[16px] font-medium truncate text-center text-gray-900 mt-0.5 mb-1" style={{ fontFamily: 'system-ui, -apple-system, "Noto Nastaliq Urdu", "Traditional Arabic", sans-serif' }}>
-              {product.nameUr}
-            </p>
-            
-            {/* Description - smaller */}
-            <p className="text-xs text-[#197B33] truncate text-center">{product.description}</p>
-
-            {/* Rating & Reviews - Centered - smaller text */}
-            <div className="flex items-center justify-center gap-3 mt-1 text-xs font-medium flex-wrap">
-              <div className="flex items-center gap-1 text-yellow-400">
-                <FaStar size={12} /> <span>{product.rating}</span>
-              </div>|
-              <div className="flex items-center gap-1 text-green-600">
-                <FaCheckCircle size={12} /> <span>{product.reviews} Reviews</span>
-              </div>
-            </div>
-
-            {/* Price - Centered with null check - smaller */}
-            <div className="flex items-center justify-center gap-2 mt-1.5 flex-wrap">
-              <p className="text-[15px] font-bold">PKR {product.price}</p>
-              {product.oldPrice !== null && product.oldPrice !== undefined && (
-                <p className="text-xs text-gray-500 line-through">PKR {product.oldPrice}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Quick Add Button - Centered with icon on right - smaller height */}
-          <div className="w-full flex justify-center">
-            <button 
-              onClick={handleQuickAdd}
-              className="w-[100%] h-[42px] mt-2 rounded-[57px] border border-gray-300 bg-[#50B46B] text-white flex items-center font-medium text-sm hover:bg-[#146128] transition-colors"
-            >
-              <span className="flex-1 text-center">Quick Add</span>
-              <FaShoppingCart className="mr-5" size={16} />
-            </button>
+        <div className="flex-1 flex flex-col justify-center gap-0.5 min-w-0">
+          <p className="text-[11px] font-medium truncate text-gray-900">{product.nameEn}</p>
+          <p className="text-[11px] font-medium truncate text-gray-500">{product.nameUr}</p>
+          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+            <span className="text-xs font-semibold leading-tight">PKR {product.price}</span>
+            {product.oldPrice && (
+              <span className="text-[10px] text-gray-400 line-through">PKR {product.oldPrice}</span>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Product Details Modal (for Quick Add) */}
-      {isModalOpen && (
-        <ProductDetailsModal 
-          product={product} 
-          onClose={() => setIsModalOpen(false)} 
-        />
-      )}
-    </>
+    </div>
   );
 }

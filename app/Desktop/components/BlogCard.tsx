@@ -14,29 +14,20 @@ interface BlogCardProps {
   blog: Blog;
 }
 
-// Helper function to strip HTML tags
-const stripHtmlTags = (html: string): string => {
-  return html.replace(/<[^>]*>/g, '');
-};
-
-// Optional: Helper function to truncate text with ellipsis
-const truncateText = (text: string, maxLength: number): string => {
-  if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength).trim() + '...';
-};
+const stripHtmlTags = (html: string): string => html.replace(/<[^>]*>/g, '');
 
 export default function BlogCard({ blog }: BlogCardProps) {
-  // Clean content by removing HTML tags
   const cleanContent = stripHtmlTags(blog.content);
-  
-  // Clean title by removing HTML tags
-  const cleanTitle = stripHtmlTags(blog.title);
+  const cleanTitle   = stripHtmlTags(blog.title);
 
   return (
-    <article className="w-full h-auto rounded-[14px] border border-gray-300 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
-      {/* Image - Responsive container */}
-      <div className="relative w-full aspect-[384/217] mt-4 px-4">
-        <div className="relative w-full h-full rounded-[14px] overflow-hidden">
+    <article
+      className="w-full rounded-[14px] border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col bg-white"
+      style={{ height: '42vh', minHeight: '240px', maxHeight: '360px' }}
+    >
+      {/* Image — fixed portion of card height */}
+      <div className="relative w-full flex-shrink-0 px-3 pt-3" style={{ height: '50%' }}>
+        <div className="relative w-full h-full rounded-[10px] overflow-hidden">
           <Image
             src={blog.image}
             alt={cleanTitle}
@@ -48,20 +39,19 @@ export default function BlogCard({ blog }: BlogCardProps) {
         </div>
       </div>
 
-      {/* Content - Responsive padding and text */}
-      <div className="p-4 md:p-5 lg:p-6 2xl:p-8 flex flex-col flex-grow">
-        <h3 className="font-poppins font-semibold text-lg md:text-xl lg:text-2xl 2xl:text-3xl leading-tight capitalize mb-2 line-clamp-2">
+      {/* Content — fills remaining space */}
+      <div className="flex flex-col flex-1 p-3 min-h-0">
+        <h3 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 flex-shrink-0">
           {cleanTitle}
         </h3>
-        <p className="font-poppins font-normal text-sm md:text-base lg:text-lg 2xl:text-xl leading-relaxed capitalize mb-4 line-clamp-3">
+        <p className="text-xs text-gray-500 leading-relaxed mt-1 flex-1 overflow-hidden line-clamp-3">
           {cleanContent}
         </p>
         <Link
           href={`/blog/${blog.slug}`}
-          className="font-poppins font-medium text-base md:text-lg lg:text-xl 2xl:text-2xl underline capitalize hover:text-blue-600 transition-colors inline-flex items-center mt-auto"
+          className="mt-2 flex-shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-green-700 hover:text-green-600 transition-colors"
         >
-          Read More
-          <span className="ml-2">→</span>
+          Read More <span>→</span>
         </Link>
       </div>
     </article>

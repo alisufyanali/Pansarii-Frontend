@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface VideoProduct {
   video: string;
@@ -23,6 +24,7 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoError, setVideoError] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const playVideo = async () => {
@@ -38,20 +40,20 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
     if (videoLoaded) playVideo();
   }, [videoError, videoLoaded, product.video]);
 
-  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    setVideoError(true);
-  };
-
-  const handleVideoLoaded = () => {
-    setVideoLoaded(true);
+  const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const slug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
+    router.push(`/product/${slug}`);
   };
 
   return (
     <div
-      className="w-full rounded-[18px] border border-gray-300 overflow-hidden flex flex-col bg-white hover:shadow-lg transition-shadow"
+      onClick={handleCardClick}
+      className="w-full rounded-[18px] border border-gray-300 overflow-hidden flex flex-col bg-white hover:shadow-lg hover:border-[#197B33] transition-all duration-300 cursor-pointer"
       style={{ height: '50vh', minHeight: '280px', maxHeight: '420px' }}
     >
-      {/* Video section — takes up remaining space above the info strip */}
+      {/* Video section */}
       <div className="relative w-full flex-1 overflow-hidden bg-black rounded-t-[18px]">
         {!videoError ? (
           <video
@@ -59,9 +61,9 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
             src={product.video}
             className="w-full h-full object-cover"
             loop muted autoPlay playsInline
-            onError={handleVideoError}
-            onLoadedData={handleVideoLoaded}
-            onCanPlay={handleVideoLoaded}
+            onError={() => setVideoError(true)}
+            onLoadedData={() => setVideoLoaded(true)}
+            onCanPlay={() => setVideoLoaded(true)}
             disablePictureInPicture
             disableRemotePlayback
             preload="auto"
@@ -83,9 +85,8 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
         )}
       </div>
 
-      {/* Info strip — fixed height at bottom */}
+      {/* Info strip */}
       <div className="flex p-2 gap-2 flex-shrink-0">
-        {/* Thumbnail + sale badge */}
         <div className="flex flex-col items-start gap-1 flex-shrink-0">
           <img
             src={product.productImage}
@@ -99,7 +100,6 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
           )}
         </div>
 
-        {/* Text info */}
         <div className="flex-1 flex flex-col justify-center gap-0.5 min-w-0">
           <p className="text-[11px] font-medium truncate text-gray-900">{product.nameEn}</p>
           <p className="text-[11px] font-medium truncate text-gray-500">{product.nameUr}</p>
