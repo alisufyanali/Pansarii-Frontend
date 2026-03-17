@@ -7,7 +7,7 @@ const iconData = [
   { icon: FaMapMarkerAlt,   title: "11000+ Pincodes", description: "Nationwide Delivery"    },
   { icon: FaShieldAlt,      title: "100% Authentic",  description: "Certified Products"     },
   { icon: FaClock,          title: "Quick Delivery",  description: "2-4 Business Days"      },
-  { icon: FaLeaf,           title: "Eco-Friendly",    description: "Sustainable Packaging"  },
+  // { icon: FaLeaf,           title: "Eco-Friendly",    description: "Sustainable Packaging"  },
 ];
 
 export default function FooterIcons({ buttonColor, textStyle }: FooterIconsProps) {
