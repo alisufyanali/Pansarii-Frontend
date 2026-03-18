@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { FaHeart, FaShareAlt } from 'react-icons/fa';
 
 interface VideoProduct {
-  id?: string | number;
   video: string;
   topImage: string;
   productImage?: string;
@@ -46,7 +45,6 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
     if (!product.nameEn) return;
     e.preventDefault();
     e.stopPropagation();
-    // Navigate to product details page
     const slug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
     router.push(`/product/${slug}`);
   };
@@ -54,7 +52,6 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
   const handleIconClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    // Add your wishlist/share functionality here
   };
 
   return (
@@ -63,7 +60,7 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
       className="w-full rounded-[18px] border border-gray-300 overflow-hidden flex flex-col bg-white hover:shadow-lg hover:border-[#197B33] transition-all duration-300 cursor-pointer"
       style={{ height: '50vh', minHeight: '280px', maxHeight: '420px' }}
     >
-      {/* Video section */}
+      {/* Video section — fills all space above info strip */}
       <div className="relative w-full flex-1 overflow-hidden bg-black rounded-t-[18px]">
         {!videoError ? (
           <video
@@ -95,49 +92,10 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
           </div>
         )}
 
-        {/* Share + Heart icons */}
-        <div className="absolute bottom-2 right-2 flex gap-1.5">
-          <button onClick={handleIconClick}
-            className="p-1.5 rounded bg-white/20 text-white hover:bg-white/30 transition-colors active:scale-95"
-            aria-label="Share">
-            <FaShareAlt className="w-3 h-3" />
-          </button>
-          <button onClick={handleIconClick}
-            className="p-1.5 rounded bg-white/20 text-white hover:bg-white/30 transition-colors active:scale-95"
-            aria-label="Add to favourites">
-            <FaHeart className="w-3 h-3" />
-          </button>
-        </div>
+      
       </div>
 
-      {/* Info strip */}
-      {(product.nameEn || product.price) && (
-        <div className="flex p-2 gap-2 flex-shrink-0">
-          {product.productImage && (
-            <div className="flex flex-col items-start gap-1 flex-shrink-0">
-              <img src={product.productImage} alt={product.nameEn || 'Product'}
-                className="w-[44px] h-[40px] rounded-[4px] object-cover" />
-              {product.sale && (
-                <div className="text-[9px] font-medium text-center text-black px-1 py-0.5 rounded bg-white border border-gray-300 leading-tight">
-                  {product.sale}
-                </div>
-              )}
-            </div>
-          )}
-          <div className="flex-1 flex flex-col justify-center gap-0.5 min-w-0">
-            {product.nameEn && <p className="text-[11px] font-medium truncate text-gray-900">{product.nameEn}</p>}
-            {product.nameUr && <p className="text-[11px] font-medium truncate text-gray-500">{product.nameUr}</p>}
-            {product.price && (
-              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                <span className="text-xs font-semibold leading-tight">PKR {product.price}</span>
-                {product.oldPrice && (
-                  <span className="text-[10px] text-gray-400 line-through">PKR {product.oldPrice}</span>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+     
     </div>
   );
 }

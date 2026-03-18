@@ -1,11 +1,11 @@
 "use client";
 
 import VideoProductCard2 from "@/app/Desktop/components/VideoProductCard2";
-import { allProducts } from "@/app/Desktop/data/products"; // Import your products data here
+import { allProducts } from "@/app/Desktop/data/products";
 
 export default function VideoProductsSection() {
-  // Get products from data/products.ts and add video fields
-  const videoProducts = allProducts.map((product) => ({
+  // Get ONLY FIRST 4 products from data/products.ts and add video fields
+  const videoProducts = allProducts.slice(0, 4).map((product) => ({
     id: product.id,
     video: '/images/review.mp4', // Add your video URL here or from product data
     topImage: product.img,
@@ -27,21 +27,11 @@ export default function VideoProductsSection() {
           Related Products
         </h2>
         
-        {/* Horizontal scroll container - Responsive */}
-        <div className="flex overflow-x-auto gap-3 sm:gap-4 lg:gap-5 pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+        {/* Grid Layout - Shows 4 products (same as VideoProducts) */}
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
           {videoProducts.map((videoProduct) => (
-            <div 
-              key={videoProduct.id} 
-              className="flex-none w-[85%] xs:w-[70%] sm:w-[45%] md:w-[32%] lg:w-[23%] xl:w-[18%] snap-start"
-            >
-              <VideoProductCard2 product={videoProduct} />
-            </div>
+            <VideoProductCard2 key={videoProduct.id} product={videoProduct} />
           ))}
-        </div>
-        
-        {/* Scroll Hint - Mobile only */}
-        <div className="lg:hidden text-center mt-4">
-          <p className="text-xs text-gray-500">← Swipe to see more →</p>
         </div>
       </div>
     </section>
