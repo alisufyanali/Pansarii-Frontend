@@ -46,7 +46,7 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
     e.preventDefault();
     e.stopPropagation();
     const slug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/product/${slug}`);
+    router.push(`/${slug}`);
   };
 
   const handleIconClick = (e: MouseEvent<HTMLButtonElement>) => {

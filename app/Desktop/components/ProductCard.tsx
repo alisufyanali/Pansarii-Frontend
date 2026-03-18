@@ -34,7 +34,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
     
     const productSlug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/product/${productSlug}`);
+    router.push(`/${productSlug}`);
   };
 
   const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {

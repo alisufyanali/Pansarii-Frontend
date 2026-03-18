@@ -42,7 +42,7 @@ export default function ProductCard2({ product }: ProductCard2Props) {
     
     // Navigate to product details page with product ID or slug
     const productSlug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/product/${productSlug}`);
+    router.push(`/${productSlug}`);
     
     // Alternative: if you want to use ID instead
     // router.push(`/product/${product.id || productSlug}`);
