@@ -180,7 +180,7 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 mt-24">
+    <div className="min-h-screen bg-gray-50 ">
 
       {/* Hero */}
       <div className="bg-white border-b border-gray-200">
