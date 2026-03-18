@@ -22,7 +22,7 @@ export default function Footer() {
 
       <footer className="bg-white text-gray-900 ">
         {/* Mobile: normal padding | Desktop: 20% each side */}
-        <div className="px-4 sm:px-8 lg:px-[20%]">
+        <div className="px-4 sm:px-8 py-12 px-3">
           <div className="grid grid-cols-1 md:grid-cols-[160px_1fr_220px] gap-6 lg:gap-8 items-start">
 
             {/* LEFT — Logo + contact + socials */}

@@ -40,16 +40,39 @@ export default function BlogCard({ blog }: BlogCardProps) {
       </div>
 
       {/* Content — fills remaining space */}
-      <div className="flex flex-col flex-1 p-3 min-h-0">
-        <h3 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 flex-shrink-0">
+      <div className="flex flex-col flex-1 p-3 min-h-0 overflow-hidden">
+        {/* Title - 2 lines max with ellipsis */}
+        <h3 
+          className="text-sm font-semibold text-gray-900 leading-snug mb-1 flex-shrink-0"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}
+        >
           {cleanTitle}
         </h3>
-        <p className="text-xs text-gray-500 leading-relaxed mt-1 flex-1 overflow-hidden line-clamp-3">
+        
+        {/* Content - 3 lines max with ellipsis */}
+        <p 
+          className="text-xs text-gray-500 leading-relaxed flex-1 mb-2"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}
+        >
           {cleanContent}
         </p>
+        
+        {/* Read More Link */}
         <Link
           href={`/blog/${blog.slug}`}
-          className="mt-2 flex-shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-green-700 hover:text-green-600 transition-colors"
+          className="flex-shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-green-700 hover:text-green-600 transition-colors"
         >
           Read More <span>→</span>
         </Link>
