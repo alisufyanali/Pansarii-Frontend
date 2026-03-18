@@ -78,7 +78,7 @@ export default function Banner() {
 
   return (
     <section
-      className="relative w-full flex overflow-hidden "
+      className="relative w-full flex overflow-hidden mt-6"
       style={{ height: "70vh", minHeight: "30rem", maxHeight: "45rem" }}
     >
       {/* Background Image with fade + slide animation */}
