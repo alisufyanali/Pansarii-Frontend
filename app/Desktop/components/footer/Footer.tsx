@@ -20,7 +20,7 @@ export default function Footer() {
     <>
       <FooterIcons buttonColor={buttonColor} textStyle={textStyle} />
 
-      <footer className="bg-white text-gray-900 py-8 lg:py-10">
+      <footer className="bg-white text-gray-900 ">
         {/* Mobile: normal padding | Desktop: 20% each side */}
         <div className="px-4 sm:px-8 lg:px-[20%]">
           <div className="grid grid-cols-1 md:grid-cols-[160px_1fr_220px] gap-6 lg:gap-8 items-start">
