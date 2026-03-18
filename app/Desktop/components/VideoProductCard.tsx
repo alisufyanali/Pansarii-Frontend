@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState, MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface VideoProduct {
+  id: string | number;
   video: string;
   topImage: string;
   productImage: string;
@@ -43,6 +44,7 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    // Navigate to product details page
     const slug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
     router.push(`/product/${slug}`);
   };
@@ -69,7 +71,7 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
             preload="auto"
           />
         ) : (
-          <img src={product.topImage} alt="Product" className="w-full h-full object-cover" />
+          <img src={product.topImage} alt={product.nameEn} className="w-full h-full object-cover" />
         )}
 
         {!videoLoaded && !videoError && (

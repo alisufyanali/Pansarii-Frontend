@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FaHeart, FaShareAlt } from 'react-icons/fa';
 
 interface VideoProduct {
+  id?: string | number;
   video: string;
   topImage: string;
   productImage?: string;
@@ -45,6 +46,7 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
     if (!product.nameEn) return;
     e.preventDefault();
     e.stopPropagation();
+    // Navigate to product details page
     const slug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
     router.push(`/product/${slug}`);
   };
@@ -52,6 +54,7 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
   const handleIconClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    // Add your wishlist/share functionality here
   };
 
   return (
@@ -60,7 +63,7 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
       className="w-full rounded-[18px] border border-gray-300 overflow-hidden flex flex-col bg-white hover:shadow-lg hover:border-[#197B33] transition-all duration-300 cursor-pointer"
       style={{ height: '50vh', minHeight: '280px', maxHeight: '420px' }}
     >
-      {/* Video section — fills all space above info strip */}
+      {/* Video section */}
       <div className="relative w-full flex-1 overflow-hidden bg-black rounded-t-[18px]">
         {!videoError ? (
           <video
@@ -107,7 +110,7 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
         </div>
       </div>
 
-      {/* Info strip — fixed height, same as VideoProductCard */}
+      {/* Info strip */}
       {(product.nameEn || product.price) && (
         <div className="flex p-2 gap-2 flex-shrink-0">
           {product.productImage && (
