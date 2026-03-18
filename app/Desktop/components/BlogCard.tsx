@@ -21,12 +21,9 @@ export default function BlogCard({ blog }: BlogCardProps) {
   const cleanTitle   = stripHtmlTags(blog.title);
 
   return (
-    <article
-      className="w-full rounded-[14px] border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col bg-white"
-      style={{ height: '42vh', minHeight: '240px', maxHeight: '360px' }}
-    >
-      {/* Image — fixed portion of card height */}
-      <div className="relative w-full flex-shrink-0 px-3 pt-3" style={{ height: '50%' }}>
+    <article className="w-full rounded-[14px] border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col bg-white h-auto">
+      {/* Image — fixed aspect ratio */}
+      <div className="relative w-full aspect-video flex-shrink-0 px-3 pt-3">
         <div className="relative w-full h-full rounded-[10px] overflow-hidden">
           <Image
             src={blog.image}
@@ -39,42 +36,25 @@ export default function BlogCard({ blog }: BlogCardProps) {
         </div>
       </div>
 
-      {/* Content — fills remaining space */}
-      <div className="flex flex-col flex-1 p-3 min-h-0 overflow-hidden">
-        {/* Title - 2 lines max with ellipsis */}
-        <h3 
-          className="text-sm font-semibold text-gray-900 leading-snug mb-1 flex-shrink-0"
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
-        >
+      {/* Content */}
+      <div className="flex flex-col p-3 pb-4">
+        {/* Title - FIXED: Now shows ellipsis properly */}
+        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2">
           {cleanTitle}
         </h3>
         
-        {/* Content - 3 lines max with ellipsis */}
-        <p 
-          className="text-xs text-gray-500 leading-relaxed flex-1 mb-2"
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
-        >
+        {/* Content - FIXED: Now shows ellipsis properly */}
+        <p className="text-sm text-gray-600 mb-3 line-clamp-3 leading-relaxed">
           {cleanContent}
         </p>
         
         {/* Read More Link */}
         <Link
           href={`/blog/${blog.slug}`}
-          className="flex-shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-green-700 hover:text-green-600 transition-colors"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-green-700 hover:text-green-600 transition-colors group"
         >
-          Read More <span>→</span>
+          Read More 
+          <span className="group-hover:translate-x-1 transition-transform">→</span>
         </Link>
       </div>
     </article>

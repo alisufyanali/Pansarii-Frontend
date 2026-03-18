@@ -92,7 +92,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="w-full fixed top-0 left-0 z-40 pb-4">
+      <header className="w-full fixed top-0 left-0 z-40 pb-8">
 
         {/* ── TOP BAR ── compact, hides on scroll */}
         <div
