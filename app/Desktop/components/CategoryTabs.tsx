@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 interface CategoryTabsProps {
   categories: Array<{
@@ -16,7 +16,6 @@ interface CategoryTabsProps {
 
 export default function CategoryTabs({ categories, activeCategory, onCategoryChange }: CategoryTabsProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(activeCategory || 'all');
   const tabsRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -29,14 +28,11 @@ export default function CategoryTabs({ categories, activeCategory, onCategoryCha
   ];
 
   useEffect(() => {
-    // Set active tab from URL or props
-    const categoryFromUrl = searchParams.get('category');
-    if (categoryFromUrl) {
-      setActiveTab(categoryFromUrl);
-    } else {
-      setActiveTab('all');
+    // Set active tab from props
+    if (activeCategory) {
+      setActiveTab(activeCategory);
     }
-  }, [searchParams]);
+  }, [activeCategory]);
 
   // Check for scroll arrows
   useEffect(() => {
@@ -62,16 +58,15 @@ export default function CategoryTabs({ categories, activeCategory, onCategoryCha
     setActiveTab(slug);
     
     if (onCategoryChange) {
-      onCategoryChange(slug === 'all' ? '' : slug);
+      // Use custom callback if provided
+      onCategoryChange(slug);
     } else {
-      // Update URL
-      const params = new URLSearchParams(searchParams.toString());
+      // Navigate to clean URL
       if (slug === 'all') {
-        params.delete('category');
+        router.push('/shop');
       } else {
-        params.set('category', slug);
+        router.push(`/${slug}`);
       }
-      router.push(`/shop?${params.toString()}`);
     }
   };
 
@@ -93,7 +88,7 @@ export default function CategoryTabs({ categories, activeCategory, onCategoryCha
       {showLeftArrow && (
         <button
           onClick={() => scroll('left')}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-white to-transparent pl-1 pr-4 py-2"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-gray-50 to-transparent pl-1 pr-4 py-2"
           aria-label="Scroll left"
         >
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +101,7 @@ export default function CategoryTabs({ categories, activeCategory, onCategoryCha
       {showRightArrow && (
         <button
           onClick={() => scroll('right')}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-l from-white to-transparent pr-1 pl-4 py-2"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-l from-gray-50 to-transparent pr-1 pl-4 py-2"
           aria-label="Scroll right"
         >
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

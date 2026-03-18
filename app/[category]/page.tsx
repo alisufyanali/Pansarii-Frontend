@@ -1,15 +1,23 @@
-// app/category/page.tsx
+// app/[category]/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
-import { allProducts } from '../Desktop/data/products'; // Import from products.ts
+import { allProducts } from '../Desktop/data/products';
 import ProductCard from '../Desktop/components/ProductCard';
 import ProductDetailsModal from '../Desktop/components/ProductDetailsModal';
 import SearchFilterBar from '../Desktop/components/SearchFilterBar';
 import { FilterOptions } from '../Desktop/utils/filterProducts';
 import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
 import Image from 'next/image';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, notFound } from 'next/navigation';
+import CategoryTabs from '../Desktop/components/CategoryTabs';
+
+// Reserved routes that should NOT be treated as categories
+const RESERVED_ROUTES = [
+  'shop', 'cart', 'checkout', 'about', 'contact', 
+  'blog', 'account', 'wishlist', 'api', 'admin',
+  'login', 'register', 'profile', 'orders'
+];
 
 // ─── Mobile Card ─────────────────────────────────────────────────────────────
 interface MobileCardProps {
@@ -102,14 +110,47 @@ function GridSkeleton() {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────────
 export default function CategoryPage() {
-  const searchParams = useSearchParams();
+  const params = useParams();
   const router = useRouter();
-  const categoryParam = searchParams.get('cat');
+  const categorySlug = params.category as string;
+
+  // Check if this is a reserved route
+  if (RESERVED_ROUTES.includes(categorySlug)) {
+    notFound();
+  }
 
   // Get all unique categories from products
-  const allCategories = ['All Products', ...Array.from(new Set(allProducts.map((p) => p.category)))];
+  const uniqueCategories = Array.from(new Set(allProducts.map((p) => p.category))).filter(Boolean);
+  
+  // Find matching category
+  const categoryName = uniqueCategories.find(
+    cat => cat.toLowerCase().replace(/\s+/g, '-') === categorySlug
+  );
 
-  const [selectedCategory, setSelectedCategory] = useState('All Products');
+  // Check if it's a valid category or product
+  const isProduct = allProducts.some(p => 
+    p.nameEn.toLowerCase().replace(/\s+/g, '-') === categorySlug
+  );
+
+  // If it's a product, redirect to product page logic (handled by [slug] route)
+  // If it's not a category and not a product, show 404
+  if (!categoryName && !isProduct) {
+    notFound();
+  }
+
+  // If it's a product, this route shouldn't handle it
+  if (isProduct) {
+    notFound();
+  }
+
+  // Prepare categories for CategoryTabs
+  const categories = uniqueCategories.map(cat => ({
+    name: cat,
+    count: allProducts.filter(p => p.category === cat).length,
+    slug: cat.toLowerCase().replace(/\s+/g, '-')
+  }));
+
+  const [selectedCategory, setSelectedCategory] = useState(categorySlug);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
@@ -139,26 +180,22 @@ export default function CategoryPage() {
     showNewArrivals: false, showBestSellers: false,
   });
 
-  // Set initial category from URL parameter
+  // Initialize products
   useEffect(() => {
-    if (categoryParam) {
-      const category = allCategories.find(
-        cat => cat.toLowerCase().replace(/\s+/g, '-') === categoryParam
-      );
-      if (category) {
-        setSelectedCategory(category);
-      }
-    }
-    setFilteredProducts(allProducts);
+    applyFilters(filters, categorySlug);
     setTimeout(() => setIsLoading(false), 600);
-  }, [categoryParam]);
+  }, [categorySlug]);
 
   const applyFilters = (newFilters: FilterOptions, category = selectedCategory) => {
     let products = [...allProducts];
     
     // Filter by category
-    if (category !== 'All Products') {
-      products = products.filter((p) => p.category === category);
+    const catName = uniqueCategories.find(
+      cat => cat.toLowerCase().replace(/\s+/g, '-') === category
+    );
+    
+    if (catName) {
+      products = products.filter((p) => p.category === catName);
     }
     
     // Search filter
@@ -175,7 +212,7 @@ export default function CategoryPage() {
     // Price filter
     products = products.filter((p) => p.price >= newFilters.minPrice && p.price <= newFilters.maxPrice);
     
-    // Category filter
+    // Category filter from sidebar
     if (newFilters.categories.length > 0) {
       products = products.filter((p) => newFilters.categories.includes(p.category));
     }
@@ -197,18 +234,9 @@ export default function CategoryPage() {
     setCurrentPage(1);
   };
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    
-    // Update URL with category parameter
-    const categorySlug = category.toLowerCase().replace(/\s+/g, '-');
-    if (category === 'All Products') {
-      router.push('/category');
-    } else {
-      router.push(`/category?cat=${categorySlug}`);
-    }
-    
-    applyFilters(filters, category);
+  const handleCategoryChange = (newCategorySlug: string) => {
+    setSelectedCategory(newCategorySlug);
+    router.push(`/${newCategorySlug}`);
   };
 
   const handleFilterChange = (newFilters: FilterOptions) => {
@@ -217,24 +245,19 @@ export default function CategoryPage() {
     applyFilters(newFilters);
   };
 
-  const getCount = (cat: string) =>
-    cat === 'All Products' ? allProducts.length : allProducts.filter((p) => p.category === cat).length;
-
   const handleMobileAdd = (id: string) => console.log('Add to cart:', id);
 
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
 
   const clearFilters = () => {
-    setSelectedCategory('All Products');
-    router.push('/category');
+    router.push('/shop');
     const reset: FilterOptions = { 
       searchQuery: '', minPrice: 0, maxPrice: 5000, categories: [], 
       sortBy: 'default', showOnSale: false, showInStock: true, 
       showNewArrivals: false, showBestSellers: false 
     };
     setFilters(reset);
-    applyFilters(reset, 'All Products');
   };
 
   return (
@@ -245,13 +268,15 @@ export default function CategoryPage() {
         <div className="max-w-[1920px] mx-auto px-[4%] py-6 sm:py-10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl 2xl:text-4xl font-bold text-gray-900 mb-1">Shop by Category</h1>
-              <p className="text-sm sm:text-base text-gray-500">Browse our full collection of natural & herbal products</p>
+              <h1 className="text-2xl sm:text-3xl 2xl:text-4xl font-bold text-gray-900 mb-1">
+                {categoryName || 'Category'}
+              </h1>
+              <p className="text-sm sm:text-base text-gray-500">Browse our collection of {categoryName?.toLowerCase()} products</p>
             </div>
             <div className="flex gap-3">
               {[
-                { label: `${allProducts.length}+`, sub: 'Products', bg: 'bg-green-50', color: 'text-green-700' },
-                { label: `${allCategories.length - 1}`, sub: 'Categories', bg: 'bg-amber-50', color: 'text-amber-700' },
+                { label: `${filteredProducts.length}`, sub: 'Products', bg: 'bg-green-50', color: 'text-green-700' },
+                { label: `${categories.length}`, sub: 'Categories', bg: 'bg-amber-50', color: 'text-amber-700' },
                 { label: '100%', sub: 'Natural', bg: 'bg-blue-50', color: 'text-blue-700' },
               ].map((s) => (
                 <div key={s.sub} className={`${s.bg} px-4 py-2 rounded-lg text-center`}>
@@ -270,33 +295,18 @@ export default function CategoryPage() {
           onFilterChange={handleFilterChange}
           onViewModeChange={setViewMode}
           productCount={filteredProducts.length}
-          categories={allCategories.filter((c) => c !== 'All Products')}
+          categories={uniqueCategories}
           initialSearchQuery={searchQuery}
         />
       </div>
 
-      {/* Category pill bar — sticky, NO scrollbar */}
-      <div className="bg-white border-b border-gray-200 mt-4 sm:mt-6 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-[1920px] mx-auto px-[4%]">
-          <div
-            className="overflow-x-auto"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            <div className="flex space-x-2 py-3">
-              {allCategories.map((cat) => (
-                <button 
-                  key={cat} 
-                  onClick={() => handleCategorySelect(cat)}
-                  className={`flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-all ${
-                    selectedCategory === cat ? 'bg-[#197B33] text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {cat} <span className={`ml-1 text-xs ${selectedCategory === cat ? 'text-white/75' : 'text-gray-400'}`}>({getCount(cat)})</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* Category Tabs */}
+      <div className="max-w-[1920px] mx-auto px-[4%] mt-4 sm:mt-6 sticky top-0 z-10 bg-gray-50 py-3">
+        <CategoryTabs
+          categories={categories}
+          activeCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
       </div>
 
       {/* Main content */}
@@ -306,7 +316,7 @@ export default function CategoryPage() {
         <div className="mb-5 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-lg sm:text-xl 2xl:text-2xl font-bold text-gray-900">
-              {selectedCategory === 'All Products' ? 'All Products' : selectedCategory}
+              {categoryName}
             </h2>
             <p className="text-xs sm:text-sm text-gray-500">
               Showing {filteredProducts.length === 0 ? 0 : (currentPage - 1) * productsPerPage + 1}–{Math.min(currentPage * productsPerPage, filteredProducts.length)} of {filteredProducts.length} products
@@ -416,11 +426,15 @@ export default function CategoryPage() {
       {isModalOpen && selectedProduct && (
         <ProductDetailsModal product={selectedProduct} onClose={() => { setIsModalOpen(false); setSelectedProduct(null); }} />
       )}
-
-      <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </div>
   );
+}
+
+// Generate static params for all categories
+export async function generateStaticParams() {
+  const uniqueCategories = Array.from(new Set(allProducts.map((p) => p.category))).filter(Boolean);
+  
+  return uniqueCategories.map((category) => ({
+    category: category.toLowerCase().replace(/\s+/g, '-'),
+  }));
 }
