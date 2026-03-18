@@ -208,11 +208,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     window.open(`https://wa.me/923001234567?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
-  /* ─────────────────────────────────────────────
-     DESKTOP VIEW — everything fits in ~90vh
-  ───────────────────────────────────────────── */
+ 
   const DesktopView = () => (
-    <div className="flex flex-row gap-5 p-4 max-w-7xl mx-auto" style={{ height: '90vh', maxHeight: '90vh' }}>
+    <div className="flex flex-row gap-5 p-4 max-w-7xl mx-auto" >
 
       {/* ── LEFT: image column ── */}
       <div className="w-[38%] flex flex-col gap-2 min-h-0">
