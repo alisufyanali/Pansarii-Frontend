@@ -44,7 +44,7 @@ export default function IconsSection({ variant = 'outline' }: IconsSectionProps)
         <Link
           key={item.name}
           href={item.href}
-          className={`relative p-2 rounded-lg transition-all duration-200 hover:bg-gray-100 active:bg-gray-200 ${
+          className={`relative p rounded-lg transition-all duration-200 hover:bg-gray-100 active:bg-gray-200 ${
             item.mobileOnly ? 'md:hidden' : ''
           }`}
           aria-label={item.name}

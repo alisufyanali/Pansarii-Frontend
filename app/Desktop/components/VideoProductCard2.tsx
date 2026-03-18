@@ -58,7 +58,7 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
     <div
       onClick={handleCardClick}
       className="w-full rounded-[18px] border border-gray-300 overflow-hidden flex flex-col bg-white hover:shadow-lg hover:border-[#197B33] transition-all duration-300 cursor-pointer"
-      style={{ height: '50vh', minHeight: '280px', maxHeight: '420px' }}
+      style={{ height: '42vh', minHeight: '280px', maxHeight: '420px' }}
     >
       {/* Video section — fills all space above info strip */}
       <div className="relative w-full flex-1 overflow-hidden bg-black rounded-t-[18px]">

@@ -7,11 +7,100 @@ import Image from 'next/image';
 import { allProducts } from '@/app/Desktop/data/products';
 import { useCart } from '@/app/context/CartContext';
 import { useWishlist } from '@/app/context/WishList';
-import ProductCard from '@/app/Mobile/components/ProductCard';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaHeart } from 'react-icons/fa';
 
+// ─── Mobile Product Card (Matching Categories Style) ────────────────────────
+interface MobileCardProps {
+  id: string;
+  image: string;
+  name: string;
+  nameUr?: string;
+  features: string[];
+  price: number;
+  oldPrice?: number;
+  sale?: string;
+  currency?: string;
+  onAddToCart?: (id: string) => void;
+}
+
+function MobileProductCard({ 
+  id, image, name, nameUr, features, price, oldPrice, sale, currency = 'PKR', onAddToCart 
+}: MobileCardProps) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Image */}
+      <div className="relative w-full h-36 bg-gray-50">
+        {sale && (
+          <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+            {sale}
+          </div>
+        )}
+        <Image 
+          src={image} 
+          alt={name} 
+          fill 
+          className="object-contain p-2" 
+          sizes="50vw"
+          onError={(e) => { 
+            (e.target as HTMLImageElement).src = '/images/product.png'; 
+          }} 
+        />
+      </div>
+      
+      {/* Content */}
+      <div className="p-2.5">
+        {/* Name */}
+        <h3 className="font-semibold text-xs text-gray-900 mb-1 line-clamp-2 min-h-[2.5rem]">
+          {name}
+        </h3>
+        
+        {/* Urdu Name (Optional) */}
+        {nameUr && (
+          <p className="text-[10px] text-gray-500 mb-1 line-clamp-1">
+            {nameUr}
+          </p>
+        )}
+        
+        {/* Features */}
+        <div className="flex flex-wrap gap-x-1 mb-2">
+          {features.slice(0, 2).map((f, i) => (
+            <span key={i} className="text-[10px] text-gray-400">
+              {f}{i < Math.min(features.length, 2) - 1 && ' •'}
+            </span>
+          ))}
+        </div>
+        
+        {/* Price & Add Button */}
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-sm font-bold text-gray-900">
+              {currency} {price.toLocaleString('en-PK')}
+            </span>
+            {oldPrice && (
+              <span className="text-[10px] text-gray-400 line-through ml-1">
+                {currency} {oldPrice.toLocaleString('en-PK')}
+              </span>
+            )}
+          </div>
+          
+          {/* Add to Cart Button */}
+          <button 
+            onClick={(e) => { 
+              e.preventDefault(); 
+              onAddToCart?.(id); 
+            }}
+            className="w-7 h-7 rounded-full bg-[#197B33] flex items-center justify-center hover:bg-[#156529] active:scale-95 transition-all"
+          >
+            <span className="text-white text-base font-bold leading-none">+</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 export default function MobileHomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeTab, setActiveTab] = useState('all');
@@ -45,7 +134,7 @@ export default function MobileHomePage() {
     },
   ];
 
-  // Menu Tabs (Simple & Clean)
+  // Menu Tabs
   const menuTabs = [
     { id: 'all', label: 'All' },
     { id: 'new', label: 'New In' },
@@ -73,19 +162,20 @@ export default function MobileHomePage() {
 
   const filteredProducts = getFilteredProducts();
 
-  // Convert products to ProductCard format
+  // Convert products to card format
   const productCards = filteredProducts.map(product => ({
     id: product.id.toString(),
     name: product.nameEn,
+    nameUr: product.nameUr,
     image: product.img || "/images/default-product.png",
     features: [
       product.category || "General",
       product.rating ? `${product.rating}★` : "New",
-      product.sale || "Premium"
     ].filter(Boolean),
     price: product.price,
+    oldPrice: product.oldPrice,
+    sale: product.sale,
     currency: "PKR",
-    productData: product // Store full product data for cart
   }));
 
   // Handle Add to Cart
@@ -239,7 +329,7 @@ export default function MobileHomePage() {
           </div>
         </div>
 
-        {/* Products Grid */}
+        {/* Products Grid - UPDATED TO MATCH CATEGORIES */}
         <div className="px-4 pt-4">
           {/* Section Header */}
           <div className="flex items-center justify-between mb-4">
@@ -251,15 +341,14 @@ export default function MobileHomePage() {
             </Link>
           </div>
 
-          {/* Products */}
+          {/* Products Grid - Same as Categories Page */}
           {productCards.length > 0 ? (
             <div className="grid grid-cols-2 gap-3">
               {productCards.map((product) => (
-                <ProductCard
+                <MobileProductCard
                   key={product.id}
                   {...product}
                   onAddToCart={handleAddToCart}
-                  className="shadow-sm hover:shadow-md transition-shadow"
                 />
               ))}
             </div>
