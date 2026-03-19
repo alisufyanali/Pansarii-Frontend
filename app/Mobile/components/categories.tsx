@@ -51,38 +51,33 @@ export default function Categories() {
             onClick={() => handleCategoryClick(category.id)}
           >
             <div className="flex flex-col items-center w-full">
-              {/* Top colored section with image - rounded top only */}
+              {/* Top colored section with larger image - half circle top */}
               <div
-                className="w-full aspect-square flex items-center justify-center relative overflow-hidden"
+                className="w-full h-24 flex items-end justify-center relative overflow-hidden"
                 style={{
-                  borderTopLeftRadius: "16px",
-                  borderTopRightRadius: "16px",
+                  borderTopLeftRadius: "50%",
+                  borderTopRightRadius: "50%",
                   backgroundColor: category.bgColor,
                 }}
               >
-                <Image
-                  src={category.image}
-                  alt={category.name}
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
+                {/* Larger image that extends beyond the container */}
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    width={120}
+                    height={120}
+                    className="object-contain"
+                  />
+                </div>
               </div>
               
-              {/* Bottom white section with text - rounded bottom only */}
-              <div 
-                className="w-full bg-white flex flex-col items-center justify-center px-2 py-3"
-                style={{
-                  borderBottomLeftRadius: "16px",
-                  borderBottomRightRadius: "16px",
-                }}
-              >
+              {/* Bottom white section with text - flat bottom (no rounded corners) */}
+              <div className="w-full bg-white flex flex-col items-center justify-center px-2 py-3 border-x border-b border-gray-200">
                 <h3 className="font-semibold text-gray-900 text-xs text-center line-clamp-2 leading-tight">
                   {category.name}
                 </h3>
-                <p className="text-[10px] text-gray-500 mt-1">
-                  {category.count} items
-                </p>
+               
               </div>
             </div>
           </div>
