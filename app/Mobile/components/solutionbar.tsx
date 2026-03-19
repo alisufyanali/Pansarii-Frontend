@@ -1,5 +1,6 @@
 //solutionbar.tsx
 import React from 'react';
+import SolutionBar from './categories';
 
 const ImageCards = ({ cards = [] }) => {
   // Default data if no props provided
@@ -82,4 +83,4 @@ const ImageCards = ({ cards = [] }) => {
   );
 };
 
-export default ImageCards;
+export default SolutionBar;
