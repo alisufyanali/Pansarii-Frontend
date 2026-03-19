@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Categories from '@/app/Mobile/components/categories';
 import SolutionBar from '@/app/Mobile/components/solutionbar';
-import MobileProductCard, { toMobileCardProps } from '@/app/Mobile/components/ProductCard';
+import MobileProductCard from '@/app/Mobile/components/ProductCard';
 import { allProducts } from '@/app/Desktop/data/products';
 
 export default function MobileHomePage() {
@@ -83,10 +83,10 @@ export default function MobileHomePage() {
   }, [activeTab]);
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen bg-gray-50">
       
       {/* Hero Banner Slider */}
-      <div className="relative h-48 overflow-hidden  rounded-2xl mx-4 mt-4">
+      <div className="relative h-48 overflow-hidden bg-gray-100 rounded-2xl mx-4 mt-4">
         {banners.map((banner, index) => (
           <Link
             key={banner.id}
@@ -117,14 +117,10 @@ export default function MobileHomePage() {
       </div>
 
       {/* Categories */}
-      <div className="px-4 py-2">
-        <Categories />
-      </div>
+      <Categories />
 
       {/* Solution Bar */}
-      <div className="px-4 py-2">
-        <SolutionBar />
-      </div>
+      <SolutionBar />
 
       {/* Tabs - Sticky */}
       <div className="sticky top-0 z-20 bg-white border-y border-gray-200">
@@ -171,7 +167,7 @@ export default function MobileHomePage() {
             {filteredProducts.map((product) => (
               <MobileProductCard 
                 key={product.id} 
-                {...toMobileCardProps(product)} 
+                product={product}
               />
             ))}
           </div>

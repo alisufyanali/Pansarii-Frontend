@@ -5,38 +5,30 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { allProducts } from "@/app/Desktop/data/products";
 
-export default function SolutionBar() {
+export default function Categories() {
   const router = useRouter();
 
   // Different background colors for each card
   const bgColors = [
-    '#FFEBEE', // Red
-    '#F3E5F5', // Purple
-    '#E8EAF6', // Indigo
-    '#E3F2FD', // Blue
-    '#E8F5E9', // Green
-    '#FFF3E0', // Orange
+    '#FFEBEE', // Light Red
+    '#F3E5F5', // Light Purple
+    '#E8EAF6', // Light Indigo
+    '#E3F2FD', // Light Blue
+    '#E8F5E9', // Light Green
+    '#FFF3E0', // Light Orange
   ];
 
-  // Generate categories - only show 3 for mobile
-  const categories = [
-    {
-      id: "all",
-      name: "All Products",
-      bgColor: bgColors[0],
+  // Generate categories from products data
+  const categories = Array.from(new Set(allProducts.map(p => p.category)))
+    .filter(Boolean)
+    .slice(0, 6) // Show 6 categories
+    .map((category, index) => ({
+      id: category.toLowerCase().replace(/\s+/g, '-'),
+      name: category,
+      bgColor: bgColors[index % bgColors.length],
       image: "/images/category.png",
-      count: allProducts.length
-    },
-    ...Array.from(new Set(allProducts.map(p => p.category)))
-      .filter(Boolean)
-      .map((category, index) => ({
-        id: category.toLowerCase().replace(/\s+/g, '-'),
-        name: category,
-        bgColor: bgColors[(index + 1) % bgColors.length],
-        image: "/images/category.png",
-        count: allProducts.filter(p => p.category === category).length
-      }))
-  ].slice(0, 3); // Only take first 3 categories
+      count: allProducts.filter(p => p.category === category).length
+    }));
 
   const handleCategoryClick = (categoryId: string) => {
     router.push(`/shop?category=${categoryId}`);
@@ -44,50 +36,51 @@ export default function SolutionBar() {
 
   return (
     <section className="px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold mb-2">
+      <div className="mb-4">
+        <h2 className="text-xl font-bold mb-1">
           Shop By <span className="text-green-700">Category</span>
-        </h1>
+        </h2>
         <p className="text-gray-500 text-sm">Browse our product categories</p>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
         {categories.map((category) => (
           <div 
             key={category.id}
-            className="flex-shrink-0 w-[calc(33.333%-16px)] min-w-[100px] cursor-pointer"
+            className="flex-shrink-0 w-28 cursor-pointer active:scale-95 transition-transform"
             onClick={() => handleCategoryClick(category.id)}
           >
             <div className="flex flex-col items-center w-full">
-              {/* Top colored section with larger image */}
+              {/* Top colored section with image - rounded top only */}
               <div
-                className="w-full aspect-square mb-3 flex items-end justify-center relative"
+                className="w-full aspect-square flex items-center justify-center relative overflow-hidden"
                 style={{
-                  borderTopLeftRadius: "40px",
-                  borderTopRightRadius: "40px",
+                  borderTopLeftRadius: "16px",
+                  borderTopRightRadius: "16px",
                   backgroundColor: category.bgColor,
                 }}
               >
-                <div className="absolute bottom-0 w-full flex justify-center">
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    width={140}
-                    height={140}
-                    className="object-contain"
-                    style={{ 
-                      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))'
-                    }}
-                  />
-                </div>
+                <Image
+                  src={category.image}
+                  alt={category.name}
+                  width={80}
+                  height={80}
+                  className="object-contain"
+                />
               </div>
               
-              {/* Bottom white section with text */}
-              <div className="w-full bg-white shadow-md flex flex-col items-center justify-center rounded-lg px-2 py-3">
-                <h3 className="font-semibold text-gray-900 text-sm text-center line-clamp-1">
+              {/* Bottom white section with text - rounded bottom only */}
+              <div 
+                className="w-full bg-white flex flex-col items-center justify-center px-2 py-3"
+                style={{
+                  borderBottomLeftRadius: "16px",
+                  borderBottomRightRadius: "16px",
+                }}
+              >
+                <h3 className="font-semibold text-gray-900 text-xs text-center line-clamp-2 leading-tight">
                   {category.name}
                 </h3>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-[10px] text-gray-500 mt-1">
                   {category.count} items
                 </p>
               </div>

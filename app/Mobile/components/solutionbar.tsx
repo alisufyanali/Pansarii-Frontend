@@ -1,146 +1,90 @@
-// solutionbar.tsx
-import React from 'react';
+// app/Mobile/components/solutionbar.tsx
+"use client";
 
-interface Category {
-  id: number;
-  name: string;
-  bgColor: string;
-  borderColor: string;
-  hoverBorderColor: string;
-  imageBgColor: string;
-  imageHoverColor: string;
-}
+import { useRouter } from "next/navigation";
+import { allProducts } from "@/app/Desktop/data/products";
 
-interface SolutionBarProps {
-  categories?: Category[];
-}
+export default function SolutionBar() {
+  const router = useRouter();
 
-const SolutionBar: React.FC<SolutionBarProps> = ({ categories = [] }) => {
-  // Default data for Pansari Inn Pakistan
-  const defaultCategories: Category[] = [
-    {
-      id: 1,
-      name: "Grocery",
-      bgColor: "bg-amber-50",
-      borderColor: "border-amber-300",
-      hoverBorderColor: "hover:border-amber-600",
-      imageBgColor: "bg-amber-500",
-      imageHoverColor: "hover:bg-amber-600"
-    },
-    {
-      id: 2,
-      name: "Vegetables",
-      bgColor: "bg-emerald-50",
-      borderColor: "border-emerald-300",
-      hoverBorderColor: "hover:border-emerald-600",
-      imageBgColor: "bg-emerald-500",
-      imageHoverColor: "hover:bg-emerald-600"
-    },
-    {
-      id: 3,
-      name: "Fruits",
-      bgColor: "bg-rose-50",
-      borderColor: "border-rose-300",
-      hoverBorderColor: "hover:border-rose-600",
-      imageBgColor: "bg-rose-500",
-      imageHoverColor: "hover:bg-rose-600"
-    }
-  ];
+  // Generate categories from products data
+  const categories = Array.from(new Set(allProducts.map(p => p.category)))
+    .filter(Boolean)
+    .slice(0, 3) // Take first 3 categories
+    .map((category, index) => ({
+      id: category.toLowerCase().replace(/\s+/g, '-'),
+      name: category,
+      count: allProducts.filter(p => p.category === category).length,
+      icon: getCategoryIcon(category),
+      color: getCategoryColor(index)
+    }));
 
-  const displayCategories = categories.length > 0 ? categories : defaultCategories;
+  const handleCategoryClick = (categoryId: string) => {
+    router.push(`/shop?category=${categoryId}`);
+  };
 
   return (
-    <div className="flex justify-center items-center gap-4 min-h-screen bg-gray-50 p-4">
-      {displayCategories.map((category) => (
-        <div
-          key={category.id}
-          className={`
-            w-[32vw]
-            h-[30vh]
-            flex
-            flex-col
-            items-center
-            justify-center
-            p-6
-            rounded-xl
-            ${category.bgColor}
-            border-2
-            ${category.borderColor}
-            transition-all
-            duration-300
-            ${category.hoverBorderColor}
-            hover:border-4
-            hover:shadow-2xl
-            hover:scale-105
-            cursor-pointer
-            relative
-            overflow-hidden
-            group
-          `}
-        >
-          {/* Decorative background pattern (optional) */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300 bg-pattern"></div>
-          
-          {/* Rounded picture/avatar with category initial */}
-          <div 
-            className={`
-              w-[120px]
-              h-[120px]
-              rounded-full
-              ${category.imageBgColor}
-              mb-4
-              flex
-              items-center
-              justify-center
-              ${category.imageHoverColor}
-              transition-all
-              duration-300
-              shadow-lg
-              text-white
-              font-bold
-              text-3xl
-              border-4
-              border-white
-              group-hover:scale-110
-              group-hover:shadow-xl
-            `}
+    <section className="px-4 py-6">
+      <div className="grid grid-cols-3 gap-3">
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            onClick={() => handleCategoryClick(category.id)}
+            className="group relative overflow-hidden rounded-2xl bg-white border-2 border-gray-200 hover:border-green-500 transition-all duration-300 hover:shadow-lg active:scale-95"
           >
-            {category.name.charAt(0)}
-          </div>
-          
-          {/* Category name from data */}
-          <div className="text-center font-sans font-semibold text-gray-800 text-xl group-hover:text-gray-900 transition-colors duration-300">
-            {category.name}
-          </div>
-          
-          {/* Urdu translation (optional - adds local touch) */}
-          <div className="text-center font-sans text-sm text-gray-500 mt-1 font-urdu">
-            {getUrduTranslation(category.name)}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
+            {/* Square Container */}
+            <div className="aspect-square flex flex-col items-center justify-center p-4">
+              {/* Icon/Emoji */}
+              <div className={`w-16 h-16 rounded-full ${category.color} flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                {category.icon}
+              </div>
+              
+              {/* Category Name */}
+              <h3 className="font-semibold text-gray-900 text-xs text-center line-clamp-2 mb-1">
+                {category.name}
+              </h3>
+              
+              {/* Item Count */}
+              <p className="text-[10px] text-gray-500">
+                {category.count} items
+              </p>
+            </div>
 
-// Helper function for Urdu translations
-const getUrduTranslation = (categoryName: string): string => {
-  const translations: { [key: string]: string } = {
-    "Grocery": "گروسری",
-    "Vegetables": "سبزیاں",
-    "Fruits": "پھل",
-    "Dairy": "ڈیری",
-    "Bakery": "بیکری",
-    "Meat": "گوشت",
-    "Spices": "مصالحے",
-    "Rice": "چاول",
-    "Flour": "آٹا",
-    "Oil": "تیل",
-    "Beverages": "مشروبات",
-    "Snacks": "اسنیکس"
+            {/* Hover Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// Helper function to get category icon
+function getCategoryIcon(category: string): string {
+  const icons: { [key: string]: string } = {
+    "Oils & Ghee": "🛢️",
+    "Herbs & Spices": "🌿",
+    "Honey & Sweeteners": "🍯",
+    "Beauty & Skincare": "💄",
+    "Tea & Beverages": "🍵",
+    "Supplements": "💊",
+    "Nuts & Seeds": "🥜",
+    "Grains & Cereals": "🌾",
   };
   
-  return translations[categoryName] || "";
-};
+  return icons[category] || "📦";
+}
 
-export default SolutionBar;
+// Helper function to get category color
+function getCategoryColor(index: number): string {
+  const colors = [
+    "bg-amber-100",
+    "bg-emerald-100",
+    "bg-rose-100",
+    "bg-blue-100",
+    "bg-purple-100",
+    "bg-orange-100",
+  ];
+  
+  return colors[index % colors.length];
+}
