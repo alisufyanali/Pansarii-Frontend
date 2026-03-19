@@ -117,12 +117,12 @@ export default function MobileHomePage() {
       </div>
 
       {/* Categories */}
-      <div className="px-4 py-6">
+      <div className="px-4 py-2">
         <Categories />
       </div>
 
       {/* Solution Bar */}
-      <div className="px-4 py-4">
+      <div className="px-4 py-2">
         <SolutionBar />
       </div>
 
