@@ -83,10 +83,10 @@ export default function MobileHomePage() {
   }, [activeTab]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       
       {/* Hero Banner Slider */}
-      <div className="relative h-48 overflow-hidden bg-gray-100 rounded-2xl mx-4 mt-4">
+      <div className="relative h-48 overflow-hidden  rounded-2xl mx-4 mt-4">
         {banners.map((banner, index) => (
           <Link
             key={banner.id}

@@ -1,81 +1,100 @@
-//solutionbar.tsx
+// solutionbar.tsx
 import React from 'react';
-import SolutionBar from './categories';
 
-const ImageCards = ({ cards = [] }) => {
+interface Category {
+  id: number;
+  name: string;
+  bgColor: string;
+  hoverBorderColor: string;
+  imageBgColor: string;
+  imageHoverColor: string;
+}
+
+interface SolutionBarProps {
+  categories?: Category[];
+}
+
+const SolutionBar: React.FC<SolutionBarProps> = ({ categories = [] }) => {
   // Default data if no props provided
-  const defaultCards = [
+  const defaultCategories: Category[] = [
     {
       id: 1,
-      title: "Card 1",
-      description: "Text below picture",
-      bgColor: "bg-red-100",
-      hoverBorderColor: "hover:border-red-500",
-      imageText: "Image 1"
+      name: "Technology",
+      bgColor: "bg-purple-100",
+      hoverBorderColor: "hover:border-purple-500",
+      imageBgColor: "bg-purple-500",
+      imageHoverColor: "hover:bg-purple-600"
     },
     {
       id: 2,
-      title: "Card 2",
-      description: "Text below picture",
-      bgColor: "bg-green-100",
-      hoverBorderColor: "hover:border-green-500",
-      imageText: "Image 2"
+      name: "Design",
+      bgColor: "bg-blue-100",
+      hoverBorderColor: "hover:border-blue-500",
+      imageBgColor: "bg-blue-500",
+      imageHoverColor: "hover:bg-blue-600"
     },
     {
       id: 3,
-      title: "Card 3",
-      description: "Text below picture",
-      bgColor: "bg-blue-100",
-      hoverBorderColor: "hover:border-blue-500",
-      imageText: "Image 3"
+      name: "Marketing",
+      bgColor: "bg-green-100",
+      hoverBorderColor: "hover:border-green-500",
+      imageBgColor: "bg-green-500",
+      imageHoverColor: "hover:bg-green-600"
     }
   ];
 
-  const displayCards = cards.length > 0 ? cards : defaultCards;
+  const displayCategories = categories.length > 0 ? categories : defaultCategories;
 
   return (
-    <div className="flex justify-center gap-5 p-5">
-      {displayCards.map((card) => (
+    <div className="flex justify-center items-center gap-5 p-5 min-h-screen">
+      {displayCategories.map((category) => (
         <div
-          key={card.id}
+          key={category.id}
           className={`
-            w-[200px] 
-            h-[200px] 
-            flex 
-            flex-col 
-            items-center 
-            p-4 
-            rounded 
-            ${card.bgColor}
-            border-2 
-            border-transparent 
-            transition-all 
-            duration-300 
-            hover:border-2 
-            ${card.hoverBorderColor}
-            hover:shadow-lg
+            w-[30vw]
+            h-[30vh]
+            flex
+            flex-col
+            items-center
+            justify-center
+            p-6
+            rounded-lg
+            ${category.bgColor}
+            border-2
+            border-transparent
+            transition-all
+            duration-300
+            ${category.hoverBorderColor}
+            hover:shadow-xl
             cursor-pointer
           `}
         >
+          {/* Rounded picture/avatar with category initial */}
           <div 
-            className="
-              w-[100px] 
-              h-[100px] 
-              rounded-full 
-              bg-gray-300 
-              mb-4 
-              flex 
-              items-center 
+            className={`
+              w-[120px]
+              h-[120px]
+              rounded-full
+              ${category.imageBgColor}
+              mb-4
+              flex
+              items-center
               justify-center
-              hover:bg-gray-400
+              ${category.imageHoverColor}
               transition-colors
               duration-300
-            "
+              shadow-md
+              text-white
+              font-bold
+              text-2xl
+            `}
           >
-            {card.imageText}
+            {category.name.charAt(0)}
           </div>
-          <div className="text-center font-sans">
-            {card.description}
+          
+          {/* Category name from data */}
+          <div className="text-center font-sans font-medium text-gray-700 text-lg">
+            {category.name}
           </div>
         </div>
       ))}

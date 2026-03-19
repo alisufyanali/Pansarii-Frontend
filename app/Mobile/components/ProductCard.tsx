@@ -53,7 +53,7 @@ export default function MobileProductCard({ product }: MobileProductCardProps) {
         onClick={handleCardClick}
       >
         {/* Image Section */}
-        <div className="relative w-full h-36 bg-gray-50">
+        <div className="relative w-full h-36 ">
           {/* Sale Badge - Same null checks as desktop */}
           {product.sale && product.sale !== null && product.sale !== undefined && (
             <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
