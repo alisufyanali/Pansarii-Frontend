@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeviceDetection, DeviceContent } from '../../../utils/screen-detection';
+import { useDeviceDetection } from '../../../utils/screen-detection';
 import MobileProductCard from '../../../Mobile/components/ProductCard';
 import DesktopProductCard from '../../../Desktop/components/ProductCard';
 import { recommendedProducts } from "../../data/recommendedProducts";
@@ -19,24 +19,10 @@ export default function RecommendedProductsSection() {
       <div className="max-w-7xl mx-auto">
         {/* Mobile View - Horizontal Scroll */}
         {isMobile && (
-          <div className="flex overflow-x-auto gap-4 pb-4">
+          <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
             {displayedProducts.map((product) => (
-              <div key={product.id} className="flex-none w-[280px]">
-                <MobileProductCard
-                  id={product.id}
-                  image={product.img}
-                  name={product.nameEn}
-                  nameUr={product.nameUr}
-                  description={product.description}
-                  features={[product.description]}
-                  price={product.price}
-                  oldPrice={product.oldPrice}
-                  sale={product.sale}
-                  rating={product.rating}
-                  reviews={product.reviews}
-                  currency="PKR"
-                  product={product}
-                />
+              <div key={product.id} className="flex-none w-[160px]">
+                <MobileProductCard product={product} />
               </div>
             ))}
           </div>
@@ -53,6 +39,17 @@ export default function RecommendedProductsSection() {
           </div>
         )}
       </div>
+
+      {/* Hide scrollbar */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

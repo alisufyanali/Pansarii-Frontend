@@ -131,12 +131,6 @@ export default function NewArrivalsPage() {
     console.log('Navigating to shop');
   };
 
-  const handleAddToCart = (productId: string) => {
-    console.log(`Adding product ${productId} to cart`);
-    const product = newArrivalProducts.find(p => p.id === productId);
-    alert(`Added ${product?.nameEn || 'product'} to cart!`);
-  };
-
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section - Responsive */}
@@ -285,18 +279,7 @@ export default function NewArrivalsPage() {
                   {filteredProducts.map((product) => (
                     <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                       {isMobile ? (
-                        <MobileProductCard
-                          id={product.id}
-                          name={product.nameEn}
-                          image={product.img}
-                          features={[
-                            product.category || "General",
-                            product.rating ? `${product.rating}★` : "New",
-                            product.sale || "Premium"
-                          ]}
-                          price={product.price}
-                          onAddToCart={handleAddToCart}
-                        />
+                        <MobileProductCard product={product} />
                       ) : (
                         <DesktopProductCard product={product} />
                       )}
@@ -364,18 +347,7 @@ export default function NewArrivalsPage() {
                   {bestSellingProducts.slice(0, 6).map((product) => (
                     <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                       {isMobile ? (
-                        <MobileProductCard
-                          id={product.id}
-                          name={product.nameEn}
-                          image={product.img}
-                          features={[
-                            product.category || "General",
-                            product.rating ? `${product.rating}★` : "New",
-                            "Best Seller"
-                          ]}
-                          price={product.price}
-                          onAddToCart={handleAddToCart}
-                        />
+                        <MobileProductCard product={product} />
                       ) : (
                         <DesktopProductCard product={product} />
                       )}

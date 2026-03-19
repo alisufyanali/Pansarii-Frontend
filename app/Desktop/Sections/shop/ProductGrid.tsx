@@ -1,7 +1,7 @@
 // app/shop/ProductGrid.tsx
 import { Product } from "../../utils/filterProducts";
 import ProductCard from "../../../Desktop/components/ProductCard";
-import ProductCardMobile from "../../../Mobile/components/ProductCard";
+import MobileProductCard from "../../../Mobile/components/ProductCard";
 import ProductDetailsModal from "../../../Desktop/components/ProductDetailsModal";
 import { memo, useState, useEffect } from 'react';
 import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
@@ -119,7 +119,7 @@ function ProductGrid({ products, viewMode = 'grid', onAddToCart, isMobile = fals
   // ─── Grid View ───────────────────────────────────────────────────────────────
   if (!isClient) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8 2xl:gap-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8">
         {products.map((_, index) => (
           <div key={`skeleton-${index}`} className="w-full animate-pulse">
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -138,40 +138,12 @@ function ProductGrid({ products, viewMode = 'grid', onAddToCart, isMobile = fals
 
   return (
     <>
-      {/*
-        Grid columns:
-        - Mobile:        2 cols
-        - sm (640px):    2 cols
-        - md (768px):    3 cols
-        - lg (1024px):   4 cols  ← laptop unchanged
-        - xl (1280px):   5 cols  ← laptop unchanged
-        - 2xl (1536px+): 5 cols  ← large desktop / 4K: 5 cols always
-        Gap scales up on 2xl for more breathing room on large screens
-      */}
-      {/* <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8 2xl:gap-8"> */}
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8">
+      {/* Grid Layout */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 2xl:gap-8">
         {products.map((product) => (
           <div key={`${product.id}-${product.nameEn}`} className="w-full">
             {isMobile ? (
-              <ProductCardMobile
-                id={product.id?.toString() || ''}
-                image={product.img}
-                hoverImg={product.hoverImg}
-                name={product.nameEn}
-                nameUr={product.nameUr}
-                description={product.description}
-                features={product.features?.map((f: string | { text: string }) => typeof f === 'string' ? f : f.text) || []}
-                price={product.price}
-                oldPrice={product.oldPrice || undefined}
-                rating={product.rating}
-                reviews={product.reviews}
-                sale={product.sale || undefined}
-                onAddToCart={onAddToCart ? (id) => {
-                  const p = products.find(p => p.id?.toString() === id);
-                  if (p) onAddToCart(p);
-                } : undefined}
-                product={product}
-              />
+              <MobileProductCard product={product} />
             ) : (
               <ProductCard product={product} />
             )}

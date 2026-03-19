@@ -9,7 +9,6 @@ import SearchFilterBar from '../Desktop/components/SearchFilterBar';
 import { FilterOptions } from '../Desktop/utils/filterProducts';
 import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
 import { useSearchParams, useRouter } from 'next/navigation';
-// Import the mobile card component
 import MobileProductCard, { toMobileCardProps } from '../Mobile/components/ProductCard';
 
 // ─── Skeletons ────────────────────────────────────────────────────────────────
@@ -187,26 +186,12 @@ export default function CategoryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Hero */}
+      {/* Hero - NO STATS */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-[1920px] mx-auto px-[4%] py-6 sm:py-10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl 2xl:text-4xl font-bold text-gray-900 mb-1">Shop by Category</h1>
-              <p className="text-sm sm:text-base text-gray-500">Browse our full collection of natural & herbal products</p>
-            </div>
-            <div className="flex gap-3">
-              {[
-                { label: `${allProducts.length}+`, sub: 'Products', bg: 'bg-green-50', color: 'text-green-700' },
-                { label: `${allCategories.length - 1}`, sub: 'Categories', bg: 'bg-amber-50', color: 'text-amber-700' },
-                { label: '100%', sub: 'Natural', bg: 'bg-blue-50', color: 'text-blue-700' },
-              ].map((s) => (
-                <div key={s.sub} className={`${s.bg} px-4 py-2 rounded-lg text-center`}>
-                  <div className={`font-bold text-lg ${s.color}`}>{s.label}</div>
-                  <div className="text-xs text-gray-500">{s.sub}</div>
-                </div>
-              ))}
-            </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl 2xl:text-4xl font-bold text-gray-900 mb-1">Shop by Category</h1>
+            <p className="text-sm sm:text-base text-gray-500">Browse our full collection of natural & herbal products</p>
           </div>
         </div>
       </div>
@@ -273,7 +258,7 @@ export default function CategoryPage() {
         {isLoading ? <GridSkeleton /> : filteredProducts.length > 0 ? (
           viewMode === 'grid' ? (
             <>
-              {/* Mobile grid - Using MobileProductCard with modal */}
+              {/* Mobile grid */}
               <div className="grid grid-cols-2 gap-3 sm:hidden">
                 {paginatedProducts.map((product) => (
                   <MobileProductCard 
@@ -292,7 +277,7 @@ export default function CategoryPage() {
               </div>
             </>
           ) : (
-            // List view (same as before...)
+            // List view
             <div className="space-y-3 sm:space-y-4">
               {paginatedProducts.map((product) => (
                 <div key={product.id} className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow p-3 sm:p-4 lg:p-6">
