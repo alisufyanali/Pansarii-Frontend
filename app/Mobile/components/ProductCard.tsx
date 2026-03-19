@@ -1,71 +1,39 @@
+// app/Mobile/components/MobileProductCard.tsx
 "use client";
 
-import Image from "next/image";
-import { useState, MouseEvent } from "react";
-import { FaStar, FaCheckCircle, FaHeart } from "react-icons/fa";
-import ProductDetailsModal from "../../Desktop/components/ProductDetailsModal";
-import { useRouter } from "next/navigation";
-import { useCart } from "../../context/CartContext";
-import { useWishlist } from "../../context/WishList";
-import { toast } from 'react-toastify';
+import { useState, MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import ProductDetailsModal from '@/app/Desktop/components/ProductDetailsModal';
 
-interface ProductCardProps {
-  id: string | number;
+interface MobileProductCardProps {
+  id: string;
   image: string;
-  hoverImg?: string;
   name: string;
   nameUr?: string;
-  description?: string;
   features: string[];
   price: number;
-  oldPrice?: number | null;
-  sale?: string | null;
-  rating?: number;
-  reviews?: number;
+  oldPrice?: number;
+  sale?: string;
   currency?: string;
-  onAddToCart?: (id: string) => void;
-  className?: string;
   // Full product object for modal
   product?: any;
 }
 
-export default function ProductCard({
-  id,
-  image,
-  hoverImg,
-  name,
+export default function MobileProductCard({ 
+  id, 
+  image, 
+  name, 
   nameUr,
-  description,
-  features,
-  price,
-  oldPrice,
-  sale,
-  rating = 4.5,
-  reviews = 0,
-  currency = "PKR",
-  onAddToCart,
-  className = "",
+  features, 
+  price, 
+  oldPrice, 
+  sale, 
+  currency = 'PKR',
   product
-}: ProductCardProps) {
-  const [isHovered, setIsHovered] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+}: MobileProductCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
-  const { addToCart } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
-  
-  const isInWishlistCheck = isInWishlist(id);
-
-  // Determine which image to display
-  const displayImage = isHovered && hoverImg ? hoverImg : image;
-
-  // Format price with comma separators
-  const formattedPrice = price.toLocaleString('en-PK');
-  const formattedOldPrice = oldPrice ? oldPrice.toLocaleString('en-PK') : null;
-
-  // Calculate discount percentage
-  const discountPercentage = oldPrice 
-    ? Math.round(((oldPrice - price) / oldPrice) * 100)
-    : null;
 
   // Handle card click - navigate to product details
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -73,214 +41,109 @@ export default function ProductCard({
     e.stopPropagation();
     
     const productSlug = name.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/product/${productSlug}`);
+    router.push(`/${productSlug}`);
   };
 
-  // Handle quick add - open modal
-  const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {
+  // Handle add button click - open modal
+  const handleAddClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsModalOpen(true);
   };
 
-  // Handle add to cart from button
-  const handleAddClick = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (onAddToCart) {
-      onAddToCart(id.toString());
-    } else {
-      // Default cart behavior
-      addToCart({
-        id: id,
-        img: image,
-        nameEn: name,
-        nameUr: nameUr || name,
-        price: price,
-        size: 'Standard',
-      });
-
-      toast.success(
-        <div className="flex items-center gap-2">
-          <span className="text-xl">✓</span>
-          <div>
-            <div className="font-semibold">Added to cart!</div>
-            <div className="text-xs opacity-90">{name}</div>
-          </div>
-        </div>,
-        {
-          position: "top-center",
-          autoClose: 2000,
-          hideProgressBar: true,
-          closeButton: false,
-          style: {
-            background: '#15803d',
-            color: 'white',
-          }
-        }
-      );
-    }
-  };
-
-  // Handle wishlist toggle
-  const handleWishlistToggle = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    toggleWishlist({
-      id: id,
-      nameEn: name,
-      nameUr: nameUr || name,
-      price: price,
-      img: image,
-    });
-
-    toast.success(
-      isInWishlistCheck ? 'Removed from wishlist' : 'Added to wishlist',
-      {
-        position: "top-center",
-        autoClose: 1500,
-        hideProgressBar: true,
-        closeButton: false,
-      }
-    );
-  };
-
-  // Prepare product object for modal
+  // Prepare full product object for modal
   const fullProduct = product || {
     id,
     img: image,
-    hoverImg,
     nameEn: name,
     nameUr: nameUr || name,
-    description: description || features.join(' • '),
-    rating,
-    reviews,
+    description: features.join(' • '),
+    rating: 4.5,
+    reviews: 0,
     price,
     oldPrice,
     sale,
-    features,
+    features: features.map(f => ({ text: f, hasCheck: true })),
   };
 
   return (
     <>
       <div 
-        className={`bg-white rounded-xl shadow border border-gray-100 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg ${className}`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer"
         onClick={handleCardClick}
       >
-        {/* Product Image */}
-        <div className="relative aspect-square bg-gray-50 p-3 flex items-center justify-center">
-          <div className="relative w-full h-full">
-            <Image
-              src={displayImage}
-              alt={name}
-              fill
-              className="object-contain p-2 transition-transform duration-300 hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          </div>
-
+        {/* Image Section */}
+        <div className="relative w-full h-36 bg-gray-50">
           {/* Sale Badge */}
-          {(sale || discountPercentage) && (
-            <div className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs rounded shadow-md">
-              {sale || `-${discountPercentage}%`}
+          {sale && (
+            <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+              {sale}
             </div>
           )}
-
-          {/* Wishlist Button */}
-          <button
-            onClick={handleWishlistToggle}
-            className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-              isInWishlistCheck 
-                ? 'bg-red-500 text-white' 
-                : 'bg-white/80 text-gray-600 hover:bg-red-50 hover:text-red-500'
-            }`}
-            aria-label={isInWishlistCheck ? "Remove from wishlist" : "Add to wishlist"}
-          >
-            <FaHeart className="w-3.5 h-3.5" />
-          </button>
+          
+          {/* Product Image */}
+          <Image 
+            src={image} 
+            alt={name} 
+            fill 
+            className="object-contain p-2" 
+            sizes="50vw"
+            onError={(e) => { 
+              (e.target as HTMLImageElement).src = '/images/product.png'; 
+            }} 
+          />
         </div>
         
-        {/* Product Details */}
-        <div className="p-3">
+        {/* Content Section */}
+        <div className="p-2.5">
           {/* Product Name */}
-          <h3 className="font-semibold text-sm text-gray-900 mb-1 line-clamp-2 h-10">
+          <h3 className="font-semibold text-xs text-gray-900 mb-1 line-clamp-2 min-h-[2.5rem]">
             {name}
           </h3>
-
-          {/* Urdu Name (optional) */}
+          
+          {/* Urdu Name (Optional) */}
           {nameUr && (
-            <p className="text-xs text-gray-600 mb-1 line-clamp-1">
+            <p className="text-[10px] text-gray-500 mb-1 line-clamp-1">
               {nameUr}
-            </p>
-          )}
-
-          {/* Description (optional) */}
-          {description && (
-            <p className="text-xs text-green-700 mb-2 line-clamp-1">
-              {description}
             </p>
           )}
           
           {/* Features */}
-          <div className="flex flex-wrap gap-1 mb-2">
-            {features.slice(0, 3).map((feature, index) => (
-              <span key={index} className="text-xs text-gray-500">
-                {feature}
-                {index < features.slice(0, 3).length - 1 && " • "}
+          <div className="flex flex-wrap gap-x-1 mb-2">
+            {features.slice(0, 2).map((f, i) => (
+              <span key={i} className="text-[10px] text-gray-400">
+                {f}{i < Math.min(features.length, 2) - 1 && ' •'}
               </span>
             ))}
           </div>
-
-          {/* Rating & Reviews */}
-          {(rating || reviews > 0) && (
-            <div className="flex items-center gap-2 mb-2 text-xs">
-              {rating && (
-                <div className="flex items-center gap-0.5 text-yellow-400">
-                  <FaStar className="w-3 h-3" />
-                  <span className="text-gray-700">{rating}</span>
-                </div>
-              )}
-              {rating && reviews > 0 && <span className="text-gray-300">|</span>}
-              {reviews > 0 && (
-                <div className="flex items-center gap-0.5 text-green-600">
-                  <FaCheckCircle className="w-3 h-3" />
-                  <span className="text-gray-600">{reviews}</span>
-                </div>
-              )}
-            </div>
-          )}
           
-          {/* Price and Add to Cart Button */}
-          <div className="flex justify-between items-center">
+          {/* Price & Add to Cart Button */}
+          <div className="flex items-center justify-between">
+            {/* Price Section */}
             <div>
-              {/* Price with old price if available */}
-              <span className="text-lg font-bold text-gray-900">
-                {currency} {formattedPrice}
+              <span className="text-sm font-bold text-gray-900">
+                {currency} {price.toLocaleString('en-PK')}
               </span>
               {oldPrice && (
-                <span className="text-xs text-gray-500 line-through ml-2">
-                  {currency} {formattedOldPrice}
+                <span className="text-[10px] text-gray-400 line-through ml-1">
+                  {currency} {oldPrice.toLocaleString('en-PK')}
                 </span>
               )}
             </div>
             
-            {/* Add to Cart Button - Quick Add opens modal */}
-            <button
-              onClick={handleQuickAdd}
-              className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center hover:bg-green-600 transition-colors active:scale-95"
-              aria-label={`Quick add ${name} to cart`}
+            {/* Quick Add Button - Opens Modal */}
+            <button 
+              onClick={handleAddClick}
+              className="w-7 h-7 rounded-full bg-[#197B33] flex items-center justify-center hover:bg-[#156529] active:scale-95 transition-all"
+              aria-label="Quick add to cart"
             >
-              <span className="text-white text-lg font-bold">+</span>
+              <span className="text-white text-base font-bold leading-none">+</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Product Details Modal */}
+      {/* Product Details Modal (Quick Add) */}
       {isModalOpen && (
         <ProductDetailsModal 
           product={fullProduct} 
@@ -289,4 +152,21 @@ export default function ProductCard({
       )}
     </>
   );
+}
+
+// Helper function to convert product data to MobileProductCard props
+export function toMobileCardProps(product: any): any {
+  return {
+    id: String(product.id), 
+    image: product.img ?? '/images/product.png', 
+    name: product.nameEn,
+    nameUr: product.nameUr,
+    features: ([product.category, product.description] as (string | null | undefined)[])
+      .filter((v): v is string => typeof v === 'string' && v.length > 0),
+    price: product.price, 
+    oldPrice: product.oldPrice ?? undefined,
+    sale: product.sale ?? undefined, 
+    currency: 'PKR',
+    product: product, // Pass full product for modal
+  };
 }

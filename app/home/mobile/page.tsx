@@ -1,435 +1,376 @@
-// app/home/mobile/page.tsx
-"use client";
+// app/category/page.tsx
+'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { allProducts } from '@/app/Desktop/data/products';
-import { useCart } from '@/app/context/CartContext';
-import { useWishlist } from '@/app/context/WishList';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect } from 'react';
+import { allProducts } from '../Desktop/data/products';
+import ProductCard from '../Desktop/components/ProductCard';
+import ProductDetailsModal from '../Desktop/components/ProductDetailsModal';
+import SearchFilterBar from '../Desktop/components/SearchFilterBar';
+import { FilterOptions } from '../Desktop/utils/filterProducts';
+import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
+import { useSearchParams, useRouter } from 'next/navigation';
+// Import the mobile card component
+import MobileProductCard, { toMobileCardProps } from '../Mobile/components/MobileProductCard';
 
-// ─── Mobile Product Card (Matching Categories Style) ────────────────────────
-interface MobileCardProps {
-  id: string;
-  image: string;
-  name: string;
-  nameUr?: string;
-  features: string[];
-  price: number;
-  oldPrice?: number;
-  sale?: string;
-  currency?: string;
-  onAddToCart?: (id: string) => void;
-}
-
-function MobileProductCard({ 
-  id, image, name, nameUr, features, price, oldPrice, sale, currency = 'PKR', onAddToCart 
-}: MobileCardProps) {
+// ─── Skeletons ────────────────────────────────────────────────────────────────
+function GridSkeleton() {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Image */}
-      <div className="relative w-full h-36 bg-gray-50">
-        {sale && (
-          <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
-            {sale}
+    <>
+      {/* Mobile skeleton */}
+      <div className="grid grid-cols-2 gap-3 sm:hidden">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="bg-white rounded-xl border border-gray-100 animate-pulse">
+            <div className="h-36 bg-gray-200 rounded-t-xl" />
+            <div className="p-2.5 space-y-2">
+              <div className="h-3 bg-gray-200 rounded w-3/4" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
+              <div className="flex justify-between items-center">
+                <div className="h-4 bg-gray-200 rounded w-16" />
+                <div className="w-7 h-7 bg-gray-200 rounded-full" />
+              </div>
+            </div>
           </div>
-        )}
-        <Image 
-          src={image} 
-          alt={name} 
-          fill 
-          className="object-contain p-2" 
-          sizes="50vw"
-          onError={(e) => { 
-            (e.target as HTMLImageElement).src = '/images/product.png'; 
-          }} 
-        />
+        ))}
       </div>
-      
-      {/* Content */}
-      <div className="p-2.5">
-        {/* Name */}
-        <h3 className="font-semibold text-xs text-gray-900 mb-1 line-clamp-2 min-h-[2.5rem]">
-          {name}
-        </h3>
-        
-        {/* Urdu Name (Optional) */}
-        {nameUr && (
-          <p className="text-[10px] text-gray-500 mb-1 line-clamp-1">
-            {nameUr}
-          </p>
-        )}
-        
-        {/* Features */}
-        <div className="flex flex-wrap gap-x-1 mb-2">
-          {features.slice(0, 2).map((f, i) => (
-            <span key={i} className="text-[10px] text-gray-400">
-              {f}{i < Math.min(features.length, 2) - 1 && ' •'}
-            </span>
-          ))}
-        </div>
-        
-        {/* Price & Add Button */}
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm font-bold text-gray-900">
-              {currency} {price.toLocaleString('en-PK')}
-            </span>
-            {oldPrice && (
-              <span className="text-[10px] text-gray-400 line-through ml-1">
-                {currency} {oldPrice.toLocaleString('en-PK')}
-              </span>
-            )}
+      {/* Desktop skeleton */}
+      <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
+        {[...Array(20)].map((_, i) => (
+          <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
+            <div className="aspect-square bg-gray-200 rounded-t-lg" />
+            <div className="p-3 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
+              <div className="h-8 bg-gray-200 rounded mt-2" />
+            </div>
           </div>
-          
-          {/* Add to Cart Button */}
-          <button 
-            onClick={(e) => { 
-              e.preventDefault(); 
-              onAddToCart?.(id); 
-            }}
-            className="w-7 h-7 rounded-full bg-[#197B33] flex items-center justify-center hover:bg-[#156529] active:scale-95 transition-all"
-          >
-            <span className="text-white text-base font-bold leading-none">+</span>
-          </button>
-        </div>
+        ))}
       </div>
-    </div>
+    </>
   );
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
-export default function MobileHomePage() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [activeTab, setActiveTab] = useState('all');
-  const tabScrollRef = useRef<HTMLDivElement>(null);
+// ─── Main Page ─────────────────────────────────────────────────────────────────────
+export default function CategoryPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const categoryParam = searchParams.get('cat');
+
+  // Get all unique categories from products
+  const allCategories = ['All Products', ...Array.from(new Set(allProducts.map((p) => p.category)))];
+
+  const [selectedCategory, setSelectedCategory] = useState('All Products');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [productsPerPage, setProductsPerPage] = useState(20);
   
-  const { addToCart } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      if (w >= 2560) setProductsPerPage(25);
+      else if (w >= 1280) setProductsPerPage(20);
+      else if (w >= 768) setProductsPerPage(12);
+      else setProductsPerPage(10);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
-  // Hero Banners
-  const banners = [
-    {
-      id: 1,
-      title: 'Premium Ayurvedic',
-      subtitle: 'Natural & Organic',
-      color: 'from-green-600 to-emerald-500',
-      link: '/shop'
-    },
-    {
-      id: 2,
-      title: 'Summer Sale',
-      subtitle: 'Up to 50% OFF',
-      color: 'from-orange-600 to-red-500',
-      link: '/offers'
-    },
-    {
-      id: 3,
-      title: 'New Collection',
-      subtitle: 'Fresh Arrivals',
-      color: 'from-purple-600 to-pink-500',
-      link: '/new-arrivals'
-    },
-  ];
+  const [filters, setFilters] = useState<FilterOptions>({
+    searchQuery: '', minPrice: 0, maxPrice: 5000, categories: [],
+    sortBy: 'default', showOnSale: false, showInStock: true,
+    showNewArrivals: false, showBestSellers: false,
+  });
 
-  // Menu Tabs
-  const menuTabs = [
-    { id: 'all', label: 'All' },
-    { id: 'new', label: 'New In' },
-    { id: 'bestsellers', label: 'Best Sellers' },
-    { id: 'Oils & Ghee', label: 'Oils' },
-    { id: 'Herbs & Spices', label: 'Herbs' },
-    { id: 'Honey & Sweeteners', label: 'Honey' },
-    { id: 'Beauty & Skincare', label: 'Beauty' },
-    { id: 'Tea & Beverages', label: 'Tea' },
-  ];
-
-  // Filter products based on active tab
-  const getFilteredProducts = () => {
-    switch(activeTab) {
-      case 'all':
-        return allProducts.slice(0, 12);
-      case 'new':
-        return allProducts.filter(p => p.isNew).slice(0, 12);
-      case 'bestsellers':
-        return allProducts.filter(p => p.isBestSeller).slice(0, 12);
-      default:
-        return allProducts.filter(p => p.category === activeTab).slice(0, 12);
-    }
-  };
-
-  const filteredProducts = getFilteredProducts();
-
-  // Convert products to card format
-  const productCards = filteredProducts.map(product => ({
-    id: product.id.toString(),
-    name: product.nameEn,
-    nameUr: product.nameUr,
-    image: product.img || "/images/default-product.png",
-    features: [
-      product.category || "General",
-      product.rating ? `${product.rating}★` : "New",
-    ].filter(Boolean),
-    price: product.price,
-    oldPrice: product.oldPrice,
-    sale: product.sale,
-    currency: "PKR",
-  }));
-
-  // Handle Add to Cart
-  const handleAddToCart = (productId: string) => {
-    const product = allProducts.find(p => p.id.toString() === productId);
-    
-    if (!product) {
-      toast.error('Product not found!', {
-        position: "top-center",
-        autoClose: 2000,
-      });
-      return;
-    }
-
-    // Add to cart
-    addToCart({
-      id: product.id,
-      img: product.img,
-      nameEn: product.nameEn,
-      nameUr: product.nameUr || product.nameEn,
-      price: product.price,
-      oldPrice: product.oldPrice,
-      category: product.category,
-      size: 'Standard',
-    });
-
-    // Show success toast
-    toast.success(
-      <div className="flex items-center gap-2">
-        <span className="text-2xl">✓</span>
-        <div>
-          <div className="font-semibold">Added to cart!</div>
-          <div className="text-xs opacity-90">{product.nameEn}</div>
-        </div>
-      </div>,
-      {
-        position: "top-center",
-        autoClose: 2000,
-        hideProgressBar: true,
-        closeButton: false,
-        style: {
-          background: '#15803d',
-          color: 'white',
-        }
+  // Set initial category from URL parameter
+  useEffect(() => {
+    if (categoryParam) {
+      const category = allCategories.find(
+        cat => cat.toLowerCase().replace(/\s+/g, '-') === categoryParam
+      );
+      if (category) {
+        setSelectedCategory(category);
       }
-    );
+    }
+    setFilteredProducts(allProducts);
+    setTimeout(() => setIsLoading(false), 600);
+  }, [categoryParam]);
+
+  const applyFilters = (newFilters: FilterOptions, category = selectedCategory) => {
+    let products = [...allProducts];
+    
+    // Filter by category
+    if (category !== 'All Products') {
+      products = products.filter((p) => p.category === category);
+    }
+    
+    // Search filter
+    if (newFilters.searchQuery) {
+      const q = newFilters.searchQuery.toLowerCase();
+      products = products.filter((p) =>
+        p.nameEn.toLowerCase().includes(q) || 
+        p.nameUr.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) || 
+        p.category.toLowerCase().includes(q)
+      );
+    }
+    
+    // Price filter
+    products = products.filter((p) => p.price >= newFilters.minPrice && p.price <= newFilters.maxPrice);
+    
+    // Category filter
+    if (newFilters.categories.length > 0) {
+      products = products.filter((p) => newFilters.categories.includes(p.category));
+    }
+    
+    // Sale filter
+    if (newFilters.showOnSale) {
+      products = products.filter((p) => p.sale);
+    }
+    
+    // Sort
+    switch (newFilters.sortBy) {
+      case 'price-low': products.sort((a, b) => a.price - b.price); break;
+      case 'price-high': products.sort((a, b) => b.price - a.price); break;
+      case 'rating': products.sort((a, b) => (b.rating || 0) - (a.rating || 0)); break;
+      case 'name': products.sort((a, b) => a.nameEn.localeCompare(b.nameEn)); break;
+    }
+    
+    setFilteredProducts(products);
+    setCurrentPage(1);
   };
 
-  // Auto-slide banners
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % banners.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [banners.length]);
-
-  // Scroll to active tab
-  useEffect(() => {
-    if (tabScrollRef.current) {
-      const activeElement = tabScrollRef.current.querySelector(`[data-tab="${activeTab}"]`);
-      activeElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    
+    // Update URL with category parameter
+    const categorySlug = category.toLowerCase().replace(/\s+/g, '-');
+    if (category === 'All Products') {
+      router.push('/category');
+    } else {
+      router.push(`/category?cat=${categorySlug}`);
     }
-  }, [activeTab]);
+    
+    applyFilters(filters, category);
+  };
+
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+    setSearchQuery(newFilters.searchQuery || '');
+    applyFilters(newFilters);
+  };
+
+  const getCount = (cat: string) =>
+    cat === 'All Products' ? allProducts.length : allProducts.filter((p) => p.category === cat).length;
+
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
+
+  const clearFilters = () => {
+    setSelectedCategory('All Products');
+    router.push('/category');
+    const reset: FilterOptions = { 
+      searchQuery: '', minPrice: 0, maxPrice: 5000, categories: [], 
+      sortBy: 'default', showOnSale: false, showInStock: true, 
+      showNewArrivals: false, showBestSellers: false 
+    };
+    setFilters(reset);
+    applyFilters(reset, 'All Products');
+  };
 
   return (
-    <>
-      {/* Toast Container */}
-      <ToastContainer />
-      
-      <div className="pb-6">
-        {/* Hero Banner Slider */}
-        <div className="relative h-48 overflow-hidden bg-gray-100 rounded-2xl mx-4 mt-4">
-          {banners.map((banner, index) => (
-            <Link
-              key={banner.id}
-              href={banner.link}
-              className={`absolute inset-0 transition-opacity duration-700 ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              <div className={`w-full h-full bg-gradient-to-br ${banner.color} flex flex-col items-center justify-center text-white px-6`}>
-                <h2 className="text-2xl font-bold mb-1">{banner.title}</h2>
-                <p className="text-sm opacity-90">{banner.subtitle}</p>
-              </div>
-            </Link>
-          ))}
-          
-          {/* Dots */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {banners.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentSlide(idx)}
-                className={`h-1.5 rounded-full transition-all ${
-                  idx === currentSlide ? 'w-6 bg-white' : 'w-1.5 bg-white/60'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-4 gap-3 px-4 mt-4">
-          <Link href="/shop" className="flex flex-col items-center gap-2 p-3 bg-gray-50 rounded-xl active:scale-95 transition">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-xl">
-              🛍️
+      {/* Hero */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-[1920px] mx-auto px-[4%] py-6 sm:py-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl 2xl:text-4xl font-bold text-gray-900 mb-1">Shop by Category</h1>
+              <p className="text-sm sm:text-base text-gray-500">Browse our full collection of natural & herbal products</p>
             </div>
-            <span className="text-xs font-medium text-gray-700">Shop All</span>
-          </Link>
-          <Link href="/offers" className="flex flex-col items-center gap-2 p-3 bg-gray-50 rounded-xl active:scale-95 transition">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-xl">
-              🏷️
-            </div>
-            <span className="text-xs font-medium text-gray-700">Offers</span>
-          </Link>
-          <Link href="/new-arrivals" className="flex flex-col items-center gap-2 p-3 bg-gray-50 rounded-xl active:scale-95 transition">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-xl">
-              ✨
-            </div>
-            <span className="text-xs font-medium text-gray-700">New</span>
-          </Link>
-          <Link href="/category" className="flex flex-col items-center gap-2 p-3 bg-gray-50 rounded-xl active:scale-95 transition">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-xl">
-              📦
-            </div>
-            <span className="text-xs font-medium text-gray-700">Categories</span>
-          </Link>
-        </div>
-
-        {/* Simple Menu Tabs */}
-        <div className="sticky top-16 z-20 bg-white border-y border-gray-200 mt-4">
-          <div 
-            ref={tabScrollRef}
-            className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {menuTabs.map((tab) => (
-              <button
-                key={tab.id}
-                data-tab={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-green-700 text-white'
-                    : 'bg-gray-100 text-gray-700 active:scale-95'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Products Grid - UPDATED TO MATCH CATEGORIES */}
-        <div className="px-4 pt-4">
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">
-              {menuTabs.find(t => t.id === activeTab)?.label || 'All'} Products
-            </h2>
-            <Link href="/shop" className="text-sm text-green-700 font-medium">
-              View All →
-            </Link>
-          </div>
-
-          {/* Products Grid - Same as Categories Page */}
-          {productCards.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3">
-              {productCards.map((product) => (
-                <MobileProductCard
-                  key={product.id}
-                  {...product}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="text-5xl mb-3">🔍</div>
-              <p className="text-gray-500 text-sm">No products found</p>
-            </div>
-          )}
-
-          {/* Load More */}
-          {productCards.length > 0 && (
-            <div className="text-center mt-6">
-              <Link
-                href={`/shop${activeTab !== 'all' ? `?category=${activeTab}` : ''}`}
-                className="inline-block px-8 py-3 bg-green-700 text-white font-medium rounded-lg hover:bg-green-600 transition-colors active:scale-95"
-              >
-                View All Products
-              </Link>
-            </div>
-          )}
-        </div>
-
-        {/* Featured Categories */}
-        <div className="px-4 mt-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Shop by Category</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { name: 'Oils & Ghee', icon: '🛢️', color: 'from-amber-400 to-orange-500' },
-              { name: 'Herbs & Spices', icon: '🌿', color: 'from-green-400 to-emerald-500' },
-              { name: 'Honey', icon: '🍯', color: 'from-yellow-400 to-amber-500' },
-              { name: 'Beauty', icon: '💄', color: 'from-pink-400 to-rose-500' },
-              { name: 'Tea', icon: '🍵', color: 'from-teal-400 to-cyan-500' },
-              { name: 'Supplements', icon: '💊', color: 'from-blue-400 to-indigo-500' },
-            ].map((category) => (
-              <Link
-                key={category.name}
-                href={`/shop?category=${category.name}`}
-                className="relative aspect-square rounded-xl overflow-hidden group active:scale-95 transition-transform"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-90 group-active:opacity-100 transition-opacity`} />
-                <div className="relative h-full flex flex-col items-center justify-center text-white p-3">
-                  <span className="text-3xl mb-2">{category.icon}</span>
-                  <span className="text-xs font-medium text-center">{category.name}</span>
+            <div className="flex gap-3">
+              {[
+                { label: `${allProducts.length}+`, sub: 'Products', bg: 'bg-green-50', color: 'text-green-700' },
+                { label: `${allCategories.length - 1}`, sub: 'Categories', bg: 'bg-amber-50', color: 'text-amber-700' },
+                { label: '100%', sub: 'Natural', bg: 'bg-blue-50', color: 'text-blue-700' },
+              ].map((s) => (
+                <div key={s.sub} className={`${s.bg} px-4 py-2 rounded-lg text-center`}>
+                  <div className={`font-bold text-lg ${s.color}`}>{s.label}</div>
+                  <div className="text-xs text-gray-500">{s.sub}</div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="px-4 mt-8">
-          <div className="bg-gray-50 rounded-xl p-4">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl mb-1">✓</div>
-                <p className="text-xs font-medium text-gray-700">100% Natural</p>
-              </div>
-              <div>
-                <div className="text-2xl mb-1">🚚</div>
-                <p className="text-xs font-medium text-gray-700">Free Shipping</p>
-              </div>
-              <div>
-                <div className="text-2xl mb-1">⭐</div>
-                <p className="text-xs font-medium text-gray-700">Top Rated</p>
-              </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* CSS for hiding scrollbar */}
+      {/* Search + Filter Bar */}
+      <div className="max-w-[1920px] mx-auto px-[4%] pt-6 sm:pt-8">
+        <SearchFilterBar
+          onFilterChange={handleFilterChange}
+          onViewModeChange={setViewMode}
+          productCount={filteredProducts.length}
+          categories={allCategories.filter((c) => c !== 'All Products')}
+          initialSearchQuery={searchQuery}
+        />
+      </div>
+
+      {/* Category pill bar — sticky, NO scrollbar */}
+      <div className="bg-white border-b border-gray-200 mt-4 sm:mt-6 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-[1920px] mx-auto px-[4%]">
+          <div
+            className="overflow-x-auto"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <div className="flex space-x-2 py-3">
+              {allCategories.map((cat) => (
+                <button 
+                  key={cat} 
+                  onClick={() => handleCategorySelect(cat)}
+                  className={`flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-all ${
+                    selectedCategory === cat ? 'bg-[#197B33] text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {cat} <span className={`ml-1 text-xs ${selectedCategory === cat ? 'text-white/75' : 'text-gray-400'}`}>({getCount(cat)})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="max-w-[1920px] mx-auto px-[4%] py-6 sm:py-8">
+
+        {/* Results header */}
+        <div className="mb-5 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-lg sm:text-xl 2xl:text-2xl font-bold text-gray-900">
+              {selectedCategory === 'All Products' ? 'All Products' : selectedCategory}
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500">
+              Showing {filteredProducts.length === 0 ? 0 : (currentPage - 1) * productsPerPage + 1}–{Math.min(currentPage * productsPerPage, filteredProducts.length)} of {filteredProducts.length} products
+            </p>
+          </div>
+          {filters.sortBy !== 'default' && (
+            <p className="text-xs sm:text-sm text-gray-600">Sorted by: <span className="font-medium">
+              {filters.sortBy === 'price-low' && 'Price: Low to High'}
+              {filters.sortBy === 'price-high' && 'Price: High to Low'}
+              {filters.sortBy === 'rating' && 'Highest Rated'}
+              {filters.sortBy === 'name' && 'Name (A-Z)'}
+            </span></p>
+          )}
+        </div>
+
+        {/* Products */}
+        {isLoading ? <GridSkeleton /> : filteredProducts.length > 0 ? (
+          viewMode === 'grid' ? (
+            <>
+              {/* Mobile grid - Using MobileProductCard with modal */}
+              <div className="grid grid-cols-2 gap-3 sm:hidden">
+                {paginatedProducts.map((product) => (
+                  <MobileProductCard 
+                    key={product.id} 
+                    {...toMobileCardProps(product)} 
+                  />
+                ))}
+              </div>
+              {/* Desktop grid */}
+              <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
+                {paginatedProducts.map((product) => (
+                  <div key={product.id} className="w-full">
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            // List view (same as before...)
+            <div className="space-y-3 sm:space-y-4">
+              {paginatedProducts.map((product) => (
+                <div key={product.id} className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow p-3 sm:p-4 lg:p-6">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                    <div className="w-full sm:w-48 h-40 sm:h-48 flex-shrink-0 relative">
+                      <img src={product.img} alt={product.nameEn} className="w-full h-full object-cover rounded-lg" loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/images/product.png'; }} />
+                      {product.sale && <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">{product.sale}</div>}
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">{product.nameEn}</h3>
+                        <p className="text-sm text-gray-500 mb-2">{product.nameUr}</p>
+                        {product.description && <p className="text-xs sm:text-sm text-green-700 mb-3 line-clamp-2">{product.description}</p>}
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded">
+                            <FaStar className="w-3.5 h-3.5 text-yellow-400" />
+                            <span className="font-semibold text-sm">{product.rating || 4.5}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-green-600">
+                            <FaCheckCircle className="w-3.5 h-3.5" />
+                            <span className="text-xs sm:text-sm">{product.reviews || 0} Reviews</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-100">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xl sm:text-2xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
+                          {product.oldPrice && <span className="text-sm text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>}
+                          {product.oldPrice && <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Save {Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}%</span>}
+                        </div>
+                        <button className="px-6 py-2.5 bg-[#197B33] text-white rounded-lg hover:bg-[#156529] transition font-semibold flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
+                          onClick={() => { setSelectedProduct(product); setIsModalOpen(true); }}>
+                          <FaEye className="w-4 h-4" /> Quick View
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+            <p className="text-gray-500 mb-6">{filters.searchQuery ? `No results for "${filters.searchQuery}"` : 'Try a different category'}</p>
+            <button onClick={clearFilters} className="px-6 py-3 bg-[#197B33] text-white rounded-lg hover:bg-[#156529] transition font-medium">View All Products</button>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!isLoading && totalPages > 1 && (
+          <div className="mt-8 sm:mt-10 flex items-center justify-center gap-2">
+            <button onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              disabled={currentPage === 1}
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 text-lg">‹</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button key={page} onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className={`w-10 h-10 flex items-center justify-center rounded-lg border text-sm font-medium ${currentPage === page ? 'bg-[#197B33] text-white border-[#197B33]' : 'border-gray-300 hover:bg-gray-50'}`}>
+                {page}
+              </button>
+            ))}
+            <button onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              disabled={currentPage === totalPages}
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 text-lg">›</button>
+          </div>
+        )}
+      </div>
+
+      {isModalOpen && selectedProduct && (
+        <ProductDetailsModal product={selectedProduct} onClose={() => { setIsModalOpen(false); setSelectedProduct(null); }} />
+      )}
+
       <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
-    </>
+    </div>
   );
 }

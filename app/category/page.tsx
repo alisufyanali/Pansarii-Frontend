@@ -2,66 +2,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { allProducts } from '../Desktop/data/products'; // Import from products.ts
+import { allProducts } from '../Desktop/data/products';
 import ProductCard from '../Desktop/components/ProductCard';
 import ProductDetailsModal from '../Desktop/components/ProductDetailsModal';
 import SearchFilterBar from '../Desktop/components/SearchFilterBar';
 import { FilterOptions } from '../Desktop/utils/filterProducts';
 import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
-import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
-
-// ─── Mobile Card ─────────────────────────────────────────────────────────────
-interface MobileCardProps {
-  id: string; image: string; name: string; features: string[];
-  price: number; oldPrice?: number; sale?: string; currency?: string;
-  onAddToCart?: (id: string) => void;
-}
-
-function MobileCard({ id, image, name, features, price, oldPrice, sale, currency = 'PKR', onAddToCart }: MobileCardProps) {
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="relative w-full h-36 bg-gray-50">
-        {sale && <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">{sale}</div>}
-        <Image src={image} alt={name} fill className="object-contain p-2" sizes="50vw"
-          onError={(e) => { (e.target as HTMLImageElement).src = '/images/product.png'; }} />
-      </div>
-      <div className="p-2.5">
-        <h3 className="font-semibold text-xs text-gray-900 mb-1 line-clamp-2 min-h-[2.5rem]">{name}</h3>
-        <div className="flex flex-wrap gap-x-1 mb-2">
-          {features.slice(0, 2).map((f, i) => (
-            <span key={i} className="text-[10px] text-gray-400">{f}{i < Math.min(features.length, 2) - 1 && ' •'}</span>
-          ))}
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm font-bold text-gray-900">{currency} {price.toLocaleString('en-PK')}</span>
-            {oldPrice && <span className="text-[10px] text-gray-400 line-through ml-1">{currency} {oldPrice.toLocaleString('en-PK')}</span>}
-          </div>
-          <button onClick={(e) => { e.preventDefault(); onAddToCart?.(id); }}
-            className="w-7 h-7 rounded-full bg-[#197B33] flex items-center justify-center hover:bg-[#156529] active:scale-95 transition-all">
-            <span className="text-white text-base font-bold leading-none">+</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function toMobileProps(product: any, onAddToCart: (id: string) => void): MobileCardProps {
-  return {
-    id: String(product.id), 
-    image: product.img ?? '/images/product.png', 
-    name: product.nameEn,
-    features: ([product.nameUr, product.category, product.description] as (string | null | undefined)[])
-      .filter((v): v is string => typeof v === 'string' && v.length > 0),
-    price: product.price, 
-    oldPrice: product.oldPrice ?? undefined,
-    sale: product.sale ?? undefined, 
-    currency: 'PKR', 
-    onAddToCart,
-  };
-}
+// Import the mobile card component
+import MobileProductCard, { toMobileCardProps } from '../Mobile/components/ProductCard';
 
 // ─── Skeletons ────────────────────────────────────────────────────────────────
 function GridSkeleton() {
@@ -220,8 +169,6 @@ export default function CategoryPage() {
   const getCount = (cat: string) =>
     cat === 'All Products' ? allProducts.length : allProducts.filter((p) => p.category === cat).length;
 
-  const handleMobileAdd = (id: string) => console.log('Add to cart:', id);
-
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
 
@@ -326,10 +273,13 @@ export default function CategoryPage() {
         {isLoading ? <GridSkeleton /> : filteredProducts.length > 0 ? (
           viewMode === 'grid' ? (
             <>
-              {/* Mobile grid */}
+              {/* Mobile grid - Using MobileProductCard with modal */}
               <div className="grid grid-cols-2 gap-3 sm:hidden">
                 {paginatedProducts.map((product) => (
-                  <MobileCard key={product.id} {...toMobileProps(product, handleMobileAdd)} />
+                  <MobileProductCard 
+                    key={product.id} 
+                    {...toMobileCardProps(product)} 
+                  />
                 ))}
               </div>
               {/* Desktop grid */}
@@ -342,7 +292,7 @@ export default function CategoryPage() {
               </div>
             </>
           ) : (
-            // List view (same as before)
+            // List view (same as before...)
             <div className="space-y-3 sm:space-y-4">
               {paginatedProducts.map((product) => (
                 <div key={product.id} className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow p-3 sm:p-4 lg:p-6">
