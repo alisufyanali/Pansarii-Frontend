@@ -82,14 +82,27 @@ export default function Navbar() {
   const closeCartSidebar = () => setIsCartSidebarOpen(false);
   const closeCategorySidebar = () => { setIsCategorySidebarOpen(false); setCategorySearch(''); };
 
-  const handleCategorySelect = (slug: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (slug === 'all') params.delete('category'); else params.set('category', slug);
-    const qs = params.toString();
-    router.push(qs ? `/shop?${qs}` : '/shop');
-    closeCategorySidebar();
+ const handleCategorySelect = (slug: string) => {
+  // Map category names to URL slugs
+  const CATEGORY_SLUG_MAP: { [key: string]: string } = {
+    'Herb': 'herbs',
+    'Oils': 'oils',
+    'Supplements': 'supplements',
+    'Beauty Corner': 'beauty-corner',
+    'Dawakhana': 'dawakhana',
+    'Remedies': 'remedies',
+    'Murrabajat': 'murrabajat',
+    'Arqiyaat': 'arqiyaat',
   };
-
+ 
+  if (slug === 'all') {
+    router.push('/categories');
+  } else {
+    const urlSlug = CATEGORY_SLUG_MAP[slug] || slug.toLowerCase().replace(/\s+/g, '-');
+    router.push(`/${urlSlug}`);
+  }
+  closeCategorySidebar();
+};
   return (
     <>
       <header className="w-full fixed top-0 left-0 z-40 pb-8">

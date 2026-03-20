@@ -4,7 +4,19 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import BackwardArrow from "@components/BackwardArrow";
 import ForwardArrow from "@components/ForwardArrow";
-import { categories } from "@/app/Desktop/data/categories";
+import { allProducts } from "@/app/Desktop/data/products";
+
+// Category slug mapping
+const CATEGORY_SLUG_MAP: { [key: string]: string } = {
+  'Herb': 'herbs',
+  'Oils': 'oils',
+  'Supplements': 'supplements',
+  'Beauty Corner': 'beauty-corner',
+  'Dawakhana': 'dawakhana',
+  'Remedies': 'remedies',
+  'Murrabajat': 'murrabajat',
+  'Arqiyaat': 'arqiyaat',
+};
 
 export default function SolutionBar() {
   const router = useRouter();
@@ -15,6 +27,16 @@ export default function SolutionBar() {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
   const isHoveringRef = useRef(false);
+
+  // Get categories from products data
+  const categories = Array.from(new Set(allProducts.map(p => p.category)))
+    .filter(Boolean)
+    .map((category, index) => ({
+      title: category,
+      category: category,
+      slug: CATEGORY_SLUG_MAP[category] || category.toLowerCase().replace(/\s+/g, '-'),
+      offset: index % 2 === 1, // Alternate offset for visual variety
+    }));
 
   // Keep ref in sync with state (avoids stale closure in interval)
   useEffect(() => {
@@ -73,8 +95,8 @@ export default function SolutionBar() {
     startAutoSlide();
   }, [getScrollAmount, startAutoSlide]);
 
-  const handleCategoryClick = (category: string) => {
-    router.push(`/shop?category=${category}`);
+  const handleCategoryClick = (slug: string) => {
+    router.push(`/${slug}`);
   };
 
   useEffect(() => {
@@ -118,7 +140,7 @@ export default function SolutionBar() {
           {categories.map((card, index) => (
             <div
               key={index}
-              onClick={() => handleCategoryClick(card.category)}
+              onClick={() => handleCategoryClick(card.slug)}
               className={`relative flex flex-col justify-end flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer group
                 transition-transform duration-300 hover:scale-[1.03] hover:shadow-2xl
                 ${card.offset ? "mt-8" : ""}
