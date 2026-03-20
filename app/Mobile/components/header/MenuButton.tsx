@@ -10,13 +10,13 @@ export default function MenuButton({ onClick, isOpen }: MenuButtonProps) {
   return (
     <button 
       onClick={onClick}
-      className="p-2 group"
-      aria-label="Open menu"
+      className="p-2 hover:bg-gray-50 rounded-lg transition-all active:bg-gray-100"
+      aria-label={isOpen ? "Close menu" : "Open menu"}
     >
-      <div className="w-6 h-6 flex flex-col justify-center items-center gap-1">
-        <div className={`w-5 h-0.5 bg-gray-700 group-hover:bg-green-600 transition-all duration-200 ${isOpen ? 'rotate-45 translate-y-1.5' : ''}`}></div>
-        <div className={`w-5 h-0.5 bg-gray-700 group-hover:bg-green-600 transition-all duration-200 ${isOpen ? 'opacity-0' : ''}`}></div>
-        <div className={`w-5 h-0.5 bg-gray-700 group-hover:bg-green-600 transition-all duration-200 ${isOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
+      <div className="w-5 h-5 flex flex-col justify-center items-center gap-[3px]">
+        <div className={`w-full h-[2px] bg-gray-700 transition-all duration-200 ${isOpen ? 'rotate-45 translate-y-[5px]' : ''}`}></div>
+        <div className={`w-full h-[2px] bg-gray-700 transition-all duration-200 ${isOpen ? 'opacity-0' : ''}`}></div>
+        <div className={`w-full h-[2px] bg-gray-700 transition-all duration-200 ${isOpen ? '-rotate-45 -translate-y-[5px]' : ''}`}></div>
       </div>
     </button>
   );

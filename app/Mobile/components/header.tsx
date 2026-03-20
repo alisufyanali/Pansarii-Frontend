@@ -12,15 +12,11 @@ import { allProducts } from '@/app/Desktop/data/products';
 interface HeaderProps {
   isMenuOpen: boolean;
   setIsMenuOpen: (isOpen: boolean) => void;
-  isSearchOpen: boolean;
-  setIsSearchOpen: (isOpen: boolean) => void;
 }
 
 export default function Header({ 
   isMenuOpen, 
-  setIsMenuOpen, 
-  isSearchOpen, 
-  setIsSearchOpen 
+  setIsMenuOpen
 }: HeaderProps) {
   // Format products for search suggestions
   const mockProducts: ProductSuggestion[] = allProducts.map(product => ({
@@ -36,40 +32,38 @@ export default function Header({
   }));
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
       {/* First Row: Menu Button, Logo, Icons */}
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Left: Three lines menu button */}
+      <div className="flex items-center justify-between px-4 py-2.5">
+        {/* Left: Menu button */}
         <MenuButton 
           onClick={() => setIsMenuOpen(!isMenuOpen)} 
           isOpen={isMenuOpen}
         />
 
         {/* Center: Logo */}
-        <Link href="/" className="flex-shrink-0 mx-2" aria-label="Home">
-          <div className="relative w-32 h-8">
+        <Link href="/" className="flex-shrink-0" aria-label="Home">
+          <div className="relative w-28 h-7">
             <Image
               src="/images/logo.png"
-              alt="Logo"
+              alt="Pansariin.pk"
               fill
               className="object-contain"
               priority
-              sizes="128px"
+              sizes="112px"
             />
           </div>
         </Link>
 
-        {/* Right: Icons (Cart, Track Order, Profile) */}
+        {/* Right: Icons */}
         <IconsSection variant="outline" />
       </div>
 
-      {/* Second Row: Search Bar (Always visible or conditional) */}
-      <div className="px-4 pb-3 border-b border-gray-100">
+      {/* Second Row: Search Bar */}
+      <div className="px-4 pb-2.5">
         <SearchBar 
-          placeholder="Search for products, brands, categories..."
+          placeholder="Search products..."
           mockProducts={mockProducts}
-          isOpen={isSearchOpen}
-          onSearchOpen={setIsSearchOpen}
         />
       </div>
     </header>
