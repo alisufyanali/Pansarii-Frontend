@@ -7,11 +7,10 @@ import { WishlistProvider } from "../context/WishList";
 import Header from "./components/header";
 import Navbar from "./components/navbar";
 import MenuModal from "./components/MenuModal";
-import Footer from "./components/footer"; // Fixed import (capital F)
+import Footer from "./components/footer";
 
 export default function MobileLayout({ children }: { children: ReactNode }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <CartProvider>
@@ -20,12 +19,10 @@ export default function MobileLayout({ children }: { children: ReactNode }) {
         <Header
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
-          isSearchOpen={isSearchOpen}
-          setIsSearchOpen={setIsSearchOpen}
         />
 
         {/* Main Content */}
-        <main className="min-h-screen bg-white pt-16 pb-24 px-4 mt-20">
+        <main className="min-h-screen bg-white pt-28 pb-24">
           {children}
         </main>
 
@@ -35,7 +32,6 @@ export default function MobileLayout({ children }: { children: ReactNode }) {
         {/* Floating Bottom Navbar - Uncomment if needed */}
         {/* <Navbar 
           setIsMenuOpen={setIsMenuOpen}
-          // setIsSearchOpen={setIsSearchOpen}
         /> */}
 
         {/* Menu Modal */}
