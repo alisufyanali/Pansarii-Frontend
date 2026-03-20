@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-poppins: 'Poppins', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #ffffff;
+    --foreground: #171717;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Poppins', Arial, Helvetica, sans-serif;
+}
+
+
+/* STYLING BY MIND THAT I HAVE */
+
+.me-bgcolor-g {
+  background: #197B33;
+}
+
+.me-bgcolor-y {
+  background: #FAA944;
+  color: white;
+}
+
+.me-color-g {
+  color: #197B33;
+}
+
+.me-color-y {
+  color: #FAA944;  /* Fixed: Added the yellow color value */
+}
+
+/* SolutionBar.css */
+
+.SolutionBar .slide {
+  display: flex;            /* puts all cards in a line */
+  gap: 10px;                /* space between cards */
+  overflow-x: auto;         /* scroll if too many cards */
+  padding: 10px 0;
+  font-family: 'Poppins', sans-serif; /* Added Poppins to SolutionBar */
+}
+
+.SolutionBar .card-solution {
+  width: 241px;
+  height: 309px;
+  border-radius: 10px;
+  background: linear-gradient(184.89deg, rgba(0, 0, 0, 0) 58.68%, #197B33 96.06%);
+  opacity: 1;
+  display: flex;            /* to center text */
+  justify-content: center;  /* center horizontally */
+  align-items: center;      /* center vertically */
+  text-align: center;
+  flex-shrink: 0;           /* prevents shrinking in flex row */
+  color: white;
+  font-weight: 500;
+  font-size: 16px;
+  font-family: 'Poppins', sans-serif; /* Added Poppins to cards */
+}
+
+.solution-text {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 26.5px;
+  font-family: 'Poppins', sans-serif; /* Added Poppins to solution text */
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE & Edge */
+  scrollbar-width: none; /* Firefox */
+}
