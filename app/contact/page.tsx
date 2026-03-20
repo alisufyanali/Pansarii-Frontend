@@ -1,550 +1,373 @@
-"use client";
+// app/contact/page.tsx
+'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
-import { FaLock, FaCreditCard, FaCheckCircle, FaChevronDown } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 
-export default function CheckoutPage() {
-  const router = useRouter();
-  const [paymentMethod, setPaymentMethod] = useState('cod');
-  const [phoneValue, setPhoneValue] = useState<string>('');
-  const [selectedCity, setSelectedCity] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Pakistani cities data - exact same as original
-  const pakistaniCities = [
-    // Punjab
-    { value: 'lahore', label: 'Lahore', province: 'Punjab' },
-    { value: 'faisalabad', label: 'Faisalabad', province: 'Punjab' },
-    { value: 'rawalpindi', label: 'Rawalpindi', province: 'Punjab' },
-    { value: 'multan', label: 'Multan', province: 'Punjab' },
-    { value: 'gujranwala', label: 'Gujranwala', province: 'Punjab' },
-    { value: 'sialkot', label: 'Sialkot', province: 'Punjab' },
-    { value: 'bahawalpur', label: 'Bahawalpur', province: 'Punjab' },
-    { value: 'sargodha', label: 'Sargodha', province: 'Punjab' },
-    
-    // Sindh
-    { value: 'karachi', label: 'Karachi', province: 'Sindh' },
-    { value: 'hyderabad', label: 'Hyderabad', province: 'Sindh' },
-    { value: 'sukkur', label: 'Sukkur', province: 'Sindh' },
-    { value: 'larkana', label: 'Larkana', province: 'Sindh' },
-    { value: 'navabshah', label: 'Nawabshah', province: 'Sindh' },
-    
-    // KPK
-    { value: 'peshawar', label: 'Peshawar', province: 'KPK' },
-    { value: 'mardan', label: 'Mardan', province: 'KPK' },
-    { value: 'abbottabad', label: 'Abbottabad', province: 'KPK' },
-    { value: 'swat', label: 'Swat', province: 'KPK' },
-    { value: 'nowshera', label: 'Nowshera', province: 'KPK' },
-    
-    // Balochistan
-    { value: 'quetta', label: 'Quetta', province: 'Balochistan' },
-    { value: 'gwadar', label: 'Gwadar', province: 'Balochistan' },
-    { value: 'turbat', label: 'Turbat', province: 'Balochistan' },
-    
-    // Islamabad & AJK
-    { value: 'islamabad', label: 'Islamabad', province: 'Islamabad Capital Territory' },
-    { value: 'muzaffarabad', label: 'Muzaffarabad', province: 'Azad Jammu & Kashmir' },
-    { value: 'mirpur', label: 'Mirpur', province: 'Azad Jammu & Kashmir' },
-  ];
-
-  const cartItems = [
+// JSON Data
+const contactData = {
+  hero: {
+    title: "Get in Touch",
+    subtitle: "We're Here to Help",
+    description: "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible."
+  },
+  contactInfo: [
     {
-      id: 1,
-      img: '/images/product.png',
-      nameEn: 'Cold Pressed Almond Oil',
-      price: 899,
-      quantity: 2,
-      size: '30ml'
+      icon: "phone",
+      title: "Phone",
+      value: "+92 300 1234567",
+      link: "tel:+923001234567",
+      description: "Mon-Sat: 9:00 AM - 6:00 PM"
     },
     {
-      id: 2,
-      img: '/images/product.png',
-      nameEn: 'Organic Coconut Oil',
-      price: 749,
-      quantity: 1,
-      size: '50ml'
+      icon: "whatsapp",
+      title: "WhatsApp",
+      value: "+92 300 1234567",
+      link: "https://wa.me/923001234567",
+      description: "Chat with us instantly"
+    },
+    {
+      icon: "email",
+      title: "Email",
+      value: "support@pansariin.pk",
+      link: "mailto:support@pansariin.pk",
+      description: "We'll reply within 24 hours"
+    },
+    {
+      icon: "location",
+      title: "Address",
+      value: "Shop #123, Saddar, Karachi",
+      link: "https://maps.google.com",
+      description: "Visit our office"
     }
-  ];
+  ],
+  departments: [
+    { name: "General Inquiry", email: "info@pansariin.pk" },
+    { name: "Customer Support", email: "support@pansariin.pk" },
+    { name: "Sales & Orders", email: "sales@pansariin.pk" },
+    { name: "Wholesale", email: "wholesale@pansariin.pk" },
+    { name: "Marketing & PR", email: "marketing@pansariin.pk" },
+    { name: "Careers", email: "careers@pansariin.pk" }
+  ],
+  businessHours: {
+    weekdays: "Monday - Saturday: 9:00 AM - 6:00 PM",
+    weekend: "Sunday: Closed",
+    holidays: "We're closed on public holidays"
+  },
+  social: [
+    { platform: "Facebook", url: "https://facebook.com/pansariin.pk", icon: "facebook" },
+    { platform: "Instagram", url: "https://instagram.com/pansariin.pk", icon: "instagram" },
+    { platform: "Twitter", url: "https://twitter.com/pansariin", icon: "twitter" }
+  ],
+  faq: {
+    title: "Quick Answers",
+    questions: [
+      { question: "What are your business hours?", answer: "Monday to Saturday, 9:00 AM - 6:00 PM" },
+      { question: "How long does delivery take?", answer: "2-3 days for major cities, 3-7 days for other areas" },
+      { question: "Do you accept returns?", answer: "Yes, within 7 days of delivery for unopened products" },
+      { question: "Is COD available?", answer: "Yes, we offer Cash on Delivery across Pakistan" }
+    ]
+  }
+};
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 200;
-  const total = subtotal + shipping;
+export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+  const [submitted, setSubmitted] = useState(false);
 
-  // handleSubmit - exact same as original
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    // Handle form submission
+    console.log('Form submitted:', formData);
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 3000);
+  };
 
-    // Generate order ID
-    const orderId = `ORD-${Date.now().toString().slice(-8)}`;
-    
-    // Prepare order data
-    const orderData = {
-      orderId,
-      orderDate: new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-      estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-      items: cartItems,
-      subtotal,
-      shipping,
-      total,
-      shippingAddress: {
-        name: (e.target as any).name.value,
-        phone: phoneValue,
-        email: (e.target as any).email.value,
-        address: (e.target as any).address.value,
-        city: selectedCity,
-        postalCode: (e.target as any).postalCode.value,
-      },
-      paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 
-                     paymentMethod === 'online' ? 'Online Payment' : 'Bank Transfer'
-    };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
-    // Save order to localStorage - exact same as original
-    localStorage.setItem(`order-${orderId}`, JSON.stringify(orderData));
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Redirect to order confirmation page
-    router.push(`/order-confirmation?orderId=${orderId}`);
+  const getIcon = (iconName: string): React.ReactNode => {
+    switch (iconName) {
+      case 'phone':
+        return <FaPhone className="w-6 h-6" />;
+      case 'whatsapp':
+        return <FaWhatsapp className="w-6 h-6" />;
+      case 'email':
+        return <FaEnvelope className="w-6 h-6" />;
+      case 'location':
+        return <FaMapMarkerAlt className="w-6 h-6" />;
+      default:
+        return null;
+    }
+  };
+
+  const getSocialIcon = (iconName: string): React.ReactNode => {
+    switch (iconName) {
+      case 'facebook':
+        return <FaFacebookF className="w-5 h-5" />;
+      case 'instagram':
+        return <FaInstagram className="w-5 h-5" />;
+      case 'twitter':
+        return <FaTwitter className="w-5 h-5" />;
+      default:
+        return null;
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Custom CSS for phone input styling - exact same as original */}
-      <style jsx global>{`
-        .PhoneInput {
-          width: 100%;
-        }
-        
-        .PhoneInputInput {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          font-size: 1rem;
-          outline: none;
-          transition: all 0.2s;
-        }
-        
-        .PhoneInputInput:focus {
-          border-color: #15803d;
-          ring: 2px;
-          ring-color: #15803d;
-          box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
-        }
-        
-        .PhoneInputCountry {
-          margin-right: 0.5rem;
-          padding: 0.75rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          background: white;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        
-        .PhoneInputCountry:hover {
-          border-color: #9ca3af;
-        }
-        
-        .PhoneInputCountrySelect {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          opacity: 0;
-          cursor: pointer;
-        }
-        
-        .PhoneInputCountryIcon {
-          width: 1.5rem;
-          height: 1.5rem;
-          margin-right: 0.5rem;
-        }
-        
-        .PhoneInputCountrySelectArrow {
-          margin-left: 0.25rem;
-          opacity: 0.6;
-          width: 0.5rem;
-          height: 0.5rem;
-        }
-      `}</style>
+      
+      {/* Hero */}
+      <section className="bg-gradient-to-r from-green-800 to-emerald-800 text-white py-16">
+        <div className="max-w-[1920px] mx-auto px-[4%]">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4">
+              {contactData.hero.title}
+            </h1>
+            <p className="text-xl text-green-100 mb-4">
+              {contactData.hero.subtitle}
+            </p>
+            <p className="text-lg text-green-100">
+              {contactData.hero.description}
+            </p>
+          </div>
+        </div>
+      </section>
 
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="mx-[2%] sm:mx-[4%] py-4 sm:py-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Checkout</h1>
-            <div className="flex items-center gap-2 text-green-700">
-              <FaLock className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="font-semibold text-sm sm:text-base">Secure Checkout</span>
-            </div>
+      {/* Contact Cards */}
+      <section className="py-12 bg-white">
+        <div className="max-w-6xl mx-auto px-[4%]">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {contactData.contactInfo.map((info, idx) => (
+              <a
+                key={idx}
+                href={info.link}
+                target={info.icon === 'location' || info.icon === 'whatsapp' ? '_blank' : undefined}
+                rel="noopener noreferrer"
+                className="bg-gray-50 rounded-xl p-6 text-center hover:shadow-lg transition border-2 border-transparent hover:border-green-500"
+              >
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
+                  {getIcon(info.icon)}
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">{info.title}</h3>
+                <p className="text-gray-700 font-medium mb-1">{info.value}</p>
+                <p className="text-sm text-gray-500">{info.description}</p>
+              </a>
+            ))}
           </div>
-          {/* Progress Steps */}
-          <div className="flex items-center gap-2 sm:gap-4 mt-4 sm:mt-6">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-700 text-white rounded-full flex items-center justify-center font-bold">
-                <FaCheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+        </div>
+      </section>
+
+      <div className="max-w-6xl mx-auto px-[4%] py-12">
+        <div className="grid lg:grid-cols-[1fr_400px] gap-8">
+          
+          {/* Contact Form */}
+          <div className="bg-white rounded-xl border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h2>
+            
+            {submitted && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                Thank you! Your message has been sent successfully. We'll get back to you soon.
               </div>
-              <span className="font-medium text-gray-900 text-sm sm:text-base">Cart</span>
-            </div>
-            <div className="w-8 sm:w-12 h-0.5 bg-green-700"></div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-700 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                2
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Your Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter your name"
+                />
               </div>
-              <span className="font-medium text-gray-900 text-sm sm:text-base">Checkout</span>
-            </div>
-            <div className="w-8 sm:w-12 h-0.5 bg-gray-300"></div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold text-sm">
-                3
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="+92 300 1234567"
+                  />
+                </div>
               </div>
-              <span className="font-medium text-gray-500 text-sm sm:text-base">Complete</span>
-            </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subject *
+                </label>
+                <select
+                  name="subject"
+                  required
+                  value={formData.subject}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Select a subject</option>
+                  {contactData.departments.map((dept, idx) => (
+                    <option key={idx} value={dept.name}>{dept.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Message *
+                </label>
+                <textarea
+                  name="message"
+                  required
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows={6}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="How can we help you?"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full px-8 py-4 bg-green-700 text-white rounded-lg hover:bg-green-600 transition font-semibold text-lg"
+              >
+                Send Message
+              </button>
+            </form>
           </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            
+            {/* Business Hours */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <FaClock className="w-6 h-6 text-green-700" />
+                <h3 className="text-lg font-bold text-gray-900">Business Hours</h3>
+              </div>
+              <div className="space-y-2 text-gray-700">
+                <p>{contactData.businessHours.weekdays}</p>
+                <p>{contactData.businessHours.weekend}</p>
+                <p className="text-sm text-gray-500 pt-2">{contactData.businessHours.holidays}</p>
+              </div>
+            </div>
+
+            {/* Departments */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Email by Department</h3>
+              <div className="space-y-3">
+                {contactData.departments.map((dept, idx) => (
+                  <div key={idx} className="text-sm">
+                    <div className="font-medium text-gray-900">{dept.name}</div>
+                    <a href={`mailto:${dept.email}`} className="text-green-700 hover:underline">
+                      {dept.email}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Social Media */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Follow Us</h3>
+              <div className="flex gap-3">
+                {contactData.social.map((social, idx) => (
+                  <a
+                    key={idx}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center hover:bg-green-700 hover:text-white transition"
+                    aria-label={social.platform}
+                  >
+                    {getSocialIcon(social.icon)}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="mx-[2%] sm:mx-[4%] py-5 sm:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-8">
-            {/* Left Column - Forms */}
-            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              
-              {/* Contact Information */}
-              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-5 sm:mb-6">Contact Information</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                      Full Name *
-                    </label>
-                    <input
-                      name="name"
-                      type="text"
-                      required
-                      className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700 text-sm sm:text-base"
-                      placeholder="Ahmed Khan"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      name="email"
-                      type="email"
-                      required
-                      className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700 text-sm sm:text-base"
-                      placeholder="ahmed@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                      Phone Number *
-                    </label>
-                    <PhoneInput
-                      international
-                      defaultCountry="PK"
-                      value={phoneValue}
-                      onChange={(value) => setPhoneValue(value || '')}
-                      required
-                      placeholder="Enter phone number"
-                      className="phone-input-wrapper"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Select your country and enter your phone number
-                    </p>
-                  </div>
-                </div>
+      {/* Quick Answers */}
+      <section className="py-12 bg-white">
+        <div className="max-w-6xl mx-auto px-[4%]">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            {contactData.faq.title}
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {contactData.faq.questions.map((item, idx) => (
+              <div key={idx} className="bg-gray-50 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-2">{item.question}</h3>
+                <p className="text-gray-700">{item.answer}</p>
               </div>
-
-              {/* Shipping Address */}
-              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-5 sm:mb-6">Shipping Address</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                      Street Address *
-                    </label>
-                    <input
-                      name="address"
-                      type="text"
-                      required
-                      className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700 text-sm sm:text-base"
-                      placeholder="House/Flat no, Street name, Area"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                        City *
-                      </label>
-                      <div className="relative">
-                        <select
-                          name="city"
-                          value={selectedCity}
-                          onChange={(e) => setSelectedCity(e.target.value)}
-                          required
-                          className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700 appearance-none bg-white text-sm sm:text-base"
-                        >
-                          <option value="">Select your city</option>
-                          <optgroup label="Punjab">
-                            {pakistaniCities.filter(city => city.province === 'Punjab').map(city => (
-                              <option key={city.value} value={city.value}>
-                                {city.label}
-                              </option>
-                            ))}
-                          </optgroup>
-                          <optgroup label="Sindh">
-                            {pakistaniCities.filter(city => city.province === 'Sindh').map(city => (
-                              <option key={city.value} value={city.value}>
-                                {city.label}
-                              </option>
-                            ))}
-                          </optgroup>
-                          <optgroup label="Khyber Pakhtunkhwa">
-                            {pakistaniCities.filter(city => city.province === 'KPK').map(city => (
-                              <option key={city.value} value={city.value}>
-                                {city.label}
-                              </option>
-                            ))}
-                          </optgroup>
-                          <optgroup label="Balochistan">
-                            {pakistaniCities.filter(city => city.province === 'Balochistan').map(city => (
-                              <option key={city.value} value={city.value}>
-                                {city.label}
-                              </option>
-                            ))}
-                          </optgroup>
-                          <optgroup label="Other">
-                            {pakistaniCities.filter(city => 
-                              city.province === 'Islamabad Capital Territory' || 
-                              city.province === 'Azad Jammu & Kashmir'
-                            ).map(city => (
-                              <option key={city.value} value={city.value}>
-                                {city.label}
-                              </option>
-                            ))}
-                          </optgroup>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                          <FaChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                        Area/Sector
-                      </label>
-                      <input
-                        name="area"
-                        type="text"
-                        className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700 text-sm sm:text-base"
-                        placeholder="Gulshan, DHA, etc."
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                      Postal Code
-                    </label>
-                    <input
-                      name="postalCode"
-                      type="text"
-                      className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700 text-sm sm:text-base"
-                      placeholder="75500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                      Delivery Instructions (Optional)
-                    </label>
-                    <textarea
-                      name="instructions"
-                      rows={3}
-                      className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700 text-sm sm:text-base"
-                      placeholder="e.g., Call before delivery, Leave at reception, etc."
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Method */}
-              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-5 sm:mb-6">Payment Method</h2>
-                <div className="space-y-3 sm:space-y-4">
-                  {/* Cash on Delivery */}
-                  <label className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition ${
-                    paymentMethod === 'cod' ? 'border-green-700 bg-green-50' : 'border-gray-300 hover:border-gray-400'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="cod"
-                      checked={paymentMethod === 'cod'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 sm:w-5 sm:h-5 text-green-700"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center text-lg sm:text-xl">
-                          💵
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900 text-sm sm:text-base">Cash on Delivery</p>
-                          <p className="text-xs sm:text-sm text-gray-600">Pay when you receive</p>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-
-                  {/* Online Payment */}
-                  <label className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition ${
-                    paymentMethod === 'online' ? 'border-green-700 bg-green-50' : 'border-gray-300 hover:border-gray-400'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="online"
-                      checked={paymentMethod === 'online'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 sm:w-5 sm:h-5 text-green-700"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <FaCreditCard className="text-lg sm:text-2xl text-gray-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900 text-sm sm:text-base">Online Payment</p>
-                          <p className="text-xs sm:text-sm text-gray-600">Credit/Debit Card, JazzCash, EasyPaisa</p>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-
-                  {/* Bank Transfer */}
-                  <label className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition ${
-                    paymentMethod === 'bank' ? 'border-green-700 bg-green-50' : 'border-gray-300 hover:border-gray-400'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="bank"
-                      checked={paymentMethod === 'bank'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 sm:w-5 sm:h-5 text-green-700"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center text-lg sm:text-xl">
-                          🏦
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900 text-sm sm:text-base">Bank Transfer</p>
-                          <p className="text-xs sm:text-sm text-gray-600">Direct bank deposit</p>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column - Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-sm lg:sticky lg:top-24">
-                <div className="p-4 sm:p-6">
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-5 sm:mb-6">Order Summary</h2>
-
-                  {/* Cart Items */}
-                  <div className="space-y-3 sm:space-y-4 mb-6 border-b pb-6">
-                    {cartItems.map((item) => (
-                      <div key={item.id} className="flex gap-3 sm:gap-4">
-                        <div className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0">
-                          <img 
-                            src={item.img}
-                            alt={item.nameEn}
-                            className="w-full h-full object-cover rounded-lg border"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 text-xs sm:text-sm truncate">{item.nameEn}</h4>
-                          <p className="text-xs text-gray-500">Size: {item.size}</p>
-                          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                            PKR {(item.price * item.quantity).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Price Breakdown */}
-                  <div className="space-y-3 mb-6">
-                    <div className="flex justify-between text-sm sm:text-base text-gray-600">
-                      <span>Subtotal</span>
-                      <span className="font-semibold">PKR {subtotal.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm sm:text-base text-gray-600">
-                      <span>Shipping</span>
-                      <span className="font-semibold">PKR {shipping}</span>
-                    </div>
-                    <div className="border-t pt-3">
-                      <div className="flex justify-between text-lg sm:text-xl font-bold text-gray-900">
-                        <span>Total</span>
-                        <span>PKR {total.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Place Order Button */}
-                  <button 
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`w-full bg-green-700 text-white py-3 sm:py-4 rounded-full font-bold text-base sm:text-lg transition shadow-lg hover:shadow-xl transform ${
-                      isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:scale-105 hover:bg-green-600'
-                    }`}
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Processing...
-                      </span>
-                    ) : (
-                      'Place Order'
-                    )}
-                  </button>
-
-                  <p className="text-xs text-gray-500 text-center mt-4">
-                    By placing your order, you agree to our terms and conditions
-                  </p>
-                </div>
-              </div>
-            </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <a
+              href="/faqs"
+              className="inline-block px-8 py-3 bg-green-700 text-white rounded-lg hover:bg-green-600 transition font-semibold"
+            >
+              View All FAQs
+            </a>
           </div>
         </div>
-      </form>
+      </section>
+
+      {/* Map */}
+      <section className="py-12 bg-gray-100">
+        <div className="max-w-6xl mx-auto px-[4%]">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Visit Our Office
+          </h2>
+          <div className="bg-white rounded-xl overflow-hidden border border-gray-200">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3619.456!2d67.01!3d24.86!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDUxJzM3LjYiTiA2N8KwMDAnMzYuMCJF!5e0!3m2!1sen!2s!4v1234567890"
+              width="100%"
+              height="450"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }
