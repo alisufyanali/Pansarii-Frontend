@@ -189,43 +189,46 @@ function SearchFilterBarContent({
       <div className="relative">
         <div className="flex flex-col sm:flex-row sm:items-center border-2 border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
 
-          {/* MOBILE */}
-          <div className="flex items-center w-full sm:hidden">
-            <button
-              onClick={() => { setTempFilters(filters); setIsMobileFilterOpen(true); }}
-              className="flex items-center justify-center gap-1.5 px-3 py-3.5 border-r-2 border-gray-200 text-gray-700 hover:bg-green-50 transition-colors"
-            >
-              <FiSliders className="w-5 h-5" />
-              <span className="text-sm font-semibold">Filter</span>
-              {getActiveFilterCount() > 0 && (
-                <span className="ml-1 px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-bold">{getActiveFilterCount()}</span>
-              )}
-            </button>
+         // Key mobile layout fix - replace the mobile section in SearchFilterBar
 
-            <div className="flex-1 flex items-center px-3">
-              <FiSearch className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="flex-1 py-3.5 outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm"
-                value={filters.searchQuery}
-                onChange={e => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
-              />
-              {filters.searchQuery && (
-                <button onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))} className="p-1.5 hover:bg-gray-100 rounded-full">
-                  <FiX className="w-4 h-4 text-gray-500" />
-                </button>
-              )}
-            </div>
+{/* MOBILE - Fixed version with proper sizing */}
+<div className="flex items-center w-full sm:hidden">
+  <button
+    onClick={() => { setTempFilters(filters); setIsMobileFilterOpen(true); }}
+    className="flex items-center justify-center gap-1 px-2.5 py-3 border-r-2 border-gray-200 text-gray-700 hover:bg-green-50 transition-colors flex-shrink-0"
+  >
+    <FiSliders className="w-4 h-4" />
+    <span className="text-xs font-semibold">Filter</span>
+    {getActiveFilterCount() > 0 && (
+      <span className="px-1.5 py-0.5 bg-green-600 text-white text-[10px] rounded-full font-bold">{getActiveFilterCount()}</span>
+    )}
+  </button>
 
-            <button
-              onClick={() => setShowMobileSort(v => !v)}
-              className="flex items-center gap-1 px-3 py-3.5 border-l-2 border-gray-200 text-gray-700 hover:bg-green-50"
-            >
-              <span className="text-sm font-semibold">Sort</span>
-              {showMobileSort ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}
-            </button>
-          </div>
+  <div className="flex-1 flex items-center px-2 min-w-0">
+    <FiSearch className="w-4 h-4 text-gray-400 mr-1.5 flex-shrink-0" />
+    <input
+      type="text"
+      placeholder="Search..."
+      className="flex-1 py-3 outline-none bg-transparent text-gray-700 placeholder-gray-400 text-xs min-w-0"
+      value={filters.searchQuery}
+      onChange={e => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
+    />
+    {filters.searchQuery && (
+      <button onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))} className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0">
+        <FiX className="w-3.5 h-3.5 text-gray-500" />
+      </button>
+    )}
+  </div>
+
+  <button
+    onClick={() => setShowMobileSort(v => !v)}
+    className="flex items-center gap-0.5 px-2.5 py-3 border-l-2 border-gray-200 text-gray-700 hover:bg-green-50 flex-shrink-0"
+  >
+    <span className="text-xs font-semibold">Sort</span>
+    {showMobileSort ? <FiChevronUp className="w-3.5 h-3.5" /> : <FiChevronDown className="w-3.5 h-3.5" />}
+  </button>
+</div>
+
 
           {/* DESKTOP */}
           <div className="hidden sm:flex items-center w-full">
