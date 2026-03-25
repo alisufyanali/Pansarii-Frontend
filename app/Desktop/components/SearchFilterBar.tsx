@@ -189,7 +189,7 @@ function SearchFilterBarContent({
       <div className="relative">
         <div className="flex flex-col sm:flex-row sm:items-center border-2 border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
 
-         // Key mobile layout fix - replace the mobile section in SearchFilterBar
+       
 
 {/* MOBILE - Fixed version with proper sizing */}
 <div className="flex items-center w-full sm:hidden">
