@@ -301,27 +301,7 @@ function OrderConfirmationContent() {
           </div>
         </div>
 
-        {/* Support Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mt-6 print:hidden">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <FiClock className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Need Help?</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Contact our support team at{' '}
-                <a href="tel:+923001234567" className="text-blue-600 hover:underline">
-                  +92 300 1234567
-                </a>{' '}
-                or email{' '}
-                <a href="mailto:support@pansariinn.com" className="text-blue-600 hover:underline">
-                  support@pansariinn.com
-                </a>
-              </p>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );

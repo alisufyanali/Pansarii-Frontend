@@ -134,14 +134,18 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
     <>
       <ToastPortal />
 
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0">
-        {/* Backdrop */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 md:p-0">
+        {/* Backdrop with blur */}
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-        {/* Modal Content */}
+        {/* Modal Content - Centered on all screens */}
         <div
           ref={modalContentRef}
-          className="relative bg-white rounded-none md:rounded-xl shadow-2xl w-full h-full md:h-auto md:max-h-[95vh] md:max-w-5xl overflow-y-auto overflow-x-hidden"
+          className="relative bg-white rounded-lg md:rounded-xl shadow-2xl w-full md:max-w-5xl max-h-[95vh] md:max-h-[95vh] overflow-hidden"
+          style={{
+            width: isMobile ? '95%' : 'auto',
+            maxWidth: isMobile ? '95%' : 'none',
+          }}
         >
           {/* Close Button */}
           <button
@@ -152,11 +156,11 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
             <FaTimes className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-700" />
           </button>
 
-          {/* Content - Horizontal on Mobile */}
-          <div className="flex flex-row md:flex-row min-h-full md:min-h-0">
+          {/* Content - Horizontal layout maintained */}
+          <div className="flex flex-row min-h-full md:min-h-0 overflow-y-auto max-h-[95vh]">
 
-            {/* Left — Image (40% on mobile) */}
-            <div className="w-[40%] md:w-2/5 p-2 md:p-6 border-r border-gray-100 flex-shrink-0">
+            {/* Left — Image (40% width) */}
+            <div className="w-[40%] md:w-2/5 p-2 md:p-6 border-r border-gray-100 flex-shrink-0 overflow-y-auto">
               <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50">
                 {product.sale && (
                   <div className="absolute top-1 right-1 md:top-3 md:right-3 z-10 px-1.5 py-0.5 md:px-3 md:py-1.5 bg-red-500 text-white rounded-full text-[9px] md:text-sm font-semibold">
@@ -188,9 +192,9 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
               )}
             </div>
 
-            {/* Right — Info (60% on mobile) */}
+            {/* Right — Info (60% width) */}
             <div className="w-[60%] md:w-3/5 p-2 md:p-6 overflow-y-auto">
-              <div className="space-y-2 md:space-y-4">
+              <div className="space-y-2 md:space-y-4 pb-16 md:pb-0">
                 {/* Title */}
                 <div>
                   <h1 className="text-xs md:text-2xl font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
