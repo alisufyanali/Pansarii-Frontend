@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { FaLock, FaCreditCard, FaCheckCircle, FaChevronDown, FaShieldAlt, FaTruck } from 'react-icons/fa';
+import { FaLock, FaCreditCard, FaCheckCircle, FaChevronDown, FaShieldAlt, FaTruck, FaTag } from 'react-icons/fa';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -12,6 +12,10 @@ export default function CheckoutPage() {
   const [phoneValue, setPhoneValue] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [discount, setDiscount] = useState(0);
+  const [promoError, setPromoError] = useState('');
 
   const pakistaniCities = [
     { value: 'lahore',       label: 'Lahore',       province: 'Punjab' },
@@ -47,7 +51,53 @@ export default function CheckoutPage() {
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = 200;
-  const total = subtotal + shipping;
+  const total = subtotal + shipping - discount;
+
+  const handleApplyPromo = () => {
+    // Demo promo codes - in production, this would be an API call
+    const validPromos: { [key: string]: number } = {
+      'SAVE10': 0.10, // 10% off
+      'SAVE20': 0.20, // 20% off
+      'WELCOME': 100, // PKR 100 off
+      'FREESHIP': shipping, // Free shipping
+    };
+
+    const promo = promoCode.toUpperCase().trim();
+    
+    if (validPromos[promo]) {
+      let discountAmount = 0;
+      
+      if (typeof validPromos[promo] === 'number') {
+        if (promo === 'FREESHIP') {
+          discountAmount = validPromos[promo];
+          setDiscount(validPromos[promo]);
+        } else if (validPromos[promo] < 1) {
+          // Percentage discount
+          discountAmount = subtotal * validPromos[promo];
+          setDiscount(discountAmount);
+        } else {
+          // Fixed amount discount
+          discountAmount = validPromos[promo];
+          setDiscount(Math.min(discountAmount, subtotal)); // Don't discount more than subtotal
+        }
+      }
+      
+      setPromoApplied(true);
+      setPromoError('');
+      alert(`Promo code applied! You saved PKR ${discountAmount.toLocaleString()}`);
+    } else {
+      setPromoError('Invalid promo code');
+      setPromoApplied(false);
+      setDiscount(0);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoCode('');
+    setPromoApplied(false);
+    setDiscount(0);
+    setPromoError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,14 +107,19 @@ export default function CheckoutPage() {
       orderId,
       orderDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      items: cartItems, subtotal, shipping, total,
+      items: cartItems,
+      subtotal,
+      shipping,
+      discount,
+      total: total,
+      promoApplied: promoApplied ? promoCode : null,
       shippingAddress: {
         name: (e.target as any).name.value,
         phone: phoneValue,
         email: (e.target as any).email.value,
         address: (e.target as any).address.value,
         city: selectedCity,
-        postalCode: (e.target as any).postalCode.value,
+        area: (e.target as any).area.value,
       },
       paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod === 'online' ? 'Online Payment' : 'Bank Transfer',
     };
@@ -201,12 +256,6 @@ export default function CheckoutPage() {
                     <input name="area" type="text" className={inputCls} placeholder="Gulshan, DHA, etc." />
                   </div>
 
-                  {/* Postal code */}
-                  <div>
-                    <label className={labelCls}>Postal Code</label>
-                    <input name="postalCode" type="text" className={inputCls} placeholder="75500" />
-                  </div>
-
                   {/* Delivery instructions */}
                   <div className="sm:col-span-2">
                     <label className={labelCls}>Delivery Instructions <span className="normal-case font-normal text-gray-400">(optional)</span></label>
@@ -273,23 +322,82 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
+                {/* Promo Code Section */}
+                <div className="py-4 border-b border-gray-100">
+                  <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                    Promo Code
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="flex-1 relative">
+                      <FaTag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        placeholder="Enter promo code"
+                        disabled={promoApplied}
+                        className={`${inputCls} pl-9`}
+                      />
+                    </div>
+                    {!promoApplied ? (
+                      <button
+                        type="button"
+                        onClick={handleApplyPromo}
+                        disabled={!promoCode.trim()}
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Apply
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleRemovePromo}
+                        className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition font-medium text-sm"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  {promoError && (
+                    <p className="text-xs text-red-500 mt-2">{promoError}</p>
+                  )}
+                  {promoApplied && (
+                    <p className="text-xs text-green-600 mt-2">
+                      ✓ Promo code applied! You saved PKR {discount.toLocaleString()}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-gray-400 mt-2">
+                    Try: SAVE10, SAVE20, WELCOME, FREESHIP
+                  </p>
+                </div>
+
                 {/* Price breakdown */}
                 <div className="flex flex-col gap-2.5 py-4 border-b border-gray-100 text-sm">
                   <div className="flex justify-between text-gray-500">
                     <span>Subtotal</span>
                     <span className="font-medium text-gray-900">PKR {subtotal.toLocaleString()}</span>
                   </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount</span>
+                      <span className="font-medium">- PKR {discount.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-gray-500">
                     <span className="flex items-center gap-1">
                       <FaTruck className="w-3 h-3" /> Shipping
                     </span>
-                    <span className="font-medium text-gray-900">PKR {shipping}</span>
+                    <span className="font-medium text-gray-900">
+                      {discount > 0 && promoCode.toUpperCase() === 'FREESHIP' ? 'FREE' : `PKR ${shipping}`}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex justify-between pt-3.5 mb-4">
                   <span className="text-sm font-bold text-gray-900">Total</span>
-                  <span className="text-base font-bold text-gray-900">PKR {total.toLocaleString()}</span>
+                  <span className="text-base font-bold text-gray-900">
+                    PKR {total.toLocaleString()}
+                  </span>
                 </div>
 
                 {/* Submit */}
