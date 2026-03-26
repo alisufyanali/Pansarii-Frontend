@@ -1,19 +1,11 @@
-// components/navbar/searchbar.tsx
+// app/Mobile/components/Header/SearchBar.tsx
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { 
-  FiSearch, 
-  FiX, 
-  FiClock,
-  FiChevronRight 
-} from 'react-icons/fi';
-import { HiOutlineShoppingBag, HiOutlineTag } from 'react-icons/hi';
-import { BsStar } from 'react-icons/bs';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { FiSearch, FiX, FiClock, FiTrendingUp } from 'react-icons/fi';
 
-export interface ProductSuggestion {
+interface Product {
   id: string;
   name: string;
   slug: string;
@@ -25,376 +17,246 @@ export interface ProductSuggestion {
   isBestSeller?: boolean;
 }
 
-export interface SearchBarProps {
+interface SearchBarProps {
   placeholder?: string;
-  className?: string;
   variant?: 'desktop' | 'mobile';
-  onSearch?: (query: string) => void;
-  mockProducts?: ProductSuggestion[];
-  initialQuery?: string;
+  mockProducts?: Product[];
+  className?: string;
 }
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+const RECENT_SEARCHES_KEY = 'pansari_recent_searches';
+const MAX_RECENT_SEARCHES = 5;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+const trendingSearches = [
+  'Black Seed Oil',
+  'Moringa Powder',
+  'Turmeric',
+  'Honey',
+  'Ginger Tea',
+];
 
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-export default function SearchBar({ 
-  placeholder = "Search for products, categories, brands...", 
-  className = "",
+export default function SearchBar({
+  placeholder = 'Search for products...',
   variant = 'desktop',
-  onSearch,
   mockProducts = [],
-  initialQuery = ''
+  className = '',
 }: SearchBarProps) {
-  const [query, setQuery] = useState(initialQuery);
-  const [suggestions, setSuggestions] = useState<ProductSuggestion[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (initialQuery) {
-      setQuery(initialQuery);
-    }
-  }, [initialQuery]);
-
-  const debouncedQuery = useDebounce(query, 300);
-
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (!debouncedQuery.trim()) {
-        setSuggestions([]);
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        if (mockProducts.length > 0) {
-          const filtered = mockProducts.filter(product => 
-            product.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-            product.category?.toLowerCase().includes(debouncedQuery.toLowerCase())
-          ).slice(0, 5);
-          
-          setSuggestions(filtered);
-          setIsOpen(true);
-        } else {
-          const response = await fetch(
-            `/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}&limit=5`
-          );
-          
-          if (response.ok) {
-            const data = await response.json();
-            setSuggestions(data.suggestions || []);
-            setIsOpen(true);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch suggestions:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSuggestions();
-  }, [debouncedQuery, mockProducts]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('recentSearches');
+    const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
     if (stored) {
       try {
         setRecentSearches(JSON.parse(stored));
-      } catch (error) {
-        console.error('Error parsing recent searches:', error);
+      } catch (e) {
+        console.error('Failed to parse recent searches', e);
       }
     }
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
+  const saveRecentSearch = useCallback((searchQuery: string) => {
+    if (!searchQuery.trim()) return;
+    
+    const updated = [
+      searchQuery,
+      ...recentSearches.filter(s => s !== searchQuery)
+    ].slice(0, MAX_RECENT_SEARCHES);
+    
+    setRecentSearches(updated);
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+  }, [recentSearches]);
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+  useEffect(() => {
+    if (query.trim() && mockProducts.length > 0) {
+      const filtered = mockProducts.filter(product =>
+        product.name.toLowerCase().includes(query.toLowerCase()) ||
+        product.category?.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 5);
+      setSuggestions(filtered);
+    } else {
+      setSuggestions([]);
+    }
+  }, [query, mockProducts]);
+
+  const closeSearch = useCallback(() => {
+    setIsOpen(false);
+    setQuery('');
+    setSuggestions([]);
   }, []);
 
   const handleSearch = useCallback((searchQuery: string) => {
     if (!searchQuery.trim()) return;
-
-    const updatedSearches = [
-      searchQuery,
-      ...recentSearches.filter(s => s.toLowerCase() !== searchQuery.toLowerCase())
-    ].slice(0, 5);
-
-    setRecentSearches(updatedSearches);
-    localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
-
-    if (onSearch) {
-      onSearch(searchQuery);
-    }
-
-    window.location.href = `/shop?search=${encodeURIComponent(searchQuery)}`;
-    setIsOpen(false);
-  }, [recentSearches, onSearch]);
+    
+    saveRecentSearch(searchQuery);
+    closeSearch();
+    router.push(`/shop?search=${encodeURIComponent(searchQuery)}`);
+  }, [router, saveRecentSearch, closeSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSearch(query);
   };
 
-  const handleSuggestionClick = (product: ProductSuggestion) => {
-    setQuery(product.name);
-    handleSearch(product.name);
-  };
-
-  const handleRecentSearchClick = (search: string) => {
-    setQuery(search);
-    handleSearch(search);
-  };
-
-  const clearSearch = () => {
-    setQuery('');
-    setSuggestions([]);
-    setIsOpen(false);
-    inputRef.current?.focus();
+  const handleSuggestionClick = (product: Product) => {
+    saveRecentSearch(product.name);
+    closeSearch();
+    router.push(`/product/${product.slug}`);
   };
 
   const clearRecentSearches = () => {
     setRecentSearches([]);
-    localStorage.removeItem('recentSearches');
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency: 'PKR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
+    localStorage.removeItem(RECENT_SEARCHES_KEY);
   };
 
   return (
-    <div ref={searchRef} className={`relative ${className}`}>
-      <form onSubmit={handleSubmit} className="relative">
-       // Update the input className in your searchbar.tsx file
-<input
-  ref={inputRef}
-  type="text"
-  value={query}
-  onChange={(e) => {
-    setQuery(e.target.value);
-    if (e.target.value.trim()) {
-      setIsOpen(true);
-    }
-  }}
-  onFocus={() => setIsOpen(true)}
-  placeholder={placeholder}
-  className="w-full px-5 py-2.5 pr-12 border-0 outline-none ring-0 rounded-full text-sm bg-gray-100 focus:bg-gray-50 focus:ring-0 focus:outline-none transition-all duration-200 text-gray-900 placeholder-gray-400"
-  aria-label="Search products"
-  aria-expanded={isOpen}
-  aria-controls="search-suggestions"
-/>
-        
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          {query && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="p-1 text-gray-400 hover:text-gray-600 transition rounded-full hover:bg-gray-100"
-              aria-label="Clear search"
-            >
-              <FiX className="w-3.5 h-3.5" />
-            </button>
-          )}
-          
-          <button 
-            type="submit"
-            className={`
-              flex items-center justify-center text-white rounded-full 
-              hover:bg-green-600 transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1
-              w-7 h-7
-              ${isLoading ? 'bg-green-600' : 'bg-green-700'}
-            `}
-            aria-label="Search"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="w-3 h-3 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <FiSearch className="w-3.5 h-3.5" />
-            )}
-          </button>
-        </div>
-      </form>
-
-      {/* Suggestions Dropdown */}
-      {isOpen && (
-        <div 
-          id="search-suggestions"
-          className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl 
-            border border-gray-200 z-50 max-h-[65vh] overflow-y-auto"
+    <>
+      {/* Search Input - NO BORDER ON FOCUS */}
+      <div className={`relative ${className}`}>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="w-full flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-full bg-gray-50 hover:bg-white transition-colors outline-none"
         >
-          {/* Recent Searches */}
-          {!query && recentSearches.length > 0 && (
-            <div className="p-4 border-b">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <FiClock className="w-4 h-4 text-gray-400" />
-                  <h3 className="text-sm font-semibold text-gray-700">Recent Searches</h3>
-                </div>
-                <button
-                  onClick={clearRecentSearches}
-                  className="text-xs text-green-700 hover:text-green-800 font-medium"
-                >
-                  Clear all
-                </button>
-              </div>
-              <div className="space-y-1">
-                {recentSearches.map((search, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleRecentSearchClick(search)}
-                    className="flex items-center justify-between w-full p-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FiClock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
-                      <span>{search}</span>
-                    </div>
-                    <FiChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-400" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <FiSearch className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <span className="text-sm text-gray-400 flex-1 text-left">{placeholder}</span>
+        </button>
+      </div>
 
-          {/* Product Suggestions */}
-          {query && suggestions.length > 0 && (
+      {/* Full-Screen Modal - CENTERED WITH BLUR */}
+      {isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 md:p-6 pt-16 md:pt-24">
+          {/* Blur Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-md"
+            onClick={closeSearch}
+          />
+
+          {/* Modal Content - Auto-height, centered */}
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideDown">
+            {/* Search Header - NO BORDER BOTTOM */}
             <div className="p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Products ({suggestions.length})
-              </h3>
-              
-              <div className="space-y-2">
-                {suggestions.map((product) => (
+              <form onSubmit={handleSubmit} className="flex items-center gap-3">
+                <FiSearch className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={placeholder}
+                  className="flex-1 text-base text-gray-900 placeholder-gray-400 outline-none border-none"
+                  style={{ boxShadow: 'none' }}
+                  autoFocus
+                />
+                {query && (
                   <button
-                    key={product.id}
-                    onClick={() => handleSuggestionClick(product)}
-                    className="flex items-center gap-3 w-full p-3 hover:bg-gray-50 rounded-lg transition group border border-transparent hover:border-green-100"
+                    type="button"
+                    onClick={() => setQuery('')}
+                    className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
                   >
-                    {product.image ? (
-                      <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-200"
-                          sizes="48px"
-                        />
-                        {product.isBestSeller && (
-                          <div className="absolute top-1 left-1">
-                            <HiOutlineTag className="w-3 h-3 text-amber-500" />
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <HiOutlineShoppingBag className="w-5 h-5 text-gray-400" />
-                      </div>
-                    )}
-                    
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="text-sm font-medium text-gray-900 group-hover:text-green-700 truncate">
-                        {product.name}
-                      </p>
-                      {product.category && (
-                        <p className="text-xs text-gray-500 truncate">{product.category}</p>
-                      )}
-                      
-                      {product.rating && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <BsStar className="w-3 h-3 text-amber-400 fill-current" />
-                          <span className="text-xs text-gray-600">{product.rating.toFixed(1)}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex flex-col items-end flex-shrink-0">
-                      <div className="flex items-center gap-1">
-                        {product.salePrice ? (
-                          <>
-                            <span className="text-sm font-semibold text-green-700">
-                              {formatPrice(product.salePrice)}
-                            </span>
-                            <span className="text-xs text-gray-400 line-through">
-                              {formatPrice(product.price)}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-sm font-semibold text-gray-900">
-                            {formatPrice(product.price)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                    <FiX className="w-4 h-4 text-gray-500" />
                   </button>
-                ))}
-              </div>
-
-              <div className="mt-4 pt-4 border-t">
-                <Link
-                  href={`/shop?search=${encodeURIComponent(query)}`}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 text-center text-sm font-semibold text-green-700 hover:text-green-800 hover:bg-green-50 rounded-lg transition"
-                  onClick={() => setIsOpen(false)}
+                )}
+                <button
+                  type="button"
+                  onClick={closeSearch}
+                  className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  View all results for "{query}"
-                  <FiChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
+                  Cancel
+                </button>
+              </form>
             </div>
-          )}
 
-          {/* Loading State */}
-          {query && isLoading && (
-            <div className="p-8 text-center">
-              <div className="inline-block w-6 h-6 border-2 border-green-700 border-t-transparent rounded-full animate-spin mb-3" />
-              <p className="text-gray-600 text-sm">Searching products...</p>
-            </div>
-          )}
+            {/* Divider */}
+            <div className="h-px bg-gray-200" />
 
-          {/* No Results */}
-          {query && !isLoading && suggestions.length === 0 && (
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                <FiSearch className="w-5 h-5 text-gray-400" />
-              </div>
-              <p className="text-gray-900 font-medium">No products found</p>
-              <p className="text-sm text-gray-600 mt-1">Try different keywords or check spelling</p>
-              
-              {recentSearches.length > 0 && (
-                <div className="mt-4 pt-4 border-t">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Recent searches:</h4>
-                  <div className="flex flex-wrap gap-2 justify-center">
+            {/* Search Results - Auto height */}
+            <div className="max-h-[60vh] overflow-y-auto">
+              {/* Product Suggestions */}
+              {suggestions.length > 0 && (
+                <div className="p-4">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Products</h3>
+                  <div className="space-y-2">
+                    {suggestions.map((product) => (
+                      <button
+                        key={product.id}
+                        onClick={() => handleSuggestionClick(product)}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                      >
+                        {product.image && (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 truncate">{product.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-sm font-semibold text-green-600">
+                              PKR {(product.salePrice || product.price).toLocaleString()}
+                            </span>
+                            {product.salePrice && (
+                              <span className="text-xs text-gray-400 line-through">
+                                PKR {product.price.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <FiSearch className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Searches */}
+              {!query && recentSearches.length > 0 && (
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase flex items-center gap-2">
+                      <FiClock className="w-4 h-4" />
+                      Recent Searches
+                    </h3>
+                    <button
+                      onClick={clearRecentSearches}
+                      className="text-xs text-red-500 hover:text-red-600 font-medium"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                  <div className="space-y-2">
                     {recentSearches.map((search, index) => (
                       <button
                         key={index}
-                        onClick={() => handleRecentSearchClick(search)}
-                        className="px-3 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-full transition"
+                        onClick={() => handleSearch(search)}
+                        className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors text-left group"
+                      >
+                        <FiClock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <span className="flex-1 text-sm text-gray-700">{search}</span>
+                        <FiSearch className="w-4 h-4 text-gray-300 group-hover:text-green-600 flex-shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Trending Searches */}
+              {!query && (
+                <div className="p-4">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3 flex items-center gap-2">
+                    <FiTrendingUp className="w-4 h-4" />
+                    Trending Searches
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {trendingSearches.map((search, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSearch(search)}
+                        className="px-4 py-2 bg-gray-100 hover:bg-green-50 hover:text-green-700 text-sm font-medium rounded-full transition-colors"
                       >
                         {search}
                       </button>
@@ -402,10 +264,45 @@ export default function SearchBar({
                   </div>
                 </div>
               )}
+
+              {/* No Results */}
+              {query && suggestions.length === 0 && (
+                <div className="p-8 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <FiSearch className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No results found</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Try searching for something else or browse our categories
+                  </p>
+                  <button
+                    onClick={() => handleSearch(query)}
+                    className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  >
+                    Search in Shop
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
-    </div>
+
+      <style jsx global>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideDown {
+          animation: slideDown 0.2s ease-out;
+        }
+      `}</style>
+    </>
   );
 }
