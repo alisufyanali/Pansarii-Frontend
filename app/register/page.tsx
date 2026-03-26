@@ -1,3 +1,4 @@
+// app/register/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -72,23 +73,30 @@ export default function RegisterPage() {
     }
   };
 
+  // Enhanced validation that runs on client and can't be bypassed
   const validateForm = (): boolean => {
     const newErrors: {[key: string]: string} = {};
 
-    if (!formData.fullName.trim()) {
+    // Full Name validation
+    if (!formData.fullName || !formData.fullName.trim()) {
       newErrors.fullName = "Full name is required";
     } else if (formData.fullName.trim().length < 2) {
       newErrors.fullName = "Full name must be at least 2 characters";
+    } else if (formData.fullName.trim().length > 50) {
+      newErrors.fullName = "Full name must be less than 50 characters";
     }
 
-    if (!formData.email.trim()) {
+    // Email validation
+    if (!formData.email || !formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
+      newErrors.email = "Please enter a valid email address";
+    } else if (formData.email.length > 100) {
+      newErrors.email = "Email must be less than 100 characters";
     }
 
-    // Pakistan phone number validation
-    if (!formData.phone.trim()) {
+    // Phone validation (Pakistan)
+    if (!formData.phone || !formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
     } else {
       // Remove all non-digit characters
@@ -112,22 +120,29 @@ export default function RegisterPage() {
       }
     }
 
+    // Password validation
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(formData.password)) {
-      newErrors.password = "Password must contain both uppercase and lowercase letters";
+    } else if (formData.password.length > 50) {
+      newErrors.password = "Password must be less than 50 characters";
+    } else if (!/(?=.*[a-z])/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one lowercase letter";
+    } else if (!/(?=.*[A-Z])/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one uppercase letter";
     } else if (!/\d/.test(formData.password)) {
       newErrors.password = "Password must contain at least one number";
     }
 
+    // Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
+    // Terms validation
     if (!formData.agreeToTerms) {
       newErrors.agreeToTerms = "You must agree to the terms and conditions";
     }
@@ -140,6 +155,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setSuccessMessage("");
     
+    // Client-side validation
     if (!validateForm()) {
       return;
     }
@@ -158,13 +174,20 @@ export default function RegisterPage() {
         },
         body: JSON.stringify({
           fullName: formData.fullName.trim(),
-          email: formData.email.trim(),
+          email: formData.email.trim().toLowerCase(),
           phone: cleanedPhone.startsWith('0') ? cleanedPhone : `0${cleanedPhone}`,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
           agreeToTerms: formData.agreeToTerms
         }),
       });
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Invalid content type:", contentType);
+        throw new Error("Server returned an invalid response. Please try again later.");
+      }
 
       const data: RegisterResponse = await response.json();
 
@@ -174,15 +197,21 @@ export default function RegisterPage() {
           setErrors({ email: "Email already exists. Please use a different email or login." });
         } else if (response.status === 400) {
           // Handle validation errors from server
-          if (data.error?.includes("email")) {
-            setErrors({ email: data.error });
-          } else if (data.error?.includes("password")) {
-            setErrors({ password: data.error });
+          if (data.error) {
+            if (data.error.toLowerCase().includes("email")) {
+              setErrors({ email: data.error });
+            } else if (data.error.toLowerCase().includes("password")) {
+              setErrors({ password: data.error });
+            } else if (data.error.toLowerCase().includes("phone")) {
+              setErrors({ phone: data.error });
+            } else {
+              setErrors({ submit: data.error });
+            }
           } else {
-            setErrors({ submit: data.error || "Validation failed" });
+            setErrors({ submit: "Validation failed. Please check your input." });
           }
         } else {
-          setErrors({ submit: data.error || "Registration failed. Please try again." });
+          setErrors({ submit: data.error || data.message || "Registration failed. Please try again." });
         }
         return;
       }
@@ -205,6 +234,8 @@ export default function RegisterPage() {
         setTimeout(() => {
           router.push("/login?message=Registration successful! Please login.");
         }, 2000);
+      } else {
+        setErrors({ submit: data.message || "Registration failed. Please try again." });
       }
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -218,9 +249,7 @@ export default function RegisterPage() {
 
   const handleSocialSignup = (provider: string) => {
     console.log(`Sign up with ${provider}`);
-    // Implement social signup logic
-    // This would typically redirect to OAuth provider
-    // window.location.href = `/api/auth/${provider}`;
+    setErrors({ submit: "Social login coming soon!" });
   };
 
   const passwordStrength = (password: string) => {
@@ -332,7 +361,7 @@ export default function RegisterPage() {
           {successMessage && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-green-800 text-sm flex items-center">
-                <FaCheckCircle className="mr-2" />
+                <FaCheckCircle className="mr-2 flex-shrink-0" />
                 {successMessage}
               </p>
             </div>
@@ -342,13 +371,13 @@ export default function RegisterPage() {
           {errors.submit && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-800 text-sm flex items-center">
-                <FaExclamationTriangle className="mr-2" />
+                <FaExclamationTriangle className="mr-2 flex-shrink-0" />
                 {errors.submit}
               </p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {/* Full Name Field */}
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -361,7 +390,6 @@ export default function RegisterPage() {
                 <input
                   id="fullName"
                   type="text"
-                  required
                   value={formData.fullName}
                   onChange={handleInputChange}
                   placeholder="John Doe"
@@ -369,6 +397,7 @@ export default function RegisterPage() {
                     errors.fullName ? "border-red-500" : "border-gray-300"
                   }`}
                   disabled={isLoading}
+                  required
                 />
               </div>
               {errors.fullName && <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>}
@@ -386,7 +415,6 @@ export default function RegisterPage() {
                 <input
                   id="email"
                   type="email"
-                  required
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="john@example.com"
@@ -394,6 +422,7 @@ export default function RegisterPage() {
                     errors.email ? "border-red-500" : "border-gray-300"
                   }`}
                   disabled={isLoading}
+                  required
                 />
               </div>
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
@@ -411,7 +440,6 @@ export default function RegisterPage() {
                 <input
                   id="phone"
                   type="tel"
-                  required
                   value={formData.phone}
                   onChange={handlePhoneChange}
                   placeholder={getPhonePlaceholder()}
@@ -419,6 +447,7 @@ export default function RegisterPage() {
                     errors.phone ? "border-red-500" : "border-gray-300"
                   }`}
                   disabled={isLoading}
+                  required
                 />
               </div>
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
@@ -439,7 +468,6 @@ export default function RegisterPage() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  required
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="••••••••"
@@ -447,6 +475,7 @@ export default function RegisterPage() {
                     errors.password ? "border-red-500" : "border-gray-300"
                   }`}
                   disabled={isLoading}
+                  required
                 />
                 <button
                   type="button"
@@ -470,14 +499,14 @@ export default function RegisterPage() {
                   <li className={`flex items-center ${formData.password.length >= 8 ? 'text-green-600' : ''}`}>
                     <span className="mr-1">•</span> At least 8 characters
                   </li>
-                  <li className={`flex items-center ${/(?=.*[a-z])(?=.*[A-Z])/.test(formData.password) ? 'text-green-600' : ''}`}>
-                    <span className="mr-1">•</span> Uppercase and lowercase letters
+                  <li className={`flex items-center ${/(?=.*[a-z])/.test(formData.password) ? 'text-green-600' : ''}`}>
+                    <span className="mr-1">•</span> At least one lowercase letter
+                  </li>
+                  <li className={`flex items-center ${/(?=.*[A-Z])/.test(formData.password) ? 'text-green-600' : ''}`}>
+                    <span className="mr-1">•</span> At least one uppercase letter
                   </li>
                   <li className={`flex items-center ${/\d/.test(formData.password) ? 'text-green-600' : ''}`}>
                     <span className="mr-1">•</span> At least one number
-                  </li>
-                  <li className={`flex items-center ${/[@$!%*?&#]/.test(formData.password) ? 'text-green-600' : ''}`}>
-                    <span className="mr-1">•</span> Special character (optional)
                   </li>
                 </ul>
               </div>
@@ -522,7 +551,6 @@ export default function RegisterPage() {
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  required
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   placeholder="••••••••"
@@ -530,6 +558,7 @@ export default function RegisterPage() {
                     errors.confirmPassword ? "border-red-500" : "border-gray-300"
                   }`}
                   disabled={isLoading}
+                  required
                 />
                 <button
                   type="button"
@@ -562,6 +591,7 @@ export default function RegisterPage() {
                     errors.agreeToTerms ? "border-red-500" : ""
                   }`}
                   disabled={isLoading}
+                  required
                 />
                 <label htmlFor="agreeToTerms" className="ml-3 block text-sm text-gray-700">
                   I agree to the{" "}

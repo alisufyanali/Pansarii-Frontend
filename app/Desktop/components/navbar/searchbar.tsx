@@ -192,25 +192,24 @@ export default function SearchBar({
   return (
     <div ref={searchRef} className={`relative ${className}`}>
       <form onSubmit={handleSubmit} className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            if (e.target.value.trim()) {
-              setIsOpen(true);
-            }
-          }}
-          onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
-     className="w-full px-5 py-2.5 pr-12 border-0 outline-none rounded-full text-sm
-  bg-gray-100 focus:bg-gray-50
-  transition-all duration-200 text-gray-900 placeholder-gray-400"
-          aria-label="Search products"
-          aria-expanded={isOpen}
-          aria-controls="search-suggestions"
-        />
+       // Update the input className in your searchbar.tsx file
+<input
+  ref={inputRef}
+  type="text"
+  value={query}
+  onChange={(e) => {
+    setQuery(e.target.value);
+    if (e.target.value.trim()) {
+      setIsOpen(true);
+    }
+  }}
+  onFocus={() => setIsOpen(true)}
+  placeholder={placeholder}
+  className="w-full px-5 py-2.5 pr-12 border-0 outline-none ring-0 rounded-full text-sm bg-gray-100 focus:bg-gray-50 focus:ring-0 focus:outline-none transition-all duration-200 text-gray-900 placeholder-gray-400"
+  aria-label="Search products"
+  aria-expanded={isOpen}
+  aria-controls="search-suggestions"
+/>
         
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {query && (
