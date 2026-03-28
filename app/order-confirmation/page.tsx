@@ -582,13 +582,13 @@ function OrderConfirmationContent() {
                   <FaDownload className="w-4 h-4" />
                   Download Invoice
                 </button>
-                <button
+                {/* <button
                   onClick={handlePrint}
                   className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium flex items-center justify-center gap-2"
                 >
                   <FaPrint className="w-4 h-4" />
                   Print Order
-                </button>
+                </button> */}
                 <Link
                   href="/"
                   className="block w-full py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-center flex items-center justify-center gap-2"

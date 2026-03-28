@@ -204,9 +204,8 @@ export default function SearchBar({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-     className="w-full px-5 py-2.5 pr-12 border-0 outline-none rounded-full text-sm
-  bg-gray-100 focus:bg-gray-50
-  transition-all duration-200 text-gray-900 placeholder-gray-400"
+          className="w-full px-5 py-2.5 pr-12 border-0 outline-none ring-0 focus:ring-0 rounded-full text-sm bg-gray-100 focus:bg-gray-50 transition-all duration-200 text-gray-900 placeholder-gray-400"
+          style={{ boxShadow: 'none' }}
           aria-label="Search products"
           aria-expanded={isOpen}
           aria-controls="search-suggestions"

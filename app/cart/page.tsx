@@ -195,7 +195,7 @@ function CartContent() {
                   </div>
                 </div>
 
-                {/* Promo code */}
+                {/* Promo code
                 <div className="mt-4">
                   <div className="flex gap-2">
                     <div className="relative flex-1">
@@ -208,7 +208,7 @@ function CartContent() {
                       Apply
                     </button>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Checkout CTA */}
                 <Link href="/checkout"
