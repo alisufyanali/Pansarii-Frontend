@@ -9,7 +9,7 @@ export default function BeautyCorner() {
   const router = useRouter();
   const beautyCornerImg = '/images/beautycorner.png';
 
-  // Real products filtered by category - FIXED: Changed from 'Beauty & Skincare' to 'Beauty Corner'
+  // Real products filtered by category
   const products = allProducts.filter(p => p.category === 'Beauty Corner');
 
   const [cardsToShow, setCardsToShow] = useState(4);
@@ -62,7 +62,7 @@ export default function BeautyCorner() {
             </div>
           </div>
 
-          {/* Product Cards Grid — ProductCard handles its own click → /product/:id */}
+          {/* Product Cards Grid - Same as PureInn Oils */}
           <div
             className="grid gap-6 2xl:gap-8 pb-20"
             style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
