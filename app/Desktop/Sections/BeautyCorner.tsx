@@ -9,8 +9,8 @@ export default function BeautyCorner() {
   const router = useRouter();
   const beautyCornerImg = '/images/beautycorner.png';
 
-  // Real products filtered by category
-  const products = allProducts.filter(p => p.category === 'Beauty & Skincare');
+  // Real products filtered by category - FIXED: Changed from 'Beauty & Skincare' to 'Beauty Corner'
+  const products = allProducts.filter(p => p.category === 'Beauty Corner');
 
   const [cardsToShow, setCardsToShow] = useState(4);
 
@@ -48,10 +48,10 @@ export default function BeautyCorner() {
               Beauty <span className="me-color-y">Corner</span>
             </h2>
 
-            {/* View All → /shop filtered by Beauty & Skincare */}
+            {/* View All → /shop filtered by Beauty Corner */}
             <div
               className="flex items-center gap-4 cursor-pointer group"
-              onClick={() => router.push('/shop?category=Beauty+%26+Skincare')}
+              onClick={() => router.push('/shop?category=Beauty+Corner')}
             >
               <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
                 View All

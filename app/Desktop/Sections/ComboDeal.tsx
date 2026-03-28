@@ -8,42 +8,63 @@ import { allProducts } from "@/app/Desktop/data/products";
 
 export default function ComboDeal() {
   const banner4Img = '/images/Banner4.png';
-
-  // Real products filtered by category
-  // ProductCard2 expects `hoverimg` (lowercase), products.ts has `img` only — fallback to same img
-  const comboProducts = allProducts
-    .filter(p => p.category === 'Tea & Beverages')
+  
+  // Filter products for combo deals
+  const allComboProducts = allProducts
+    .filter(p => p.category === 'Supplements') // Change this as needed
     .map(p => ({ ...p, hoverimg: p.img }));
-
-  const sliderRef = useRef<HTMLDivElement | null>(null);
+  
+  const [cardsToShow, setCardsToShow] = useState(4);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const checkScroll = () => {
-    const el = sliderRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 0);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
-  };
-
-  const scroll = (direction: "left" | "right") => {
-    const el = sliderRef.current;
-    if (!el) return;
-    const cardEl = el.querySelector('.card-item') as HTMLElement;
-    const cardWidth = cardEl ? cardEl.offsetWidth + 24 : 324;
-    el.scrollBy({
-      left: direction === "right" ? cardWidth : -cardWidth,
-      behavior: "smooth",
-    });
+  const updateCardsToShow = () => {
+    const width = window.innerWidth;
+    if (width >= 2560) setCardsToShow(8);
+    else if (width >= 1920) setCardsToShow(6);
+    else if (width >= 1280) setCardsToShow(4);
+    else if (width >= 768) setCardsToShow(2);
+    else setCardsToShow(1);
   };
 
   useEffect(() => {
-    const el = sliderRef.current;
-    if (!el) return;
-    checkScroll();
-    el.addEventListener("scroll", checkScroll);
-    return () => el.removeEventListener("scroll", checkScroll);
+    updateCardsToShow();
+    window.addEventListener("resize", updateCardsToShow);
+    return () => window.removeEventListener("resize", updateCardsToShow);
   }, []);
+
+  // Update scroll buttons state based on current index
+  useEffect(() => {
+    setCanScrollLeft(currentIndex > 0);
+    setCanScrollRight(currentIndex + cardsToShow < allComboProducts.length);
+  }, [currentIndex, cardsToShow, allComboProducts.length]);
+
+  const scroll = (direction: "left" | "right") => {
+    if (direction === "left" && canScrollLeft) {
+      setCurrentIndex(prev => Math.max(0, prev - 1));
+    } else if (direction === "right" && canScrollRight) {
+      setCurrentIndex(prev => Math.min(allComboProducts.length - cardsToShow, prev + 1));
+    }
+  };
+
+  const visibleProducts = allComboProducts.slice(currentIndex, currentIndex + cardsToShow);
+
+  if (allComboProducts.length === 0) {
+    return (
+      <div className="mt-12">
+        <section
+          className="w-full relative"
+          style={{ height: "70vh", minHeight: "30rem", maxHeight: "45rem"}}
+        >
+          <img src={banner4Img} alt="Combo Deals" className="w-full h-full object-cover" />
+        </section>
+        <div className="mx-[4%] text-center py-20">
+          <p className="text-gray-500">No combo deals available at the moment.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-12">
@@ -69,22 +90,13 @@ export default function ComboDeal() {
             </div>
           </div>
 
-          {/* Product Cards - Horizontal Slider — ProductCard2 handles its own click → /product/:id */}
+          {/* Product Cards Grid */}
           <div
-            ref={sliderRef}
-            className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-20"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            className="grid gap-6 2xl:gap-8 pb-20"
+            style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
           >
-            {comboProducts.map((product) => (
-              <div
-                key={product.id}
-                className="card-item flex-shrink-0"
-                style={{
-                  width: 'clamp(260px, calc((min(100vw, 1920px) - 8vw - 72px) / 4), 460px)',
-                }}
-              >
-                <ProductCard2 product={product} />
-              </div>
+            {visibleProducts.map((product) => (
+              <ProductCard2 key={product.id} product={product} />
             ))}
           </div>
         </div>
