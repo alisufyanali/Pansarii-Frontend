@@ -34,7 +34,7 @@ export default function Footer() {
             </div>
 
             {/* RIGHT — Newsletter */}
-            <Newsletter textStyle={textStyle} buttonColor={buttonColor} />
+            <Newsletter />
           </div>
 
           {/* Copyright */}
