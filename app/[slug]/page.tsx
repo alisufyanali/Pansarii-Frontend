@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { notFound } from 'next/navigation';
 import ProductDetails from '@/app/Desktop/components/ProductDetails';
 import ProductDetailsSection from '@/app/Desktop/Sections/ProductDetailsSection';
 import { allProducts } from '@/app/Desktop/data/products';
@@ -61,7 +62,7 @@ export default function ProductPage() {
 
       setRelatedProducts(related);
     } else {
-      router.push('/shop');
+      notFound();
     }
 
     setLoading(false);

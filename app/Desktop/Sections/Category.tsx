@@ -46,14 +46,15 @@ export default function Category() {
   };
 
   return (
-    <div className="p-4 mx-[4%]">
+    <div className="py-4 px-[4%]">
       <div className="max-w-[1920px] mx-auto">
+
+        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl 2xl:text-4xl font-semibold">
             Shop By <span className="me-color-y">Category</span>
           </h1>
-          
-          {/* View All → redirects to /category */}
+
           <div
             className="flex items-center gap-4 cursor-pointer group"
             onClick={() => router.push('/category')}
@@ -61,50 +62,43 @@ export default function Category() {
             <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors 2xl:text-lg">
               View All
             </span>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] text-dark group-hover:bg-[#197B33] group-hover:text-white transition-all">
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A1A] group-hover:bg-[#197B33] group-hover:text-white transition-all">
               <span className="text-lg font-bold">{'>'}</span>
             </div>
           </div>
         </div>
-      </div>
-      
-      {/* Cards container */}
-      <div className="flex flex-wrap gap-6 justify-center">
-        {categories.map((category, index) => (
-          <div 
-            key={index} 
-            className="flex-1 min-w-[120px] max-w-[200px]"
-          >
+
+        {/* Cards grid — 3 cols on md, 6 cols on lg+, scales to fill full width */}
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 lg:gap-6">
+          {categories.map((category, index) => (
             <div
+              key={index}
               className="flex flex-col items-center w-full cursor-pointer hover:scale-105 transition-transform"
               onClick={() => handleCategoryClick(category.slug)}
             >
+              {/* Image area */}
               <div
-                className="w-full aspect-[191/201] mb-2 flex items-center justify-center"
-                style={{
-                  borderTopLeftRadius: "113px",
-                  borderTopRightRadius: "113px",
-                  backgroundColor: category.bgColor,
-                }}
+                className="w-full aspect-[191/201] mb-2 flex items-center justify-center rounded-t-[40%]"
+                style={{ backgroundColor: category.bgColor }}
               >
                 <Image
                   src={CategoryImage}
                   alt={category.name}
                   width={170}
                   height={120}
-                  className="object-contain mr-7 mt-6"
-                  style={{ 
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                  }}
+                  className="object-contain w-[75%] h-auto drop-shadow-md mt-4"
                 />
               </div>
+
+              {/* Label */}
               <div className="w-full h-[50px] bg-white shadow-[0_4px_13.3px_0_rgba(0,0,0,0.24)] flex flex-col items-center justify-center rounded">
-                <span className="text-[16px] font-medium">{category.name}</span>
+                <span className="text-[16px] font-medium leading-tight text-center px-1">{category.name}</span>
                 <span className="text-[12px] text-gray-500">{category.count} items</span>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
       </div>
     </div>
   );
