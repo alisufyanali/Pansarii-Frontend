@@ -1,61 +1,87 @@
-import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 interface Blog {
-  id: string | number;
-  image: string;
-  title: string;
-  content: string;
-  slug: string;
+  id:       string | number;
+  image:    string;
+  title:    string;
+  content:  string;
+  excerpt?: string;
+  slug:     string;
+  date?:    string;
+  readTime?: string;
+  category?: string;
+  author?: { name: string };
 }
 
-interface BlogCardProps {
-  blog: Blog;
-}
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
 
-const stripHtmlTags = (html: string): string => html.replace(/<[^>]*>/g, '');
-
-export default function BlogCard({ blog }: BlogCardProps) {
-  const cleanContent = stripHtmlTags(blog.content);
-  const cleanTitle   = stripHtmlTags(blog.title);
+export default function BlogCard({ blog }: { blog: Blog }) {
+  const title   = stripHtml(blog.title);
+  const excerpt = blog.excerpt || stripHtml(blog.content).slice(0, 120) + '…';
 
   return (
-    <article className="w-full rounded-[14px] border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col bg-white h-auto">
-      {/* Image — fixed aspect ratio */}
-      <div className="relative w-full aspect-video flex-shrink-0 px-3 pt-3">
-        <div className="relative w-full h-full rounded-[10px] overflow-hidden">
-          <Image
-            src={blog.image}
-            alt={cleanTitle}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            loading="lazy"
-          />
-        </div>
-      </div>
+    <article className="group w-full rounded-2xl border border-gray-200 overflow-hidden bg-white hover:shadow-lg hover:border-green-200 transition-all duration-300 flex flex-col">
+
+      {/* Image */}
+      <Link href={`/blog/${blog.slug}`} className="block relative w-full aspect-video overflow-hidden flex-shrink-0">
+        <Image
+          src={blog.image}
+          alt={title}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          loading="lazy"
+        />
+        {/* Category badge */}
+        {blog.category && (
+          <span className="absolute top-3 left-3 text-[11px] font-semibold bg-green-700 text-white px-2.5 py-1 rounded-full">
+            {blog.category}
+          </span>
+        )}
+      </Link>
 
       {/* Content */}
-      <div className="flex flex-col p-3 pb-4">
-        {/* Title - FIXED: Now shows ellipsis properly */}
-        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-          {cleanTitle}
+      <div className="flex flex-col flex-1 p-4">
+
+        {/* Meta */}
+        <div className="flex items-center gap-3 text-[11px] text-gray-400 mb-2">
+          {blog.date && (
+            <span>{new Date(blog.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          )}
+          {blog.readTime && (
+            <>
+              <span>·</span>
+              <span>{blog.readTime}</span>
+            </>
+          )}
+          {blog.author?.name && (
+            <>
+              <span>·</span>
+              <span>{blog.author.name}</span>
+            </>
+          )}
+        </div>
+
+        {/* Title */}
+        <h3 className="text-base font-bold text-gray-900 leading-snug line-clamp-2 mb-2 group-hover:text-green-700 transition-colors">
+          {title}
         </h3>
-        
-        {/* Content - FIXED: Now shows ellipsis properly */}
-        <p className="text-sm text-gray-600 mb-3 line-clamp-3 leading-relaxed">
-          {cleanContent}
+
+        {/* Excerpt */}
+        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 flex-1">
+          {excerpt}
         </p>
-        
-        {/* Read More Link */}
+
+        {/* Read more */}
         <Link
           href={`/blog/${blog.slug}`}
-          className="inline-flex items-center gap-1 text-sm font-semibold text-green-700 hover:text-green-600 transition-colors group"
+          className="inline-flex items-center gap-1 mt-3 text-sm font-semibold text-green-700 hover:text-green-600 transition-colors group/link"
         >
-          Read More 
-          <span className="group-hover:translate-x-1 transition-transform">→</span>
+          Read More
+          <span className="group-hover/link:translate-x-1 transition-transform">→</span>
         </Link>
+
       </div>
     </article>
   );
