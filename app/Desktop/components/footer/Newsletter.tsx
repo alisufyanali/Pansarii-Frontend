@@ -3,21 +3,19 @@
 import { FormEvent, useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 
-interface NewsletterProps { textStyle: React.CSSProperties; buttonColor: string; }
-
-export default function Newsletter({ textStyle, buttonColor }: NewsletterProps) {
-  const [email, setEmail]           = useState('');
+export default function Newsletter() {
+  const [email,       setEmail]       = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
-  const [subscribed, setSubscribed] = useState(false);
-  const [error, setError]           = useState('');
+  const [subscribed,  setSubscribed]  = useState(false);
+  const [error,       setError]       = useState('');
 
   const validate = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim())     return setError('Email is required');
-    if (!validate(email))  return setError('Please enter a valid email');
+    if (!email.trim())    return setError('Email is required');
+    if (!validate(email)) return setError('Please enter a valid email');
     setSubmitting(true);
     setTimeout(() => {
       setSubscribed(true);
@@ -28,44 +26,50 @@ export default function Newsletter({ textStyle, buttonColor }: NewsletterProps) 
   };
 
   return (
-    <div className="flex flex-col w-full">
-      <h4 className="font-semibold mb-2 uppercase tracking-wider"
-        style={{ fontFamily: 'Poppins', fontSize: '11px', color: buttonColor }}>
-        Newsletter
-      </h4>
+    <div className="flex flex-col gap-3 font-poppins">
 
-      <p style={{ ...textStyle, fontSize: '11px' }} className="mb-3 text-gray-500">
-        Subscribe to get updates on new products and exclusive offers!
-      </p>
+      <div>
+        <h4 className="text-[11px] font-semibold uppercase tracking-wider text-green-700 mb-1">
+          Join Our Mailing List
+        </h4>
+        <p className="text-[13px] text-gray-500 leading-relaxed">
+          Find out all about our latest offers, new products, and the science of Ayurveda in our newsletters!
+        </p>
+      </div>
 
       {subscribed ? (
         <div className="bg-green-50 border border-green-100 rounded-lg p-3 flex items-start gap-2">
-          <FaCheckCircle className="text-green-500 w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          <FaCheckCircle className="text-green-500 w-4 h-4 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-green-700 font-medium text-xs">Successfully subscribed!</p>
-            <p className="text-green-600 text-[11px] mt-0.5">Thank you for joining.</p>
+            <p className="text-green-700 font-medium text-sm">Successfully subscribed!</p>
+            <p className="text-green-600 text-xs mt-0.5">Thank you for joining.</p>
           </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-          <div>
-            <input type="email" placeholder="Enter your email"
-              value={email} onChange={e => { setEmail(e.target.value); setError(''); }}
-              disabled={isSubmitting}
-              className={`w-full px-3 py-2 rounded-lg text-gray-900 text-[11px] bg-gray-50
-                ${error ? 'border-2 border-red-400' : 'border border-gray-200'}
-                focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition`}
-              style={{ fontFamily: 'Poppins' }} />
-            {error && <p className="text-red-500 text-[10px] mt-1">{error}</p>}
-          </div>
-          <button type="submit" disabled={isSubmitting}
-            className="text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90
-                       transition-all disabled:opacity-70 disabled:cursor-not-allowed text-[11px]"
-            style={{ backgroundColor: buttonColor, fontFamily: 'Poppins' }}>
+          <input
+            type="email"
+            placeholder="E-mail"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setError(''); }}
+            disabled={isSubmitting}
+            className={`w-full px-4 py-2.5 rounded-lg text-[13px] text-gray-900 bg-gray-50 font-poppins
+              ${error ? 'border-2 border-red-400' : 'border border-gray-200'}
+              focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition`}
+          />
+          {error && <p className="text-red-500 text-xs">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-2.5 px-4 bg-green-700 text-white text-[13px] font-semibold rounded-lg
+                       hover:bg-green-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          >
             {isSubmitting ? 'Subscribing…' : 'Subscribe'}
           </button>
         </form>
       )}
+
     </div>
   );
 }

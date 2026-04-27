@@ -1,47 +1,65 @@
 import Image from 'next/image';
 import { FaFacebook, FaTwitter, FaYoutube, FaInstagram } from 'react-icons/fa';
 
-interface SocialMediaItem { name: string; icon: React.ReactNode; url: string; }
-interface ContactInfoProps {
-  textStyle: React.CSSProperties; buttonColor: string;
-  email?: string; phone?: string;
-  socialMedia?: SocialMediaItem[];
-  logoUrl?: string; logoAlt?: string;
-}
-
-const defaultSocialMedia: SocialMediaItem[] = [
-  { name: 'Facebook',  icon: <FaFacebook className="w-3.5 h-3.5" />,  url: 'https://facebook.com'  },
-  { name: 'Twitter',   icon: <FaTwitter className="w-3.5 h-3.5" />,   url: 'https://twitter.com'   },
-  { name: 'YouTube',   icon: <FaYoutube className="w-3.5 h-3.5" />,   url: 'https://youtube.com'   },
-  { name: 'Instagram', icon: <FaInstagram className="w-3.5 h-3.5" />, url: 'https://instagram.com' },
+const socialLinks = [
+  { name: 'Facebook',  Icon: FaFacebook,  url: 'https://facebook.com/pansariin.pk'  },
+  { name: 'Twitter',   Icon: FaTwitter,   url: 'https://twitter.com/pansariin'      },
+  { name: 'YouTube',   Icon: FaYoutube,   url: 'https://youtube.com/pansariin'      },
+  { name: 'Instagram', Icon: FaInstagram, url: 'https://instagram.com/pansariin.pk' },
 ];
 
-export default function ContactInfo({
-  textStyle, buttonColor,
-  email = 'pansariinn@gmail.com',
-  phone = '+923045779900',
-  socialMedia = defaultSocialMedia,
-  logoUrl = '/images/logo.png', logoAlt = 'Pansari Inn Logo',
-}: ContactInfoProps) {
+export default function ContactInfo() {
   return (
-    <div className="flex flex-col items-start w-full">
-      <div className="relative w-[110px] h-auto mb-3">
-        <Image src={logoUrl} alt={logoAlt} width={110} height={36}
-          className="w-full h-auto object-contain" priority />
+    <div className="flex flex-col items-start gap-3 font-poppins">
+
+      {/* Logo */}
+      <Image
+        src="/images/logo.png"
+        alt="Pansari Inn Logo"
+        width={120}
+        height={40}
+        className="object-contain"
+        priority
+      />
+
+      {/* Contact */}
+      <div className="space-y-1">
+        <p className="text-xs text-gray-500">Email:</p>
+        <a
+          href="mailto:pansariinn@gmail.com"
+          className="text-[13px] text-green-700 hover:underline break-all"
+        >
+          pansariinn@gmail.com
+        </a>
+
+        <p className="text-xs text-gray-500 mt-1.5">Phone:</p>
+        <a
+          href="tel:+923045779900"
+          className="text-[13px] text-green-700 hover:underline"
+        >
+          +92 304 577 9900
+        </a>
       </div>
-      <div className="space-y-1.5">
-        <p><a href={`mailto:${email}`} style={{ ...textStyle, color: buttonColor, fontSize: '11px' }}
-          className="hover:opacity-70 transition-opacity break-all">{email}</a></p>
-        <p><a href={`tel:${phone}`} style={{ ...textStyle, color: buttonColor, fontSize: '11px' }}
-          className="hover:opacity-70 transition-opacity">{phone}</a></p>
+
+      {/* Social icons */}
+      <div>
+        <p className="text-xs text-gray-500 mb-2">Follow Our Social Media!</p>
+        <div className="flex items-center gap-3">
+          {socialLinks.map(({ name, Icon, url }) => (
+            <a
+              key={name}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={name}
+              className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:border-green-700 hover:text-green-700 transition-all"
+            >
+              <Icon className="w-3.5 h-3.5" />
+            </a>
+          ))}
+        </div>
       </div>
-      <div className="flex gap-3 mt-3">
-        {socialMedia.map(p => (
-          <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer"
-            style={{ color: buttonColor }} className="hover:opacity-70 transition-all hover:scale-110"
-            aria-label={p.name}>{p.icon}</a>
-        ))}
-      </div>
+
     </div>
   );
 }
