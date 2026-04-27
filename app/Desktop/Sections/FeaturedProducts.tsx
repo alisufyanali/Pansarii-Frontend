@@ -61,7 +61,7 @@ export default function FeaturedProducts() {
               key={product.id}
               className="card-item flex-shrink-0"
               style={{
-                width: "calc((min(100vw, 1920px) - 8vw - 72px) / 4)",
+                width: "calc((min(100vw, 1920px) - 8vw - 72px) / 5)",
               }}
             >
               <ProductCard2 product={product} />
