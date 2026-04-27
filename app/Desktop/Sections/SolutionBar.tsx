@@ -6,42 +6,37 @@ import BackwardArrow from "@components/BackwardArrow";
 import ForwardArrow from "@components/ForwardArrow";
 import { allProducts } from "@/app/Desktop/data/products";
 
-// Category slug mapping
-const CATEGORY_SLUG_MAP: { [key: string]: string } = {
-  'Herb': 'herbs',
-  'Oils': 'oils',
-  'Supplements': 'supplements',
+const CATEGORY_SLUG_MAP: Record<string, string> = {
+  'Herb':          'herbs',
+  'Oils':          'oils',
+  'Supplements':   'supplements',
   'Beauty Corner': 'beauty-corner',
-  'Dawakhana': 'dawakhana',
-  'Remedies': 'remedies',
-  'Murrabajat': 'murrabajat',
-  'Arqiyaat': 'arqiyaat',
+  'Dawakhana':     'dawakhana',
+  'Remedies':      'remedies',
+  'Murrabajat':    'murrabajat',
+  'Arqiyaat':      'arqiyaat',
 };
 
 export default function SolutionBar() {
-  const router = useRouter();
-  const pic = '/images/Skincare.png';
-  const sliderRef = useRef<HTMLDivElement | null>(null);
-  const autoSlideRef = useRef<NodeJS.Timeout | null>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const [isHovering, setIsHovering] = useState(false);
-  const isHoveringRef = useRef(false);
+  const router     = useRouter();
+  const pic        = '/images/Skincare.png';
+  const sliderRef  = useRef<HTMLDivElement>(null);
+  const autoRef    = useRef<NodeJS.Timeout | null>(null);
+  const hoverRef   = useRef(false);
 
-  // Get categories from products data
+  const [canScrollLeft,  setCanScrollLeft]  = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [isHovering,     setIsHovering]     = useState(false);
+
   const categories = Array.from(new Set(allProducts.map(p => p.category)))
     .filter(Boolean)
-    .map((category, index) => ({
-      title: category,
-      category: category,
-      slug: CATEGORY_SLUG_MAP[category] || category.toLowerCase().replace(/\s+/g, '-'),
-      offset: index % 2 === 1, // Alternate offset for visual variety
+    .map((category, i) => ({
+      title:    category,
+      slug:     CATEGORY_SLUG_MAP[category] || category.toLowerCase().replace(/\s+/g, '-'),
+      offset:   i % 2 === 1,
     }));
 
-  // Keep ref in sync with state (avoids stale closure in interval)
-  useEffect(() => {
-    isHoveringRef.current = isHovering;
-  }, [isHovering]);
+  useEffect(() => { hoverRef.current = isHovering; }, [isHovering]);
 
   const checkScroll = useCallback(() => {
     const el = sliderRef.current;
@@ -50,54 +45,29 @@ export default function SolutionBar() {
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
   }, []);
 
-  // Returns the width of one card + its gap
   const getScrollAmount = useCallback(() => {
     const el = sliderRef.current;
-    if (!el) return 300;
-    const gap = 20;
-    const cardsVisible = 5;
-    const cardWidth = (el.clientWidth - gap * (cardsVisible - 1)) / cardsVisible;
-    return cardWidth + gap;
+    if (!el) return 220;
+    return (el.clientWidth - 4 * 16) / 5 + 16;
   }, []);
 
-  const stopAutoSlide = useCallback(() => {
-    if (autoSlideRef.current) {
-      clearInterval(autoSlideRef.current);
-      autoSlideRef.current = null;
-    }
-  }, []);
+  const stopAuto  = useCallback(() => { if (autoRef.current) { clearInterval(autoRef.current); autoRef.current = null; } }, []);
 
-  const startAutoSlide = useCallback(() => {
-    stopAutoSlide();
-    autoSlideRef.current = setInterval(() => {
-      if (isHoveringRef.current) return;
+  const startAuto = useCallback(() => {
+    stopAuto();
+    autoRef.current = setInterval(() => {
+      if (hoverRef.current) return;
       const el = sliderRef.current;
       if (!el) return;
-
       const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
-      if (atEnd) {
-        el.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        el.scrollBy({ left: getScrollAmount(), behavior: "smooth" });
-      }
+      el.scrollBy({ left: atEnd ? -el.scrollWidth : getScrollAmount(), behavior: "smooth" });
     }, 4000);
-  }, [stopAutoSlide, getScrollAmount]);
+  }, [stopAuto, getScrollAmount]);
 
-  const scroll = useCallback((direction: "left" | "right") => {
-    const el = sliderRef.current;
-    if (!el) return;
-    const amount = getScrollAmount();
-    el.scrollBy({
-      left: direction === "right" ? amount : -amount,
-      behavior: "smooth",
-    });
-    // Restart auto-slide timer after manual interaction
-    startAutoSlide();
-  }, [getScrollAmount, startAutoSlide]);
-
-  const handleCategoryClick = (slug: string) => {
-    router.push(`/${slug}`);
-  };
+  const scroll = useCallback((dir: "left" | "right") => {
+    sliderRef.current?.scrollBy({ left: dir === "right" ? getScrollAmount() : -getScrollAmount(), behavior: "smooth" });
+    startAuto();
+  }, [getScrollAmount, startAuto]);
 
   useEffect(() => {
     const el = sliderRef.current;
@@ -105,50 +75,50 @@ export default function SolutionBar() {
     checkScroll();
     el.addEventListener("scroll", checkScroll, { passive: true });
     window.addEventListener("resize", checkScroll);
-    startAutoSlide();
-
+    startAuto();
     return () => {
       el.removeEventListener("scroll", checkScroll);
       window.removeEventListener("resize", checkScroll);
-      stopAutoSlide();
+      stopAuto();
     };
-  }, [checkScroll, startAutoSlide, stopAutoSlide]);
+  }, [checkScroll, startAuto, stopAuto]);
 
   return (
-    <section className="mx-[4%] my-10">
+    <section className="mx-[4%] my-8">
       <div className="max-w-[1920px] mx-auto">
 
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-3xl 2xl:text-4xl font-semibold">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-2xl lg:text-3xl 2xl:text-4xl font-semibold">
             Find your <span className="me-color-y">Solutions</span>
           </h2>
           <div className="flex gap-2">
-            <BackwardArrow disabled={!canScrollLeft} onClick={() => scroll("left")} />
-            <ForwardArrow disabled={!canScrollRight} onClick={() => scroll("right")} />
+            <BackwardArrow disabled={!canScrollLeft}  onClick={() => scroll("left")}  />
+            <ForwardArrow  disabled={!canScrollRight} onClick={() => scroll("right")} />
           </div>
         </div>
 
         {/* Slider */}
         <div
           ref={sliderRef}
-          className="flex overflow-x-auto scroll-smooth pb-4"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none", gap: "20px" }}
+          className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar pb-6"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          {categories.map((card, index) => (
+          {categories.map((card, i) => (
             <div
-              key={index}
-              onClick={() => handleCategoryClick(card.slug)}
-              className={`relative flex flex-col justify-end flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer group
-                transition-transform duration-300 hover:scale-[1.03] hover:shadow-2xl
-                ${card.offset ? "mt-8" : ""}
+              key={i}
+              onClick={() => router.push(`/${card.slug}`)}
+              className={`
+                relative flex flex-col justify-end flex-shrink-0 rounded-xl overflow-hidden
+                cursor-pointer group transition-transform duration-300
+                hover:scale-[1.03] hover:shadow-xl
+                ${card.offset ? "mt-6" : ""}
               `}
               style={{
-                // Exactly 5 cards with 20px gaps: (container - 4*20) / 5
-                width: "calc((min(92vw, 1766px) - 80px) / 5)",
-                height: "290px",
+                /* 5 cards visible, 4 gaps of 16px */
+                width: "calc((min(92vw, 1766px) - 64px) / 5)",
+                height: "clamp(180px, 18vw, 240px)",
               }}
             >
               {/* Background image */}
@@ -158,27 +128,22 @@ export default function SolutionBar() {
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
 
-              {/* Green gradient overlay at bottom */}
-              <div
-                className="absolute inset-0 z-10"
-                style={{
-                  background:
-                    "linear-gradient(to top, rgba(25, 123, 51, 0.92) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.1) 100%)",
-                }}
-              />
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 z-10 bg-gradient-to-t from-green-800/90 via-black/30 to-black/10" />
 
-              {/* Card content */}
-              <div className="relative z-20 p-4">
-                <p className="text-white text-sm 2xl:text-base font-semibold leading-snug drop-shadow">
+              {/* Card label */}
+              <div className="relative z-20 p-3">
+                <p className="text-white text-sm font-semibold leading-snug drop-shadow">
                   {card.title}
                 </p>
-                <span className="inline-block mt-1 text-xs text-green-200 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="inline-block mt-0.5 text-xs text-green-200 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   Shop now →
                 </span>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );
