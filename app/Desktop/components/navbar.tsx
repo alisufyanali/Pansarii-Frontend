@@ -9,64 +9,90 @@ import SearchBarWrapper from './navbar/SearchBarWrapper';
 import CartSidebar from './sidebar';
 import { useCart } from '../../context/CartContext';
 
-import { 
+import {
   FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaWhatsapp,
   FaShoppingCart, FaUser, FaTruck, FaBars, FaLeaf, FaGift,
-  FaChevronDown, FaTimes, FaChevronRight, FaSearch
+  FaChevronDown, FaTimes, FaChevronRight, FaSearch,
 } from 'react-icons/fa';
 
 import { allProducts } from '@/app/Desktop/data/products';
 
+// ── helpers ──────────────────────────────────────────────────────────────────
+
 const getCategoriesFromProducts = () => {
-  const categoriesSet = new Set<string>();
-  allProducts.forEach(p => { if (p.category) categoriesSet.add(p.category); });
-  return Array.from(categoriesSet).sort().map(category => ({
+  const set = new Set<string>();
+  allProducts.forEach(p => { if (p.category) set.add(p.category); });
+  return Array.from(set).sort().map(category => ({
     name: category,
     slug: category,
     count: allProducts.filter(p => p.category === category).length,
   }));
 };
 
+const CATEGORY_SLUG_MAP: Record<string, string> = {
+  'Herb':          'herbs',
+  'Oils':          'oils',
+  'Supplements':   'supplements',
+  'Beauty Corner': 'beauty-corner',
+  'Dawakhana':     'dawakhana',
+  'Remedies':      'remedies',
+  'Murrabajat':    'murrabajat',
+  'Arqiyaat':      'arqiyaat',
+};
+
 const navLinks = [
-  { name: 'Home',       href: '/'        },
-  { name: 'Shop',       href: '/shop'    },
-  { name: 'By Concern', href: '/concern' },
-  { name: 'Category',   href: '/category'},
-  { name: 'Offers',     href: '/offers'  },
-  { name: 'Rewards',    href: '/rewards' },
-  { name: 'Blog',       href: '/blog'    },
+  { name: 'Home',       href: '/'         },
+  { name: 'Shop',       href: '/shop'     },
+  { name: 'By Concern', href: '/concern'  },
+  { name: 'Category',   href: '/category' },
+  { name: 'Offers',     href: '/offers'   },
+  { name: 'Rewards',    href: '/rewards'  },
+  { name: 'Blog',       href: '/blog'     },
 ];
 
-// Shared 3-col grid — all bars lock columns
-const GRID = "grid grid-cols-[auto_480px_auto] items-center gap-x-6 justify-between";
+// Shared container — full width, max 1920px, responsive horizontal padding
+const CONTAINER = "w-full max-w-[1920px] mx-auto px-[4%]";
+
+// 3-col grid: logo | search (max 480px) | actions
+const GRID = "grid grid-cols-[auto_minmax(280px,480px)_auto] items-center gap-x-6";
+
+// ── component ─────────────────────────────────────────────────────────────────
 
 export default function Navbar() {
-  const router = useRouter();
-  const pathname = usePathname();
+  const router       = useRouter();
+  const pathname     = usePathname();
   const searchParams = useSearchParams();
   const { getCartCount, getCartTotal } = useCart();
 
   const [isCategorySidebarOpen, setIsCategorySidebarOpen] = useState(false);
-  const [isCartSidebarOpen, setIsCartSidebarOpen] = useState(false);
-  const [categorySearch, setCategorySearch] = useState('');
-  const [scrolled, setScrolled] = useState(false);
+  const [isCartSidebarOpen,     setIsCartSidebarOpen]     = useState(false);
+  const [categorySearch,        setCategorySearch]        = useState('');
+  const [scrolled,              setScrolled]              = useState(false);
   const lastScrollY = useRef(0);
 
-  const categories = getCategoriesFromProducts();
-  const currentCategory = searchParams.get('category');
+  const categories        = getCategoriesFromProducts();
+  const currentCategory   = searchParams.get('category');
   const filteredCategories = categories.filter(c =>
     c.name.toLowerCase().includes(categorySearch.toLowerCase())
   );
   const mockProducts = allProducts.map(p => ({
-    id: p.id.toString(), name: p.nameEn,
-    slug: p.nameEn.toLowerCase().replace(/\s+/g, '-'),
-    price: p.price, salePrice: p.oldPrice || undefined,
-    image: p.img, category: p.category, rating: p.rating,
-    isBestSeller: p.isBestSeller || false, description: p.description,
+    id:           p.id.toString(),
+    name:         p.nameEn,
+    slug:         p.nameEn.toLowerCase().replace(/\s+/g, '-'),
+    price:        p.price,
+    salePrice:    p.oldPrice || undefined,
+    image:        p.img,
+    category:     p.category,
+    rating:       p.rating,
+    isBestSeller: p.isBestSeller || false,
+    description:  p.description,
   }));
 
   useEffect(() => {
-    const onScroll = () => { setScrolled(window.scrollY > 60); lastScrollY.current = window.scrollY; };
+    const onScroll = () => {
+      setScrolled(window.scrollY > 60);
+      lastScrollY.current = window.scrollY;
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -74,51 +100,45 @@ export default function Navbar() {
   const isActive = (path: string) =>
     path === '/' ? pathname === '/' : pathname.startsWith(path);
 
-  const cartCount = getCartCount();
-  const cartTotal = getCartTotal();
+  const cartCount    = getCartCount();
+  const cartTotal    = getCartTotal();
   const totalProducts = categories.reduce((s, c) => s + c.count, 0);
 
-  const openCartSidebar = () => setIsCartSidebarOpen(true);
-  const closeCartSidebar = () => setIsCartSidebarOpen(false);
+  const openCartSidebar      = () => setIsCartSidebarOpen(true);
+  const closeCartSidebar     = () => setIsCartSidebarOpen(false);
   const closeCategorySidebar = () => { setIsCategorySidebarOpen(false); setCategorySearch(''); };
 
- const handleCategorySelect = (slug: string) => {
-  // Map category names to URL slugs
-  const CATEGORY_SLUG_MAP: { [key: string]: string } = {
-    'Herb': 'herbs',
-    'Oils': 'oils',
-    'Supplements': 'supplements',
-    'Beauty Corner': 'beauty-corner',
-    'Dawakhana': 'dawakhana',
-    'Remedies': 'remedies',
-    'Murrabajat': 'murrabajat',
-    'Arqiyaat': 'arqiyaat',
+  const handleCategorySelect = (slug: string) => {
+    if (slug === 'all') {
+      router.push('/categories');
+    } else {
+      const urlSlug = CATEGORY_SLUG_MAP[slug] || slug.toLowerCase().replace(/\s+/g, '-');
+      router.push(`/${urlSlug}`);
+    }
+    closeCategorySidebar();
   };
- 
-  if (slug === 'all') {
-    router.push('/categories');
-  } else {
-    const urlSlug = CATEGORY_SLUG_MAP[slug] || slug.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/${urlSlug}`);
-  }
-  closeCategorySidebar();
-};
+
+  // ── render ──────────────────────────────────────────────────────────────────
   return (
     <>
-      <header className="w-full fixed top-0 left-0 z-40 pb-8">
+      <header className="w-full fixed top-0 left-0 z-40">
 
-        {/* ── TOP BAR ── compact, hides on scroll */}
+        {/* ── TOP BAR ── */}
         <div
           className="bg-green-700 text-white overflow-hidden transition-all duration-300 ease-in-out"
-          style={{ maxHeight: scrolled ? '0px' : '34px', opacity: scrolled ? 0 : 1, pointerEvents: scrolled ? 'none' : 'auto' }}
+          style={{
+            maxHeight:    scrolled ? '0px' : '34px',
+            opacity:      scrolled ? 0 : 1,
+            pointerEvents: scrolled ? 'none' : 'auto',
+          }}
         >
-          <div className="w-full max-w-[1600px] mx-auto px-10 py-1">
-            <div className={GRID}>
+          <div className={CONTAINER}>
+            <div className="grid grid-cols-3 items-center py-1">
 
               {/* Social icons */}
               <div className="flex items-center gap-3">
                 {[
-                  { href: 'https://facebook.com/pansariin.pk', Icon: FaFacebookF, label: 'Facebook'  },
+                  { href: 'https://facebook.com/pansariin.pk',  Icon: FaFacebookF, label: 'Facebook'  },
                   { href: 'https://instagram.com/pansariin.pk', Icon: FaInstagram, label: 'Instagram' },
                   { href: 'https://twitter.com/pansariin',      Icon: FaTwitter,   label: 'Twitter'   },
                   { href: 'https://youtube.com/pansariin',      Icon: FaYoutube,   label: 'YouTube'   },
@@ -130,15 +150,16 @@ export default function Navbar() {
                 ))}
               </div>
 
-              {/* Tagline — xs (11px) */}
+              {/* Tagline */}
               <p className="text-[11px] flex items-center justify-center gap-1.5 whitespace-nowrap">
                 <FaLeaf className="w-3 h-3" />
                 100% Ayurvedic &amp; Herbal Products
               </p>
 
-              {/* WhatsApp — xs */}
+              {/* WhatsApp */}
               <a href="https://wa.me/923001234567" target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-end gap-1.5 hover:opacity-70 transition" aria-label="WhatsApp">
+                className="flex items-center justify-end gap-1.5 hover:opacity-70 transition"
+                aria-label="WhatsApp">
                 <FaWhatsapp className="w-3 h-3" />
                 <span className="text-[11px] font-medium whitespace-nowrap">+92 300 1234567</span>
               </a>
@@ -149,10 +170,10 @@ export default function Navbar() {
 
         {/* ── MIDDLE BAR ── */}
         <div className="bg-white shadow-sm">
-          <div className="w-full max-w-[1600px] mx-auto px-10 py-2.5">
-            <div className={GRID}>
+          <div className={CONTAINER}>
+            <div className={`${GRID} py-2.5`}>
 
-              {/* Logo — slightly smaller */}
+              {/* Logo */}
               <Link href="/" className="flex-shrink-0" aria-label="Pansariin.pk Home">
                 <div className="relative w-36 h-9">
                   <Image src="/images/logo.png" alt="Pansariin.pk Logo" fill
@@ -160,18 +181,22 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              {/* Search */}
-              <SearchBarWrapper placeholder="Search for products..." variant="desktop"
-                mockProducts={mockProducts} className="w-full ml-10" />
+              {/* Search — grows to fill available space */}
+              <SearchBarWrapper
+                placeholder="Search for products..."
+                variant="desktop"
+                mockProducts={mockProducts}
+                className="w-full"
+              />
 
-              {/* Icon actions — text-[13px] across all labels */}
-              <div className="flex items-center gap-0.5 flex-shrink-0 whitespace-nowrap">
+              {/* Icon actions */}
+              <div className="flex items-center gap-1 flex-shrink-0 justify-end">
 
                 <Link href="/track-order"
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition group"
                   aria-label="Track Order">
                   <FaTruck className="w-4 h-4 text-gray-600 group-hover:text-green-700 transition" />
-                  <span className="text-[13px] font-medium text-gray-700 group-hover:text-green-700 whitespace-nowrap">
+                  <span className="text-[13px] font-medium text-gray-700 group-hover:text-green-700 whitespace-nowrap hidden xl:inline">
                     Track Order
                   </span>
                 </Link>
@@ -180,7 +205,7 @@ export default function Navbar() {
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition group"
                   aria-label="Sign In">
                   <FaUser className="w-4 h-4 text-gray-600 group-hover:text-green-700 transition" />
-                  <span className="text-[13px] font-medium text-gray-700 group-hover:text-green-700 whitespace-nowrap">
+                  <span className="text-[13px] font-medium text-gray-700 group-hover:text-green-700 whitespace-nowrap hidden xl:inline">
                     Sign In
                   </span>
                 </Link>
@@ -196,7 +221,7 @@ export default function Navbar() {
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col items-start leading-tight flex-shrink-0">
+                  <div className="flex flex-col items-start leading-tight flex-shrink-0 hidden xl:flex">
                     <span className="text-[13px] font-medium text-gray-700 group-hover:text-green-700 whitespace-nowrap">Cart</span>
                     {cartCount > 0 && (
                       <span className="text-[11px] text-gray-500">PKR {cartTotal.toLocaleString()}</span>
@@ -209,13 +234,17 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ── BOTTOM BAR ── hides on scroll */}
+        {/* ── BOTTOM BAR ── */}
         <div
           className="bg-white border-t border-gray-100 overflow-hidden transition-all duration-300 ease-in-out"
-          style={{ maxHeight: scrolled ? '0px' : '46px', opacity: scrolled ? 0 : 1, pointerEvents: scrolled ? 'none' : 'auto' }}
+          style={{
+            maxHeight:    scrolled ? '0px' : '46px',
+            opacity:      scrolled ? 0 : 1,
+            pointerEvents: scrolled ? 'none' : 'auto',
+          }}
         >
-          <div className="w-full max-w-[1600px] mx-auto px-10 py-2">
-            <div className={GRID}>
+          <div className={CONTAINER}>
+            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-6 py-2">
 
               {/* Categories button */}
               <button
@@ -228,12 +257,14 @@ export default function Navbar() {
                 <FaChevronDown className="w-2.5 h-2.5" />
               </button>
 
-              {/* Nav links — text-[13px] */}
-              <nav className="flex items-center justify-center gap-5 mr-7" aria-label="Main navigation">
+              {/* Nav links — centered in the middle column */}
+              <nav className="flex items-center justify-center gap-4 lg:gap-6" aria-label="Main navigation">
                 {navLinks.map(link => (
                   <Link key={link.href} href={link.href}
                     className={`text-[13px] font-medium transition whitespace-nowrap ${
-                      isActive(link.href) ? 'text-green-700 font-semibold' : 'text-gray-700 hover:text-green-700'
+                      isActive(link.href)
+                        ? 'text-green-700 font-semibold'
+                        : 'text-gray-700 hover:text-green-700'
                     }`}
                     aria-current={isActive(link.href) ? 'page' : undefined}>
                     {link.name}
@@ -243,7 +274,7 @@ export default function Navbar() {
 
               {/* Affiliate button */}
               <Link href="/affiliate"
-                className="flex items-center justify-end gap-1.5 px-4 py-1.5 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition font-semibold text-[13px] shadow-sm hover:shadow-md whitespace-nowrap flex-shrink-0"
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition font-semibold text-[13px] shadow-sm hover:shadow-md whitespace-nowrap flex-shrink-0"
                 aria-label="Become an Affiliate">
                 <FaGift className="w-3.5 h-3.5" />
                 Become an Affiliate
@@ -260,7 +291,7 @@ export default function Navbar() {
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/50" onClick={closeCategorySidebar} />
 
-          <div className="absolute left-0 top-0 h-full w-72 bg-white shadow-xl transition-transform duration-300 overflow-y-auto">
+          <div className="absolute left-0 top-0 h-full w-72 bg-white shadow-xl overflow-y-auto">
 
             {/* Sidebar header */}
             <div className="bg-green-700 text-white p-4 sticky top-0 z-10">
@@ -298,7 +329,9 @@ export default function Navbar() {
                 <div className="text-center py-8">
                   <p className="text-xs text-gray-500 mb-3">No categories found</p>
                   <button onClick={() => setCategorySearch('')}
-                    className="text-green-700 hover:text-green-800 font-medium text-xs">Clear search</button>
+                    className="text-green-700 hover:text-green-800 font-medium text-xs">
+                    Clear search
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-0.5">
@@ -319,11 +352,15 @@ export default function Navbar() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${
-                            isSelected ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-600 group-hover:bg-green-100'
+                            isSelected
+                              ? 'bg-green-200 text-green-800'
+                              : 'bg-gray-100 text-gray-600 group-hover:bg-green-100'
                           }`}>
                             {category.count}
                           </span>
-                          <FaChevronRight className={`w-2.5 h-2.5 ${isSelected ? 'text-green-700' : 'text-gray-400 group-hover:text-green-600'}`} />
+                          <FaChevronRight className={`w-2.5 h-2.5 ${
+                            isSelected ? 'text-green-700' : 'text-gray-400 group-hover:text-green-600'
+                          }`} />
                         </div>
                       </button>
                     );
