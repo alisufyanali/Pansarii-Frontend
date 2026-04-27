@@ -1,55 +1,85 @@
 "use client";
 
-import VideoProductCard from '@/app/Desktop/components/VideoProductCard';
-import { allProducts } from '@/app/Desktop/data/products'; // Import your products data here
-
-interface VideoProduct {
-  id: string | number;
-  topImage: string;
-  productImage: string;
-  video: string;
-  nameEn: string;
-  nameUr: string;
-  views?: string;
-  sale?: string;
-  price: number | string;
-  oldPrice?: number | string;
-}
+import { useRef, useState, useEffect } from "react";
+import VideoProductCard from "@components/VideoProductCard";
+import ForwardArrow from "@components/ForwardArrow";
+import BackwardArrow from "@components/BackwardArrow";
+import { allProducts } from "@/app/Desktop/data/products";
 
 export default function VideoProducts() {
-  // Get products from data/products.ts and add video fields
-  const videoProducts: VideoProduct[] = allProducts.slice(0, 4).map((product) => ({
-    id: product.id,
-    topImage: product.img,
-    productImage: product.img,
-    video: '/images/review.mp4', // Add your video URL here
-    nameEn: product.nameEn,
-    nameUr: product.nameUr,
-    views: '860', // You can make this dynamic
-    sale: product.sale || '',
-    price: product.price,
-    oldPrice: product.oldPrice || undefined,
+  const videoProducts = allProducts.slice(0, 5).map(p => ({
+    id:           p.id,
+    topImage:     p.img,
+    productImage: p.img,
+    video:        '/images/review.mp4',
+    nameEn:       p.nameEn,
+    nameUr:       p.nameUr,
+    views:        '860',
+    sale:         p.sale || '',
+    price:        p.price,
+    oldPrice:     p.oldPrice || undefined,
   }));
 
+  const sliderRef        = useRef<HTMLDivElement>(null);
+  const [canScrollLeft,  setCanScrollLeft]  = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    const el = sliderRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  };
+
+  const scroll = (dir: "left" | "right") => {
+    const el = sliderRef.current;
+    if (!el) return;
+    const card = el.querySelector(".card-item") as HTMLElement;
+    const step = card ? card.offsetWidth + 24 : 300;
+    el.scrollBy({ left: dir === "right" ? step : -step, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    const el = sliderRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    return () => el.removeEventListener("scroll", checkScroll);
+  }, []);
+
   return (
-    <section className="my-8 md:my-10 lg:my-12 2xl:my-16 px-4 sm:px-6 lg:px-8">
-      {/* Centered Container for 4K */}
+    <section className="mx-[4%] my-8">
       <div className="max-w-[1920px] mx-auto">
 
-        {/* Heading */}
-        <div className="text-center mb-6 md:mb-8 lg:mb-10">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl 2xl:text-5xl font-semibold font-poppins">
-            Video <span className="text-[#197B33]">Products</span>
-          </h2>
-          <p className="text-sm md:text-base lg:text-lg 2xl:text-xl text-gray-600 mt-2">
-            Watch and explore our featured products
-          </p>
+        {/* Header — same pattern as other sections */}
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl lg:text-3xl 2xl:text-4xl font-semibold">
+              Video <span className="me-color-y">Products</span>
+            </h2>
+            <p className="text-sm text-gray-500 mt-0.5">Watch and explore our featured products</p>
+          </div>
+          <div className="flex gap-2">
+            <BackwardArrow disabled={!canScrollLeft}  onClick={() => scroll("left")}  />
+            <ForwardArrow  disabled={!canScrollRight} onClick={() => scroll("right")} />
+          </div>
         </div>
 
-        {/* Responsive Grid - 4 cards */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-5 2xl:gap-6">
-          {videoProducts.map((product) => (
-            <VideoProductCard key={product.id} product={product} />
+        {/* 5-card slider */}
+        <div
+          ref={sliderRef}
+          className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-4"
+        >
+          {videoProducts.map(product => (
+            <div
+              key={product.id}
+              className="card-item flex-shrink-0"
+              style={{
+                width: "calc((min(100vw, 1920px) - 8vw - 96px) / 5)",
+              }}
+            >
+              <VideoProductCard product={product} />
+            </div>
           ))}
         </div>
 
