@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
@@ -13,37 +14,35 @@ interface BannerSlide {
   secondaryBtn?: { label: string; href: string };
 }
 
-// ── Mock data — replace with your API/JSON fetch ──────────────────────────
 const slides: BannerSlide[] = [
   {
     image: "/images/Banner.png",
     badge: "✨ 100% Natural & Authentic",
     title: "Pansari Inn",
     description: "Nature heals 🌿 Handmade | Herbal Haircare | Plant Based Skincare | Women owned family business",
-    primaryBtn: { label: "Shop Now", href: "/shop" },
-    secondaryBtn: { label: "Explore Remedies", href: "/remedies" },
+    primaryBtn:   { label: "Shop Now",         href: "/shop"      },
+    secondaryBtn: { label: "Explore Remedies", href: "/remedies"  },
   },
   {
     image: "/images/Banner2.png",
     badge: "🌿 100% Organic",
     title: "Pure Herbal Oils",
     description: "Cold pressed, unrefined & full of nature's goodness. Trusted by thousands of families.",
-    primaryBtn: { label: "Shop Oils", href: "/shop?category=oils" },
-    secondaryBtn: { label: "Learn More", href: "/blog" },
+    primaryBtn:   { label: "Shop Oils",  href: "/shop?category=oils" },
+    secondaryBtn: { label: "Learn More", href: "/blog"               },
   },
   {
     image: "/images/Banner3.png",
     badge: "🎁 Special Offers",
     title: "Beauty Corner",
     description: "Discover handcrafted skincare made from the finest herbs & botanicals.",
-    primaryBtn: { label: "Explore", href: "/shop?category=beauty" },
-    secondaryBtn: { label: "View Offers", href: "/offers" },
+    primaryBtn:   { label: "Explore",     href: "/shop?category=beauty" },
+    secondaryBtn: { label: "View Offers", href: "/offers"               },
   },
 ];
-// ─────────────────────────────────────────────────────────────────────────
 
 export default function Banner() {
-  const [current, setCurrent] = useState(0);
+  const [current,   setCurrent]   = useState(0);
   const [animating, setAnimating] = useState(false);
   const [direction, setDirection] = useState<"left" | "right">("right");
 
@@ -51,172 +50,133 @@ export default function Banner() {
     if (animating) return;
     setDirection(dir);
     setAnimating(true);
-    setTimeout(() => {
-      setCurrent(index);
-      setAnimating(false);
-    }, 400);
+    setTimeout(() => { setCurrent(index); setAnimating(false); }, 400);
   };
 
-  const handleNext = () => {
-    if (current < slides.length - 1) goTo(current + 1, "right");
-  };
+  const handleNext = () => goTo((current + 1) % slides.length, "right");
+  const handlePrev = () => goTo((current - 1 + slides.length) % slides.length, "left");
 
-  const handlePrev = () => {
-    if (current > 0) goTo(current - 1, "left");
-  };
-
-  // Auto-play every 5 seconds
   useEffect(() => {
-    const timer = setInterval(() => {
-      const next = (current + 1) % slides.length;
-      goTo(next, "right");
-    }, 5000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => goTo((current + 1) % slides.length, "right"), 5000);
+    return () => clearInterval(t);
   }, [current, animating]);
 
   const slide = slides[current];
 
+  const contentStyle = {
+    opacity:   animating ? 0 : 1,
+    transform: animating
+      ? `translateX(${direction === "right" ? "-24px" : "24px"})`
+      : "translateX(0)",
+    transition: "opacity 0.4s ease, transform 0.4s ease",
+  };
+
   return (
-    <section
-      className="relative w-full flex overflow-hidden "
-      style={{ height: "70vh", minHeight: "30rem", maxHeight: "45rem" }}
-    >
-      {/* Background Image with fade + slide animation */}
+    <section className="relative w-full overflow-hidden h-[60vh] min-h-[420px] max-h-[680px]">
+
+      {/* Background image */}
       <div
-        className="absolute inset-0 w-full h-full transition-all duration-500 ease-in-out"
+        className="absolute inset-0 w-full h-full"
         style={{
-          opacity: animating ? 0 : 1,
+          opacity:   animating ? 0 : 1,
           transform: animating
             ? `translateX(${direction === "right" ? "-40px" : "40px"})`
             : "translateX(0)",
+          transition: "opacity 0.5s ease, transform 0.5s ease",
         }}
       >
         <Image
           src={slide.image}
-          alt={slide.title || "Banner"}
+          alt={slide.title ?? "Banner"}
           fill
           className="object-cover object-center"
           priority
         />
       </div>
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 z-[1]" />
+      {/* Subtle left-side gradient so text is readable */}
+      <div className="absolute inset-0 z-[1] bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
 
       {/* Content */}
-      <div className="relative z-10 flex w-full mt-auto mb-auto px-[4%]">
+      <div className="relative z-10 h-full flex items-center px-[4%]">
         <div className="w-full max-w-[1920px] mx-auto flex">
 
-          {/* Left Column — text content animates with slide */}
-          <div
-            className="w-1/2 flex flex-col justify-center px-4 xl:px-12 gap-4 transition-all duration-500 ease-in-out"
-            style={{
-              opacity: animating ? 0 : 1,
-              transform: animating
-                ? `translateX(${direction === "right" ? "-24px" : "24px"})`
-                : "translateX(0)",
-            }}
-          >
+          {/* Left column */}
+          <div className="w-1/2 flex flex-col justify-center gap-3 xl:gap-4" style={contentStyle}>
+
             {slide.badge && (
-              <p
-                className="text-[18px] 2xl:text-[22px] font-bold"
-                style={{
-                  fontFamily: "Lexend, sans-serif",
-                  lineHeight: "100%",
-                  color: "#6C3F3F",
-                }}
-              >
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6C3F3F] bg-white/70 backdrop-blur-sm px-3 py-1 rounded-full w-fit">
                 {slide.badge}
-              </p>
+              </span>
             )}
 
             {slide.title && (
-              <h1
-                className="text-5xl md:text-6xl 2xl:text-7xl font-bold"
-                style={{ color: "#005316", fontFamily: "Lexend, sans-serif" }}
-              >
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight text-[#005316] font-poppins">
                 {slide.title}
               </h1>
             )}
 
             {slide.description && (
-              <p
-                className="text-[18px] 2xl:text-[22px] font-medium max-w-lg 2xl:max-w-2xl"
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  lineHeight: "140%",
-                  color: "#000000",
-                }}
-              >
+              <p className="text-sm lg:text-base xl:text-lg font-medium max-w-md xl:max-w-lg text-gray-800 leading-relaxed font-poppins">
                 {slide.description}
               </p>
             )}
 
-            <div className="mt-6 flex gap-4">
+            {/* Buttons */}
+            <div className="flex items-center gap-3 mt-2">
               {slide.primaryBtn && (
-                <a
+                <Link
                   href={slide.primaryBtn.href}
-                  className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base"
-                  style={{
-                    backgroundColor: "#FAA944",
-                    color: "#000000",
-                    padding: "16px 24px",
-                    borderRadius: "45px",
-                    fontFamily: "Poppins, sans-serif",
-                  }}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#FAA944] text-black font-semibold text-sm xl:text-base hover:bg-amber-500 transition-colors shadow-md hover:shadow-lg font-poppins"
                 >
-                  {slide.primaryBtn.label} <span className="ml-2 text-lg">&gt;</span>
-                </a>
+                  {slide.primaryBtn.label}
+                  <span className="text-base font-bold">›</span>
+                </Link>
               )}
               {slide.secondaryBtn && (
-                <a
+                <Link
                   href={slide.secondaryBtn.href}
-                  className="flex items-center justify-center font-semibold hover:opacity-90 transition-opacity text-sm 2xl:text-base"
-                  style={{
-                    backgroundColor: "#197B33",
-                    color: "#ffffff",
-                    padding: "16px 24px",
-                    borderRadius: "45px",
-                    fontFamily: "Poppins, sans-serif",
-                  }}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#197B33] text-white font-semibold text-sm xl:text-base hover:bg-green-700 transition-colors shadow-md hover:shadow-lg font-poppins"
                 >
-                  {slide.secondaryBtn.label} <span className="ml-2 text-lg">&gt;</span>
-                </a>
+                  {slide.secondaryBtn.label}
+                  <span className="text-base font-bold">›</span>
+                </Link>
               )}
             </div>
+
           </div>
 
-          {/* Right Column — image shows through */}
+          {/* Right column — image shows through */}
           <div className="w-1/2" />
         </div>
       </div>
 
-      {/* Left Arrow */}
+      {/* Prev arrow */}
       <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20">
-        <BackwardArrow onClick={handlePrev} disabled={current === 0} />
+        <BackwardArrow onClick={handlePrev} disabled={false} />
       </div>
 
-      {/* Right Arrow */}
+      {/* Next arrow */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20">
-        <ForwardArrow onClick={handleNext} disabled={current === slides.length - 1} />
+        <ForwardArrow onClick={handleNext} disabled={false} />
       </div>
 
       {/* Dot indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => goTo(i, i > current ? "right" : "left")}
-            className="transition-all duration-300 rounded-full"
-            style={{
-              width: i === current ? "24px" : "8px",
-              height: "8px",
-              backgroundColor: i === current ? "#197B33" : "rgba(255,255,255,0.6)",
-            }}
             aria-label={`Go to slide ${i + 1}`}
+            className={`rounded-full transition-all duration-300 ${
+              i === current
+                ? "w-6 h-2 bg-green-700"
+                : "w-2 h-2 bg-white/60 hover:bg-white"
+            }`}
           />
         ))}
       </div>
+
     </section>
   );
 }
