@@ -4,17 +4,6 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-
-  /* ── Desktop Typography Scale ── */
-  --dt-base:   14px;   /* body / para / btn */
-  --dt-h1:     40px;
-  --dt-h2:     32px;
-  --dt-h3:     28px;
-  --dt-h4:     24px;
-  --dt-h5:     20px;
-  --dt-h6:     18px;
-  --dt-sm:     14px;   /* small labels, captions */
-  --dt-xs:     12px;   /* badges, tiny text */
 }
 
 @theme inline {
@@ -39,55 +28,6 @@ body {
 }
 
 
-/* ══════════════════════════════════════════════
-   DESKTOP TYPOGRAPHY SYSTEM
-   Scoped to .desktop-layout so mobile is untouched
-   ══════════════════════════════════════════════ */
-
-.desktop-layout {
-  /* headings */
-  --fs-h1: var(--dt-h1);
-  --fs-h2: var(--dt-h2);
-  --fs-h3: var(--dt-h3);
-  --fs-h4: var(--dt-h4);
-  --fs-h5: var(--dt-h5);
-  --fs-h6: var(--dt-h6);
-  /* body / ui */
-  --fs-base: var(--dt-base);
-  --fs-sm:   var(--dt-sm);
-  --fs-xs:   var(--dt-xs);
-}
-
-/* Apply to actual HTML elements inside desktop layout */
-.desktop-layout h1 { font-size: var(--fs-h1); }
-.desktop-layout h2 { font-size: var(--fs-h2); }
-.desktop-layout h3 { font-size: var(--fs-h3); }
-.desktop-layout h4 { font-size: var(--fs-h4); }
-.desktop-layout h5 { font-size: var(--fs-h5); }
-.desktop-layout h6 { font-size: var(--fs-h6); }
-.desktop-layout p,
-.desktop-layout span,
-.desktop-layout a,
-.desktop-layout li,
-.desktop-layout button,
-.desktop-layout input,
-.desktop-layout label,
-.desktop-layout select,
-.desktop-layout textarea { font-size: var(--fs-base); }
-
-/* Utility classes — use these anywhere inside desktop */
-.desktop-layout .dt-h1   { font-size: var(--fs-h1); }
-.desktop-layout .dt-h2   { font-size: var(--fs-h2); }
-.desktop-layout .dt-h3   { font-size: var(--fs-h3); }
-.desktop-layout .dt-h4   { font-size: var(--fs-h4); }
-.desktop-layout .dt-h5   { font-size: var(--fs-h5); }
-.desktop-layout .dt-h6   { font-size: var(--fs-h6); }
-.desktop-layout .dt-base { font-size: var(--fs-base); }
-.desktop-layout .dt-sm   { font-size: var(--fs-sm); }
-.desktop-layout .dt-xs   { font-size: var(--fs-xs); }
-
-/* ══════════════════════════════════════════════ */
-
 /* STYLING BY MIND THAT I HAVE */
 
 .me-bgcolor-g {
@@ -104,8 +44,6 @@ body {
 }
 
 .me-color-y {
-  --fs-h1: var(--dt-h1);
-
   color: #FAA944;  /* Fixed: Added the yellow color value */
 }
 

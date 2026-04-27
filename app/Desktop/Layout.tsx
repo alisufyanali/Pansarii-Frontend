@@ -9,13 +9,11 @@ export default function DesktopLayout({ children }: { children: ReactNode }) {
   return (
     <CartProvider>
       <WishlistProvider>
-        <div className="desktop-layout">
-          <Navbar />
-          <main className="min-h-screen bg-white mt-32">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        <Navbar />
+        <main className="min-h-screen bg-white mt-32">
+          {children}
+        </main>
+        <Footer />
       </WishlistProvider>
     </CartProvider>
   );
