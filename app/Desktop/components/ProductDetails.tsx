@@ -263,18 +263,18 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       </div>
 
       {/* ── RIGHT: info column — scrollable internally ── */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pr-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pr-1" style={{ maxHeight: '90vh', scrollbarWidth: "none", msOverflowStyle: "none" }}>
 
         {/* Product names */}
-        <h1 className="text-xl font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{product.nameUr}</p>
+        <h1 className="text-lg font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
+        <p className="text-xs text-gray-500 mt-0.5">{product.nameUr}</p>
 
-        {/* Rating & reviews — plain, | separator */}
-        <div className="flex items-center gap-2 mt-1.5 text-sm text-gray-600 flex-wrap">
-          <FaStar className="w-3.5 h-3.5 text-yellow-400" />
+        {/* Rating & reviews */}
+        <div className="flex items-center gap-2 mt-1 text-xs text-gray-600 flex-wrap">
+          <FaStar className="w-3 h-3 text-yellow-400" />
           <span className="font-semibold text-gray-800">{product.rating}</span>
           <span className="text-gray-300">|</span>
-          <FaCheckCircle className="w-3.5 h-3.5 text-green-500" />
+          <FaCheckCircle className="w-3 h-3 text-green-500" />
           <span>{product.reviews} Reviews</span>
           {product.sale && <>
             <span className="text-gray-300">|</span>
@@ -282,39 +282,39 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </>}
         </div>
 
-        {/* Price — no % off here, only price + strikethrough */}
-        <div className="flex items-baseline gap-2 mt-2 flex-wrap">
-          <span className="text-2xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
+        {/* Price */}
+        <div className="flex items-baseline gap-2 mt-1.5 flex-wrap">
+          <span className="text-xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
           {product.oldPrice && (
-            <span className="text-sm text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>
+            <span className="text-xs text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>
           )}
         </div>
 
-        {/* ── Horizontal scrollable info chips (benefits / infoLines) ── */}
+        {/* Info chips */}
         {(product.benefits?.length || product.infoLines?.length) ? (
-          <div className="flex gap-2 overflow-x-auto mt-3 flex-shrink-0 pb-0.5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div className="flex gap-1.5 overflow-x-auto mt-2 flex-shrink-0 pb-0.5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {[...(product.benefits || []), ...(product.infoLines || [])].map((item, i) => (
-              <span key={i} className="flex-shrink-0 px-2.5 py-1 border border-gray-200 rounded-full text-xs text-gray-600 whitespace-nowrap">
+              <span key={i} className="flex-shrink-0 px-2 py-0.5 border border-gray-200 rounded-full text-[11px] text-gray-600 whitespace-nowrap">
                 {item}
               </span>
             ))}
           </div>
         ) : null}
 
-        {/* Key features — max 3 */}
+        {/* Key features */}
         {product.features && product.features.length > 0 && (
-          <div className="mt-3">
-            <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-widest">Key Features</p>
-            <div className="grid grid-cols-3 gap-2">
+          <div className="mt-2">
+            <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-widest">Key Features</p>
+            <div className="grid grid-cols-3 gap-1.5">
               {product.features.slice(0, 3).map((feature, i) => {
                 const hasCheck = feature.hasCheck !== undefined ? feature.hasCheck : feature.text.startsWith("✓");
                 const featureText = feature.hasCheck !== undefined ? feature.text : feature.text.replace("✓", "").trim();
                 return (
-                  <div key={i} className="flex items-start gap-1.5 p-2 bg-gray-50 rounded-lg">
-                    <span className={`mt-0.5 flex-shrink-0 text-xs ${hasCheck ? "text-green-600" : "text-gray-400"}`}>
+                  <div key={i} className="flex items-start gap-1 p-1.5 bg-gray-50 rounded-lg">
+                    <span className={`mt-0.5 flex-shrink-0 text-[11px] ${hasCheck ? "text-green-600" : "text-gray-400"}`}>
                       {hasCheck ? "✓" : "○"}
                     </span>
-                    <span className="text-xs text-gray-700 leading-snug">{featureText}</span>
+                    <span className="text-[11px] text-gray-700 leading-snug">{featureText}</span>
                   </div>
                 );
               })}
@@ -322,14 +322,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         )}
 
-        {/* Size — own row */}
+        {/* Size */}
         {product.sizes && product.sizes.length > 0 && (
-          <div className="mt-3">
-            <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-widest">Size</p>
-            <div className="flex flex-wrap gap-1.5">
+          <div className="mt-2">
+            <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-widest">Size</p>
+            <div className="flex flex-wrap gap-1">
               {product.sizes.map(size => (
                 <button key={size} onClick={() => setSelectedSize(size)}
-                  className={`px-3.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${selectedSize === size ? "bg-green-600 text-white border-green-600 shadow-sm" : "border-gray-300 text-gray-700 hover:border-green-500"}`}>
+                  className={`px-3 py-1 rounded-lg border text-xs font-medium transition-all ${selectedSize === size ? "bg-green-600 text-white border-green-600 shadow-sm" : "border-gray-300 text-gray-700 hover:border-green-500"}`}>
                   {size}
                 </button>
               ))}
@@ -337,45 +337,44 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         )}
 
-        {/* Quantity — own row */}
-        <div className="mt-3">
-          <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-widest">Quantity</p>
+        {/* Quantity */}
+        <div className="mt-2">
+          <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-widest">Quantity</p>
           <div className="flex items-center border border-gray-300 rounded-lg w-fit">
             <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
-              className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm disabled:opacity-40" disabled={quantity === 1}>−</button>
-            <span className="px-4 py-1.5 border-x border-gray-300 text-sm font-semibold min-w-[40px] text-center">{quantity}</span>
+              className="px-2.5 py-1 text-gray-600 hover:bg-gray-100 font-bold text-sm disabled:opacity-40" disabled={quantity === 1}>−</button>
+            <span className="px-3 py-1 border-x border-gray-300 text-sm font-semibold min-w-[36px] text-center">{quantity}</span>
             <button onClick={() => setQuantity(q => q + 1)}
-              className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 font-bold text-sm">+</button>
+              className="px-2.5 py-1 text-gray-600 hover:bg-gray-100 font-bold text-sm">+</button>
           </div>
         </div>
 
-        {/* Total — own row */}
-        <div className="mt-3">
-          <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-widest">Total</p>
-          <span className="text-xl font-bold text-gray-900">PKR {(product.price * quantity).toLocaleString()}</span>
+        {/* Total */}
+        <div className="mt-2">
+          <p className="text-[10px] font-semibold text-gray-500 mb-0.5 uppercase tracking-widest">Total</p>
+          <span className="text-lg font-bold text-gray-900">PKR {(product.price * quantity).toLocaleString()}</span>
         </div>
 
         {/* Action buttons */}
-        <div className="mt-4 space-y-2">
+        <div className="mt-3 space-y-1.5">
           <div className="flex gap-2">
             <button onClick={handleAddToCart}
-              className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-2.5 rounded-lg hover:bg-green-800 transition-all shadow-sm text-sm">
+              className="flex-1 flex items-center justify-center gap-1.5 bg-green-700 text-white font-semibold py-2 rounded-lg hover:bg-green-800 transition-all shadow-sm text-sm">
               <FaShoppingCart className="w-3.5 h-3.5" />
               Add to Cart
             </button>
             <button onClick={handleBuyNow}
-              className="flex-1 flex items-center justify-center gap-2 bg-amber-500 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-amber-600 transition-all shadow-sm text-sm">
+              className="flex-1 flex items-center justify-center gap-1.5 bg-amber-500 text-gray-900 font-semibold py-2 rounded-lg hover:bg-amber-600 transition-all shadow-sm text-sm">
               Buy Now
             </button>
           </div>
           <button onClick={handleWhatsAppOrder}
-            className="w-full flex items-center justify-center gap-2 border border-[#25D366] text-[#25D366] font-semibold py-2.5 rounded-lg hover:bg-[#25D366] hover:text-white transition-all text-sm">
+            className="w-full flex items-center justify-center gap-2 border border-[#25D366] text-[#25D366] font-semibold py-2 rounded-lg hover:bg-[#25D366] hover:text-white transition-all text-sm">
             <FaWhatsapp className="w-4 h-4" />
             Order on WhatsApp
           </button>
         </div>
 
-        {/* Bottom padding so last button isn't cut off */}
         <div className="h-2 flex-shrink-0" />
       </div>
     </div>
