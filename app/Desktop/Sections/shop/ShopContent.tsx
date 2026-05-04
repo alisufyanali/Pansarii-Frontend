@@ -117,7 +117,7 @@ function ShopContent({
   };
 
   const handleCategoryChange = (category: string) => {
-    setFilters({ ...filters, categories: category ? [category] : [] });
+    setFilters({ ...filters, categories: (category && category !== 'all') ? [category] : [] });
   };
 
   const handleAddToCart = (product: Product) => {

@@ -7,6 +7,12 @@ import dynamic from 'next/dynamic';
 import { Product, FilterOptions, filterProducts, getCategoriesFromProducts, getPriceRangeFromProducts } from "../../utils/filterProducts";
 import { allProducts } from "@/app/Desktop/data/products";
 
+// ─── Dynamic import at MODULE level (never inside useMemo/render) ─────────────
+const DynamicShopContent = dynamic(() => import('./ShopContent'), {
+  loading: () => <ProductGridSkeleton count={20} />,
+  ssr: false,
+});
+
 // ─── Skeleton helpers ─────────────────────────────────────────────────────────
 
 function ProductGridSkeleton({ count = 12 }: { count?: number }) {
@@ -183,13 +189,6 @@ function ShopContent() {
     setCurrentPage(1);
     router.push('/shop');
   }, [priceRange.max, router]);
-
-  const DynamicShopContent = useMemo(() =>
-    dynamic(() => import('./ShopContent'), {
-      loading: () => <ProductGridSkeleton count={productsPerPage} />,
-      ssr: false,
-    }),
-  [productsPerPage]);
 
   if (safeProducts.length === 0) {
     return (
