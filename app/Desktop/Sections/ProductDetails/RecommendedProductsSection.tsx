@@ -7,7 +7,7 @@ import { recommendedProducts } from "../../data/recommendedProducts";
 
 export default function RecommendedProductsSection() {
   const { isMobile, isLoading } = useDeviceDetection();
-  const displayedProducts = recommendedProducts.slice(0, 4);
+  const displayedProducts = recommendedProducts.slice(0, 5);
 
   if (isLoading) return null;
 
@@ -30,7 +30,7 @@ export default function RecommendedProductsSection() {
 
         {/* Desktop View - Grid Layout */}
         {!isMobile && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {displayedProducts.map((product) => (
               <div key={product.id} className="w-full">
                 <DesktopProductCard product={product} />
