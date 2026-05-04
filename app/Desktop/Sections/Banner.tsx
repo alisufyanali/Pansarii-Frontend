@@ -24,7 +24,7 @@ const slides: BannerSlide[] = [
     secondaryBtn: { label: "Explore Remedies", href: "/remedies"  },
   },
   {
-    image: "/images/Banner2.png",
+    image: "/images/new-banner-2.png",
     badge: "🌿 100% Organic",
     title: "Pure Herbal Oils",
     description: "Cold pressed, unrefined & full of nature's goodness. Trusted by thousands of families.",
@@ -32,7 +32,7 @@ const slides: BannerSlide[] = [
     secondaryBtn: { label: "Learn More", href: "/blog"               },
   },
   {
-    image: "/images/Banner3.png",
+    image: "/images/banner-3.png",
     badge: "🎁 Special Offers",
     title: "Beauty Corner",
     description: "Discover handcrafted skincare made from the finest herbs & botanicals.",
@@ -89,7 +89,7 @@ export default function Banner() {
           src={slide.image}
           alt={slide.title ?? "Banner"}
           fill
-          className="object-cover object-center"
+          className="object-fill"
           priority
         />
       </div>
