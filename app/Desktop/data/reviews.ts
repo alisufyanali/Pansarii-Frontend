@@ -7,7 +7,8 @@ export const reviews = [
     name: "Sarah Khan",
     designation: "Beauty Blogger",
     img: "/images/product.png",
-    rating: 5.0
+    rating: 5.0,
+    images: ["/images/product.png", "/images/product.png", "/images/product.png"]
   },
   {
     id: 2,
