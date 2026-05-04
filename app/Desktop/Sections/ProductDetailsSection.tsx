@@ -302,7 +302,6 @@ export default function ProductDetailsSection({ product }: { product?: any }) {
       )}
 
       <div ref={sectionRef} className="w-full bg-white">
-        <VideoProductsSection />
 
         {/* ── Tab Section ── */}
         <div className="max-w-[1600px] mx-auto px-[4%] py-6">
@@ -519,14 +518,8 @@ export default function ProductDetailsSection({ product }: { product?: any }) {
           )}
         </div>
 
-        {/* ── Banners ── */}
-        <div className="w-full" style={{ height: '70vh', minHeight: '30rem', maxHeight: '45rem' }}>
-          <img src={productDetailsBanner1} alt="Banner 1" className="w-full h-full object-cover" />
-        </div>
-        <div className="w-full mt-2" style={{ height: '70vh', minHeight: '30rem', maxHeight: '45rem' }}>
-          <img src={productDetailsBanner2} alt="Banner 2" className="w-full h-full object-cover" />
-        </div>
-
+        <VideoProductsSection />
+        
         <RecommendedProductsSection />
 
         {/* ── Sticky Bottom Bar ── */}
