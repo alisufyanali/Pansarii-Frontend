@@ -16,7 +16,7 @@ interface BannerSlide {
 
 const slides: BannerSlide[] = [
   {
-    image: "/images/Banner.png",
+    image: "/images/new-banner.png",
     badge: "✨ 100% Natural & Authentic",
     title: "Pansari Inn",
     description: "Nature heals 🌿 Handmade | Herbal Haircare | Plant Based Skincare | Women owned family business",
