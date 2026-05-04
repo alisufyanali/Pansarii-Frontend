@@ -18,10 +18,48 @@ function CartContent() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-700 mx-auto mb-3" />
-          <p className="text-sm text-gray-500">Loading cart...</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-[1600px] mx-auto px-[4%] py-3">
+            <div className="h-4 w-48 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="max-w-[1600px] mx-auto px-[4%] pt-6 pb-2">
+          <div className="h-7 w-40 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="max-w-[1600px] mx-auto px-[4%] pb-12">
+          <div className="mt-4 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+            <div className="flex flex-col gap-3">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden animate-pulse">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="p-4 sm:p-5 border-b border-gray-50 flex gap-3">
+                    <div className="w-[72px] h-[72px] bg-gray-200 rounded-lg flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-3 bg-gray-200 rounded w-1/3" />
+                      <div className="flex justify-between mt-3">
+                        <div className="h-8 w-24 bg-gray-200 rounded-lg" />
+                        <div className="h-4 w-20 bg-gray-200 rounded" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-pulse h-fit">
+              <div className="h-5 w-32 bg-gray-200 rounded mb-4" />
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex justify-between">
+                    <div className="h-4 w-24 bg-gray-200 rounded" />
+                    <div className="h-4 w-20 bg-gray-200 rounded" />
+                  </div>
+                ))}
+              </div>
+              <div className="h-10 w-full bg-gray-200 rounded-full mt-6" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -93,7 +131,7 @@ function CartContent() {
               {getCartTotal() >= 5000 && (
                 <div className="bg-green-50 border border-green-100 rounded-xl px-5 py-3 flex items-center gap-2">
                   <FaTruck className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
-                  <span className="text-xs font-medium text-green-700">You've unlocked free shipping! 🎉</span>
+                <span className="text-xs font-medium text-green-700">You've unlocked free shipping!</span>
                 </div>
               )}
 
@@ -239,10 +277,33 @@ function CartContent() {
 export default function CartPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-700 mx-auto mb-3" />
-          <p className="text-sm text-gray-500">Loading cart...</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-[1600px] mx-auto px-[4%] pt-6 pb-12">
+          <div className="h-7 w-40 bg-gray-200 rounded animate-pulse mb-6" />
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden animate-pulse">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="p-5 border-b border-gray-50 flex gap-3">
+                  <div className="w-[72px] h-[72px] bg-gray-200 rounded-lg flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-3 bg-gray-200 rounded w-1/2" />
+                    <div className="h-8 w-24 bg-gray-200 rounded-lg mt-3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-pulse h-fit">
+              <div className="h-5 w-32 bg-gray-200 rounded mb-4" />
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex justify-between mb-3">
+                  <div className="h-4 w-24 bg-gray-200 rounded" />
+                  <div className="h-4 w-20 bg-gray-200 rounded" />
+                </div>
+              ))}
+              <div className="h-10 w-full bg-gray-200 rounded-full mt-4" />
+            </div>
+          </div>
         </div>
       </div>
     }>

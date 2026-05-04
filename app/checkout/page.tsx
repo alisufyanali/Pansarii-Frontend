@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { FaLock, FaCreditCard, FaCheckCircle, FaChevronDown, FaShieldAlt, FaTruck, FaTag } from 'react-icons/fa';
+import { FaLock, FaCreditCard, FaCheckCircle, FaChevronDown, FaShieldAlt, FaTruck, FaTag, FaMoneyBillWave, FaUniversity } from 'react-icons/fa';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -271,9 +271,9 @@ export default function CheckoutPage() {
                 <h2 className="text-sm font-bold text-gray-900 mb-4">Payment Method</h2>
                 <div className="flex flex-col gap-2.5">
                   {[
-                    { value: 'cod',    icon: '💵', label: 'Cash on Delivery',   sub: 'Pay when you receive'                        },
-                    { value: 'online', icon: null,  label: 'Online Payment',     sub: 'Credit/Debit Card · JazzCash · EasyPaisa'   },
-                    { value: 'bank',   icon: '🏦', label: 'Bank Transfer',      sub: 'Direct bank deposit'                         },
+                    { value: 'cod',    icon: 'cod',  label: 'Cash on Delivery',   sub: 'Pay when you receive'                        },
+                    { value: 'online', icon: null,   label: 'Online Payment',     sub: 'Credit/Debit Card · JazzCash · EasyPaisa'   },
+                    { value: 'bank',   icon: 'bank', label: 'Bank Transfer',      sub: 'Direct bank deposit'                         },
                   ].map(opt => (
                     <label key={opt.value}
                       className={`flex items-center gap-3 p-3.5 border rounded-xl cursor-pointer transition ${
@@ -286,7 +286,7 @@ export default function CheckoutPage() {
                         onChange={e => setPaymentMethod(e.target.value)}
                         className="w-4 h-4 accent-green-700 flex-shrink-0" />
                       <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-base">
-                        {opt.icon ?? <FaCreditCard className="text-gray-500" />}
+                        {opt.icon === 'cod' ? <FaMoneyBillWave className="text-green-600" /> : opt.icon === 'bank' ? <FaUniversity className="text-blue-600" /> : <FaCreditCard className="text-gray-500" />}
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-gray-900">{opt.label}</p>

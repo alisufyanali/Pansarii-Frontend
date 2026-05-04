@@ -253,7 +253,9 @@ export default function ByConcernPage() {
         {/* Why herbal CTA */}
         <div className="bg-gradient-to-br from-[#197B33] to-emerald-600 rounded-2xl p-8 sm:p-12 text-white text-center">
           <div className="max-w-2xl mx-auto">
-            <div className="text-4xl mb-4">🌿</div>
+            <div className="flex justify-center mb-4">
+              <svg className="w-10 h-10 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 5v4m0 4h.01"/></svg>
+            </div>
             <h2 className="text-2xl sm:text-3xl font-black mb-3">Why Choose Herbal Solutions?</h2>
             <p className="text-white/80 text-sm sm:text-base mb-8 leading-relaxed">
               Pansari Inn sources only the purest natural ingredients — no synthetic additives, no harmful chemicals.

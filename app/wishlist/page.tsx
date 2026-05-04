@@ -129,10 +129,27 @@ export default function WishlistPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center px-4">
-          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-700 mx-auto mb-3 sm:mb-4"></div>
-          <p className="text-sm sm:text-base text-gray-600">Loading wishlist...</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
+            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <div className="h-24 bg-gray-200 rounded-xl animate-pulse mb-6" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse">
+                <div className="aspect-square bg-gray-200" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+                  <div className="h-5 bg-gray-200 rounded w-1/3 mt-2" />
+                  <div className="h-9 bg-gray-200 rounded mt-3" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

@@ -385,7 +385,9 @@ export default function BlogPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <div className="text-gray-400 text-5xl mb-4">🔍</div>
+              <div className="flex justify-center mb-4">
+                <svg className="w-14 h-14 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+              </div>
               <p className="text-gray-500 text-lg mb-4">No articles found.</p>
               {searchQuery && (
                 <p className="text-gray-600 mb-6">

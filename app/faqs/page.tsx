@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FaChevronDown, FaSearch, FaQuestionCircle } from 'react-icons/fa';
+import { FaChevronDown, FaSearch, FaQuestionCircle, FaShoppingCart, FaTruck, FaUndo, FaLeaf, FaUser, FaEllipsisH } from 'react-icons/fa';
 
 // JSON Data
 const faqData = {
@@ -15,7 +15,7 @@ const faqData = {
     {
       id: "orders",
       name: "Orders & Payment",
-      icon: "🛒",
+      icon: "orders",
       faqs: [
         {
           question: "How do I place an order?",
@@ -42,7 +42,7 @@ const faqData = {
     {
       id: "shipping",
       name: "Shipping & Delivery",
-      icon: "🚚",
+      icon: "shipping",
       faqs: [
         {
           question: "How long does delivery take?",
@@ -69,7 +69,7 @@ const faqData = {
     {
       id: "returns",
       name: "Returns & Refunds",
-      icon: "↩️",
+      icon: "returns",
       faqs: [
         {
           question: "What is your return policy?",
@@ -96,7 +96,7 @@ const faqData = {
     {
       id: "products",
       name: "Products & Quality",
-      icon: "🌿",
+      icon: "products",
       faqs: [
         {
           question: "Are your products 100% natural?",
@@ -123,7 +123,7 @@ const faqData = {
     {
       id: "account",
       name: "Account & Privacy",
-      icon: "👤",
+      icon: "account",
       faqs: [
         {
           question: "Do I need an account to place an order?",
@@ -150,7 +150,7 @@ const faqData = {
     {
       id: "other",
       name: "Other Questions",
-      icon: "❓",
+      icon: "other",
       faqs: [
         {
           question: "Do you have a physical store?",
@@ -175,6 +175,17 @@ const faqData = {
       ]
     }
   ]
+};
+
+const getCategoryIcon = (icon: string) => {
+  switch(icon) {
+    case 'orders':   return <FaShoppingCart className="w-4 h-4" />;
+    case 'shipping': return <FaTruck className="w-4 h-4" />;
+    case 'returns':  return <FaUndo className="w-4 h-4" />;
+    case 'products': return <FaLeaf className="w-4 h-4" />;
+    case 'account':  return <FaUser className="w-4 h-4" />;
+    default:         return <FaEllipsisH className="w-4 h-4" />;
+  }
 };
 
 export default function FAQsPage() {
@@ -245,7 +256,9 @@ export default function FAQsPage() {
                     : 'bg-white text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <span className="text-2xl">{category.icon}</span>
+                <span className={selectedCategory === category.id ? 'text-white' : 'text-green-700'}>
+                  {getCategoryIcon(category.icon)}
+                </span>
                 <span className="font-medium">{category.name}</span>
               </button>
             ))}
@@ -296,7 +309,9 @@ export default function FAQsPage() {
                 ))
               ) : (
                 <div className="text-center py-12">
-                  <div className="text-6xl mb-4">🔍</div>
+                  <div className="flex justify-center mb-4">
+                    <svg className="w-14 h-14 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+                  </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     No results found
                   </h3>

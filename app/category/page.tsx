@@ -322,7 +322,9 @@ export default function CategoryPage() {
           )
         ) : (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🔍</div>
+            <div className="flex justify-center mb-4">
+              <svg className="w-14 h-14 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+            </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
             <p className="text-gray-500 mb-6">{filters.searchQuery ? `No results for "${filters.searchQuery}"` : 'Try a different category'}</p>
             <button onClick={clearFilters} className="px-6 py-3 bg-[#197B33] text-white rounded-lg hover:bg-[#156529] transition font-medium">View All Products</button>

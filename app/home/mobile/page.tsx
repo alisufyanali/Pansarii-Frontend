@@ -173,7 +173,9 @@ export default function MobileHomePage() {
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="text-5xl mb-3">🔍</div>
+            <div className="flex justify-center mb-3">
+              <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+            </div>
             <p className="text-gray-500 text-sm">No products found</p>
           </div>
         )}

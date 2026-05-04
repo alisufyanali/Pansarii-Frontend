@@ -442,14 +442,7 @@ function OrderConfirmationContent() {
   };
 
   if (!mounted || !order) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading order details...</p>
-        </div>
-      </div>
-    );
+    return <OrderConfirmationLoading />;
   }
 
   return (
@@ -664,10 +657,50 @@ function OrderConfirmationContent() {
 
 function OrderConfirmationLoading() {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading order details...</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-[4%] py-8">
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-6 animate-pulse">
+          <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4" />
+          <div className="h-8 w-48 bg-gray-200 rounded mx-auto mb-3" />
+          <div className="h-4 w-72 bg-gray-200 rounded mx-auto mb-4" />
+          <div className="h-16 w-48 bg-gray-200 rounded-lg mx-auto" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+              <div className="h-6 w-32 bg-gray-200 rounded mb-4" />
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="flex gap-4 pb-4 border-b mb-4">
+                  <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-3 bg-gray-200 rounded w-1/4" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 w-20 bg-gray-200 rounded" />
+                    <div className="h-3 w-12 bg-gray-200 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-10 bg-gray-200 rounded-lg mb-3" />
+              ))}
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+              <div className="h-6 w-32 bg-gray-200 rounded mb-4" />
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex justify-between mb-3">
+                  <div className="h-4 w-20 bg-gray-200 rounded" />
+                  <div className="h-4 w-24 bg-gray-200 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

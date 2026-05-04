@@ -218,7 +218,9 @@ function ShopContent({
       {/* No Results */}
       {filteredProducts.length === 0 && (
         <div className="text-center py-8 sm:py-12 lg:py-16">
-          <div className="text-gray-400 text-4xl sm:text-5xl mb-3 sm:mb-4">🔍</div>
+          <div className="flex justify-center mb-3 sm:mb-4">
+            <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+          </div>
           <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3">No products found</h3>
           <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 max-w-md mx-auto px-4">
             {filters.searchQuery
