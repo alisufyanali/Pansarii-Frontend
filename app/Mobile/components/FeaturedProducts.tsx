@@ -14,7 +14,7 @@ export default function MobileFeaturedProducts() {
 
   const products = bestSellers.slice(0, 10);
 
-  // Auto-slide every 3s
+  // Auto-slide every 3s — only horizontal, never scrolls the page
   useEffect(() => {
     const t = setInterval(() => {
       if (isHovering.current) return;
@@ -22,11 +22,11 @@ export default function MobileFeaturedProducts() {
       if (!el) return;
       const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
       if (atEnd) {
-        el.scrollTo({ left: 0, behavior: 'smooth' });
+        el.scrollLeft = 0;
       } else {
         const card = el.querySelector('.feat-card') as HTMLElement;
         const step = card ? card.offsetWidth + 12 : 260;
-        el.scrollBy({ left: step, behavior: 'smooth' });
+        el.scrollLeft += step;
       }
     }, 3000);
     return () => clearInterval(t);

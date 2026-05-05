@@ -53,16 +53,18 @@ export default function SolutionBar() {
       img:   '/images/Skincare.png',
     }));
 
-  // Auto-slide every 3s
+  // Auto-slide every 3s — only horizontal, never scrolls the page
   useEffect(() => {
     const t = setInterval(() => {
       setActive(prev => {
         const next = (prev + 1) % categories.length;
-        // Scroll active card into view
         const el = sliderRef.current;
         if (el) {
           const card = el.children[next] as HTMLElement;
-          card?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          if (card) {
+            // Only scroll the slider horizontally
+            el.scrollLeft = card.offsetLeft - el.offsetLeft;
+          }
         }
         return next;
       });
