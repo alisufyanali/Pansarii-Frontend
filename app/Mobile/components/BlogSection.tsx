@@ -9,7 +9,7 @@ const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
 export default function MobileBlogSection() {
   const latest = [...blogPosts]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 4);
+    .slice(0, 2);
 
   return (
     <section className="py-4 px-4">

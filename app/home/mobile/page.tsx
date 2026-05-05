@@ -168,35 +168,12 @@ export default function MobileHomePage() {
       {/* ── Categories ── */}
       <Categories />
 
-      {/* ── Tabs ── */}
-      <div className="sticky top-0 z-20 bg-white border-y border-gray-200">
-        <div
-          ref={tabScrollRef}
-          className="flex gap-2 overflow-x-auto px-4 py-3 no-scrollbar"
-        >
-          {menuTabs.map(tab => (
-            <button
-              key={tab.id}
-              data-tab={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all flex-shrink-0 ${
-                activeTab === tab.id
-                  ? 'bg-green-700 text-white'
-                  : 'bg-gray-100 text-gray-700 active:scale-95'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* ── Shop by Tab + Products ── */}
+      <div className="bg-white mt-2 rounded-t-2xl shadow-sm">
 
-      {/* ── Products ── */}
-      <div className="px-4 py-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">
-            {menuTabs.find(t => t.id === activeTab)?.label ?? 'All'} Products
-          </h2>
+        {/* Section heading */}
+        <div className="flex items-center justify-between px-4 pt-5 pb-2">
+          <h2 className="text-base font-bold text-gray-900">Shop <span className="me-color-y">Products</span></h2>
           <Link
             href={`/shop${activeTab !== 'all' ? `?category=${activeTab}` : ''}`}
             className="text-sm text-green-700 font-medium"
@@ -205,29 +182,56 @@ export default function MobileHomePage() {
           </Link>
         </div>
 
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3">
-            {filteredProducts.map(product => (
-              <MobileProductCard key={product.id} product={product} />
+        {/* Tabs */}
+        <div className="sticky top-0 z-20 bg-white border-b border-gray-100">
+          <div
+            ref={tabScrollRef}
+            className="flex gap-2 overflow-x-auto px-4 py-2.5 no-scrollbar"
+          >
+            {menuTabs.map(tab => (
+              <button
+                key={tab.id}
+                data-tab={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-1.5 rounded-full whitespace-nowrap text-sm font-medium transition-all flex-shrink-0 ${
+                  activeTab === tab.id
+                    ? 'bg-green-700 text-white'
+                    : 'bg-gray-100 text-gray-600 active:scale-95'
+                }`}
+              >
+                {tab.label}
+              </button>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-16">
-            <FiSearch className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">No products found</p>
-          </div>
-        )}
+        </div>
 
-        {filteredProducts.length > 0 && (
-          <div className="text-center mt-6">
-            <Link
-              href={`/shop${activeTab !== 'all' ? `?category=${activeTab}` : ''}`}
-              className="inline-block px-8 py-3 bg-green-700 text-white font-medium rounded-lg hover:bg-green-600 transition-colors active:scale-95"
-            >
-              View All Products
-            </Link>
-          </div>
-        )}
+        {/* Products grid */}
+        <div className="px-4 pt-4 pb-6">
+          {filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {filteredProducts.map(product => (
+                <MobileProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <FiSearch className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">No products found</p>
+            </div>
+          )}
+
+          {filteredProducts.length > 0 && (
+            <div className="text-center mt-5">
+              <Link
+                href={`/shop${activeTab !== 'all' ? `?category=${activeTab}` : ''}`}
+                className="inline-block px-8 py-2.5 bg-green-700 text-white text-sm font-medium rounded-full hover:bg-green-600 transition-colors active:scale-95"
+              >
+                View All Products
+              </Link>
+            </div>
+          )}
+        </div>
+
       </div>
 
       {/* ── Video Products ── */}

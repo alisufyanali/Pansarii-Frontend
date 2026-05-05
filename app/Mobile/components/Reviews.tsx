@@ -47,7 +47,7 @@ export default function MobileReviews() {
           <div
             key={review.id}
             className="rev-card flex-shrink-0 bg-white rounded-2xl p-4 shadow-sm"
-            style={{ width: 'calc((100vw - 56px) / 2)' }}
+            style={{ width: 'calc(100vw - 48px)' }}
           >
             {/* Title */}
             <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2">
