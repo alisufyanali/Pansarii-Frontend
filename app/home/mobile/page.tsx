@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { FiSearch } from 'react-icons/fi';
 import Categories from '@/app/Mobile/components/categories';
 import SolutionBar from '@/app/Mobile/components/solutionbar';
+import MobileFeaturedProducts from '@/app/Mobile/components/FeaturedProducts';
 import MobileProductCard from '@/app/Mobile/components/ProductCard';
 import { allProducts } from '@/app/Desktop/data/products';
 
@@ -154,11 +155,15 @@ export default function MobileHomePage() {
         </div>
       </div>
 
-      {/* ── Categories ── */}
-      <Categories />
 
       {/* ── Solution Bar ── */}
       <SolutionBar />
+
+      {/* ── Featured Products ── */}
+      <MobileFeaturedProducts />
+
+      {/* ── Categories ── */}
+      <Categories />
 
       {/* ── Tabs ── */}
       <div className="sticky top-0 z-20 bg-white border-y border-gray-200">

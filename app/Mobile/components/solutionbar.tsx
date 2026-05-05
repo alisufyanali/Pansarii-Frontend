@@ -1,110 +1,116 @@
-// app/Mobile/components/solutionbar.tsx
 "use client";
 
+import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { allProducts } from "@/app/Desktop/data/products";
 
-// Category slug mapping
-const CATEGORY_SLUG_MAP: { [key: string]: string } = {
-  'Herb': 'herbs',
-  'Oils': 'oils',
-  'Supplements': 'supplements',
+const CATEGORY_SLUG_MAP: Record<string, string> = {
+  'Herb':          'herbs',
+  'Oils':          'oils',
+  'Supplements':   'supplements',
   'Beauty Corner': 'beauty-corner',
-  'Dawakhana': 'dawakhana',
-  'Remedies': 'remedies',
-  'Murrabajat': 'murrabajat',
-  'Arqiyaat': 'arqiyaat',
+  'Dawakhana':     'dawakhana',
+  'Remedies':      'remedies',
+  'Murrabajat':    'murrabajat',
+  'Arqiyaat':      'arqiyaat',
+};
+
+const CATEGORY_COLORS: Record<string, { bg: string; border: string; activeBorder: string }> = {
+  'Herb':          { bg: 'bg-green-50',  border: 'border-green-100',  activeBorder: 'border-green-500'  },
+  'Oils':          { bg: 'bg-yellow-50', border: 'border-yellow-100', activeBorder: 'border-yellow-500' },
+  'Supplements':   { bg: 'bg-blue-50',   border: 'border-blue-100',   activeBorder: 'border-blue-500'   },
+  'Beauty Corner': { bg: 'bg-pink-50',   border: 'border-pink-100',   activeBorder: 'border-pink-500'   },
+  'Dawakhana':     { bg: 'bg-purple-50', border: 'border-purple-100', activeBorder: 'border-purple-500' },
+  'Remedies':      { bg: 'bg-lime-50',   border: 'border-lime-100',   activeBorder: 'border-lime-500'   },
+  'Murrabajat':    { bg: 'bg-orange-50', border: 'border-orange-100', activeBorder: 'border-orange-500' },
+  'Arqiyaat':      { bg: 'bg-cyan-50',   border: 'border-cyan-100',   activeBorder: 'border-cyan-500'   },
+};
+
+const CATEGORY_ICONS: Record<string, string> = {
+  'Herb':          '🌿',
+  'Oils':          '🛢️',
+  'Supplements':   '💊',
+  'Beauty Corner': '💄',
+  'Dawakhana':     '🏥',
+  'Remedies':      '💚',
+  'Murrabajat':    '🍯',
+  'Arqiyaat':      '💧',
 };
 
 export default function SolutionBar() {
-  const router = useRouter();
+  const router    = useRouter();
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const [active,  setActive] = useState(0);
 
-  // Generate categories from products data
   const categories = Array.from(new Set(allProducts.map(p => p.category)))
     .filter(Boolean)
-    .slice(0, 3) // Take first 3 categories
-    .map((category, index) => ({
-      id: category.toLowerCase().replace(/\s+/g, '-'),
-      name: category,
-      slug: CATEGORY_SLUG_MAP[category] || category.toLowerCase().replace(/\s+/g, '-'),
-      count: allProducts.filter(p => p.category === category).length,
-      icon: getCategoryIcon(category),
-      color: getCategoryColor(index)
+    .map((category) => ({
+      name:  category,
+      slug:  CATEGORY_SLUG_MAP[category] || category.toLowerCase().replace(/\s+/g, '-'),
+      icon:  CATEGORY_ICONS[category]    || '📦',
+      color: CATEGORY_COLORS[category]   || { bg: 'bg-gray-50', border: 'border-gray-100', activeBorder: 'border-gray-400' },
+      img:   '/images/Skincare.png',
     }));
 
-  const handleCategoryClick = (slug: string) => {
-    router.push(`/${slug}`);
-  };
+  // Auto-slide every 3s
+  useEffect(() => {
+    const t = setInterval(() => {
+      setActive(prev => {
+        const next = (prev + 1) % categories.length;
+        // Scroll active card into view
+        const el = sliderRef.current;
+        if (el) {
+          const card = el.children[next] as HTMLElement;
+          card?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+        return next;
+      });
+    }, 3000);
+    return () => clearInterval(t);
+  }, [categories.length]);
 
   return (
     <section className="px-4 py-4">
-      <div className="grid grid-cols-3 gap-2.5">
-        {categories.map((category) => (
-          <button
-            key={category.id}
-            onClick={() => handleCategoryClick(category.slug)}
-            className="group relative overflow-hidden rounded-xl bg-white border border-gray-200 hover:border-green-500 transition-all duration-300 hover:shadow-md active:scale-95"
-          >
-            {/* Square Container */}
-            <div className="aspect-square flex flex-col items-center justify-center p-3">
-              {/* Icon/Emoji */}
-              <div className={`w-12 h-12 rounded-full ${category.color} flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform duration-300`}>
-                {category.icon}
-              </div>
-              
-              {/* Category Name */}
-              <h3 className="font-semibold text-gray-900 text-[11px] text-center line-clamp-2 leading-tight mb-0.5">
-                {category.name}
-              </h3>
-              
-              {/* Item Count */}
-              <p className="text-[9px] text-gray-500">
-                {category.count} items
-              </p>
-            </div>
 
-            {/* Hover Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base font-bold text-gray-900  ">
+          Find Your <span className="text-gray-900">Solutions</span>
+        </h2>
+      </div>
+
+      {/* Slider — 3 visible, 4th peeking */}
+      <div
+        ref={sliderRef}
+        className="flex gap-3 overflow-x-auto no-scrollbar pb-1"
+      >
+        {categories.map((cat, i) => (
+          <button
+            key={cat.name}
+            onClick={() => { setActive(i); router.push(`/${cat.slug}`); }}
+            className={`
+              flex-shrink-0 flex flex-col items-center rounded-2xl border-2 p-3 transition-all active:scale-95
+              ${cat.color.bg}
+              ${i === active ? cat.color.activeBorder : cat.color.border}
+            `}
+            style={{ width: 'calc((100vw - 32px - 24px) / 3.4)' }}
+          >
+            {/* Circle image */}
+            <div className={`w-16 h-16 rounded-full overflow-hidden border-2 mb-2 ${i === active ? cat.color.activeBorder : 'border-white'}`}>
+              <img
+                src={cat.img}
+                alt={cat.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="text-xs font-semibold text-gray-800 text-center leading-tight line-clamp-2">
+              {cat.name}
+            </span>
           </button>
         ))}
       </div>
+
     </section>
   );
-}
-
-// Helper function to get category icon
-function getCategoryIcon(category: string): string {
-  const icons: { [key: string]: string } = {
-    "Herb": "🌿",
-    "Oils": "🛢️",
-    "Supplements": "💊",
-    "Beauty Corner": "💄",
-    "Dawakhana": "🏥",
-    "Remedies": "💚",
-    "Murrabajat": "🍯",
-    "Arqiyaat": "💧",
-    "Oils & Ghee": "🛢️",
-    "Herbs & Spices": "🌿",
-    "Honey & Sweeteners": "🍯",
-    "Beauty & Skincare": "💄",
-    "Tea & Beverages": "🍵",
-    "Nuts & Seeds": "🥜",
-    "Grains & Cereals": "🌾",
-  };
-  
-  return icons[category] || "📦";
-}
-
-// Helper function to get category color
-function getCategoryColor(index: number): string {
-  const colors = [
-    "bg-green-50",
-    "bg-emerald-50",
-    "bg-teal-50",
-    "bg-lime-50",
-    "bg-green-100",
-    "bg-emerald-100",
-  ];
-  
-  return colors[index % colors.length];
 }
