@@ -7,6 +7,9 @@ import { FiSearch } from 'react-icons/fi';
 import Categories from '@/app/Mobile/components/categories';
 import SolutionBar from '@/app/Mobile/components/solutionbar';
 import MobileFeaturedProducts from '@/app/Mobile/components/FeaturedProducts';
+import MobileVideoProducts from '@/app/Mobile/components/VideoProducts';
+import MobileReviews from '@/app/Mobile/components/Reviews';
+import MobileBlogSection from '@/app/Mobile/components/BlogSection';
 import MobileProductCard from '@/app/Mobile/components/ProductCard';
 import { allProducts } from '@/app/Desktop/data/products';
 
@@ -226,6 +229,15 @@ export default function MobileHomePage() {
           </div>
         )}
       </div>
+
+      {/* ── Video Products ── */}
+      <MobileVideoProducts />
+
+      {/* ── Reviews ── */}
+      <MobileReviews />
+
+      {/* ── Blog ── */}
+      <MobileBlogSection />
 
     </div>
   );
