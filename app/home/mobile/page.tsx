@@ -7,6 +7,7 @@ import SolutionBar         from '@/app/Mobile/components/solutionbar';
 import MobileFeaturedProducts from '@/app/Mobile/components/FeaturedProducts';
 import ShopProducts        from '@/app/Mobile/components/ShopProducts';
 import MobileVideoProducts from '@/app/Mobile/components/VideoProducts';
+import MobileComboDeal     from '@/app/Mobile/components/ComboDeal';
 import MobileReviews       from '@/app/Mobile/components/Reviews';
 import MobileBlogSection   from '@/app/Mobile/components/BlogSection';
 
@@ -60,6 +61,7 @@ export default function MobileHomePage() {
       <MobileFeaturedProducts />
       <Categories />
       <ShopProducts />
+      <MobileComboDeal />
       <MobileVideoProducts />
       <MobileReviews />
       <MobileBlogSection />
