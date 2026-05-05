@@ -1,143 +1,187 @@
-// app/Mobile/page.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { FiSearch } from 'react-icons/fi';
 import Categories from '@/app/Mobile/components/categories';
 import SolutionBar from '@/app/Mobile/components/solutionbar';
 import MobileProductCard from '@/app/Mobile/components/ProductCard';
 import { allProducts } from '@/app/Desktop/data/products';
 
+// ─── Skeleton ────────────────────────────────────────────────────────────────
+function MobileHomeSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-50 animate-pulse">
+      {/* Banner skeleton */}
+      <div className="h-48 bg-gray-200 rounded-2xl mx-4 mt-4" />
+
+      {/* Categories skeleton */}
+      <div className="flex gap-3 px-4 mt-4 overflow-hidden">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="flex-shrink-0 flex flex-col items-center gap-1">
+            <div className="w-14 h-14 bg-gray-200 rounded-full" />
+            <div className="w-10 h-2.5 bg-gray-200 rounded" />
+          </div>
+        ))}
+      </div>
+
+      {/* Solution bar skeleton */}
+      <div className="h-10 bg-gray-200 mx-4 mt-4 rounded-lg" />
+
+      {/* Tabs skeleton */}
+      <div className="flex gap-2 px-4 mt-4 overflow-hidden">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="flex-shrink-0 h-9 w-20 bg-gray-200 rounded-full" />
+        ))}
+      </div>
+
+      {/* Products skeleton */}
+      <div className="grid grid-cols-2 gap-3 px-4 mt-6">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <div className="h-36 bg-gray-200" />
+            <div className="p-2.5 space-y-2">
+              <div className="h-3 bg-gray-200 rounded w-3/4" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
+              <div className="flex justify-between items-center mt-1">
+                <div className="h-4 bg-gray-200 rounded w-16" />
+                <div className="w-7 h-7 bg-gray-200 rounded-full" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Banner data ──────────────────────────────────────────────────────────────
+// Image size: 750×400px (mobile optimized)
+const banners = [
+  { id: 1, image: '/images/mobile-banner-1.png', title: 'Premium Ayurvedic', subtitle: 'Natural & Organic', link: '/shop'        },
+  { id: 2, image: '/images/mobile-banner-2.png', title: 'Summer Sale',       subtitle: 'Up to 50% OFF',    link: '/offers'       },
+  { id: 3, image: '/images/mobile-banner-3.png', title: 'New Collection',    subtitle: 'Fresh Arrivals',   link: '/newarrival'   },
+];
+
+// Fallback gradient colors if image fails
+const fallbackColors = [
+  'from-green-600 to-emerald-500',
+  'from-orange-600 to-red-500',
+  'from-purple-600 to-pink-500',
+];
+
+const menuTabs = [
+  { id: 'all',              label: 'All'         },
+  { id: 'new',              label: 'New In'      },
+  { id: 'bestsellers',      label: 'Best Sellers'},
+  { id: 'Oils & Ghee',      label: 'Oils'        },
+  { id: 'Herbs & Spices',   label: 'Herbs'       },
+  { id: 'Honey & Sweeteners', label: 'Honey'     },
+  { id: 'Beauty & Skincare',  label: 'Beauty'    },
+  { id: 'Tea & Beverages',    label: 'Tea'       },
+];
+
 export default function MobileHomePage() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [activeTab, setActiveTab] = useState('all');
+  const [currentSlide, setCurrentSlide]   = useState(0);
+  const [activeTab,    setActiveTab]       = useState('all');
+  const [isLoading,    setIsLoading]       = useState(true);
+  const [imgErrors,    setImgErrors]       = useState<Record<number, boolean>>({});
   const tabScrollRef = useRef<HTMLDivElement>(null);
 
-  // Hero Banners
-  const banners = [
-    {
-      id: 1,
-      title: 'Premium Ayurvedic',
-      subtitle: 'Natural & Organic',
-      color: 'from-green-600 to-emerald-500',
-      link: '/shop'
-    },
-    {
-      id: 2,
-      title: 'Summer Sale',
-      subtitle: 'Up to 50% OFF',
-      color: 'from-orange-600 to-red-500',
-      link: '/offers'
-    },
-    {
-      id: 3,
-      title: 'New Collection',
-      subtitle: 'Fresh Arrivals',
-      color: 'from-purple-600 to-pink-500',
-      link: '/new-arrivals'
-    },
-  ];
-
-  // Menu Tabs
-  const menuTabs = [
-    { id: 'all', label: 'All' },
-    { id: 'new', label: 'New In' },
-    { id: 'bestsellers', label: 'Best Sellers' },
-    { id: 'Oils & Ghee', label: 'Oils' },
-    { id: 'Herbs & Spices', label: 'Herbs' },
-    { id: 'Honey & Sweeteners', label: 'Honey' },
-    { id: 'Beauty & Skincare', label: 'Beauty' },
-    { id: 'Tea & Beverages', label: 'Tea' },
-  ];
-
-  // Filter products based on active tab
-  const getFilteredProducts = () => {
-    switch(activeTab) {
-      case 'all':
-        return allProducts.slice(0, 12);
-      case 'new':
-        return allProducts.filter(p => p.isNew).slice(0, 12);
-      case 'bestsellers':
-        return allProducts.filter(p => p.isBestSeller).slice(0, 12);
-      default:
-        return allProducts.filter(p => p.category === activeTab).slice(0, 12);
-    }
-  };
-
-  const filteredProducts = getFilteredProducts();
-
-  // Auto-slide banners
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % banners.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [banners.length]);
+    const t = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(t);
+  }, []);
 
-  // Auto-scroll to active tab
+  // Auto-slide
+  useEffect(() => {
+    const t = setInterval(() => setCurrentSlide(p => (p + 1) % banners.length), 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Scroll active tab into view
   useEffect(() => {
     if (tabScrollRef.current) {
-      const activeElement = tabScrollRef.current.querySelector(`[data-tab="${activeTab}"]`);
-      activeElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      const el = tabScrollRef.current.querySelector(`[data-tab="${activeTab}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
   }, [activeTab]);
 
+  const filteredProducts = (() => {
+    switch (activeTab) {
+      case 'all':         return allProducts.slice(0, 12);
+      case 'new':         return allProducts.filter(p => p.isNew).slice(0, 12);
+      case 'bestsellers': return allProducts.filter(p => p.isBestSeller).slice(0, 12);
+      default:            return allProducts.filter(p => p.category === activeTab).slice(0, 12);
+    }
+  })();
+
+  if (isLoading) return <MobileHomeSkeleton />;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      
-      {/* Hero Banner Slider */}
-      <div className="relative h-48 overflow-hidden bg-gray-100 rounded-2xl mx-4 mt-4">
+
+      {/* ── Hero Banner Slider ── */}
+      {/* Recommended image size: 750×400px */}
+      <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden" style={{ aspectRatio: '750/400' }}>
         {banners.map((banner, index) => (
           <Link
             key={banner.id}
             href={banner.link}
-            className={`absolute inset-0 transition-opacity duration-700 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-700 ${index === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           >
-            <div className={`w-full h-full bg-gradient-to-br ${banner.color} flex flex-col items-center justify-center text-white px-6`}>
-              <h2 className="text-2xl font-bold mb-1">{banner.title}</h2>
-              <p className="text-sm opacity-90">{banner.subtitle}</p>
-            </div>
+            {!imgErrors[index] ? (
+              <Image
+                src={banner.image}
+                alt={banner.title}
+                fill
+                className="object-cover object-center"
+                priority={index === 0}
+                onError={() => setImgErrors(prev => ({ ...prev, [index]: true }))}
+              />
+            ) : (
+              /* Fallback gradient if image missing */
+              <div className={`w-full h-full bg-gradient-to-br ${fallbackColors[index]} flex flex-col items-center justify-center text-white px-6`}>
+                <h2 className="text-2xl font-bold mb-1">{banner.title}</h2>
+                <p className="text-sm opacity-90">{banner.subtitle}</p>
+              </div>
+            )}
           </Link>
         ))}
-        
+
         {/* Dots */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
           {banners.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}
-              className={`h-1.5 rounded-full transition-all ${
-                idx === currentSlide ? 'w-6 bg-white' : 'w-1.5 bg-white/60'
-              }`}
+              className={`h-1.5 rounded-full transition-all ${idx === currentSlide ? 'w-6 bg-white' : 'w-1.5 bg-white/60'}`}
             />
           ))}
         </div>
       </div>
 
-      {/* Categories */}
+      {/* ── Categories ── */}
       <Categories />
 
-      {/* Solution Bar */}
+      {/* ── Solution Bar ── */}
       <SolutionBar />
 
-      {/* Tabs - Sticky */}
+      {/* ── Tabs — sticky ── */}
       <div className="sticky top-0 z-20 bg-white border-y border-gray-200">
-        <div 
+        <div
           ref={tabScrollRef}
-          className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide"
+          className="flex gap-2 overflow-x-auto px-4 py-3"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {menuTabs.map((tab) => (
+          {menuTabs.map(tab => (
             <button
               key={tab.id}
               data-tab={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-green-700 text-white'
-                  : 'bg-gray-100 text-gray-700 active:scale-95'
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all flex-shrink-0 ${
+                activeTab === tab.id ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-700 active:scale-95'
               }`}
             >
               {tab.label}
@@ -146,63 +190,47 @@ export default function MobileHomePage() {
         </div>
       </div>
 
-      {/* Products Section */}
+      {/* ── Products ── */}
       <div className="px-4 py-6">
-        {/* Section Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-900">
             {menuTabs.find(t => t.id === activeTab)?.label || 'All'} Products
           </h2>
-          <a 
+          <Link
             href={`/shop${activeTab !== 'all' ? `?category=${activeTab}` : ''}`}
-            className="text-sm text-[#197B33] font-medium hover:underline"
+            className="text-sm text-[#197B33] font-medium"
           >
-            View All →
-          </a>
+            View All
+          </Link>
         </div>
 
-        {/* Product Grid - 2 columns */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
-            {filteredProducts.map((product) => (
-              <MobileProductCard 
-                key={product.id} 
-                product={product}
-              />
+            {filteredProducts.map(product => (
+              <MobileProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
           <div className="text-center py-16">
             <div className="flex justify-center mb-3">
-              <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+              <FiSearch className="w-12 h-12 text-gray-300" />
             </div>
             <p className="text-gray-500 text-sm">No products found</p>
           </div>
         )}
 
-        {/* Load More Button */}
         {filteredProducts.length > 0 && (
           <div className="text-center mt-6">
-            <a
+            <Link
               href={`/shop${activeTab !== 'all' ? `?category=${activeTab}` : ''}`}
               className="inline-block px-8 py-3 bg-green-700 text-white font-medium rounded-lg hover:bg-green-600 transition-colors active:scale-95"
             >
               View All Products
-            </a>
+            </Link>
           </div>
         )}
       </div>
 
-      {/* CSS for hiding scrollbar */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }
