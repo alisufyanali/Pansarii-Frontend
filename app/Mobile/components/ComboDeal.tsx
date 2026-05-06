@@ -82,38 +82,41 @@ export default function MobileComboDeal() {
           onTouchStart={() => { isTouch.current = true; }}
           onTouchEnd={() => { setTimeout(() => { isTouch.current = false; }, 2000); }}
         >
-          {products.map((product, i) => (
+      {products.map((product, i) => (
             <div
               key={product.id}
-              className={`combo-card flex-shrink-0 rounded-2xl bg-gradient-to-b ${cardGradients[i % cardGradients.length]} overflow-hidden cursor-pointer active:scale-95 transition-transform shadow-md`}
+              className={`combo-card flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition-transform shadow-lg`}
               style={{ width: 'calc((100vw - 44px) / 2.3)' }}
               onClick={() => router.push(`/${product.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
             >
-              {/* Sale badge + Buy 1 Get 1 */}
-              <div className="relative pt-2 px-2">
-                {/* Sale badge — top left */}
-                <div className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-1 rounded-md leading-tight text-center z-10">
+              {/* Top — gradient image area */}
+              <div
+                className={`relative bg-gradient-to-br ${cardGradients[i % cardGradients.length]} pt-3 pb-0`}
+                style={{ minHeight: '180px' }}
+              >
+                {/* Sale badge — top left, ribbon style */}
+                <div className="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-black px-2 py-1.5 rounded-br-xl rounded-tl-2xl leading-tight text-center z-10 min-w-[44px]">
                   Sale<br />{product.sale || '20%'}
                 </div>
 
-                {/* Buy 1 Get 1 — top right */}
-                <div className="absolute top-2 right-2 bg-green-700 text-white text-[8px] font-bold w-10 h-10 rounded-full flex items-center justify-center text-center leading-tight z-10">
+                {/* Buy 1 Get 1 — top right, hexagon-ish */}
+                <div className="absolute top-2 right-2 bg-green-700 text-white text-[8px] font-bold w-11 h-11 rounded-full flex items-center justify-center text-center leading-tight z-10 shadow-md">
                   Buy 1<br />Get 1
                 </div>
 
-                {/* Product image */}
-                <div className="flex items-center justify-center h-32 pt-4">
+                {/* Product image — large, centered */}
+                <div className="flex items-end justify-center h-40 px-4">
                   <img
                     src={product.img}
                     alt={product.nameEn}
-                    className="h-full w-auto object-contain drop-shadow-md"
+                    className="w-full h-full object-contain drop-shadow-xl"
                   />
                 </div>
               </div>
 
-              {/* Info */}
-              <div className="bg-white/80 px-3 py-2.5">
-                <p className="text-xs font-bold text-gray-900 line-clamp-2 leading-snug text-center mb-1.5">
+              {/* Bottom — white info area */}
+              <div className="bg-white px-3 py-3">
+                <p className="text-xs font-bold text-gray-900 line-clamp-2 leading-snug text-center mb-2">
                   {product.nameEn}
                 </p>
                 <div className="flex items-center justify-center gap-2">

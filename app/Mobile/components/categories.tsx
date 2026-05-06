@@ -16,14 +16,14 @@ const CATEGORY_SLUG_MAP: Record<string, string> = {
 };
 
 const BG_COLORS = [
-  '#E8D5F5', // purple
-  '#FFE8C8', // amber
-  '#D5EDD5', // green
-  '#D5E8F5', // blue
-  '#F5D5D5', // pink
-  '#F5F0D5', // yellow
-  '#D5F5F0', // teal
-  '#F5D5F0', // lavender
+  '#E8D5F5',
+  '#FFE8C8',
+  '#D5EDD5',
+  '#D5E8F5',
+  '#F5D5D5',
+  '#F5F0D5',
+  '#D5F5F0',
+  '#F5D5F0',
 ];
 
 export default function Categories() {
@@ -40,21 +40,16 @@ export default function Categories() {
       img:     '/images/category.png',
     }));
 
-  // Auto-slide every 2.5s — only scrolls the slider horizontally, never the page
+  // Auto-slide — smooth scroll
   useEffect(() => {
     const t = setInterval(() => {
       if (isTouch.current) return;
       const el = sliderRef.current;
       if (!el) return;
+      const card = el.querySelector('.cat-card') as HTMLElement;
+      const step = card ? card.offsetWidth + 12 : 130;
       const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
-      if (atEnd) {
-        // Jump back to start without affecting page scroll
-        el.scrollLeft = 0;
-      } else {
-        const card = el.querySelector('.cat-card') as HTMLElement;
-        const step = card ? card.offsetWidth + 12 : 130;
-        el.scrollLeft += step;
-      }
+      el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + step, behavior: 'smooth' });
     }, 2500);
     return () => clearInterval(t);
   }, []);
@@ -65,40 +60,39 @@ export default function Categories() {
       {/* Header */}
       <div className="px-4 mb-3 text-center">
         <h2 className="text-base font-bold text-gray-900">
-          Shop by <span className="text-[#FAA944]">Category</span>
+          Shop by <span className="me-color-y">Category</span>
         </h2>
       </div>
 
-      {/* Slider — 3 cards visible, no nav buttons */}
+      {/* Slider */}
       <div
         ref={sliderRef}
         className="flex gap-3 overflow-x-auto no-scrollbar pl-4 pr-4"
         onTouchStart={() => { isTouch.current = true; }}
         onTouchEnd={() => { setTimeout(() => { isTouch.current = false; }, 2000); }}
       >
-        {categories.map((cat, i) => (
+        {categories.map(cat => (
           <button
             key={cat.name}
             className="cat-card flex-shrink-0 cursor-pointer active:scale-95 transition-transform"
             style={{ width: 'calc((100vw - 56px) / 3)' }}
             onClick={() => router.push(`/${cat.slug}`)}
           >
-            {/* Arch card */}
+            {/* Arch card — no border */}
             <div
-              className="w-full relative overflow-hidden flex flex-col items-start justify-start pt-3 px-2"
+              className="w-full relative overflow-hidden flex flex-col items-center justify-start pt-4 px-2"
               style={{
                 backgroundColor: cat.bgColor,
                 borderRadius: '50% 50% 12px 12px / 40% 40% 12px 12px',
                 aspectRatio: '3/4',
               }}
             >
-              {/* Category name — top left */}
-              <p className="text-[10px] font-bold text-gray-800 uppercase
-               leading-tight text-center z-10 px-5 mt-5">
+              {/* Category name */}
+              <p className="text-[10px] font-bold text-gray-800 uppercase leading-tight text-center z-10 px-1">
                 {cat.name}
               </p>
 
-              {/* Product image — bottom center, overflowing slightly */}
+              {/* Product image */}
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[85%]">
                 <img
                   src={cat.img}
