@@ -5,9 +5,9 @@ import { ReactNode, useState } from "react";
 import { CartProvider } from "../context/CartContext";
 import { WishlistProvider } from "../context/WishList";
 import Header from "./components/header";
-import Navbar from "./components/navbar";
 import MenuModal from "./components/MenuModal";
 import Footer from "./components/footer";
+import BottomNav from "./components/BottomNav";
 
 export default function MobileLayout({ children }: { children: ReactNode }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -22,17 +22,15 @@ export default function MobileLayout({ children }: { children: ReactNode }) {
         />
 
         {/* Main Content */}
-        <main className="min-h-screen bg-white pt-32">
+        <main className="min-h-screen bg-white pt-32 pb-24">
           {children}
         </main>
 
         {/* Footer Section */}
         <Footer />
 
-        {/* Floating Bottom Navbar - Uncomment if needed */}
-        {/* <Navbar 
-          setIsMenuOpen={setIsMenuOpen}
-        /> */}
+        {/* Bottom Nav */}
+        <BottomNav />
 
         {/* Menu Modal */}
         <MenuModal 
