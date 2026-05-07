@@ -20,21 +20,15 @@ interface Product {
   [key: string]: any;
 }
 
-interface ProductCardProps {
-  product: Product;
-}
-
-export default function ProductCard({ product }: ProductCardProps) {
-  const [isHovered, setIsHovered] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+export default function ProductCard({ product }: { product: Product }) {
+  const [isHovered,   setIsHovered]   = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const productSlug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/${productSlug}`);
+    router.push(`/${product.nameEn.toLowerCase().replace(/\s+/g, '-')}`);
   };
 
   const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {
@@ -43,92 +37,77 @@ export default function ProductCard({ product }: ProductCardProps) {
     setIsModalOpen(true);
   };
 
-  const displayImage = isHovered && product.hoverImg 
-    ? product.hoverImg 
-    : product.img;
+  const displayImage = isHovered && product.hoverImg ? product.hoverImg : product.img;
 
   return (
     <>
-      <div 
-        className="w-full rounded-[18px] overflow-hidden flex flex-col bg-white cursor-pointer transition-all duration-300 h-full"
-        style={{ 
-          border: isHovered ? '2px solid #197B33' : '2px solid #E5E7EB'
-        }}
+      <div
+        className={`w-full h-full rounded-2xl overflow-hidden flex flex-col bg-white cursor-pointer transition-all duration-300 border-2 ${
+          isHovered ? 'border-green-700' : 'border-gray-200'
+        }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}
       >
-        
-        {/* Image Section with bottom border */}
-        <div className="relative w-full h-[180px] border-b border-gray-200">
+        {/* Fixed-height image */}
+        <div className="relative w-full h-44 flex-shrink-0 border-b border-gray-100">
           <img
             src={displayImage}
             alt={product.nameEn}
             className="w-full h-full object-cover transition-all duration-300"
           />
-
-          {/* Sale Badge - Check for null/undefined */}
-          {product.sale && product.sale !== null && product.sale !== undefined && (
-            <div className="absolute top-2 right-2 w-[60px] h-[22px] rounded-[60px] bg-[#F83A3A] text-white text-[11px] flex items-center justify-center font-medium">
+          {product.sale && (
+            <span className="absolute top-2 right-2 px-2 py-0.5 bg-red-500 text-white text-[11px] font-medium rounded-full">
               {product.sale}
-            </div>
+            </span>
           )}
         </div>
 
-        {/* Product Details - All content centered */}
-        <div className="flex-1 bg-white p-3 flex flex-col justify-between items-center">
-          
-          {/* Text Content - Centered */}
-          <div className="w-full text-center">
-            {/* English name - smaller */}
-            <p className="text-[14px] font-medium truncate text-center text-gray-800">{product.nameEn}</p>
-            
-            {/* Urdu name - visible with proper font and spacing */}
-            <p className="text-[16px] font-medium truncate text-center text-gray-900 mt-0.5 mb-1" style={{ fontFamily: 'system-ui, -apple-system, "Noto Nastaliq Urdu", "Traditional Arabic", sans-serif' }}>
+        {/* Content — flex-col so button always sticks to bottom */}
+        <div className="flex-1 flex flex-col p-3">
+
+          {/* Text block — fixed height via line-clamp */}
+          <div className="flex-1 text-center space-y-1">
+            <p className="text-sm font-semibold text-gray-900 line-clamp-1">{product.nameEn}</p>
+            <p
+              className="text-sm font-medium text-gray-700 line-clamp-1"
+              style={{ fontFamily: '"Noto Nastaliq Urdu", "Traditional Arabic", system-ui, sans-serif' }}
+            >
               {product.nameUr}
             </p>
-            
-            {/* Description - smaller */}
-            <p className="text-xs text-[#197B33] truncate text-center">{product.description}</p>
+            <p className="text-xs text-green-700 line-clamp-1">{product.description}</p>
 
-            {/* Rating & Reviews - Centered - smaller text */}
-            <div className="flex items-center justify-center gap-3 mt-1 text-xs font-medium flex-wrap">
-              <div className="flex items-center gap-1 text-yellow-400">
-                <FaStar size={12} /> <span>{product.rating}</span>
-              </div>|
-              <div className="flex items-center gap-1 text-green-600">
-                <FaCheckCircle size={12} /> <span>{product.reviews} Reviews</span>
-              </div>
+            <div className="flex items-center justify-center gap-2 text-xs font-medium pt-0.5">
+              <span className="flex items-center gap-1 text-yellow-500">
+                <FaStar size={11} /> {product.rating}
+              </span>
+              <span className="text-gray-300">|</span>
+              <span className="flex items-center gap-1 text-green-600">
+                <FaCheckCircle size={11} /> {product.reviews}
+              </span>
             </div>
 
-            {/* Price - Centered with null check - smaller */}
-            <div className="flex items-center justify-center gap-2 mt-1.5 flex-wrap">
-              <p className="text-[15px] font-bold">PKR {product.price}</p>
-              {product.oldPrice !== null && product.oldPrice !== undefined && (
-                <p className="text-xs text-gray-500 line-through">PKR {product.oldPrice}</p>
+            <div className="flex items-center justify-center gap-2 pt-0.5">
+              <span className="text-sm font-bold text-gray-900">PKR {product.price}</span>
+              {product.oldPrice != null && (
+                <span className="text-xs text-gray-400 line-through">PKR {product.oldPrice}</span>
               )}
             </div>
           </div>
 
-          {/* Quick Add Button - Centered with icon on right - smaller height */}
-          <div className="w-full flex justify-center">
-            <button 
-              onClick={handleQuickAdd}
-              className="w-[100%] h-[42px] mt-2 rounded-[57px] border border-gray-300 bg-[#50B46B] text-white flex items-center font-medium text-sm hover:bg-[#146128] transition-colors"
-            >
-              <span className="flex-1 text-center">Quick Add</span>
-              <FaShoppingCart className="mr-5" size={16} />
-            </button>
-          </div>
+          {/* Quick Add — always at bottom */}
+          <button
+            onClick={handleQuickAdd}
+            className="mt-3 w-full h-10 rounded-full bg-green-600 text-white flex items-center justify-center gap-2 text-sm font-medium hover:bg-green-700 transition-colors flex-shrink-0"
+          >
+            <span>Quick Add</span>
+            <FaShoppingCart size={14} />
+          </button>
         </div>
       </div>
 
-      {/* Product Details Modal (for Quick Add) */}
       {isModalOpen && (
-        <ProductDetailsModal 
-          product={product} 
-          onClose={() => setIsModalOpen(false)} 
-        />
+        <ProductDetailsModal product={product} onClose={() => setIsModalOpen(false)} />
       )}
     </>
   );

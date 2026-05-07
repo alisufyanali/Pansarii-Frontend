@@ -1,12 +1,11 @@
-// app/Mobile/components/MobileProductCard.tsx
 "use client";
 
 import { useState, MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { FaStar } from 'react-icons/fa';
 import ProductDetailsModal from '@/app/Desktop/components/ProductDetailsModal';
 
-// Same Product interface as Desktop
 interface Product {
   id?: string | number;
   img: string;
@@ -22,24 +21,16 @@ interface Product {
   [key: string]: any;
 }
 
-interface MobileProductCardProps {
-  product: Product;
-}
-
-export default function MobileProductCard({ product }: MobileProductCardProps) {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+export default function MobileProductCard({ product }: { product: Product }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
-  // Handle card click - navigate to product details (same as desktop)
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const productSlug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/${productSlug}`);
+    router.push(`/${product.nameEn.toLowerCase().replace(/\s+/g, '-')}`);
   };
 
-  // Handle quick add click - open modal (same as desktop)
   const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -48,104 +39,70 @@ export default function MobileProductCard({ product }: MobileProductCardProps) {
 
   return (
     <>
-      <div 
-        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+      <div
+        className="flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.98] transition-transform h-full"
         onClick={handleCardClick}
       >
-        {/* Image Section */}
-        <div className="relative w-full h-36 ">
-          {/* Sale Badge - Same null checks as desktop */}
-          {product.sale && product.sale !== null && product.sale !== undefined && (
-            <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+        {/* Fixed-height image */}
+        <div className="relative w-full h-36 flex-shrink-0 bg-gray-50">
+          {product.sale && (
+            <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
               {product.sale}
-            </div>
+            </span>
           )}
-          
-          {/* Product Image */}
-          <Image 
-            src={product.img} 
-            alt={product.nameEn} 
-            fill 
-            className="object-contain p-2" 
+          <Image
+            src={product.img}
+            alt={product.nameEn}
+            fill
+            className="object-contain p-2"
             sizes="50vw"
-            priority={false}
             loading="lazy"
           />
         </div>
-        
-        {/* Content Section */}
-        <div className="p-2.5">
-          {/* Product Name (English) */}
-          <h3 className="font-semibold text-xs text-gray-900 mb-1 line-clamp-2 min-h-[2.5rem]">
-            {product.nameEn}
-          </h3>
-          
-          {/* Urdu Name */}
-          <p className="text-[10px] text-gray-500 mb-1 line-clamp-1">
-            {product.nameUr}
-          </p>
-          
-          {/* Description */}
-          <div className="flex flex-wrap gap-x-1 mb-2">
-            <span className="text-[10px] text-gray-400 line-clamp-1">
-              {product.description}
-            </span>
+
+        {/* Content — flex-col so price+button always at bottom */}
+        <div className="flex flex-col flex-1 p-2.5">
+
+          {/* Text — fixed height via line-clamp */}
+          <div className="flex-1">
+            <h3 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-snug mb-1">
+              {product.nameEn}
+            </h3>
+            <p className="text-[10px] text-gray-400 line-clamp-1 mb-1">
+              {product.nameUr}
+            </p>
+            <div className="flex items-center gap-1 mb-1">
+              <FaStar className="w-2.5 h-2.5 text-yellow-400 flex-shrink-0" />
+              <span className="text-[10px] text-gray-500">{product.rating} · {product.reviews} reviews</span>
+            </div>
           </div>
-          
-          {/* Price & Add to Cart Button */}
-          <div className="flex items-center justify-between">
-            {/* Price Section - Same null checks as desktop */}
-            <div>
-              <span className="text-sm font-bold text-gray-900">
-                PKR {product.price.toLocaleString('en-PK')}
+
+          {/* Price + button — always at bottom */}
+          <div className="flex items-center justify-between mt-1.5 flex-shrink-0">
+            <div className="min-w-0">
+              <span className="text-sm font-bold text-gray-900 block leading-tight">
+                PKR {product.price.toLocaleString()}
               </span>
-              {product.oldPrice !== null && product.oldPrice !== undefined && (
-                <span className="text-[10px] text-gray-400 line-through ml-1">
-                  PKR {product.oldPrice.toLocaleString('en-PK')}
+              {product.oldPrice != null && (
+                <span className="text-[10px] text-gray-400 line-through">
+                  PKR {product.oldPrice.toLocaleString()}
                 </span>
               )}
             </div>
-            
-            {/* Quick Add Button - Opens Modal (same as desktop) */}
-            <button 
+            <button
               onClick={handleQuickAdd}
-              className="w-7 h-7 rounded-full bg-[#197B33] flex items-center justify-center hover:bg-[#156529] active:scale-95 transition-all"
-              aria-label="Quick add to cart"
+              className="w-7 h-7 rounded-full bg-green-700 text-white flex items-center justify-center hover:bg-green-800 active:scale-95 transition-all flex-shrink-0 ml-1"
+              aria-label="Add to cart"
             >
-              <span className="text-white text-base font-bold leading-none">+</span>
+              <span className="text-base font-bold leading-none">+</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Product Details Modal (for Quick Add) - Same as desktop */}
       {isModalOpen && (
-        <ProductDetailsModal 
-          product={product} 
-          onClose={() => setIsModalOpen(false)} 
-        />
+        <ProductDetailsModal product={product} onClose={() => setIsModalOpen(false)} />
       )}
     </>
   );
-}
-
-// Helper function to convert old prop format to new Product format
-// This ensures backward compatibility with existing code
-export function toMobileCardProps(product: any): { product: Product } {
-  return {
-    product: {
-      id: product.id,
-      img: product.img ?? '/images/product.png',
-      hoverImg: product.hoverImg,
-      nameEn: product.nameEn,
-      nameUr: product.nameUr || product.nameEn,
-      description: product.description || product.category || '',
-      rating: product.rating || 4.5,
-      reviews: product.reviews || 0,
-      price: product.price,
-      oldPrice: product.oldPrice ?? null,
-      sale: product.sale ?? null,
-      ...product, // Spread any additional properties
-    }
-  };
 }
