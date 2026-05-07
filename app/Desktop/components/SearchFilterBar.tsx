@@ -520,17 +520,17 @@ function SearchFilterBarContent({
 
         {/* ══ MOBILE FILTER MODAL ══ */}
         {isMobileFilterOpen && (
-          <div className="fixed inset-0 z-50 sm:hidden">
+          <div className="fixed inset-0 z-[60] sm:hidden">
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn" onClick={() => setIsMobileFilterOpen(false)} />
-            <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-slideUp">
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between z-10">
-                <h3 className="text-lg font-bold text-gray-900">Filters & Sort</h3>
+            <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl animate-slideUp flex flex-col" style={{ maxHeight: 'calc(100dvh - 80px)' }}>
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between z-10 flex-shrink-0">
+                <h3 className="text-lg font-bold text-gray-900">Filters &amp; Sort</h3>
                 <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
                   <FiX className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
 
-              <div className="p-5 space-y-7">
+              <div className="p-5 space-y-7 overflow-y-auto flex-1">
                 {/* Sort */}
                 <div>
                   <p className="text-sm font-bold text-gray-900 mb-3">Sort By</p>
