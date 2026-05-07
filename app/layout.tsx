@@ -4,6 +4,7 @@ import DeviceDetector from "./utils/screen-detection";
 import { CartProvider } from "./context/CartContext";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata = {
   title: "Pansari Inn - Premium Ayurvedic & Herbal Products",
