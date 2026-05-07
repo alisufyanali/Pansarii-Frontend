@@ -24,7 +24,7 @@ export function useCardsToShow(max = 5): number {
     const update = () => {
       const w = window.innerWidth;
       if      (w >= 2560) setCards(Math.min(max, 6));
-      else if (w >= 1536) setCards(Math.min(max, 5));
+      else if (w >= 1280) setCards(Math.min(max, 5));
       else if (w >= 1024) setCards(Math.min(max, 4));
       else if (w >= 768)  setCards(Math.min(max, 3));
       else                setCards(Math.min(max, 2));

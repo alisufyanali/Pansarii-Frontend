@@ -9,7 +9,7 @@ import SearchFilterBar from '../Desktop/components/SearchFilterBar';
 import { FilterOptions } from '../Desktop/utils/filterProducts';
 import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
 import { useSearchParams, useRouter } from 'next/navigation';
-import MobileProductCard, { toMobileCardProps } from '../Mobile/components/ProductCard';
+import MobileProductCard from '../Mobile/components/ProductCard';
 
 // ─── Skeletons ────────────────────────────────────────────────────────────────
 function GridSkeleton() {
@@ -263,7 +263,7 @@ export default function CategoryPage() {
                 {paginatedProducts.map((product) => (
                   <MobileProductCard 
                     key={product.id} 
-                    {...toMobileCardProps(product)} 
+                    product={product}
                   />
                 ))}
               </div>
