@@ -71,6 +71,7 @@ export default function MobileProductCard({ product }: { product: Product }) {
             <p className="text-[10px] text-gray-400 line-clamp-1 mb-1 overflow-hidden max-w-full">
               {product.nameUr}
             </p>
+            
             <div className="flex items-center gap-1 mb-1">
               <FaStar className="w-2.5 h-2.5 text-yellow-400 flex-shrink-0" />
               <span className="text-[10px] text-gray-500">{product.rating} · {product.reviews} reviews</span>
