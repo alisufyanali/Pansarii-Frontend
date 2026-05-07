@@ -61,14 +61,14 @@ export default function MobileProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Content — flex-col so price+button always at bottom */}
-        <div className="flex flex-col flex-1 p-2.5">
+        <div className="flex flex-col flex-1 p-2.5 overflow-hidden">
 
           {/* Text — fixed height via line-clamp */}
           <div className="flex-1">
             <h3 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-snug mb-1">
               {product.nameEn}
             </h3>
-            <p className="text-[10px] text-gray-400 line-clamp-1 mb-1">
+            <p className="text-[10px] text-gray-400 line-clamp-1 mb-1 overflow-hidden max-w-full">
               {product.nameUr}
             </p>
             <div className="flex items-center gap-1 mb-1">
