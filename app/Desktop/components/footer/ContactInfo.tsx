@@ -10,41 +10,38 @@ const socialLinks = [
 
 export default function ContactInfo() {
   return (
-    <div className="flex flex-col items-start gap-3 font-poppins">
+    <div className="flex flex-col items-start gap-4">
 
       {/* Logo */}
       <Image
         src="/images/logo.png"
         alt="Pansari Inn Logo"
-        width={120}
-        height={40}
+        width={130}
+        height={44}
         className="object-contain"
         priority
       />
 
-      {/* Contact */}
-      <div className="space-y-1">
-        <p className="text-xs text-gray-500">Email:</p>
-        <a
-          href="mailto:pansariinn@gmail.com"
-          className="text-[13px] text-green-700 hover:underline break-all"
-        >
-          pansariinn@gmail.com
-        </a>
-
-        <p className="text-xs text-gray-500 mt-1.5">Phone:</p>
-        <a
-          href="tel:+923045779900"
-          className="text-[13px] text-green-700 hover:underline"
-        >
-          +92 304 577 9900
-        </a>
+      {/* Contact — inline label + value, matching design */}
+      <div className="space-y-1.5 text-sm text-gray-700">
+        <p>
+          <span className="font-medium text-gray-900">Email: </span>
+          <a href="mailto:pansariinn@gmail.com" className="text-gray-700 hover:text-green-700 transition-colors">
+            pansariinn@gmail.com
+          </a>
+        </p>
+        <p>
+          <span className="font-medium text-gray-900">Phone: </span>
+          <a href="tel:+923045779900" className="text-gray-700 hover:text-green-700 transition-colors">
+            0304 577 9900
+          </a>
+        </p>
       </div>
 
       {/* Social icons */}
       <div>
-        <p className="text-xs text-gray-500 mb-2">Follow Our Social Media!</p>
-        <div className="flex items-center gap-3">
+        <p className="text-sm text-gray-700 font-medium mb-2">Follow Our Social Media!</p>
+        <div className="flex items-center gap-2.5">
           {socialLinks.map(({ name, Icon, url }) => (
             <a
               key={name}
@@ -52,7 +49,7 @@ export default function ContactInfo() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={name}
-              className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:border-green-700 hover:text-green-700 transition-all"
+              className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all"
             >
               <Icon className="w-3.5 h-3.5" />
             </a>

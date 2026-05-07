@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import SearchBarWrapper from './navbar/SearchBarWrapper';
 import CartSidebar from './sidebar';
@@ -68,7 +68,6 @@ export default function Navbar() {
   const [isCartSidebarOpen,     setIsCartSidebarOpen]     = useState(false);
   const [categorySearch,        setCategorySearch]        = useState('');
   const [scrolled,              setScrolled]              = useState(false);
-  const lastScrollY = useRef(0);
 
   const categories        = getCategoriesFromProducts();
   const currentCategory   = searchParams.get('category');
@@ -89,10 +88,7 @@ export default function Navbar() {
   }));
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 60);
-      lastScrollY.current = window.scrollY;
-    };
+    const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -124,14 +120,7 @@ export default function Navbar() {
       <header className="w-full fixed top-0 left-0 z-40">
 
         {/* ── TOP BAR ── */}
-        <div
-          className="bg-green-700 text-white overflow-hidden transition-all duration-300 ease-in-out"
-          style={{
-            maxHeight:    scrolled ? '0px' : '34px',
-            opacity:      scrolled ? 0 : 1,
-            pointerEvents: scrolled ? 'none' : 'auto',
-          }}
-        >
+        <div className={`bg-green-700 text-white overflow-hidden transition-all duration-300 ease-in-out ${scrolled ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-[34px] opacity-100'}`}>
           <div className={CONTAINER}>
             <div className="grid grid-cols-3 items-center py-1">
 
@@ -235,14 +224,7 @@ export default function Navbar() {
         </div>
 
         {/* ── BOTTOM BAR ── */}
-        <div
-          className="bg-white border-t border-gray-100 overflow-hidden transition-all duration-300 ease-in-out"
-          style={{
-            maxHeight:    scrolled ? '0px' : '46px',
-            opacity:      scrolled ? 0 : 1,
-            pointerEvents: scrolled ? 'none' : 'auto',
-          }}
-        >
+        <div className={`bg-white border-t border-gray-100 overflow-hidden transition-all duration-300 ease-in-out ${scrolled ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-[46px] opacity-100'}`}>
           <div className={CONTAINER}>
             <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-6 py-2">
 

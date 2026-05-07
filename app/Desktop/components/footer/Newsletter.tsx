@@ -4,10 +4,10 @@ import { FormEvent, useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 
 export default function Newsletter() {
-  const [email,       setEmail]       = useState('');
-  const [isSubmitting, setSubmitting] = useState(false);
-  const [subscribed,  setSubscribed]  = useState(false);
-  const [error,       setError]       = useState('');
+  const [email,        setEmail]       = useState('');
+  const [isSubmitting, setSubmitting]  = useState(false);
+  const [subscribed,   setSubscribed]  = useState(false);
+  const [error,        setError]       = useState('');
 
   const validate = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
@@ -26,13 +26,14 @@ export default function Newsletter() {
   };
 
   return (
-    <div className="flex flex-col gap-3 font-poppins">
+    <div className="flex flex-col gap-3">
 
+      {/* Heading — bold black, matches design */}
       <div>
-        <h4 className="text-[11px] font-semibold uppercase tracking-wider text-green-700 mb-1">
+        <h4 className="text-sm font-bold text-gray-900 mb-1.5">
           Join Our Mailing List
         </h4>
-        <p className="text-[13px] text-gray-500 leading-relaxed">
+        <p className="text-sm text-gray-600 leading-relaxed">
           Find out all about our latest offers, new products, and the science of Ayurveda in our newsletters!
         </p>
       </div>
@@ -47,22 +48,25 @@ export default function Newsletter() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+          {/* Input — light gray bg, matches design */}
           <input
             type="email"
             placeholder="E-mail"
             value={email}
             onChange={e => { setEmail(e.target.value); setError(''); }}
             disabled={isSubmitting}
-            className={`w-full px-4 py-2.5 rounded-lg text-[13px] text-gray-900 bg-gray-50 font-poppins
-              ${error ? 'border-2 border-red-400' : 'border border-gray-200'}
-              focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition`}
+            className={`w-full px-4 py-2.5 rounded-lg text-sm text-gray-900 bg-gray-100
+              ${error ? 'border border-red-400' : 'border border-transparent'}
+              focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600
+              placeholder-gray-400 transition`}
           />
           {error && <p className="text-red-500 text-xs">{error}</p>}
 
+          {/* Subscribe button — full width, green, rounded, matches design */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2.5 px-4 bg-green-700 text-white text-[13px] font-semibold rounded-lg
+            className="w-full py-3 bg-green-700 text-white text-sm font-semibold rounded-lg
                        hover:bg-green-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Subscribing…' : 'Subscribe'}

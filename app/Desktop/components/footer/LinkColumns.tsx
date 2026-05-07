@@ -14,11 +14,11 @@ const linkGroups = [
   {
     title: 'Shop',
     links: [
-      { name: 'Skincare',     url: '/beauty-corner'    },
-      { name: 'Haircare',     url: '/shop?category=Herb' },
-      { name: 'Oils',         url: '/Oils'             },
+      { name: 'Skincare',     url: '/beauty-corner'             },
+      { name: 'Haircare',     url: '/shop?category=Herb'        },
+      { name: 'Oils',         url: '/Oils'                      },
       { name: 'Supplements',  url: '/shop?category=Supplements' },
-      { name: 'Best Sellers', url: '/shop'             },
+      { name: 'Best Sellers', url: '/shop'                      },
     ],
   },
   {
@@ -35,10 +35,11 @@ const linkGroups = [
 
 export default function LinkColumns() {
   return (
-    <div className="grid grid-cols-3 gap-6 font-poppins">
+    <div className="grid grid-cols-3 gap-8">
       {linkGroups.map(group => (
         <div key={group.title}>
-          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-green-700 mb-3">
+          {/* Column heading — matches design: bold, black */}
+          <h4 className="text-sm font-bold text-gray-900 mb-3">
             {group.title}
           </h4>
           <ul className="space-y-2">
@@ -46,7 +47,7 @@ export default function LinkColumns() {
               <li key={link.name}>
                 <Link
                   href={link.url}
-                  className="text-[13px] text-gray-500 hover:text-green-700 transition-colors duration-200 leading-snug"
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors leading-snug"
                 >
                   {link.name}
                 </Link>

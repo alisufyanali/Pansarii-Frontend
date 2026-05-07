@@ -10,24 +10,32 @@ export default function Footer() {
     <>
       <FooterIcons />
 
-      <footer className="bg-white text-gray-900 font-poppins">
+      <footer className="bg-white text-gray-900 font-poppins border-t border-gray-100">
         <div className="px-[4%] py-10 max-w-[1920px] mx-auto">
 
-          <div className="grid grid-cols-1 md:grid-cols-[180px_1fr_240px] gap-8 lg:gap-12 items-start">
+          {/*
+            4-column layout matching design:
+            [Logo+Contact] [Quick Links + Shop + Customer Service] [Newsletter]
+            On md: 3 cols — contact | links | newsletter
+            On lg: auto-sized contact, flexible links, fixed newsletter
+          */}
+          <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_260px] gap-8 lg:gap-16 items-start">
+
             {/* LEFT — Logo + contact + socials */}
             <ContactInfo />
 
-            {/* CENTER — Link columns */}
+            {/* CENTER — 3 link columns */}
             <LinkColumns />
 
             {/* RIGHT — Newsletter */}
             <Newsletter />
+
           </div>
 
-          {/* Copyright */}
-          <div className="mt-8 pt-5 border-t border-gray-100">
-            <p className="text-center text-xs text-gray-400">
-              © 2019–{currentYear} PansariInn. All rights reserved.
+          {/* Divider + Copyright */}
+          <div className="mt-8 pt-5 border-t border-gray-200">
+            <p className="text-center text-sm text-gray-500">
+              Pansari Inn {currentYear}. All rights reserved.
             </p>
           </div>
 
