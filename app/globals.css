@@ -101,3 +101,6 @@ body {
 .animate-marquee {
   animation: marquee 18s linear infinite;
 }
+
+/* ── Cream background utility ── */
+.bg-cream { background-color: #fdf6f0; }

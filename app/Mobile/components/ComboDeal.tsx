@@ -42,17 +42,12 @@ export default function MobileComboDeal() {
       {/* Green banner header */}
       <div className="relative bg-green-700 px-5 pt-5 pb-16 overflow-hidden">
         {/* Wavy background lines */}
-        <div className="absolute inset-0 opacity-20">
-          {[...Array(6)].map((_, i) => (
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          {[40, 60, 80, 100, 120, 140].map((size, i) => (
             <div
               key={i}
               className="absolute rounded-full border-2 border-white/40"
-              style={{
-                width: `${120 + i * 60}px`,
-                height: `${120 + i * 60}px`,
-                top: `${-20 + i * 10}px`,
-                left: `${-30 + i * 5}px`,
-              }}
+              style={{ width: size * 3, height: size * 3, top: -20 + i * 10, left: -30 + i * 5 }}
             />
           ))}
         </div>
@@ -90,10 +85,7 @@ export default function MobileComboDeal() {
               onClick={() => router.push(`/${product.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
             >
               {/* Top — gradient image area */}
-              <div
-                className={`relative bg-gradient-to-br ${cardGradients[i % cardGradients.length]} pt-3 pb-0`}
-                style={{ minHeight: '180px' }}
-              >
+              <div className={`relative bg-gradient-to-br ${cardGradients[i % cardGradients.length]} pt-3 min-h-[180px]`}>
                 {/* Sale badge — top left, ribbon style */}
                 <div className="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-black px-2 py-1.5 rounded-br-xl rounded-tl-2xl leading-tight text-center z-10 min-w-[44px]">
                   Sale<br />{product.sale || '20%'}

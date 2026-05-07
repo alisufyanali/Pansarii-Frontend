@@ -81,7 +81,7 @@ export default function MobileReviews() {
 
   return (
     <>
-      <section className="py-4 bg-[#fdf6f0]">
+      <section className="py-4 bg-cream">
 
         {/* Header */}
         <div className="px-4 mb-4 text-center">

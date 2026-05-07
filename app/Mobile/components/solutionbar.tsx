@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { FiChevronRight } from "react-icons/fi";
 import { allProducts } from "@/app/Desktop/data/products";
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
@@ -67,8 +68,8 @@ export default function SolutionBar() {
         <h2 className="text-base font-bold text-gray-900">
           Find Your <span className="me-color-y">Solutions</span>
         </h2>
-        <Link href="/category" className="text-sm text-gray-500 font-medium">
-          View all →
+        <Link href="/category" className="flex items-center gap-0.5 text-sm text-gray-500 font-medium">
+          View all <FiChevronRight className="w-4 h-4" />
         </Link>
       </div>
 

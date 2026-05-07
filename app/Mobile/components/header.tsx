@@ -93,7 +93,7 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
         <div className="flex whitespace-nowrap animate-marquee">
           {[...Array(3)].map((_, i) => (
             <span key={i} className="text-white text-xs font-medium px-8">
-              🌿 100% Ayurvedic &amp; Herbal Products &nbsp;·&nbsp; Free Delivery on orders above PKR 999 &nbsp;·&nbsp; Certified Organic &nbsp;·&nbsp;
+              100% Ayurvedic &amp; Herbal Products &nbsp;·&nbsp; Free Delivery on orders above PKR 999 &nbsp;·&nbsp; Certified Organic &nbsp;·&nbsp;
             </span>
           ))}
         </div>

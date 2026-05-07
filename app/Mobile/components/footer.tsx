@@ -135,7 +135,7 @@ export default function MobileFooter() {
       </div>
 
       {/* ── Newsletter ── */}
-      <div className="px-5 py-6 bg-[#fdf6f0] text-center">
+      <div className="px-5 py-6 bg-cream text-center">
         <h3 className="text-base font-bold text-gray-900 mb-1">Join Our Mailing List</h3>
         <p className="text-xs text-gray-500 leading-relaxed mb-4 max-w-xs mx-auto">
           Find out all about our latest offers, new products, and the science of Ayurveda in our newsletters!
@@ -198,14 +198,14 @@ export default function MobileFooter() {
       <div className="px-4 py-5 text-center border-t border-gray-100">
         <p className="text-xs text-gray-500 mb-3 font-medium">Also available on</p>
         <div className="flex items-center justify-center gap-4">
-          <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-            <span className="text-white text-[10px] font-bold leading-tight text-center">TATA<br/>1mg</span>
+          <div className="h-10 px-3 bg-orange-500 rounded-lg flex items-center justify-center">
+            <span className="text-white text-[10px] font-bold leading-tight text-center">TATA 1mg</span>
           </div>
-          <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center">
-            <span className="text-blue-600 text-lg font-black">f</span>
+          <div className="h-10 px-3 bg-yellow-400 rounded-lg flex items-center justify-center">
+            <span className="text-blue-700 text-[10px] font-bold">Flipkart</span>
           </div>
-          <div className="w-12 h-12 bg-white border border-gray-200 rounded-lg flex items-center justify-center">
-            <span className="text-gray-900 text-xl font-black italic">a</span>
+          <div className="h-10 px-3 bg-white border border-gray-200 rounded-lg flex items-center justify-center">
+            <span className="text-gray-900 text-[10px] font-bold">Amazon</span>
           </div>
         </div>
       </div>

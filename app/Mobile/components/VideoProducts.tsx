@@ -70,8 +70,8 @@ function VideoCard({ product, onPress }: { product: any; onPress: () => void }) 
 
   return (
     <div
-      className="vid-card flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition-transform relative"
-      style={{ width: 'calc((100vw - 56px) / 2.6)', aspectRatio: '9/14' }}
+      className="vid-card flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition-transform relative aspect-[9/14]"
+      style={{ width: 'calc((100vw - 56px) / 2.6)' }}
       onClick={onPress}
     >
       {/* Video / fallback */}

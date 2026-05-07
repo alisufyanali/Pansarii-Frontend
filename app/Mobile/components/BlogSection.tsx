@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { FiChevronRight } from 'react-icons/fi';
 import { blogPosts } from '@/app/Desktop/data/blogposts';
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
@@ -17,10 +18,10 @@ export default function MobileBlogSection() {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-base font-bold text-gray-900">
-          Wellness <span className="text-[#FAA944]">Blog</span>
+          Wellness <span className="me-color-y">Blog</span>
         </h2>
-        <Link href="/blog" className="flex items-center gap-1 text-sm text-gray-500 font-medium">
-          View all <span>→</span>
+        <Link href="/blog" className="flex items-center gap-0.5 text-sm text-gray-500 font-medium">
+          View all <FiChevronRight className="w-4 h-4" />
         </Link>
       </div>
 

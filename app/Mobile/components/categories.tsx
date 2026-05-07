@@ -78,13 +78,12 @@ export default function Categories() {
             style={{ width: 'calc((100vw - 56px) / 3)' }}
             onClick={() => router.push(`/${cat.slug}`)}
           >
-            {/* Arch card — no border */}
+            {/* Arch card */}
             <div
-              className="w-full relative overflow-hidden flex flex-col items-center justify-start pt-4 px-2"
+              className="w-full relative overflow-hidden flex flex-col items-center justify-start pt-4 px-2 aspect-[3/4]"
               style={{
                 backgroundColor: cat.bgColor,
                 borderRadius: '50% 50% 12px 12px / 40% 40% 12px 12px',
-                aspectRatio: '3/4',
               }}
             >
               {/* Category name */}
