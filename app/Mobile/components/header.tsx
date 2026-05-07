@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { FiSearch, FiX } from 'react-icons/fi';
-import { RiTruckLine, RiUserLine, RiShoppingCartLine } from 'react-icons/ri';
+import { RiUserLine, RiShoppingCartLine } from 'react-icons/ri';
 import { useCart } from '../../context/CartContext';
 import { allProducts } from '@/app/Desktop/data/products';
 
@@ -99,10 +99,10 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
         </div>
       </div>
 
-      {/* ── Logo row ── */}
-      <div className="flex items-center justify-between px-4 py-2">
+      {/* ── Logo row — hamburger left, logo absolute center, icons right ── */}
+      <div className="relative flex items-center justify-between px-4 py-2">
 
-        {/* Hamburger */}
+        {/* Hamburger — left */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="p-1.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition"
@@ -115,22 +115,19 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
           </div>
         </button>
 
-        {/* Logo — center */}
-        <Link href="/" aria-label="Home">
+        {/* Logo — absolutely centered */}
+        <Link href="/" aria-label="Home" className="absolute left-1/2 -translate-x-1/2">
           <div className="relative w-28 h-8">
             <Image src="/images/logo.png" alt="Pansari Inn" fill className="object-contain" priority sizes="112px" />
           </div>
         </Link>
 
-        {/* Icons */}
+        {/* Icons — right */}
         <div className="flex items-center gap-0.5">
-          <Link href="/track-order" className="p-2 text-gray-600 hover:text-green-700 transition" aria-label="Track Order">
-            <RiTruckLine className="w-5 h-5" />
-          </Link>
-          <Link href="/login" className="p-2 text-gray-600 hover:text-green-700 transition" aria-label="Account">
+          <Link href="/login" className="p-2 text-gray-600 hover:text-green-700 transition-colors" aria-label="Account">
             <RiUserLine className="w-5 h-5" />
           </Link>
-          <Link href="/cart" className="relative p-2 text-gray-600 hover:text-green-700 transition" aria-label="Cart">
+          <Link href="/cart" className="relative p-2 text-gray-600 hover:text-green-700 transition-colors" aria-label="Cart">
             <RiShoppingCartLine className="w-5 h-5" />
             {cartCount > 0 && (
               <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-green-700 text-white text-[9px] rounded-full flex items-center justify-center font-bold">

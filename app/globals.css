@@ -104,3 +104,12 @@ body {
 
 /* ── Cream background utility ── */
 .bg-cream { background-color: #fdf6f0; }
+
+/* ── Modal slide-up animation ── */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0);    }
+}
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
