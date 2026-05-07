@@ -15,15 +15,16 @@ const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Arqiyaat':      'arqiyaat',
 };
 
+// Pastel colors matching design reference
 const BG_COLORS = [
-  '#E8D5F5',
-  '#FFE8C8',
-  '#D5EDD5',
-  '#D5E8F5',
-  '#F5D5D5',
-  '#F5F0D5',
-  '#D5F5F0',
-  '#F5D5F0',
+  '#C8B8E8', // purple
+  '#F5D08A', // amber
+  '#A8D8A8', // green
+  '#A8C8E8', // blue
+  '#E8A8A8', // pink
+  '#E8E0A0', // yellow
+  '#A8E0D8', // teal
+  '#D8A8E8', // lavender
 ];
 
 export default function Categories() {
@@ -40,7 +41,7 @@ export default function Categories() {
       img:     '/images/category.png',
     }));
 
-  // Auto-slide — smooth scroll
+  // Auto-slide — horizontal only, no page scroll
   useEffect(() => {
     const t = setInterval(() => {
       if (isTouch.current) return;
@@ -57,48 +58,72 @@ export default function Categories() {
   return (
     <section className="py-4">
 
-      {/* Header */}
-      <div className="px-4 mb-3 text-center">
-        <h2 className="text-base font-bold text-gray-900">
+      {/* Heading */}
+      <div className="px-4 mb-4 text-center">
+        <h2 className="text-lg font-bold text-gray-900">
           Shop by <span className="me-color-y">Category</span>
         </h2>
       </div>
 
-      {/* Slider */}
+      {/* Horizontal slider */}
       <div
         ref={sliderRef}
-        className="flex gap-3 overflow-x-auto no-scrollbar pl-4 pr-4"
+        className="flex gap-3 overflow-x-auto no-scrollbar px-4"
         onTouchStart={() => { isTouch.current = true; }}
         onTouchEnd={() => { setTimeout(() => { isTouch.current = false; }, 2000); }}
       >
         {categories.map(cat => (
           <button
             key={cat.name}
-            className="cat-card flex-shrink-0 cursor-pointer active:scale-95 transition-transform"
-            style={{ width: 'calc((100vw - 56px) / 3)' }}
+            className="cat-card flex-shrink-0 active:scale-95 transition-transform focus:outline-none"
+            style={{ width: 'calc((100vw - 44px) / 3)' }}
             onClick={() => router.push(`/${cat.slug}`)}
           >
-            {/* Arch card */}
-            <div
-              className="w-full relative overflow-hidden flex flex-col items-center justify-start pt-4 px-2 aspect-[3/4]"
-              style={{
-                backgroundColor: cat.bgColor,
-                borderRadius: '50% 50% 12px 12px / 40% 40% 12px 12px',
-              }}
-            >
-              {/* Category name */}
-              <p className="text-[10px] font-bold text-gray-800 uppercase leading-tight text-center z-10 px-1">
-                {cat.name}
-              </p>
+            {/*
+              Arch card layout:
+              - Top half: arch shape (large border-radius on top corners)
+              - Category name: bold uppercase, top area
+              - Product image: bottom, overflows the card
+            */}
+            <div className="relative flex flex-col items-center">
 
-              {/* Product image */}
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[85%]">
+              {/* Arch shape — tall rectangle with very rounded top */}
+              <div
+                className="relative w-full overflow-visible"
+                style={{
+                  backgroundColor: cat.bgColor,
+                  borderRadius: '999px 999px 16px 16px',
+                  paddingTop: '16px',
+                  paddingBottom: '40px',
+                  minHeight: '140px',
+                }}
+              >
+                {/* Category name — top center, bold uppercase */}
+                <div className="px-2 text-center">
+                  <p
+                    className="font-black uppercase leading-tight tracking-wide"
+                    style={{ fontSize: '11px', color: '#1a1a1a' }}
+                  >
+                    {cat.name.split(' ').map((word, i) => (
+                      <span key={i} className="block">{word}</span>
+                    ))}
+                  </p>
+                </div>
+              </div>
+
+              {/* Product image — overlaps bottom of arch */}
+              <div
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[85%]"
+                style={{ zIndex: 10 }}
+              >
                 <img
                   src={cat.img}
                   alt={cat.name}
-                  className="w-full h-auto object-contain"
+                  className="w-full h-auto object-contain drop-shadow-lg"
+                  style={{ maxHeight: '90px' }}
                 />
               </div>
+
             </div>
           </button>
         ))}
