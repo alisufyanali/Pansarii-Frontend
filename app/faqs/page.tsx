@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { FaChevronDown, FaSearch, FaQuestionCircle, FaShoppingCart, FaTruck, FaUndo, FaLeaf, FaUser, FaEllipsisH } from 'react-icons/fa';
 
-// JSON Data
+import PageBanner from '../components/PageBanner';
 const faqData = {
   hero: {
     title: "Frequently Asked Questions",
@@ -208,40 +208,31 @@ export default function FAQsPage() {
     <div className="min-h-screen bg-gray-50">
       
       {/* Hero */}
-      <section className="bg-gradient-to-r from-green-800 to-emerald-800 text-white py-16">
-        <div className="max-w-[1920px] mx-auto px-[4%]">
-          <div className="max-w-3xl mx-auto text-center">
-            <FaQuestionCircle className="w-16 h-16 mx-auto mb-6" />
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-              {faqData.hero.title}
-            </h1>
-            <p className="text-xl text-green-100 mb-6">
-              {faqData.hero.subtitle}
-            </p>
-            
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto">
-              <div className="relative">
-                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search for answers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-            </div>
+      <PageBanner
+        icon={<FaQuestionCircle className="w-8 h-8" />}
+        title={faqData.hero.title}
+        subtitle={faqData.hero.subtitle}
+      >
+        <div className="max-w-xl mx-auto">
+          <div className="relative">
+            <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search for answers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
           </div>
         </div>
-      </section>
+      </PageBanner>
 
-      <div className="max-w-[1920px] mx-auto px-[4%] py-12">
-        <div className="grid lg:grid-cols-[280px_1fr] gap-8">
+      <div className="max-w-[1920px] mx-auto px-[4%] py-8">
+        <div className="grid lg:grid-cols-[240px_1fr] gap-6">
           
           {/* Categories Sidebar */}
-          <div className="space-y-2">
-            <h3 className="font-bold text-gray-900 mb-4 text-lg">Categories</h3>
+          <div className="space-y-1.5">
+            <h3 className="font-bold text-gray-900 mb-3 text-sm uppercase tracking-wide">Categories</h3>
             {faqData.categories.map((category) => (
               <button
                 key={category.id}
@@ -333,21 +324,14 @@ export default function FAQsPage() {
       </div>
 
       {/* CTA */}
-      <section className="py-12 bg-white">
-        <div className="max-w-4xl mx-auto px-[4%] text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Still have questions?
-          </h2>
-          <p className="text-lg text-gray-600 mb-6">
-            {faqData.hero.description}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button className="px-8 py-3 bg-green-700 text-white rounded-lg hover:bg-green-600 transition font-semibold">
+      <section className="py-8 bg-white">
+        <div className="max-w-3xl mx-auto px-[4%] text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Still have questions?</h2>
+          <p className="text-sm text-gray-600 mb-5">{faqData.hero.description}</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <a href="/contact" className="px-6 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 transition font-semibold text-sm">
               Contact Support
-            </button>
-            <button className="px-8 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-semibold">
-              Live Chat
-            </button>
+            </a>
           </div>
         </div>
       </section>

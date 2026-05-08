@@ -200,14 +200,11 @@ export default function TrackOrderPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-            Track Your Order
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-2">
-            Enter your order details to get real-time tracking updates
-          </p>
+      <div className="bg-green-700 text-white py-10 sm:py-12">
+        <div className="max-w-3xl mx-auto px-[4%] text-center">
+          <FaTruck className="w-8 h-8 mx-auto mb-3 text-white/80" />
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">Track Your Order</h1>
+          <p className="text-sm text-green-100">Enter your order details to get real-time tracking updates</p>
         </div>
       </div>
 

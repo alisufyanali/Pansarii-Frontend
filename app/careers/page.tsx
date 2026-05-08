@@ -1,8 +1,5 @@
-// app/careers/page.tsx
-'use client';
-
-import { useState } from 'react';
-import { FaBriefcase, FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaUserTie, FaChevronRight } from 'react-icons/fa';
+import { FaBriefcase, FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaChevronRight, FaHeart, FaMedkit, FaUmbrellaBeach, FaBook, FaHome, FaUsers } from 'react-icons/fa';
+import PageBanner from '../components/PageBanner';
 
 // JSON Data
 const careersData = {
@@ -74,12 +71,12 @@ const careersData = {
     }
   ],
   benefits: [
-    { icon: "💰", title: "Competitive Salary", description: "Market-leading compensation packages" },
-    { icon: "🏥", title: "Health Insurance", description: "Comprehensive medical coverage" },
-    { icon: "🏖️", title: "Paid Time Off", description: "Generous vacation and sick leave" },
-    { icon: "📚", title: "Learning Budget", description: "Annual budget for courses and books" },
-    { icon: "🏠", title: "Remote Flexibility", description: "Work from home options available" },
-    { icon: "🎉", title: "Team Events", description: "Regular team building activities" }
+    { icon: 'salary',   title: 'Competitive Salary',  description: 'Market-leading compensation packages' },
+    { icon: 'health',   title: 'Health Insurance',     description: 'Comprehensive medical coverage' },
+    { icon: 'pto',      title: 'Paid Time Off',        description: 'Generous vacation and sick leave' },
+    { icon: 'learning', title: 'Learning Budget',      description: 'Annual budget for courses and books' },
+    { icon: 'remote',   title: 'Remote Flexibility',   description: 'Work from home options available' },
+    { icon: 'team',     title: 'Team Events',          description: 'Regular team building activities' },
   ],
   culture: {
     title: "Our Culture",
@@ -93,6 +90,15 @@ const careersData = {
   }
 };
 
+const benefitIcons: Record<string, React.ReactNode> = {
+  salary:   <FaMoneyBillWave className="w-5 h-5 text-green-700" />,
+  health:   <FaMedkit className="w-5 h-5 text-green-700" />,
+  pto:      <FaUmbrellaBeach className="w-5 h-5 text-green-700" />,
+  learning: <FaBook className="w-5 h-5 text-green-700" />,
+  remote:   <FaHome className="w-5 h-5 text-green-700" />,
+  team:     <FaUsers className="w-5 h-5 text-green-700" />,
+};
+
 export default function CareersPage() {
   const [selectedJob, setSelectedJob] = useState<number | null>(null);
 
@@ -100,15 +106,12 @@ export default function CareersPage() {
     <div className="min-h-screen bg-gray-50">
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-green-800 to-emerald-800 text-white py-16 sm:py-20">
-        <div className="max-w-[1920px] mx-auto px-[4%]">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4">{careersData.hero.title}</h1>
-            <p className="text-xl sm:text-2xl mb-4 text-green-100">{careersData.hero.subtitle}</p>
-            <p className="text-base sm:text-lg text-green-100">{careersData.hero.description}</p>
-          </div>
-        </div>
-      </section>
+      <PageBanner
+        icon={<FaBriefcase className="w-8 h-8" />}
+        title={careersData.hero.title}
+        subtitle={careersData.hero.subtitle}
+        description={careersData.hero.description}
+      />
 
       {/* Open Positions */}
       <section className="py-12 sm:py-16">
@@ -197,10 +200,12 @@ export default function CareersPage() {
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {careersData.benefits.map((benefit, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-xl p-6 text-center">
-                <div className="text-4xl mb-3">{benefit.icon}</div>
-                <h3 className="font-bold text-gray-900 mb-2">{benefit.title}</h3>
-                <p className="text-gray-600 text-sm">{benefit.description}</p>
+              <div key={idx} className="bg-gray-50 rounded-xl p-5 text-center">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  {benefitIcons[benefit.icon]}
+                </div>
+                <h3 className="font-bold text-gray-900 mb-1 text-sm">{benefit.title}</h3>
+                <p className="text-gray-600 text-xs">{benefit.description}</p>
               </div>
             ))}
           </div>

@@ -4,6 +4,8 @@
 import { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 
+import PageBanner from '../components/PageBanner';
+
 // JSON Data
 const contactData = {
   hero: {
@@ -126,27 +128,17 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       
-      {/* Hero */}
-      <section className="bg-gradient-to-r from-green-800 to-emerald-800 text-white py-16">
-        <div className="max-w-[1920px] mx-auto px-[4%]">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-              {contactData.hero.title}
-            </h1>
-            <p className="text-xl text-green-100 mb-4">
-              {contactData.hero.subtitle}
-            </p>
-            <p className="text-lg text-green-100">
-              {contactData.hero.description}
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageBanner
+        icon={<FaEnvelope className="w-8 h-8" />}
+        title={contactData.hero.title}
+        subtitle={contactData.hero.subtitle}
+        description={contactData.hero.description}
+      />
 
       {/* Contact Cards */}
-      <section className="py-12 bg-white">
-        <div className="max-w-6xl mx-auto px-[4%]">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="py-8 bg-white">
+        <div className="max-w-4xl mx-auto px-[4%]">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {contactData.contactInfo.map((info, idx) => (
               <a
                 key={idx}
@@ -167,8 +159,8 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-[4%] py-12">
-        <div className="grid lg:grid-cols-[1fr_400px] gap-8">
+      <div className="max-w-4xl mx-auto px-[4%] py-8">
+        <div className="grid lg:grid-cols-[1fr_320px] gap-6">
           
           {/* Contact Form */}
           <div className="bg-white rounded-xl border border-gray-200 p-8">
