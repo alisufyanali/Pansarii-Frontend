@@ -8,7 +8,7 @@ import SearchFilterBar from '@/app/Desktop/components/SearchFilterBar';
 import { FilterOptions } from '@/app/Desktop/utils/filterProducts';
 // import { FaStar, FaCheckCircle, FaEye, FaLeaf } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import MobileProductCard, { toMobileCardProps } from '@/app/Mobile/components/ProductCard';
+import MobileProductCard from '@/app/Mobile/components/ProductCard';
 
 import { FaStar, FaCheckCircle, FaEye, FaAppleAlt } from 'react-icons/fa';
 
@@ -221,7 +221,7 @@ export default function MurrabajatCategoryPage() {
                 {paginatedProducts.map((product) => (
                   <MobileProductCard 
                     key={product.id} 
-                    {...toMobileCardProps(product)} 
+                    product={product} 
                   />
                 ))}
               </div>

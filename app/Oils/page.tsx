@@ -8,11 +8,11 @@ import SearchFilterBar from '@/app/Desktop/components/SearchFilterBar';
 import { FilterOptions } from '@/app/Desktop/utils/filterProducts';
 // import { FaStar, FaCheckCircle, FaEye, FaLeaf } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import MobileProductCard, { toMobileCardProps } from '@/app/Mobile/components/ProductCard';
+import MobileProductCard from '@/app/Mobile/components/ProductCard';
 
 import { FaStar, FaCheckCircle, FaEye, FaOilCan } from 'react-icons/fa';
 // import { useRouter } from 'next/navigation';
-// import MobileProductCard, { toMobileCardProps } from '../../Mobile/components/ProductCard';
+// import MobileProductCard from '../../Mobile/components/ProductCard';
 
 // ─── Skeletons ────────────────────────────────────────────────────────────────
 function GridSkeleton() {
@@ -223,7 +223,7 @@ export default function OilsCategoryPage() {
                 {paginatedProducts.map((product) => (
                   <MobileProductCard 
                     key={product.id} 
-                    {...toMobileCardProps(product)} 
+                    product={product} 
                   />
                 ))}
               </div>
