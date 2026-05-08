@@ -28,11 +28,6 @@ interface Product {
   [key: string]: any;
 }
 
-interface ProductDetailsModalProps {
-  product: Product;
-  onClose: () => void;
-}
-
 function ToastPortal() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -53,204 +48,165 @@ function ToastPortal() {
   );
 }
 
-export default function ProductDetailsModal({ product, onClose }: ProductDetailsModalProps) {
-  const [selectedImage, setSelectedImage] = useState<string>(product.img);
-  
-  // Default sizes for oils if not provided
-  const availableSizes = product.sizes && product.sizes.length > 0 
-    ? product.sizes 
-    : ['15ml', '30ml', '60ml', '120ml', '150ml'];
-  
-  const [selectedSize, setSelectedSize] = useState<string>(availableSizes[0]);
-  const [quantity, setQuantity] = useState<number>(1);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-  const modalContentRef = useRef<HTMLDivElement>(null);
-  
+export default function ProductDetailsModal({
+  product,
+  onClose,
+}: {
+  product: Product;
+  onClose: () => void;
+}) {
+  const [selectedImage, setSelectedImage] = useState(product.img);
+  const availableSizes = product.sizes?.length ? product.sizes : ['15ml', '30ml', '60ml', '120ml', '150ml'];
+  const [selectedSize, setSelectedSize] = useState(availableSizes[0]);
+  const [quantity, setQuantity]         = useState(1);
+  const [isMobile, setIsMobile]         = useState(false);
   const { addToCart } = useCart();
 
   useEffect(() => {
-    const checkMobile = () => { setIsMobile(window.innerWidth < 768); };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
+  // Lock body scroll
   useEffect(() => {
-    const scrollY = window.scrollY;
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.body.style.overflow = 'hidden';
+    const y = window.scrollY;
+    document.body.style.cssText = `position:fixed;top:-${y}px;width:100%;overflow:hidden`;
     return () => {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.overflow = '';
-      window.scrollTo(0, scrollY);
+      document.body.style.cssText = '';
+      window.scrollTo(0, y);
     };
   }, []);
 
+  // Escape key
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
+    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
   }, [onClose]);
 
-  const handleAddToCart = (): void => {
-    if (!product.id) {
-      toast.error('Failed to add item to cart!');
-      return;
-    }
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: product.id,
-        img: product.img,
-        nameEn: product.nameEn,
-        nameUr: product.nameUr,
-        price: product.price,
-        size: selectedSize,
-      });
-    }
+  const cartPayload = () => ({
+    id:     product.id!,
+    img:    product.img,
+    nameEn: product.nameEn,
+    nameUr: product.nameUr,
+    price:  product.price,
+    size:   selectedSize,
+  });
+
+  const handleAddToCart = () => {
+    if (!product.id) return toast.error('Failed to add item to cart!');
+    for (let i = 0; i < quantity; i++) addToCart(cartPayload());
     toast.success(`Added ${quantity} × ${product.nameEn} to cart!`);
   };
 
-  const handleBuyNow = (): void => {
-    if (!product.id) {
-      toast.error('Failed to add item to cart!');
-      return;
-    }
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: product.id,
-        img: product.img,
-        nameEn: product.nameEn,
-        nameUr: product.nameUr,
-        price: product.price,
-        size: selectedSize,
-      });
-    }
-    toast.success('Added to cart! Redirecting...', { autoClose: 1500, pauseOnHover: false });
-    setTimeout(() => {
-      onClose();
-      window.location.href = '/cart';
-    }, 1600);
+  const handleBuyNow = () => {
+    if (!product.id) return toast.error('Failed to add item to cart!');
+    for (let i = 0; i < quantity; i++) addToCart(cartPayload());
+    toast.success('Added to cart! Redirecting…', { autoClose: 1500, pauseOnHover: false });
+    setTimeout(() => { onClose(); window.location.href = '/cart'; }, 1600);
   };
 
-  return (
-    <>
-      <ToastPortal />
+  // ── Mobile bottom-sheet ────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <>
+        <ToastPortal />
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 md:p-0">
-        {/* Backdrop with blur */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+          {/* Sheet — slides up */}
+          <div className="relative bg-white rounded-t-2xl shadow-2xl animate-slideUp flex flex-col max-h-[92dvh]">
 
-        {/* Modal Content - Centered on all screens */}
-        <div
-          ref={modalContentRef}
-          className="relative bg-white rounded-lg md:rounded-xl shadow-2xl w-full md:max-w-5xl max-h-[95vh] md:max-h-[95vh] overflow-hidden"
-          style={{
-            width: isMobile ? '95%' : 'auto',
-            maxWidth: isMobile ? '95%' : 'none',
-          }}
-        >
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-2 right-2 z-20 w-7 h-7 md:w-9 md:h-9 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
-            aria-label="Close"
-          >
-            <FaTimes className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-700" />
-          </button>
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            </div>
 
-          {/* Content - Horizontal layout maintained */}
-          <div className="flex flex-row min-h-full md:min-h-0 overflow-y-auto max-h-[95vh]">
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              className="absolute top-3 right-4 z-10 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition"
+              aria-label="Close"
+            >
+              <FaTimes className="w-3.5 h-3.5 text-gray-600" />
+            </button>
 
-            {/* Left — Image (40% width) */}
-            <div className="w-[40%] md:w-2/5 p-2 md:p-6 border-r border-gray-100 flex-shrink-0 overflow-y-auto">
-              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50">
+            {/* Scrollable content */}
+            <div className="overflow-y-auto flex-1 px-4 pb-4">
+
+              {/* Product image — centered, square */}
+              <div className="relative w-40 h-40 mx-auto my-3 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0">
                 {product.sale && (
-                  <div className="absolute top-1 right-1 md:top-3 md:right-3 z-10 px-1.5 py-0.5 md:px-3 md:py-1.5 bg-red-500 text-white rounded-full text-[9px] md:text-sm font-semibold">
+                  <span className="absolute top-2 left-2 z-10 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
                     {product.sale}
-                  </div>
+                  </span>
                 )}
-                <img
-                  src={selectedImage}
-                  alt={product.nameEn}
-                  className="w-full h-full object-contain p-1 md:p-4"
-                />
+                <img src={selectedImage} alt={product.nameEn} className="w-full h-full object-contain p-3" />
               </div>
 
-              {/* Thumbnail Images */}
+              {/* Thumbnails */}
               {product.additionalImages && product.additionalImages.length > 0 && (
-                <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide">
-                  {[product.img, ...product.additionalImages].map((image, index) => (
+                <div className="flex gap-2 justify-center mb-3">
+                  {[product.img, ...product.additionalImages].slice(0, 5).map((img, i) => (
                     <button
-                      key={index}
-                      onClick={() => setSelectedImage(image)}
-                      className={`flex-shrink-0 w-8 h-8 md:w-14 md:h-14 rounded overflow-hidden border ${
-                        selectedImage === image ? 'border-green-600' : 'border-gray-200'
+                      key={i}
+                      onClick={() => setSelectedImage(img)}
+                      className={`w-10 h-10 rounded-lg overflow-hidden border-2 flex-shrink-0 transition ${
+                        selectedImage === img ? 'border-green-600' : 'border-gray-200'
                       }`}
                     >
-                      <img src={image} alt="" className="w-full h-full object-cover" />
+                      <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
               )}
-            </div>
 
-            {/* Right — Info (60% width) */}
-            <div className="w-[60%] md:w-3/5 p-2 md:p-6 overflow-y-auto">
-              <div className="space-y-2 md:space-y-3 pb-16 md:pb-0">
-                {/* Title */}
+              {/* Product info */}
+              <div className="space-y-3">
+
+                {/* Name + rating */}
                 <div>
-                  <h1 className="text-sm md:text-xl font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
-                  <p className="text-gray-600 text-xs md:text-sm mt-0.5">{product.nameUr}</p>
+                  <h2 className="text-base font-bold text-gray-900 leading-snug">{product.nameEn}</h2>
+                  <p className="text-sm text-gray-500 mt-0.5">{product.nameUr}</p>
                   {product.description && (
-                    <p className="text-green-700 text-xs md:text-sm mt-1 line-clamp-2 md:line-clamp-none">{product.description}</p>
+                    <p className="text-xs text-green-700 mt-1 line-clamp-2">{product.description}</p>
                   )}
                 </div>
 
-                {/* Rating */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-0.5">
-                    <FaStar className="w-3 h-3 md:w-4 md:h-4 text-yellow-400" />
-                    <span className="font-semibold text-gray-900 text-xs md:text-sm">{product.rating}</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <FaStar className="w-3.5 h-3.5 text-yellow-400" />
+                    <span className="text-sm font-semibold text-gray-900">{product.rating}</span>
                   </div>
-                  <div className="flex items-center gap-0.5">
-                    <FaCheckCircle className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
-                    <span className="text-gray-600 text-xs md:text-sm">{product.reviews} Reviews</span>
+                  <div className="flex items-center gap-1">
+                    <FaCheckCircle className="w-3.5 h-3.5 text-green-500" />
+                    <span className="text-sm text-gray-500">{product.reviews} Reviews</span>
                   </div>
                 </div>
 
                 {/* Price */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-lg md:text-2xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
                   {product.oldPrice && (
-                    <span className="text-gray-500 line-through text-xs md:text-sm">PKR {product.oldPrice.toLocaleString()}</span>
+                    <span className="text-sm text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>
                   )}
                 </div>
 
-                {/* Benefits */}
-                {product.benefits && product.benefits.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {product.benefits.slice(0, 3).map((benefit, index) => (
-                      <span key={index} className="px-1.5 py-0.5 md:px-2.5 md:py-0.5 bg-green-50 text-green-700 rounded-full text-xs font-medium">
-                        {benefit}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Sizes */}
+                {/* Size selector */}
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-xs md:text-sm mb-1">Size</h3>
-                  <div className="flex flex-wrap gap-1">
-                    {availableSizes.map((size) => (
+                  <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Size</p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableSizes.map(size => (
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`px-2 py-1 md:px-3 md:py-1.5 rounded-lg border text-xs md:text-sm font-medium transition-all ${
-                          selectedSize === size ? 'bg-green-600 text-white border-green-600' : 'border-gray-300 hover:border-green-600'
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                          selectedSize === size
+                            ? 'bg-green-700 text-white border-green-700'
+                            : 'border-gray-300 text-gray-700 hover:border-green-600'
                         }`}
                       >
                         {size}
@@ -259,17 +215,175 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                   </div>
                 </div>
 
-                {/* Features - Hide on mobile or show compact */}
-                {product.features && product.features.length > 0 && !isMobile && (
+                {/* Quantity */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Quantity</p>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                        className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition"
+                      >
+                        <FaMinus className="w-3 h-3 text-gray-600" />
+                      </button>
+                      <span className="w-10 text-center font-bold text-base border-x border-gray-300">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => setQuantity(q => q + 1)}
+                        className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition"
+                      >
+                        <FaPlus className="w-3 h-3 text-gray-600" />
+                      </button>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Total</p>
+                      <p className="text-base font-bold text-gray-900">PKR {(product.price * quantity).toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Action buttons — sticky at bottom */}
+            <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100 bg-white flex gap-3">
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-3 rounded-xl hover:bg-green-800 transition text-sm"
+              >
+                <FaShoppingCart className="w-4 h-4" />
+                Add to Cart
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 flex items-center justify-center gap-2 bg-amber-500 text-white font-semibold py-3 rounded-xl hover:bg-amber-600 transition text-sm"
+              >
+                <AiOutlineShopping className="w-4 h-4" />
+                Buy Now
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ── Desktop centered modal ─────────────────────────────────────────────────
+  return (
+    <>
+      <ToastPortal />
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+
+          {/* Close */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100 transition"
+            aria-label="Close"
+          >
+            <FaTimes className="w-4 h-4 text-gray-700" />
+          </button>
+
+          <div className="flex h-full overflow-y-auto max-h-[90vh]">
+
+            {/* Left — Image */}
+            <div className="w-2/5 p-6 border-r border-gray-100 flex-shrink-0">
+              <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50">
+                {product.sale && (
+                  <span className="absolute top-3 right-3 z-10 px-3 py-1 bg-red-500 text-white rounded-full text-sm font-semibold">
+                    {product.sale}
+                  </span>
+                )}
+                <img src={selectedImage} alt={product.nameEn} className="w-full h-full object-contain p-4" />
+              </div>
+              {product.additionalImages && product.additionalImages.length > 0 && (
+                <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar">
+                  {[product.img, ...product.additionalImages].map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedImage(img)}
+                      className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition ${
+                        selectedImage === img ? 'border-green-600' : 'border-gray-200'
+                      }`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right — Info */}
+            <div className="w-3/5 p-6 flex flex-col">
+              <div className="flex-1 space-y-4 overflow-y-auto">
+
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
+                  <p className="text-gray-500 text-sm mt-0.5">{product.nameUr}</p>
+                  {product.description && (
+                    <p className="text-green-700 text-sm mt-1">{product.description}</p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1">
+                    <FaStar className="w-4 h-4 text-yellow-400" />
+                    <span className="font-semibold text-gray-900 text-sm">{product.rating}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <FaCheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-gray-600 text-sm">{product.reviews} Reviews</span>
+                  </div>
+                </div>
+
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
+                  {product.oldPrice && (
+                    <span className="text-gray-400 line-through text-sm">PKR {product.oldPrice.toLocaleString()}</span>
+                  )}
+                </div>
+
+                {product.benefits && product.benefits.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {product.benefits.slice(0, 3).map((b, i) => (
+                      <span key={i} className="px-2.5 py-0.5 bg-green-50 text-green-700 rounded-full text-xs font-medium">{b}</span>
+                    ))}
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-2">Size</p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableSizes.map(size => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                          selectedSize === size
+                            ? 'bg-green-700 text-white border-green-700'
+                            : 'border-gray-300 hover:border-green-600'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {product.features && product.features.length > 0 && (
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm mb-1">Features</h3>
-                    <div className="space-y-1">
-                      {product.features.slice(0, 4).map((feature, index) => {
-                        const featureText = typeof feature === 'string' ? feature.replace('✓', '').trim() : feature.text?.replace('✓', '').trim();
+                    <p className="text-sm font-semibold text-gray-900 mb-2">Features</p>
+                    <div className="space-y-1.5">
+                      {product.features.slice(0, 4).map((f, i) => {
+                        const text = typeof f === 'string' ? f.replace('✓', '').trim() : f.text?.replace('✓', '').trim();
                         return (
-                          <div key={index} className="flex items-center gap-1.5 text-gray-700 text-xs">
-                            <div className="w-1 h-1 bg-green-600 rounded-full" />
-                            <span className="line-clamp-1">{featureText}</span>
+                          <div key={i} className="flex items-center gap-2 text-gray-600 text-sm">
+                            <div className="w-1.5 h-1.5 bg-green-600 rounded-full flex-shrink-0" />
+                            <span className="line-clamp-1">{text}</span>
                           </div>
                         );
                       })}
@@ -277,69 +391,48 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                   </div>
                 )}
 
-                {/* Quantity */}
-                <div className="pt-2 border-t border-gray-200">
-                  <h3 className="font-semibold text-gray-900 text-xs md:text-sm mb-1">Quantity</h3>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center border border-gray-300 rounded-lg">
-                      <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-2 py-1 md:px-3 md:py-1.5 text-gray-600 hover:bg-gray-100">
-                        <FaMinus className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                <div className="pt-3 border-t border-gray-100">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">Quantity</p>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
+                      <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 hover:bg-gray-100 transition">
+                        <FaMinus className="w-3 h-3 text-gray-600" />
                       </button>
-                      <span className="px-3 md:px-5 py-1 md:py-1.5 border-x border-gray-300 min-w-[40px] md:min-w-[50px] text-center font-semibold text-sm md:text-base">
-                        {quantity}
-                      </span>
-                      <button onClick={() => setQuantity(q => q + 1)} className="px-2 py-1 md:px-3 md:py-1.5 text-gray-600 hover:bg-gray-100">
-                        <FaPlus className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                      <span className="px-5 py-2 border-x border-gray-300 min-w-[50px] text-center font-bold">{quantity}</span>
+                      <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 hover:bg-gray-100 transition">
+                        <FaPlus className="w-3 h-3 text-gray-600" />
                       </button>
                     </div>
                     <div>
-                      <div className="text-gray-600 text-xs">Total:</div>
-                      <div className="font-bold text-sm md:text-xl text-gray-900">PKR {(product.price * quantity).toLocaleString()}</div>
+                      <p className="text-xs text-gray-500">Total</p>
+                      <p className="text-xl font-bold text-gray-900">PKR {(product.price * quantity).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Action Buttons - Sticky at bottom */}
-              <div className="sticky bottom-0 left-0 right-0 mt-3 md:mt-4 pt-2 md:pt-3 border-t border-gray-200 bg-white">
-                <div className="flex gap-1.5 md:gap-2">
-                  <button
-                    onClick={handleAddToCart}
-                    className="flex-1 flex items-center justify-center gap-1 bg-green-600 text-white font-semibold py-2 md:py-2.5 px-2 rounded-lg hover:bg-green-700 transition-all text-xs md:text-sm"
-                  >
-                    <FaShoppingCart className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                    Add to Cart
-                  </button>
-                  <button
-                    onClick={handleBuyNow}
-                    className="flex-1 flex items-center justify-center gap-1 bg-amber-500 text-gray-900 font-semibold py-2 md:py-2.5 px-2 rounded-lg hover:bg-amber-600 transition-all text-xs md:text-sm"
-                  >
-                    <AiOutlineShopping className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                    Buy Now
-                  </button>
-                </div>
+              {/* Action buttons */}
+              <div className="flex gap-3 mt-4 pt-4 border-t border-gray-100 flex-shrink-0">
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-3 rounded-xl hover:bg-green-800 transition"
+                >
+                  <FaShoppingCart className="w-4 h-4" />
+                  Add to Cart
+                </button>
+                <button
+                  onClick={handleBuyNow}
+                  className="flex-1 flex items-center justify-center gap-2 bg-amber-500 text-white font-semibold py-3 rounded-xl hover:bg-amber-600 transition"
+                >
+                  <AiOutlineShopping className="w-4 h-4" />
+                  Buy Now
+                </button>
               </div>
             </div>
+
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .line-clamp-1 {
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
     </>
   );
 }
