@@ -1,7 +1,8 @@
-import { FaBriefcase, FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaChevronRight, FaHeart, FaMedkit, FaUmbrellaBeach, FaBook, FaHome, FaUsers } from 'react-icons/fa';
-import PageBanner from '../components/PageBanner';
+'use client';
 
-// JSON Data
+import { useState } from 'react';
+import { FaBriefcase, FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaChevronRight, FaMedkit, FaUmbrellaBeach, FaBook, FaHome, FaUsers } from 'react-icons/fa';
+import PageBanner from '../components/PageBanner';
 const careersData = {
   hero: {
     title: "Join Our Team",
@@ -114,11 +115,10 @@ export default function CareersPage() {
       />
 
       {/* Open Positions */}
-      <section className="py-12 sm:py-16">
-        <div className="max-w-[1920px] mx-auto px-[4%]">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-gray-900">Open Positions</h2>
-          
-          <div className="grid gap-6">
+      <section className="py-8">
+        <div className="max-w-4xl mx-auto px-[4%]">
+          <h2 className="text-xl font-bold mb-5 text-gray-900">Open Positions</h2>
+          <div className="grid gap-4">
             {careersData.openPositions.map((job) => (
               <div 
                 key={job.id}
@@ -194,11 +194,10 @@ export default function CareersPage() {
       </section>
 
       {/* Benefits */}
-      <section className="py-12 sm:py-16 bg-white">
-        <div className="max-w-[1920px] mx-auto px-[4%]">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-gray-900 text-center">Benefits & Perks</h2>
-          
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="py-8 bg-white">
+        <div className="max-w-4xl mx-auto px-[4%]">
+          <h2 className="text-xl font-bold mb-5 text-gray-900 text-center">Benefits &amp; Perks</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {careersData.benefits.map((benefit, idx) => (
               <div key={idx} className="bg-gray-50 rounded-xl p-5 text-center">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -213,18 +212,17 @@ export default function CareersPage() {
       </section>
 
       {/* Culture */}
-      <section className="py-12 sm:py-16">
-        <div className="max-w-[1920px] mx-auto px-[4%]">
-          <div className="max-w-4xl mx-auto text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">{careersData.culture.title}</h2>
-            <p className="text-lg text-gray-600">{careersData.culture.description}</p>
+      <section className="py-8">
+        <div className="max-w-4xl mx-auto px-[4%]">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold mb-2 text-gray-900">{careersData.culture.title}</h2>
+            <p className="text-sm text-gray-600 max-w-2xl mx-auto">{careersData.culture.description}</p>
           </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {careersData.culture.values.map((value, idx) => (
-              <div key={idx} className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="font-bold text-gray-900 mb-2 text-lg">{value.title}</h3>
-                <p className="text-gray-600 text-sm">{value.description}</p>
+              <div key={idx} className="bg-white rounded-xl border border-gray-200 p-4">
+                <h3 className="font-bold text-gray-900 mb-1 text-sm">{value.title}</h3>
+                <p className="text-gray-600 text-xs">{value.description}</p>
               </div>
             ))}
           </div>
@@ -232,13 +230,13 @@ export default function CareersPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-12 sm:py-16 bg-gradient-to-r from-green-700 to-emerald-700">
-        <div className="max-w-[1920px] mx-auto px-[4%] text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-white">Don't See a Perfect Fit?</h2>
-          <p className="text-lg text-green-100 mb-6">Send us your resume anyway! We're always looking for talented people.</p>
-          <button className="px-8 py-4 bg-white text-green-700 rounded-lg hover:bg-gray-100 transition font-semibold text-lg">
+      <section className="py-8 bg-green-700 text-white text-center">
+        <div className="max-w-xl mx-auto px-[4%]">
+          <h2 className="text-lg font-bold mb-2">Don&apos;t See a Perfect Fit?</h2>
+          <p className="text-sm text-green-100 mb-4">Send us your resume anyway! We&apos;re always looking for talented people.</p>
+          <a href="mailto:careers@pansariin.pk" className="inline-block px-6 py-2.5 bg-white text-green-700 rounded-lg hover:bg-gray-100 transition font-semibold text-sm">
             Send Your Resume
-          </button>
+          </a>
         </div>
       </section>
 

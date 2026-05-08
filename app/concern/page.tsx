@@ -210,7 +210,7 @@ export default function ByConcernPage() {
               </div>
               <div className="lg:w-80 flex-shrink-0">
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <span className="text-lg">💡</span> Wellness Tips
+                  <FaCheckCircle className="w-4 h-4 text-green-600" /> Wellness Tips
                 </h3>
                 <ul className="space-y-3 mb-5">
                   {selected.tips.map((tip, i) => (
@@ -251,26 +251,29 @@ export default function ByConcernPage() {
         </div>
 
         {/* Why herbal CTA */}
-        <div className="bg-gradient-to-br from-[#197B33] to-emerald-600 rounded-2xl p-8 sm:p-12 text-white text-center">
+        <div className="bg-green-700 rounded-2xl p-8 text-white text-center">
           <div className="max-w-2xl mx-auto">
-            <div className="flex justify-center mb-4">
-              <svg className="w-10 h-10 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 5v4m0 4h.01"/></svg>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black mb-3">Why Choose Herbal Solutions?</h2>
-            <p className="text-white/80 text-sm sm:text-base mb-8 leading-relaxed">
+            <FaLeaf className="w-8 h-8 mx-auto mb-3 text-white/70" />
+            <h2 className="text-xl font-bold mb-2">Why Choose Herbal Solutions?</h2>
+            <p className="text-white/80 text-sm mb-6 leading-relaxed">
               Pansari Inn sources only the purest natural ingredients — no synthetic additives, no harmful chemicals.
               Rooted in centuries of traditional wisdom, crafted to work with your body naturally.
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-              {[{ icon: '🌱', l: '100% Natural' }, { icon: '🔬', l: 'Lab Tested' }, { icon: '🤲', l: 'Handcrafted' }, { icon: '✅', l: 'Certified Pure' }].map((item) => (
-                <div key={item.l} className="bg-white/10 rounded-xl py-3 px-2 text-center">
-                  <div className="text-2xl mb-1">{item.icon}</div>
-                  <div className="text-xs font-semibold text-white/90">{item.l}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {[
+                { Icon: FaLeaf,        label: '100% Natural'  },
+                { Icon: FaCheckCircle, label: 'Lab Tested'    },
+                { Icon: FaShieldAlt,   label: 'Handcrafted'   },
+                { Icon: FaCheckCircle, label: 'Certified Pure'},
+              ].map(({ Icon, label }) => (
+                <div key={label} className="bg-white/10 rounded-xl py-3 px-2 text-center">
+                  <Icon className="w-4 h-4 mx-auto mb-1 text-white/80" />
+                  <div className="text-xs font-semibold text-white/90">{label}</div>
                 </div>
               ))}
             </div>
-            <Link href="/shop" className="inline-flex items-center gap-2 bg-white text-[#197B33] hover:bg-gray-100 transition px-6 py-3 rounded-xl font-bold text-sm">
-              Shop All Products <FaArrowRight className="w-4 h-4" />
+            <Link href="/shop" className="inline-flex items-center gap-2 bg-white text-green-700 hover:bg-gray-100 transition px-5 py-2.5 rounded-xl font-bold text-sm">
+              Shop All Products <FaArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
