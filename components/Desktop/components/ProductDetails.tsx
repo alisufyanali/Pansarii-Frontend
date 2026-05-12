@@ -17,8 +17,8 @@ import {
   FaLeaf,
   FaBoxOpen,
 } from "react-icons/fa";
-import { useCart } from "../../../app/context/CartContext";
-import { useWishlist } from "../../../app/context/WishList";
+import { useCart } from "@/app/context/CartContext";
+import { useWishlist } from "@/app/context/WishList";
 import { toast } from "react-toastify";
 
 function ProductDetailsSkeleton() {

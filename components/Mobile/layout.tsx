@@ -2,8 +2,8 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import { CartProvider } from "../../app/context/CartContext";
-import { WishlistProvider } from "../../app/context/WishList";
+import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishList";
 import Header from "./components/header";
 import MenuModal from "./components/MenuModal";
 import Footer from "./components/footer";

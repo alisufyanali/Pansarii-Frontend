@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import SearchBarWrapper from './navbar/SearchBarWrapper';
 import CartSidebar from './sidebar';
-import { useCart } from '../../../app/context/CartContext';
+import { useCart } from '@/context/CartContext';
 
 import {
   FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaWhatsapp,

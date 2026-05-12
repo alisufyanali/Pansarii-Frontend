@@ -21,11 +21,12 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@components/*": ["./components/Desktop/components/*"],
       "@/components/*": ["./components/*"],
-      "@/utils/*": ["./utils/*"],
       "@/context/*": ["./app/context/*"],
-      "@/app-utils/*": ["./app/utils/*"]
+      "@/utils/*": ["./utils/*"],
+      "@/types/*": ["./types/*"],
+      "@/lib/*": ["./lib/*"],
+      "@components/*": ["./components/Desktop/components/*"]
     }
   },
   "include": [

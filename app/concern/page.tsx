@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { newArrivalProducts } from '../components/Desktop/data/newproducts';
-import ProductCard from '../components/Desktop/components/ProductCard';
+import { newArrivalProducts } from '@/components/Desktop/data/newproducts';
+import ProductCard from '@/components/Desktop/components/ProductCard';
 import { FaLeaf, FaHeart, FaMoon, FaBolt, FaEye, FaShieldAlt, FaSmile, FaWind, FaBrain, FaFire, FaArrowRight, FaCheckCircle, FaSearch } from 'react-icons/fa';
 
 interface Concern {

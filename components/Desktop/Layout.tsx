@@ -1,7 +1,7 @@
 // app/Desktop/layout.tsx
 import { ReactNode } from "react";
-import { CartProvider } from "../../app/context/CartContext";
-import { WishlistProvider } from "../../app/context/WishList";
+import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishList";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 

@@ -2,9 +2,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import DesktopProductCard from '../components/Desktop/components/ProductCard';
-import MobileProductCard from '../components/Mobile/components/ProductCard';
-import { newArrivalProducts, NewArrivalProduct } from '../components/Desktop/data/newproducts';
+import DesktopProductCard from '@/components/Desktop/components/ProductCard';
+import MobileProductCard from '@/components/Mobile/components/ProductCard';
+import { newArrivalProducts, NewArrivalProduct } from '@/components/Desktop/data/newproducts';
 
 // Hook to detect mobile screen
 const useIsMobile = () => {

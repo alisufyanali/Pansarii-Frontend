@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { FilterOptions } from '../../../utils/filterProducts';
+import { FilterOptions } from '@/utils/filterProducts';
 import {
   FiFilter,
   FiSearch,
