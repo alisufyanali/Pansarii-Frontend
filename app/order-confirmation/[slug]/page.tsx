@@ -40,7 +40,7 @@ interface OrderDetails {
     email: string;
     address: string;
     city: string;
-    postalCode: string;
+    postalCode?: string;
   };
   paymentMethod: string;
 }
@@ -263,7 +263,7 @@ export default function OrderConfirmationSlugPage() {
                     <p className="font-medium text-gray-900">{order.shippingAddress.name}</p>
                     <p className="text-sm text-gray-600 mt-1">{order.shippingAddress.address}</p>
                     <p className="text-sm text-gray-600">
-                      {order.shippingAddress.city}, {order.shippingAddress.postalCode}
+                      {order.shippingAddress.city}{order.shippingAddress.postalCode ? `, ${order.shippingAddress.postalCode}` : ''}
                     </p>
                   </div>
                 </div>

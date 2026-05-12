@@ -115,6 +115,7 @@ export default function CheckoutPage() {
         address: data.get('address') as string,
         city: selectedCity,
         area: data.get('area') as string,
+        postalCode: data.get('area') as string,
       },
       paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod === 'online' ? 'Online Payment' : 'Bank Transfer',
     };
