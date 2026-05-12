@@ -77,10 +77,6 @@ function OrderConfirmationContent() {
     localStorage.removeItem('pansari-cart');
   }, [searchParams, router]);
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const handleDownload = () => {
     if (!order) return;
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { FaBriefcase, FaMapMarkerAlt, FaClock, FaMoneyBillWave, FaChevronRight, FaMedkit, FaUmbrellaBeach, FaBook, FaHome, FaUsers } from 'react-icons/fa';
-import PageBanner from '../components/PageBanner';
+import PageBanner from '@/components/PageBanner';
 const careersData = {
   hero: {
     title: "Join Our Team",

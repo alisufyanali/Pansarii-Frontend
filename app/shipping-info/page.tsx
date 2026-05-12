@@ -1,7 +1,7 @@
 'use client';
 
 import { FaTruck, FaClock, FaBoxOpen, FaShieldAlt, FaLeaf, FaLock, FaThermometerHalf } from 'react-icons/fa';
-import PageBanner from '../components/PageBanner';
+import PageBanner from '@/components/PageBanner';
 
 const deliveryZones = [
   { zone: 'Major Cities',  cities: ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad'], time: '2–3 business days', cost: 'PKR 150' },

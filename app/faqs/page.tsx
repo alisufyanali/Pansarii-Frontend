@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { FaChevronDown, FaSearch, FaQuestionCircle, FaShoppingCart, FaTruck, FaUndo, FaLeaf, FaUser, FaEllipsisH } from 'react-icons/fa';
 
-import PageBanner from '../components/PageBanner';
+import PageBanner from '@/components/PageBanner';
 const faqData = {
   hero: {
     title: "Frequently Asked Questions",

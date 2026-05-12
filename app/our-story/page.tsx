@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { FaLeaf, FaCheckCircle, FaBook, FaHandshake } from 'react-icons/fa';
-import PageBanner from '../components/PageBanner';
+import PageBanner from '@/components/PageBanner';
 
 const data = {
   journey: [

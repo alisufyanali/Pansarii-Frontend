@@ -9,7 +9,6 @@ import { useCart } from '../context/CartContext';
 function CartContent() {
   const { cartItems, updateQuantity, removeFromCart, getCartTotal, getCartCount } = useCart();
   const [mounted, setMounted] = useState(false);
-  const [promoCode, setPromoCode] = useState('');
 
   useEffect(() => { setMounted(true); }, []);
 

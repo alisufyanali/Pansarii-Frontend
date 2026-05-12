@@ -66,9 +66,10 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (validateForm()) {
-      // Console log the data (without confirmPassword)
+      // TODO: Connect to Laravel API POST /api/register
       const { confirmPassword, ...dataToLog } = formData;
-      
+      void confirmPassword;
+
       console.log('=== REGISTRATION DATA ===');
       console.log(JSON.stringify(dataToLog, null, 2));
       console.log('=========================');

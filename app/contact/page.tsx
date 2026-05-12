@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 
-import PageBanner from '../components/PageBanner';
+import PageBanner from '@/components/PageBanner';
 
 // JSON Data
 const contactData = {
