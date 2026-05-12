@@ -3,6 +3,11 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
+// Dev-only logger — stripped in production builds
+const log = (...args: unknown[]): void => {
+  if (process.env.NODE_ENV === 'development') console.log(...args);
+};
+
 interface WishlistItem {
   id: string | number;
   img: string;
@@ -40,7 +45,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         const saved = localStorage.getItem('pansari-wishlist');
         if (saved) {
           const parsed = JSON.parse(saved);
-          console.log('✅ Wishlist loaded from localStorage:', parsed);
+          log('✅ Wishlist loaded from localStorage:', parsed);
           setWishlistItems(parsed);
         }
       } catch (error) {
@@ -55,7 +60,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined' && isInitialized) {
       try {
         localStorage.setItem('pansari-wishlist', JSON.stringify(wishlistItems));
-        console.log('💾 Wishlist saved to localStorage:', wishlistItems);
+        log('💾 Wishlist saved to localStorage:', wishlistItems);
       } catch (error) {
         console.error('❌ Error saving wishlist:', error);
       }
@@ -63,7 +68,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, [wishlistItems, isInitialized]);
 
   const addToWishlist = (item: WishlistItem) => {
-    console.log('❤️ Adding to wishlist:', item);
+    log('❤️ Adding to wishlist:', item);
     
     setWishlistItems(prev => {
       // Check if item already exists
@@ -72,30 +77,30 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       );
       
       if (exists) {
-        console.log('⚠️ Item already in wishlist');
+        log('⚠️ Item already in wishlist');
         return prev;
       }
       
       const newWishlist = [...prev, item];
-      console.log('✅ Added to wishlist, new wishlist:', newWishlist);
+      log('✅ Added to wishlist, new wishlist:', newWishlist);
       return newWishlist;
     });
   };
 
   const removeFromWishlist = (id: string | number) => {
-    console.log('🗑️ Removing from wishlist:', id);
+    log('🗑️ Removing from wishlist:', id);
     
     setWishlistItems(prev => {
       const newWishlist = prev.filter(item => 
         String(item.id) !== String(id)
       );
-      console.log('✅ Removed from wishlist, new wishlist:', newWishlist);
+      log('✅ Removed from wishlist, new wishlist:', newWishlist);
       return newWishlist;
     });
   };
 
   const toggleWishlist = (item: WishlistItem) => {
-    console.log('🔄 Toggling wishlist for:', item.id);
+    log('🔄 Toggling wishlist for:', item.id);
     
     const exists = wishlistItems.some(wishlistItem => 
       String(wishlistItem.id) === String(item.id)
@@ -109,7 +114,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   };
 
   const clearWishlist = () => {
-    console.log('🧹 Clearing wishlist');
+    log('🧹 Clearing wishlist');
     setWishlistItems([]);
   };
 

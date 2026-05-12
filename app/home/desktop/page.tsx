@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 
-// Lazy load all sections — they only load after skeleton disappears
+// Lazy load all sections — Suspense handles the loading state naturally
 const Banner          = lazy(() => import("../../../components/Desktop/Sections/Banner"));
 const SolutionBar     = lazy(() => import("../../../components/Desktop/Sections/SolutionBar"));
 const FeaturedProducts = lazy(() => import("../../../components/Desktop/Sections/FeaturedProducts"));
@@ -148,15 +148,6 @@ function PageSkeleton() {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(t);
-  }, []);
-
-  if (isLoading) return <PageSkeleton />;
-
   return (
     <Suspense fallback={<PageSkeleton />}>
       <Banner />
