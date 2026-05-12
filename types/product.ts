@@ -24,8 +24,8 @@ export interface Product {
   isBestSeller?: boolean;
   tags?: string[];
   additionalImages?: string[];
-  // Product detail page fields
-  features?: ProductFeature[];
+  // Product detail page fields — accepts both plain strings (legacy) and structured objects
+  features?: ProductFeature[] | string[];
   sizes?: string[];
   points?: number;
   benefits?: string[];

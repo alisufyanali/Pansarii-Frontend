@@ -142,7 +142,11 @@ export default function ProductPage() {
 
   const legacyProduct: LegacyProduct = {
     ...product,
-    features: (product.features ?? []).map((f: ProductFeature) => f.hasCheck ? `✓ ${f.text}` : `○ ${f.text}`),
+    // features on the detail page are always ProductFeature[] (set by getProductFeatures)
+    // Cast safely — if somehow strings arrive, pass them through unchanged
+    features: (product.features ?? []).map((f) =>
+      typeof f === 'string' ? f : (f.hasCheck ? `✓ ${f.text}` : `○ ${f.text}`)
+    ),
     relatedProducts: relatedProducts.map(p => ({
       id: p.id, img: p.img, nameEn: p.nameEn,
       nameUr: p.nameUr || p.nameEn, price: p.price,

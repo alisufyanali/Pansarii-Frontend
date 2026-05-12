@@ -64,8 +64,8 @@ interface ProductDetailsProps {
     rating: number;
     reviews: number;
     price: number;
-    oldPrice?: number;
-    sale?: string;
+    oldPrice?: number | null;
+    sale?: string | null;
     features?: FeatureItem[];
     sizes?: string[];
     points?: number;
