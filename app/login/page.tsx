@@ -2,21 +2,37 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import { api, setAuthData, getApiErrorMessage } from '../../lib/axios';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface LoginResponse {
+  token: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading,    setIsLoading]    = useState(false);
+  const [apiError,     setApiError]     = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {};
+  // ── Validation ──────────────────────────────────────────────────────────────
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
 
     if (!formData.email) {
       newErrors.email = 'Email is required';
@@ -34,37 +50,68 @@ export default function LoginPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // ── Submit ──────────────────────────────────────────────────────────────────
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError('');
 
-    if (validateForm()) {
-      // TODO: wire up to authentication API
-      alert('Login successful!');
-      router.push('/');
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+    try {
+      // POST /api/auth/login  →  { token, user }
+      const data = await api.post<LoginResponse>('/auth/login', {
+        email:    formData.email,
+        password: formData.password,
+      });
+
+      // Persist token + user so every subsequent request is authenticated
+      setAuthData(data.token, data.user);
+
+      // Redirect back to the page the user was trying to reach, or home
+      const returnTo = searchParams.get('returnTo') ?? '/';
+      router.push(decodeURIComponent(returnTo));
+    } catch (err) {
+      setApiError(getApiErrorMessage(err));
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // ── Field change ────────────────────────────────────────────────────────────
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
+    // Clear field-level error as the user types
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
+    // Clear API-level error too
+    if (apiError) setApiError('');
   };
 
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white p-4">
       <div className="w-full max-w-md">
-        {/* Logo/Header */}
+
+        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your Pansari account</p>
         </div>
 
-        {/* Login Form */}
+        {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+
+            {/* API-level error banner */}
+            {apiError && (
+              <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                {apiError}
+              </div>
+            )}
+
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -76,9 +123,11 @@ export default function LoginPage() {
                   id="email"
                   name="email"
                   type="email"
+                  autoComplete="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
+                  disabled={isLoading}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${
                     errors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="your@email.com"
@@ -100,17 +149,20 @@ export default function LoginPage() {
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
+                  disabled={isLoading}
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${
                     errors.password ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword(p => !p)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
                 </button>
@@ -120,26 +172,35 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Remember Me & Forgot Password */}
+            {/* Remember me + Forgot */}
             <div className="flex items-center justify-between">
-              <label className="flex items-center">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                 />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                <span className="text-sm text-gray-600">Remember me</span>
               </label>
               <Link href="/forgot-password" className="text-sm text-green-600 hover:text-green-700 font-medium">
                 Forgot password?
               </Link>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+              disabled={isLoading}
+              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Sign In
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Signing in…
+                </>
+              ) : 'Sign In'}
             </button>
           </form>
 
@@ -150,9 +211,9 @@ export default function LoginPage() {
             <div className="flex-1 border-t border-gray-300" />
           </div>
 
-          {/* Sign Up Link */}
+          {/* Sign up link */}
           <p className="text-center text-sm text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/register" className="text-green-600 hover:text-green-700 font-semibold">
               Sign up
             </Link>
