@@ -1,7 +1,7 @@
 // app/shop/ProductGrid.tsx
 import { Product } from "../../../../utils/filterProducts";
 import ProductCard from "../../components/ProductCard";
-import MobileProductCard from "../../../Mobile/components/ProductCard";
+import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import ProductDetailsModal from "../../components/ProductDetailsModal";
 import { memo, useState, useEffect } from 'react';
 import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';

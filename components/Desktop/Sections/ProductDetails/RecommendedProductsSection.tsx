@@ -1,7 +1,7 @@
 "use client";
 
-import { useDeviceDetection } from '../../../../app/utils/screen-detection';
-import MobileProductCard from '../../../Mobile/components/ProductCard';
+import { useDeviceDetection } from '@/app/utils/screen-detection';
+import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import DesktopProductCard from '../../components/ProductCard';
 import { recommendedProducts } from "../../data/recommendedProducts";
 

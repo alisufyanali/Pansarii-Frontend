@@ -3,8 +3,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaStar, FaCheckCircle } from 'react-icons/fa';
-import { bestSellers } from '@/app/Desktop/data/products';
-import ProductDetailsModal from '@/app/Desktop/components/ProductDetailsModal';
+import { bestSellers } from '@/components/Desktop/data/products';
+import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 
 export default function MobileFeaturedProducts() {
   const router      = useRouter();

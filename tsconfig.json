@@ -21,7 +21,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@components/*": ["./components/Desktop/components/*"]
+      "@components/*": ["./components/Desktop/components/*"],
+      "@/components/*": ["./components/*"],
+      "@/utils/*": ["./utils/*"]
     }
   },
   "include": [
