@@ -1,4 +1,5 @@
 // app/layout.tsx
+import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import "./globals.css";
 import DeviceDetector from "./utils/screen-detection";
@@ -15,11 +16,18 @@ const poppins = Poppins({
   display: 'swap',
 });
 
-export const metadata = {
-  title: "Pansari Inn - Premium Ayurvedic & Herbal Products",
+export const metadata: Metadata = {
+  title: {
+    default: 'Pansari Inn - Premium Ayurvedic & Herbal Products',
+    template: '%s | Pansari Inn',
+  },
   description: "100% Pure Ayurvedic & Herbal Products. Premium quality natural products for health, beauty, and wellness.",
-  keywords: "ayurvedic, herbal, natural products, wellness, health, beauty, Pakistan",
+  keywords: ["ayurvedic", "herbal", "natural products", "wellness", "health", "beauty", "Pakistan"],
   authors: [{ name: "Pansari Inn" }],
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     title: "Pansari Inn - Premium Ayurvedic & Herbal Products",
     description: "100% Pure Ayurvedic & Herbal Products for health and wellness",
@@ -36,8 +44,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} light`} suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#ffffff" />
       </head>
