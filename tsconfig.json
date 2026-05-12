@@ -23,7 +23,9 @@
       "@/*": ["./*"],
       "@components/*": ["./components/Desktop/components/*"],
       "@/components/*": ["./components/*"],
-      "@/utils/*": ["./utils/*"]
+      "@/utils/*": ["./utils/*"],
+      "@/context/*": ["./app/context/*"],
+      "@/app-utils/*": ["./app/utils/*"]
     }
   },
   "include": [

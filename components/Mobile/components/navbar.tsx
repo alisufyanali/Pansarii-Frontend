@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCart } from '../../context/CartContext';
+import { useCart } from '@/context/CartContext';
 import { 
   HiHome, 
   HiShoppingBag, 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useCart } from '../../../context/CartContext';
+import { useCart } from '@/context/CartContext';
 import { RiShoppingCartLine, RiUserLine } from 'react-icons/ri';
 
 export default function IconsSection() {
