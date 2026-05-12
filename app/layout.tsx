@@ -1,10 +1,18 @@
 // app/layout.tsx
+import { Poppins } from 'next/font/google';
 import "./globals.css";
 import DeviceDetector from "./utils/screen-detection";
 import { CartProvider } from "./context/CartContext";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SpeedInsights } from "@vercel/speed-insights/next"
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
 
 export const metadata = {
   title: "Pansari Inn - Premium Ayurvedic & Herbal Products",
@@ -25,25 +33,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="light" suppressHydrationWarning>
+    <html lang="en" className={`${poppins.variable} light`} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body className="bg-white text-gray-900 font-poppins antialiased" suppressHydrationWarning>
         <CartProvider>
           <DeviceDetector>{children}</DeviceDetector>
-          <ToastContainer 
+          <ToastContainer
             position="top-right"
             autoClose={3000}
             hideProgressBar={false}
@@ -56,6 +56,7 @@ export default function RootLayout({
             theme="light"
           />
         </CartProvider>
+        <SpeedInsights />
       </body>
     </html>
   );

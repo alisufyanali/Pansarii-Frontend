@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { allProducts } from '@/app/Desktop/data/products';
-import ProductCard from '@/app/Desktop/components/ProductCard';
-import ProductDetailsModal from '@/app/Desktop/components/ProductDetailsModal';
-import SearchFilterBar from '@/app/Desktop/components/SearchFilterBar';
-import { FilterOptions } from '@/app/Desktop/utils/filterProducts';
+import { allProducts } from '@/components/Desktop/data/products';
+import ProductCard from '@/components/Desktop/components/ProductCard';
+import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
+import SearchFilterBar from '@/components/Desktop/components/SearchFilterBar';
+import { FilterOptions } from '@/utils/filterProducts';
 // import { FaStar, FaCheckCircle, FaEye, FaLeaf } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import MobileProductCard from '@/app/Mobile/components/ProductCard';
+import MobileProductCard from '@/components/Mobile/components/ProductCard';
 
 import { FaStar, FaCheckCircle, FaEye, FaTint } from 'react-icons/fa';
 // import { useRouter } from 'next/navigation';
-// import MobileProductCard from '../../Mobile/components/ProductCard';
+// import MobileProductCard from '@/components/Mobile/components/ProductCard';
 
 // ─── Skeletons ────────────────────────────────────────────────────────────────
 function GridSkeleton() {

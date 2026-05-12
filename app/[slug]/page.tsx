@@ -3,16 +3,17 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
-import ProductDetails from '@/app/Desktop/components/ProductDetails';
-import ProductDetailsSection from '@/app/Desktop/Sections/ProductDetailsSection';
-import { allProducts } from '@/app/Desktop/data/products';
+import ProductDetails from '@/components/Desktop/components/ProductDetails';
+import ProductDetailsSection from '@/components/Desktop/Sections/ProductDetailsSection';
+import { allProducts } from '@/components/Desktop/data/products';
 import { FaHome, FaStore } from 'react-icons/fa';
+import { Product, ProductFeature, LegacyProduct } from '../../types/product';
 
 export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
-  const [product, setProduct] = useState<any>(null);
-  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function ProductPage() {
     );
 
     if (foundProduct) {
-      const transformedProduct = {
+      const transformedProduct: Product = {
         img: foundProduct.img,
         additionalImages: foundProduct.additionalImages || [
           '/images/category.png',
@@ -41,6 +42,7 @@ export default function ProductPage() {
         oldPrice: foundProduct.oldPrice,
         sale: foundProduct.sale || "20% OFF",
         productId: foundProduct.id,
+        id: foundProduct.id,
         features: getProductFeatures(foundProduct),
         sizes: ["15ml", "30ml", "60ml", "120ml", "150ml"],
         points: Math.floor(foundProduct.price / 100) || 14,
@@ -68,8 +70,8 @@ export default function ProductPage() {
     setLoading(false);
   }, [params.slug, router]);
 
-  const getProductFeatures = (product: any) => {
-    const base = [
+  const getProductFeatures = (product: Product): ProductFeature[] => {
+    const base: ProductFeature[] = [
       { text: "100% Natural & Organic",        hasCheck: true },
       { text: "No Chemical Preservatives",      hasCheck: true },
       { text: "Cruelty Free",                   hasCheck: true },
@@ -77,7 +79,7 @@ export default function ProductPage() {
       { text: "Gluten Free",                    hasCheck: true },
       { text: "Vegan Friendly",                 hasCheck: true },
     ];
-    const extra: any[] = [];
+    const extra: ProductFeature[] = [];
     const cat = product.category?.toLowerCase() || '';
     if (cat.includes('skin')) extra.push(
       { text: "Anti-Aging Properties",  hasCheck: true },
@@ -97,7 +99,7 @@ export default function ProductPage() {
     return [...extra, ...base].slice(0, 8);
   };
 
-  const getProductBenefits = (product: any) => {
+  const getProductBenefits = (product: Product): string[] => {
     const cat = product.category?.toLowerCase() || '';
     if (cat.includes('skin')) return ["Provides deep hydration", "Reduces signs of aging", "Improves skin elasticity"];
     if (cat.includes('hair')) return ["Promotes hair growth", "Reduces dandruff", "Strengthens hair follicles"];
@@ -122,7 +124,7 @@ export default function ProductPage() {
         <div className="text-center max-w-md p-8">
           <div className="text-5xl mb-4">😕</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
-          <p className="text-gray-500 text-sm mb-6">This product doesn't exist or may have been moved.</p>
+          <p className="text-gray-500 text-sm mb-6">This product doesn&apos;t exist or may have been moved.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button onClick={() => router.push('/')}
               className="px-6 py-2.5 bg-green-700 text-white text-sm font-semibold rounded-full hover:bg-green-600 transition flex items-center justify-center gap-2">
@@ -138,13 +140,13 @@ export default function ProductPage() {
     );
   }
 
-  const legacyProduct = {
+  const legacyProduct: LegacyProduct = {
     ...product,
-    features: product.features.map((f: any) => f.hasCheck ? `✓ ${f.text}` : `○ ${f.text}`),
+    features: (product.features ?? []).map((f: ProductFeature) => f.hasCheck ? `✓ ${f.text}` : `○ ${f.text}`),
     relatedProducts: relatedProducts.map(p => ({
       id: p.id, img: p.img, nameEn: p.nameEn,
       nameUr: p.nameUr || p.nameEn, price: p.price,
-      oldPrice: p.oldPrice, rating: p.rating,
+      oldPrice: p.oldPrice ?? undefined, rating: p.rating,
       sale: p.sale, category: p.category,
     })),
   };

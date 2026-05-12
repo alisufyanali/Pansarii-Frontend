@@ -8,7 +8,7 @@ import { FaHeart, FaShoppingCart, FaTrash, FaStar, FaBox, FaExchangeAlt, FaUser,
 import { FiX } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishList';
-import { allProducts } from '../Desktop/data/products';
+import { allProducts } from '../components/Desktop/data/products';
 
 export default function WishlistPage() {
   const [mounted, setMounted] = useState(false);

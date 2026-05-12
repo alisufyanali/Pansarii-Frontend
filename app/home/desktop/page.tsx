@@ -3,17 +3,17 @@
 import { useState, useEffect, Suspense, lazy } from 'react';
 
 // Lazy load all sections — they only load after skeleton disappears
-const Banner          = lazy(() => import("../../Desktop/Sections/Banner"));
-const SolutionBar     = lazy(() => import("../../Desktop/Sections/SolutionBar"));
-const FeaturedProducts = lazy(() => import("../../Desktop/Sections/FeaturedProducts"));
-const Category        = lazy(() => import("../../Desktop/Sections/Category"));
-const NewArrivals     = lazy(() => import("../../Desktop/Sections/NewArrivals"));
-const BeautyCorner    = lazy(() => import("../../Desktop/Sections/BeautyCorner"));
-const PansariInn      = lazy(() => import("../../Desktop/Sections/Pureinnoils"));
-const ComboDeal       = lazy(() => import("../../Desktop/Sections/ComboDeal"));
-const VideoProducts   = lazy(() => import("../../Desktop/Sections/VideoProducts"));
-const Review          = lazy(() => import("../../Desktop/Sections/Review"));
-const Blog            = lazy(() => import("../../Desktop/Sections/Blog"));
+const Banner          = lazy(() => import("../../components/Desktop/Sections/Banner"));
+const SolutionBar     = lazy(() => import("../../components/Desktop/Sections/SolutionBar"));
+const FeaturedProducts = lazy(() => import("../../components/Desktop/Sections/FeaturedProducts"));
+const Category        = lazy(() => import("../../components/Desktop/Sections/Category"));
+const NewArrivals     = lazy(() => import("../../components/Desktop/Sections/NewArrivals"));
+const BeautyCorner    = lazy(() => import("../../components/Desktop/Sections/BeautyCorner"));
+const PansariInn      = lazy(() => import("../../components/Desktop/Sections/Pureinnoils"));
+const ComboDeal       = lazy(() => import("../../components/Desktop/Sections/ComboDeal"));
+const VideoProducts   = lazy(() => import("../../components/Desktop/Sections/VideoProducts"));
+const Review          = lazy(() => import("../../components/Desktop/Sections/Review"));
+const Blog            = lazy(() => import("../../components/Desktop/Sections/Blog"));
 
 // ─── Generic shimmer block ────────────────────────────────────────────────────
 function Shimmer({ className = '', style }: { className?: string; style?: React.CSSProperties }) {

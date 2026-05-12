@@ -1,6 +1,6 @@
 "use client";
 
-import ReviewCard from "../Desktop/components/ReviewCard";
+import ReviewCard from "../components/Desktop/components/ReviewCard";
 import { FaCheckCircle, FaLeaf, FaShippingFast, FaShieldAlt, FaGift, FaHeadset, FaMedkit } from "react-icons/fa";
 import PageBanner from "../components/PageBanner";
 

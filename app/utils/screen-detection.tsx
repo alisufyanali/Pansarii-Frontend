@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState, ReactNode } from 'react';
-import DesktopLayout from '../Desktop/Layout';
-import MobileLayout from '../Mobile/layout';
+import DesktopLayout from '../../components/Desktop/Layout';
+import MobileLayout from '../../components/Mobile/layout';
 
 // ============================================
 // TYPES

@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import HeroBanner          from '@/app/Mobile/components/HeroBanner';
-import Categories          from '@/app/Mobile/components/categories';
-import SolutionBar         from '@/app/Mobile/components/solutionbar';
-import MobileFeaturedProducts from '@/app/Mobile/components/FeaturedProducts';
-import ShopProducts        from '@/app/Mobile/components/ShopProducts';
-import MobileVideoProducts from '@/app/Mobile/components/VideoProducts';
-import MobileComboDeal     from '@/app/Mobile/components/ComboDeal';
-import MobileReviews       from '@/app/Mobile/components/Reviews';
-import MobileBlogSection   from '@/app/Mobile/components/BlogSection';
+import HeroBanner          from '@/components/Mobile/components/HeroBanner';
+import Categories          from '@/components/Mobile/components/categories';
+import SolutionBar         from '@/components/Mobile/components/solutionbar';
+import MobileFeaturedProducts from '@/components/Mobile/components/FeaturedProducts';
+import ShopProducts        from '@/components/Mobile/components/ShopProducts';
+import MobileVideoProducts from '@/components/Mobile/components/VideoProducts';
+import MobileComboDeal     from '@/components/Mobile/components/ComboDeal';
+import MobileReviews       from '@/components/Mobile/components/Reviews';
+import MobileBlogSection   from '@/components/Mobile/components/BlogSection';
 
 export default function MobileHomePage() {
   const [isLoading, setIsLoading] = useState(true);

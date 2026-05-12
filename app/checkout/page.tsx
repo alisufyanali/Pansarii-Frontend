@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { FaLock, FaCreditCard, FaCheckCircle, FaChevronDown, FaShieldAlt, FaTruck, FaTag, FaMoneyBillWave, FaUniversity } from 'react-icons/fa';
+import { useCart } from '../context/CartContext';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { cartItems, getCartTotal, getCartCount, clearCart } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [phoneValue, setPhoneValue] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState('');
@@ -16,6 +19,8 @@ export default function CheckoutPage() {
   const [promoApplied, setPromoApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoSuccessMsg, setPromoSuccessMsg] = useState('');
 
   const pakistaniCities = [
     { value: 'lahore',       label: 'Lahore',       province: 'Punjab' },
@@ -44,51 +49,37 @@ export default function CheckoutPage() {
     { value: 'mirpur',       label: 'Mirpur',       province: 'AJK'    },
   ];
 
-  const cartItems = [
-    { id: 1, img: '/images/product.png', nameEn: 'Cold Pressed Almond Oil', price: 899, quantity: 2, size: '30ml' },
-    { id: 2, img: '/images/product.png', nameEn: 'Organic Coconut Oil',     price: 749, quantity: 1, size: '50ml' },
-  ];
-
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = 200;
+  const subtotal = getCartTotal();
+  const shipping = subtotal > 5000 ? 0 : 200;
   const total = subtotal + shipping - discount;
 
-  const handleApplyPromo = () => {
-    // Demo promo codes - in production, this would be an API call
-    const validPromos: { [key: string]: number } = {
-      'SAVE10': 0.10, // 10% off
-      'SAVE20': 0.20, // 20% off
-      'WELCOME': 100, // PKR 100 off
-      'FREESHIP': shipping, // Free shipping
-    };
-
-    const promo = promoCode.toUpperCase().trim();
-    
-    if (validPromos[promo]) {
-      let discountAmount = 0;
-      
-      if (typeof validPromos[promo] === 'number') {
-        if (promo === 'FREESHIP') {
-          discountAmount = validPromos[promo];
-          setDiscount(validPromos[promo]);
-        } else if (validPromos[promo] < 1) {
-          // Percentage discount
-          discountAmount = subtotal * validPromos[promo];
-          setDiscount(discountAmount);
-        } else {
-          // Fixed amount discount
-          discountAmount = validPromos[promo];
-          setDiscount(Math.min(discountAmount, subtotal)); // Don't discount more than subtotal
-        }
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await fetch('/api/validate-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode, subtotal }),
+      });
+      const data = await res.json() as { valid: boolean; type: string | null; value: number; message: string };
+      if (data.valid) {
+        // For freeship type, discount the shipping cost instead of subtotal
+        const discountValue = data.type === 'freeship' ? shipping : data.value;
+        setDiscount(discountValue);
+        setPromoApplied(true);
+        setPromoError('');
+        setPromoSuccessMsg(data.message);
+      } else {
+        setPromoError(data.message);
+        setPromoApplied(false);
+        setDiscount(0);
       }
-      
-      setPromoApplied(true);
-      setPromoError('');
-      alert(`Promo code applied! You saved PKR ${discountAmount.toLocaleString()}`);
-    } else {
-      setPromoError('Invalid promo code');
-      setPromoApplied(false);
-      setDiscount(0);
+    } catch {
+      setPromoError('Could not validate promo code. Please try again.');
+    } finally {
+      setPromoLoading(false);
     }
   };
 
@@ -97,11 +88,14 @@ export default function CheckoutPage() {
     setPromoApplied(false);
     setDiscount(0);
     setPromoError('');
+    setPromoSuccessMsg('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    const form = e.target as HTMLFormElement;
+    const data = new FormData(form);
     const orderId = `ORD-${Date.now().toString().slice(-8)}`;
     const orderData = {
       orderId,
@@ -114,23 +108,43 @@ export default function CheckoutPage() {
       total: total,
       promoApplied: promoApplied ? promoCode : null,
       shippingAddress: {
-        name: (e.target as any).name.value,
+        name: data.get('name') as string,
         phone: phoneValue,
-        email: (e.target as any).email.value,
-        address: (e.target as any).address.value,
+        email: data.get('email') as string,
+        address: data.get('address') as string,
         city: selectedCity,
-        area: (e.target as any).area.value,
+        area: data.get('area') as string,
       },
       paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod === 'online' ? 'Online Payment' : 'Bank Transfer',
     };
     localStorage.setItem(`order-${orderId}`, JSON.stringify(orderData));
     await new Promise(r => setTimeout(r, 1500));
+    clearCart();
     router.push(`/order-confirmation?orderId=${orderId}`);
   };
 
   // ── Shared input class ──────────────────────────────────────────────────────
   const inputCls = "w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition bg-white";
   const labelCls = "block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide";
+
+  // ── Empty cart state ────────────────────────────────────────────────────────
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div className="text-6xl mb-4">🛒</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
+          <p className="text-gray-500 mb-6 text-sm">Add some products to your cart before checking out.</p>
+          <Link
+            href="/shop"
+            className="inline-block px-8 py-3 bg-green-700 text-white font-semibold rounded-full hover:bg-green-600 transition"
+          >
+            Browse Products
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -233,11 +247,11 @@ export default function CheckoutPage() {
                         className={`${inputCls} appearance-none pr-8`}>
                         <option value="">Select your city</option>
                         {[
-                          { label: 'Punjab',             filter: (c: any) => c.province === 'Punjab' },
-                          { label: 'Sindh',              filter: (c: any) => c.province === 'Sindh'  },
-                          { label: 'Khyber Pakhtunkhwa', filter: (c: any) => c.province === 'KPK'    },
-                          { label: 'Balochistan',        filter: (c: any) => c.province === 'Balochistan' },
-                          { label: 'Other',              filter: (c: any) => c.province === 'ICT' || c.province === 'AJK' },
+                          { label: 'Punjab',             filter: (c: { province: string }) => c.province === 'Punjab' },
+                          { label: 'Sindh',              filter: (c: { province: string }) => c.province === 'Sindh'  },
+                          { label: 'Khyber Pakhtunkhwa', filter: (c: { province: string }) => c.province === 'KPK'    },
+                          { label: 'Balochistan',        filter: (c: { province: string }) => c.province === 'Balochistan' },
+                          { label: 'Other',              filter: (c: { province: string }) => c.province === 'ICT' || c.province === 'AJK' },
                         ].map(g => (
                           <optgroup key={g.label} label={g.label}>
                             {pakistaniCities.filter(g.filter).map(c => (
@@ -307,7 +321,7 @@ export default function CheckoutPage() {
                 {/* Items */}
                 <div className="flex flex-col gap-3 pb-4 border-b border-gray-100">
                   {cartItems.map(item => (
-                    <div key={item.id} className="flex gap-3">
+                    <div key={`${item.id}-${item.size}`} className="flex gap-3">
                       <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
                         <img src={item.img} alt={item.nameEn} className="w-full h-full object-cover" />
                       </div>
@@ -343,10 +357,10 @@ export default function CheckoutPage() {
                       <button
                         type="button"
                         onClick={handleApplyPromo}
-                        disabled={!promoCode.trim()}
+                        disabled={!promoCode.trim() || promoLoading}
                         className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Apply
+                        {promoLoading ? 'Checking…' : 'Apply'}
                       </button>
                     ) : (
                       <button
@@ -361,14 +375,9 @@ export default function CheckoutPage() {
                   {promoError && (
                     <p className="text-xs text-red-500 mt-2">{promoError}</p>
                   )}
-                  {promoApplied && (
-                    <p className="text-xs text-green-600 mt-2">
-                      ✓ Promo code applied! You saved PKR {discount.toLocaleString()}
-                    </p>
+                  {promoApplied && promoSuccessMsg && (
+                    <p className="text-xs text-green-600 mt-2">✓ {promoSuccessMsg}</p>
                   )}
-                  <p className="text-[10px] text-gray-400 mt-2">
-                    Try: SAVE10, SAVE20, WELCOME, FREESHIP
-                  </p>
                 </div>
 
                 {/* Price breakdown */}
@@ -388,7 +397,7 @@ export default function CheckoutPage() {
                       <FaTruck className="w-3 h-3" /> Shipping
                     </span>
                     <span className="font-medium text-gray-900">
-                      {discount > 0 && promoCode.toUpperCase() === 'FREESHIP' ? 'FREE' : `PKR ${shipping}`}
+                      {shipping === 0 || (promoApplied && promoCode.toUpperCase() === 'FREESHIP') ? 'FREE' : `PKR ${shipping}`}
                     </span>
                   </div>
                 </div>
