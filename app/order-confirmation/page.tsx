@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -476,11 +477,15 @@ function OrderConfirmationContent() {
                 <div className="space-y-4">
                   {order.items.map((item) => (
                     <div key={`${item.id}-${item.size}`} className="flex gap-4 pb-4 border-b last:border-b-0">
-                      <img
-                        src={item.img}
-                        alt={item.nameEn}
-                        className="w-20 h-20 object-cover rounded-lg border border-gray-200"
-                      />
+                      <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200">
+                        <Image
+                          src={item.img}
+                          alt={item.nameEn}
+                          fill
+                          className="object-cover"
+                          sizes="80px"
+                        />
+                      </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900">{item.nameEn}</h3>
                         <p className="text-xs text-gray-500 mt-1">Size: {item.size}</p>

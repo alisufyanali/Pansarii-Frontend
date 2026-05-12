@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FaStar, FaCheckCircle, FaShoppingCart } from "react-icons/fa";
 import { useState, MouseEvent } from "react";
 import ProductDetailsModal from "./ProductDetailsModal";
@@ -37,10 +38,12 @@ export default function ProductCard({ product }: { product: Product }) {
       >
         {/* Fixed-height image */}
         <div className="relative w-full h-44 flex-shrink-0 border-b border-gray-100">
-          <img
+          <Image
             src={displayImage}
             alt={product.nameEn}
-            className="w-full h-full object-cover transition-all duration-300"
+            fill
+            className="object-cover transition-all duration-300"
+            sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
           />
           {product.sale && (
             <span className="absolute top-2 right-2 px-2 py-0.5 bg-red-500 text-white text-[11px] font-medium rounded-full">

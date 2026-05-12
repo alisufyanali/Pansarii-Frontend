@@ -3,6 +3,7 @@ import { Poppins } from 'next/font/google';
 import "./globals.css";
 import DeviceDetector from "./utils/screen-detection";
 import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishList";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -42,19 +43,21 @@ export default function RootLayout({
       </head>
       <body className="bg-white text-gray-900 font-poppins antialiased" suppressHydrationWarning>
         <CartProvider>
-          <DeviceDetector>{children}</DeviceDetector>
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
+          <WishlistProvider>
+            <DeviceDetector>{children}</DeviceDetector>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
+          </WishlistProvider>
         </CartProvider>
         <SpeedInsights />
       </body>

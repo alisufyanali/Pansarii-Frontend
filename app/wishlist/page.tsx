@@ -169,8 +169,8 @@ export default function WishlistPage() {
   // Check if user is logged in (same logic as sidebar)
   const isLoggedIn = () => {
     if (typeof window === 'undefined') return false;
-    const token = localStorage.getItem('authToken');
-    const user = localStorage.getItem('user');
+    const token = localStorage.getItem('pansari-auth-token');
+    const user = localStorage.getItem('pansari-auth-user');
     return !!(token && user);
   };
 
