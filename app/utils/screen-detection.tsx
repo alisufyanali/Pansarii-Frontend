@@ -38,8 +38,9 @@ interface ConditionalRenderProps {
 function detectDevice(): boolean {
   if (typeof window === 'undefined') return false;
 
-  // Check User-Agent
-  const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+  // Check User-Agent (window.opera is non-standard; cast via unknown for type safety)
+  const opera = (window as unknown as { opera?: string }).opera;
+  const userAgent = navigator.userAgent || navigator.vendor || opera || '';
   const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i;
   const isMobileAgent = mobileRegex.test(userAgent);
 

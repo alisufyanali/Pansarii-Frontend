@@ -122,13 +122,14 @@ export default function NewArrivalsPage() {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const email = formData.get('email') as string;
-    console.log('Subscribing email:', email);
+    // TODO: wire up to newsletter API
+    void email;
     alert('Thank you for subscribing to our newsletter!');
     (e.target as HTMLFormElement).reset();
   };
 
   const handleShopNow = () => {
-    console.log('Navigating to shop');
+    // Navigate to shop — handled by Link component where used
   };
 
   return (

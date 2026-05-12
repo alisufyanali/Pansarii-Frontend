@@ -10,9 +10,22 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishList';
 import { allProducts } from '../components/Desktop/data/products';
 
+// Suggested product shape — a subset of Product
+interface SuggestedProduct {
+  id: string | number;
+  nameEn: string;
+  img: string;
+  price: number;
+  oldPrice?: number | null;
+  rating: number;
+  category?: string;
+  isBestSeller?: boolean;
+  sale?: string | null;
+}
+
 export default function WishlistPage() {
   const [mounted, setMounted] = useState(false);
-  const [suggestedProducts, setSuggestedProducts] = useState<any[]>([]);
+  const [suggestedProducts, setSuggestedProducts] = useState<SuggestedProduct[]>([]);
   const { 
     cartItems, 
     addToCart, 
@@ -82,7 +95,7 @@ export default function WishlistPage() {
     }
   }, [wishlistItems]);
 
-  const handleMoveToCart = (item: any) => {
+  const handleMoveToCart = (item: { id: string | number; img: string; nameEn: string; nameUr?: string; price: number; category?: string }) => {
     addToCart({
       id: item.id,
       img: item.img,
@@ -90,8 +103,7 @@ export default function WishlistPage() {
       nameUr: item.nameUr || item.nameEn,
       price: item.price,
       size: '15ml',
-      category: item.category || 'Wishlist'
-      // quantity is likely handled automatically in addToCart
+      category: item.category || 'Wishlist',
     });
     removeFromWishlist(item.id);
   };
@@ -102,7 +114,7 @@ export default function WishlistPage() {
     });
   };
 
-  const handleAddSuggestedToCart = (product: any) => {
+  const handleAddSuggestedToCart = (product: SuggestedProduct) => {
     addToCart({
       id: product.id,
       img: product.img,
@@ -110,12 +122,11 @@ export default function WishlistPage() {
       nameUr: product.nameEn,
       price: product.price,
       size: '15ml',
-      category: product.category || 'Suggested'
-      // quantity is likely handled automatically in addToCart
+      category: product.category || 'Suggested',
     });
   };
 
-  const handleToggleWishlist = (item: any) => {
+  const handleToggleWishlist = (item: { id: string | number; nameEn: string; nameUr?: string; price: number; img: string; oldPrice?: number | null; category?: string }) => {
     toggleWishlist({
       id: item.id,
       nameEn: item.nameEn,
@@ -123,7 +134,7 @@ export default function WishlistPage() {
       price: item.price,
       img: item.img,
       oldPrice: item.oldPrice,
-      category: item.category
+      category: item.category,
     });
   };
 

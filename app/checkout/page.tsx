@@ -10,7 +10,7 @@ import { useCart } from '../context/CartContext';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems, getCartTotal, getCartCount, clearCart } = useCart();
+  const { cartItems, getCartTotal, clearCart } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [phoneValue, setPhoneValue] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState('');

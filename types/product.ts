@@ -48,7 +48,7 @@ export interface LegacyProduct extends Omit<Product, 'features'> {
     nameEn: string;
     nameUr: string;
     price: number;
-    oldPrice?: number;
+    oldPrice?: number | null;
     rating: number;
     sale?: string | null;
     category?: string;

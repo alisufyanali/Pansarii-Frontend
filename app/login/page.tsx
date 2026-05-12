@@ -38,13 +38,8 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (validateForm()) {
-      // Console log the data
-      console.log('=== LOGIN DATA ===');
-      console.log(JSON.stringify(formData, null, 2));
-      console.log('==================');
-
-      // Optionally redirect to home or dashboard
-      alert('Login successful! Check console for data.');
+      // TODO: wire up to authentication API
+      alert('Login successful!');
       router.push('/');
     }
   };

@@ -6,21 +6,7 @@ import ProductCard from "@components/ProductCard";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
 import { useCardsToShow, cardWidthStyle } from "@/utils/useCardsToShow";
-
-interface Product {
-  id?: string | number;
-  img: string;
-  hoverImg?: string;
-  nameEn: string;
-  nameUr: string;
-  description: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  oldPrice?: number | null;
-  sale?: string | null;
-  [key: string]: any;
-}
+import { Product } from "@/types/product";
 
 interface ProductSectionProps {
   title:          string;
