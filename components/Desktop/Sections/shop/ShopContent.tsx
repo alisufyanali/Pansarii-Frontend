@@ -2,7 +2,8 @@
 'use client';
 
 import { useState, memo, lazy, Suspense, useEffect } from 'react';
-import { FilterOptions, Product } from "../../../../utils/filterProducts";
+import type { Product } from '@/types/product';
+import type { FilterOptions } from '@/utils/filterProducts';
 import SearchFilterBar from "../../components/SearchFilterBar";
 import CategoryTabs from "../../components/CategoryTabs";
 import Pagination from "./Pagination";

@@ -1,5 +1,5 @@
 // app/shop/ProductGrid.tsx
-import { Product } from "../../../../utils/filterProducts";
+import type { Product } from '@/types/product';
 import ProductCard from "../../components/ProductCard";
 import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import ProductDetailsModal from "../../components/ProductDetailsModal";

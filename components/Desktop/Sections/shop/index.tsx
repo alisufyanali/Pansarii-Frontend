@@ -4,8 +4,9 @@
 import { Suspense, useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Product, FilterOptions, filterProducts, getCategoriesFromProducts, getPriceRangeFromProducts } from "../../../../utils/filterProducts";
-import { allProducts } from "@/components/Desktop/data/products";
+import type { Product } from '@/types/product';
+import { FilterOptions, filterProducts, getCategoriesFromProducts, getPriceRangeFromProducts } from '@/utils/filterProducts';
+import { allProducts } from '@/components/Desktop/data/products';
 
 // ─── Dynamic import at MODULE level (never inside useMemo/render) ─────────────
 const DynamicShopContent = dynamic(() => import('./ShopContent'), {
@@ -92,7 +93,7 @@ function ShopContent() {
   const initialCategory = searchParams.get('category') || '';
   const initialCategories = searchParams.get('categories')?.split(',') || [];
 
-  const safeProducts = useMemo(() => {
+  const safeProducts = useMemo((): Product[] => {
     if (!allProducts || !Array.isArray(allProducts)) return [];
     return allProducts.map(product => ({ ...product, inStock: product.inStock !== false }));
   }, []);
