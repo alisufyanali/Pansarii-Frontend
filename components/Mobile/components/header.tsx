@@ -66,7 +66,9 @@ function MobileSearchBar() {
               onClick={() => handleSearch(p.nameEn)}
               className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-gray-50 text-left"
             >
-              <img src={p.img} alt={p.nameEn} className="w-8 h-8 rounded-lg object-contain bg-gray-100" />
+              <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                <Image src={p.img} alt={p.nameEn} fill className="object-contain" sizes="32px" />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-gray-900 truncate">{p.nameEn}</p>
                 <p className="text-[10px] text-gray-400">{p.category}</p>

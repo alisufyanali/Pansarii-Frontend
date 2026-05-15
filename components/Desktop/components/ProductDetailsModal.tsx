@@ -145,7 +145,7 @@ export default function ProductDetailsModal({
                     {product.sale}
                   </span>
                 )}
-                <img src={selectedImage} alt={product.nameEn} className="w-full h-full object-contain p-3" />
+                <Image src={selectedImage} alt={product.nameEn} fill className="object-contain p-3" sizes="160px" />
               </div>
 
               {/* Thumbnails */}
@@ -155,11 +155,11 @@ export default function ProductDetailsModal({
                     <button
                       key={i}
                       onClick={() => setSelectedImage(img)}
-                      className={`w-10 h-10 rounded-lg overflow-hidden border-2 flex-shrink-0 transition ${
+                      className={`relative w-10 h-10 rounded-lg overflow-hidden border-2 flex-shrink-0 transition ${
                         selectedImage === img ? 'border-green-600' : 'border-gray-200'
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <Image src={img} alt="" fill className="object-cover" sizes="40px" />
                     </button>
                   ))}
                 </div>
@@ -299,7 +299,7 @@ export default function ProductDetailsModal({
                     {product.sale}
                   </span>
                 )}
-                <img src={selectedImage} alt={product.nameEn} className="w-full h-full object-contain p-4" />
+                <Image src={selectedImage} alt={product.nameEn} fill className="object-contain p-4" sizes="(max-width: 768px) 50vw, 33vw" />
               </div>
               {product.additionalImages && product.additionalImages.length > 0 && (
                 <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar">
@@ -307,11 +307,11 @@ export default function ProductDetailsModal({
                     <button
                       key={i}
                       onClick={() => setSelectedImage(img)}
-                      className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition ${
+                      className={`relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition ${
                         selectedImage === img ? 'border-green-600' : 'border-gray-200'
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <Image src={img} alt="" fill className="object-cover" sizes="56px" />
                     </button>
                   ))}
                 </div>

@@ -233,9 +233,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               onMouseEnter={() => setIsZoomed(true)}
               onMouseLeave={() => setIsZoomed(false)}
               onMouseMove={handleImageHover}>
-              <img src={selectedImage} alt={product.nameEn}
-                className="w-full h-full object-contain p-3 transition-transform duration-200"
-                style={{ transform: isZoomed ? "scale(1.5)" : "scale(1)", transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%` }} />
+              <Image
+                src={selectedImage}
+                alt={product.nameEn}
+                fill
+                className="object-contain p-3 transition-transform duration-200"
+                style={{ transform: isZoomed ? "scale(1.5)" : "scale(1)", transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%` }}
+                sizes="(max-width: 1024px) 100vw, 40vw"
+              />
               {/* % off badge — only on image */}
               {product.oldPrice && (
                 <div className="absolute bottom-2 left-2 bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow">
@@ -254,8 +259,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           <div className="flex gap-2 overflow-x-auto flex-shrink-0" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {[product.img, ...additionalImages].map((img, i) => (
               <button key={i} onClick={() => handleImageClick(img)}
-                className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === img ? "border-green-600 shadow-md" : "border-gray-200 hover:border-gray-400"}`}>
-                <img src={img} alt="" className="w-full h-full object-cover" />
+                className={`relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === img ? "border-green-600 shadow-md" : "border-gray-200 hover:border-gray-400"}`}>
+                <Image src={img} alt="" fill className="object-cover" sizes="56px" />
               </button>
             ))}
           </div>
@@ -392,16 +397,16 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           className={`absolute top-2 left-2 z-20 p-2 rounded-full shadow-md ${isWishlisted ? "bg-red-50 border border-red-200" : "bg-white/90 border border-gray-200"}`}>
           {isWishlisted ? <FaHeart className="w-4 h-4 text-red-500" /> : <FaRegHeart className="w-4 h-4 text-gray-600" />}
         </button>
-        <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 shadow-md">
-          <img src={selectedImage} alt={product.nameEn} className="w-full h-full object-contain p-4" />
+        <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 shadow-md">
+          <Image src={selectedImage} alt={product.nameEn} fill className="object-contain p-4" sizes="100vw" />
         </div>
       </div>
       {additionalImages.length > 0 && (
         <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
           {[product.img, ...additionalImages].map((img, i) => (
             <button key={i} onClick={() => handleImageClick(img)}
-              className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${selectedImage === img ? "border-green-600" : "border-gray-200"}`}>
-              <img src={img} alt="" className="w-full h-full object-cover" />
+              className={`relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${selectedImage === img ? "border-green-600" : "border-gray-200"}`}>
+              <Image src={img} alt="" fill className="object-cover" sizes="56px" />
             </button>
           ))}
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import {
   FaShoppingCart, FaStar, FaHeart, FaRegHeart, FaCheckCircle,
@@ -533,8 +534,15 @@ export default function ProductDetailsSection({ product }: { product?: any }) {
               {/* Mobile */}
               <div className="flex md:hidden flex-col py-2 gap-2">
                 <div className="flex items-center gap-2">
-                  <img src={product.img||"/images/placeholder.jpg"} alt={product.nameEn}
-                    className="w-10 h-10 rounded-lg object-cover border border-gray-200 flex-shrink-0" />
+                  <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                    <Image
+                      src={product.img || "/images/placeholder.jpg"}
+                      alt={product.nameEn}
+                      fill
+                      className="object-cover"
+                      sizes="40px"
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-gray-900 truncate">{product.nameEn}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -578,8 +586,15 @@ export default function ProductDetailsSection({ product }: { product?: any }) {
               {/* Desktop */}
               <div className="hidden md:flex items-center justify-between gap-4 py-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <img src={product.img||"/images/placeholder.jpg"} alt={product.nameEn}
-                    className="w-12 h-12 rounded-lg object-cover border border-gray-200 flex-shrink-0" />
+                  <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                    <Image
+                      src={product.img || "/images/placeholder.jpg"}
+                      alt={product.nameEn}
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-900 text-sm truncate">{product.nameEn}</h3>
                     <div className="flex items-center gap-3 mt-0.5 flex-wrap">

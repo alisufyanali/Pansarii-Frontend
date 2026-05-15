@@ -27,11 +27,13 @@ function Lightbox({ images, startIndex, onClose }: {
       </button>
 
       {/* Main image */}
-      <div className="w-full max-w-sm px-4" onClick={e => e.stopPropagation()}>
-        <img
+      <div className="relative w-full max-w-sm aspect-[4/3] max-h-[60vh] px-4 mx-auto" onClick={e => e.stopPropagation()}>
+        <Image
           src={images[current]}
           alt="Review"
-          className="w-full rounded-xl object-contain max-h-[60vh]"
+          fill
+          className="rounded-xl object-contain"
+          sizes="100vw"
         />
       </div>
 
@@ -42,11 +44,11 @@ function Lightbox({ images, startIndex, onClose }: {
             <button
               key={i}
               onClick={() => setCurrent(i)}
-              className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+              className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
                 i === current ? 'border-amber-400' : 'border-white/30'
               }`}
             >
-              <img src={img} alt="" className="w-full h-full object-cover" />
+              <Image src={img} alt="" fill className="object-cover" sizes="56px" />
             </button>
           ))}
         </div>
@@ -131,9 +133,9 @@ export default function MobileReviews() {
                       <button
                         key={idx}
                         onClick={() => setLightbox({ images: imgs, index: idx })}
-                        className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100"
+                        className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100"
                       >
-                        <img src={img} alt="Review" className="w-full h-full object-cover" />
+                        <Image src={img} alt="Review" fill className="object-cover" sizes="40px" />
                       </button>
                     ))}
                     {imgs.length > 3 && (
@@ -149,8 +151,8 @@ export default function MobileReviews() {
 
                 {/* Reviewer */}
                 <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                  <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border-2 border-green-600">
-                    <img src={review.img} alt={review.name} className="w-full h-full object-cover" />
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border-2 border-green-600">
+                    <Image src={review.img} alt={review.name} fill className="object-cover" sizes="32px" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] font-semibold text-gray-900 truncate">{review.name}</p>

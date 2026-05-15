@@ -64,8 +64,15 @@ export default function ProductSection({
     <div className="mt-12">
       {/* Optional banner */}
       {bannerImg && (
-        <section className="w-full h-[70vh] min-h-[30rem] max-h-[45rem]">
-          <img src={bannerImg} alt={bannerAlt ?? title} className="w-full h-full object-cover" />
+        <section className="relative w-full h-[70vh] min-h-[30rem] max-h-[45rem]">
+          <Image
+            src={bannerImg}
+            alt={bannerAlt ?? title}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
         </section>
       )}
 
