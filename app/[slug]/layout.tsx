@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { allProducts } from '@/components/Desktop/data/products';
+import { findProductBySlug } from '@/lib/productSlug';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -8,12 +8,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const productName = slug.replace(/-/g, ' ');
-
-  const product = allProducts.find(p =>
-    p.nameEn.toLowerCase().includes(productName.toLowerCase()) ||
-    p.id.toString() === slug
-  );
+  const product = findProductBySlug(slug);
 
   if (!product) {
     return {
