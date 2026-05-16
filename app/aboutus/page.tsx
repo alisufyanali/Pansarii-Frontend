@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import ReviewCard from "@/components/Desktop/components/ReviewCard";
 import { FaCheckCircle, FaLeaf, FaShippingFast, FaShieldAlt, FaGift, FaHeadset, FaMedkit } from "react-icons/fa";
 import PageBanner from "@/components/PageBanner";
@@ -176,8 +177,15 @@ export default function AboutUsPage() {
             </div>
           </div>
           <div className="order-1 lg:order-2 rounded-2xl overflow-hidden shadow-lg">
-            <img src={pageData.mission.image} alt={pageData.mission.imageAlt}
-              className="w-full h-48 sm:h-64 lg:h-72 object-cover" />
+            <div className="relative w-full h-48 sm:h-64 lg:h-72">
+              <Image
+                src={pageData.mission.image}
+                alt={pageData.mission.imageAlt}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
           </div>
         </div>
       </section>

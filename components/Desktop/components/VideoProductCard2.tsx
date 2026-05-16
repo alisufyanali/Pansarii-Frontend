@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import React, { useRef, useEffect, useState, MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaHeart, FaShareAlt } from 'react-icons/fa';
@@ -76,7 +77,9 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
             preload="auto"
           />
         ) : (
-          <img src={product.topImage} alt="Product" className="w-full h-full object-cover" />
+          <div className="relative w-full h-full">
+            <Image src={product.topImage} alt="Product" fill className="object-cover" sizes="(max-width: 1280px) 25vw, 20vw" />
+          </div>
         )}
 
         {!videoLoaded && !videoError && (

@@ -16,12 +16,7 @@ interface BannerSlide {
 
 const slides: BannerSlide[] = [
   {
-    image: "/images/new-banner.png",
-    badge: "✨ 100% Natural & Authentic",
-    title: "Pansari Inn",
-    description: "Nature heals 🌿 Handmade | Herbal Haircare | Plant Based Skincare | Women owned family business",
-    primaryBtn:   { label: "Shop Now",         href: "/shop"      },
-    secondaryBtn: { label: "Explore Remedies", href: "/remedies"  },
+    image: "/images/pansar-banner 1.png",
   },
   {
     image: "/images/banner-3.png",

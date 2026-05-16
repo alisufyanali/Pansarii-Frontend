@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { allProducts } from '@/components/Desktop/data/products';
 import ProductCard from '@/components/Desktop/components/ProductCard';
@@ -239,9 +240,14 @@ export default function BeautyCornerCategoryPage() {
               {paginatedProducts.map((product) => (
                 <div key={product.id} className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow p-3 sm:p-4 lg:p-6">
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                    <div className="w-full sm:w-48 h-40 sm:h-48 flex-shrink-0 relative">
-                      <img src={product.img} alt={product.nameEn} className="w-full h-full object-cover rounded-lg" loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).src = '/images/product.png'; }} />
+                    <div className="w-full sm:w-48 h-40 sm:h-48 flex-shrink-0 relative rounded-lg overflow-hidden">
+                      <Image
+                        src={product.img}
+                        alt={product.nameEn}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, 192px"
+                      />
                       {product.sale && <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">{product.sale}</div>}
                     </div>
                     <div className="flex-1 flex flex-col justify-between">

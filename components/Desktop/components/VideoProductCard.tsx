@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import React, { useRef, useEffect, useState, MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -70,7 +71,9 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
             preload="auto"
           />
         ) : (
-          <img src={product.topImage} alt={product.nameEn} className="w-full h-full object-cover" />
+          <div className="relative w-full h-full">
+            <Image src={product.topImage} alt={product.nameEn} fill className="object-cover" sizes="(max-width: 1280px) 25vw, 20vw" />
+          </div>
         )}
 
         {!videoLoaded && !videoError && (
@@ -89,11 +92,9 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
       {/* Info strip */}
       <div className="flex p-2 gap-2 flex-shrink-0">
         <div className="flex flex-col items-start gap-1 flex-shrink-0">
-          <img
-            src={product.productImage}
-            alt={product.nameEn}
-            className="w-[44px] h-[40px] rounded-[4px] object-cover"
-          />
+          <div className="relative w-[44px] h-[40px] rounded-[4px] overflow-hidden">
+            <Image src={product.productImage} alt={product.nameEn} fill className="object-cover" sizes="44px" />
+          </div>
           {product.sale && (
             <div className="text-[9px] font-medium text-center text-black px-1 py-0.5 rounded bg-white border border-gray-300 leading-tight">
               {product.sale}

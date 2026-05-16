@@ -1,6 +1,7 @@
 // app/cart/page.tsx
 "use client";
 
+import Image from 'next/image';
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { FaTrash, FaShoppingCart, FaHeart, FaTag, FaShieldAlt, FaTruck, FaArrowLeft } from 'react-icons/fa';
@@ -142,11 +143,15 @@ function CartContent() {
                       <div className="flex gap-3 sm:gap-4">
 
                         {/* Product image */}
-                        <div className="w-18 h-18 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50"
+                        <div className="w-18 h-18 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 relative"
                           style={{ width: '72px', height: '72px' }}>
-                          <img src={item.img} alt={item.nameEn}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/product.png'; }} />
+                          <Image
+                            src={item.img}
+                            alt={item.nameEn}
+                            fill
+                            className="object-cover"
+                            sizes="72px"
+                          />
                         </div>
 
                         {/* Info */}

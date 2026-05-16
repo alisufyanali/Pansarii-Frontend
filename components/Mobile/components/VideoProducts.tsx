@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaHeart, FaShareAlt } from 'react-icons/fa';
@@ -84,7 +85,9 @@ function VideoCard({ product, onPress }: { product: any; onPress: () => void }) 
           onError={() => setErr(true)}
         />
       ) : (
-        <img src={product.img} alt={product.nameEn} className="w-full h-full object-cover" />
+        <div className="relative w-full h-full">
+          <Image src={product.img} alt={product.nameEn} fill className="object-cover" sizes="(max-width: 768px) 50vw, 20vw" />
+        </div>
       )}
 
       {/* Bottom overlay */}
@@ -98,7 +101,9 @@ function VideoCard({ product, onPress }: { product: any; onPress: () => void }) 
         </div>
         {/* Small product image */}
         <div className="flex items-center gap-1.5 mt-1">
-          <img src={product.img} alt="" className="w-7 h-7 rounded-md object-cover bg-white/20" />
+          <div className="relative w-7 h-7 rounded-md overflow-hidden flex-shrink-0 bg-white/20">
+            <Image src={product.img} alt="" fill className="object-cover" sizes="28px" />
+          </div>
           <span className="text-white text-[10px] font-medium line-clamp-1">{product.nameEn}</span>
         </div>
       </div>
