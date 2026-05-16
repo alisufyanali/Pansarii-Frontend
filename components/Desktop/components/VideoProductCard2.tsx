@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import React, { useRef, useEffect, useState, MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaHeart, FaShareAlt } from 'react-icons/fa';
 
 interface VideoProduct {
   video: string;
@@ -15,7 +14,6 @@ interface VideoProduct {
   oldPrice?: number | string;
   sale?: string;
   views?: string;
-  [key: string]: any;
 }
 
 interface VideoProductCard2Props {
@@ -34,8 +32,8 @@ export default function VideoProductCard2({ product }: VideoProductCard2Props) {
         try {
           videoRef.current.muted = true;
           await videoRef.current.play();
-        } catch (error) {
-          console.log('Autoplay prevented:', error);
+        } catch {
+          // Autoplay blocked by browser — silent fail
         }
       }
     };
