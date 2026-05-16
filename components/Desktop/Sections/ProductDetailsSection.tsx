@@ -14,6 +14,7 @@ import "react-toastify/dist/ReactToastify.css";
 import VideoProductsSection from "./ProductDetails/VideoProductsSection";
 import RecommendedProductsSection from "./ProductDetails/RecommendedProductsSection";
 import DirectionToUse from "../components/directiontouse";
+import type { LegacyProduct } from '@/types/product';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Review {
@@ -164,7 +165,7 @@ function ReviewFormModal({ onClose, onSubmit }: {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function ProductDetailsSection({ product }: { product?: any }) {
+export default function ProductDetailsSection({ product }: { product?: LegacyProduct }) {
   const productDetailsBanner1 = "/images/productdetailsbanner1.png";
   const productDetailsBanner2 = "/images/productdetailsbanner2.png";
 
