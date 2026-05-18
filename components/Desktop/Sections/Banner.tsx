@@ -16,12 +16,7 @@ interface BannerSlide {
 
 const slides: BannerSlide[] = [
   {
-    image: "/images/new-banner.png",
-    badge: "✨ 100% Natural & Authentic",
-    title: "Pansari Inn",
-    description: "Nature heals 🌿 Handmade | Herbal Haircare | Plant Based Skincare | Women owned family business",
-    primaryBtn:   { label: "Shop Now",         href: "/shop"      },
-    secondaryBtn: { label: "Explore Remedies", href: "/remedies"  },
+    image: "/images/new.jpg",
   },
   {
     image: "/images/banner-3.png",
@@ -78,11 +73,11 @@ export default function Banner() {
       <div
         className="absolute inset-0 w-full h-full"
         style={{
-          opacity:   animating ? 0 : 1,
+          opacity:   animating ? 0 : 0.9,
           transform: animating
             ? `translateX(${direction === "right" ? "-40px" : "40px"})`
             : "translateX(0)",
-          transition: "opacity 0.5s ease, transform 0.5s ease",
+          transition: "opacity 0.9s ease, transform 0.9s ease",
         }}
       >
         <Image
