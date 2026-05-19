@@ -11,7 +11,7 @@ import { RiArrowLeftLine, RiShoppingCartLine, RiShoppingBagLine } from 'react-ic
 type OrderStatus = 'delivered' | 'processing' | 'shipped' | 'cancelled' | 'pending';
 
 interface OrderItem {
-  id: number;
+  id: string | number;
   nameEn: string;
   img: string;
   price: number;

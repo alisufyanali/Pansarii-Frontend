@@ -18,6 +18,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
+  const [promoType, setPromoType] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
@@ -54,6 +55,25 @@ export default function CheckoutPage() {
   const shipping = subtotal > 5000 ? 0 : 200;
   const total = subtotal + shipping - discount;
 
+  // Type guard for promo API response
+  interface PromoResponse {
+    valid: boolean;
+    type: string | null;
+    value: number;
+    message: string;
+  }
+
+  function isPromoResponse(data: unknown): data is PromoResponse {
+    return (
+      typeof data === 'object' &&
+      data !== null &&
+      'valid' in data &&
+      'type' in data &&
+      'value' in data &&
+      'message' in data
+    );
+  }
+
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
     setPromoLoading(true);
@@ -64,17 +84,25 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: promoCode, subtotal }),
       });
-      const data = await res.json() as { valid: boolean; type: string | null; value: number; message: string };
+      const data: unknown = await res.json();
+      
+      if (!isPromoResponse(data)) {
+        setPromoError('Invalid response from server');
+        return;
+      }
+
       if (data.valid) {
         // For freeship type, discount the shipping cost instead of subtotal
         const discountValue = data.type === 'freeship' ? shipping : data.value;
         setDiscount(discountValue);
+        setPromoType(data.type);
         setPromoApplied(true);
         setPromoError('');
         setPromoSuccessMsg(data.message);
       } else {
         setPromoError(data.message);
         setPromoApplied(false);
+        setPromoType(null);
         setDiscount(0);
       }
     } catch {
@@ -87,6 +115,7 @@ export default function CheckoutPage() {
   const handleRemovePromo = () => {
     setPromoCode('');
     setPromoApplied(false);
+    setPromoType(null);
     setDiscount(0);
     setPromoError('');
     setPromoSuccessMsg('');
@@ -405,7 +434,7 @@ export default function CheckoutPage() {
                       <FaTruck className="w-3 h-3" /> Shipping
                     </span>
                     <span className="font-medium text-gray-900">
-                      {shipping === 0 || (promoApplied && promoCode.toUpperCase() === 'FREESHIP') ? 'FREE' : `PKR ${shipping}`}
+                      {shipping === 0 || promoType === 'freeship' ? 'FREE' : `PKR ${shipping}`}
                     </span>
                   </div>
                 </div>
