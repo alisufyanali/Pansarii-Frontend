@@ -9,6 +9,37 @@ import 'react-phone-number-input/style.css';
 import { FaLock, FaCreditCard, FaCheckCircle, FaChevronDown, FaShieldAlt, FaTruck, FaTag, FaMoneyBillWave, FaUniversity } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const PAKISTANI_CITIES = [
+  { value: 'lahore',       label: 'Lahore',       province: 'Punjab' },
+  { value: 'faisalabad',   label: 'Faisalabad',   province: 'Punjab' },
+  { value: 'rawalpindi',   label: 'Rawalpindi',   province: 'Punjab' },
+  { value: 'multan',       label: 'Multan',       province: 'Punjab' },
+  { value: 'gujranwala',   label: 'Gujranwala',   province: 'Punjab' },
+  { value: 'sialkot',      label: 'Sialkot',      province: 'Punjab' },
+  { value: 'bahawalpur',   label: 'Bahawalpur',   province: 'Punjab' },
+  { value: 'sargodha',     label: 'Sargodha',     province: 'Punjab' },
+  { value: 'karachi',      label: 'Karachi',      province: 'Sindh'  },
+  { value: 'hyderabad',    label: 'Hyderabad',    province: 'Sindh'  },
+  { value: 'sukkur',       label: 'Sukkur',       province: 'Sindh'  },
+  { value: 'larkana',      label: 'Larkana',      province: 'Sindh'  },
+  { value: 'navabshah',    label: 'Nawabshah',    province: 'Sindh'  },
+  { value: 'peshawar',     label: 'Peshawar',     province: 'KPK'    },
+  { value: 'mardan',       label: 'Mardan',       province: 'KPK'    },
+  { value: 'abbottabad',   label: 'Abbottabad',   province: 'KPK'    },
+  { value: 'swat',         label: 'Swat',         province: 'KPK'    },
+  { value: 'nowshera',     label: 'Nowshera',     province: 'KPK'    },
+  { value: 'quetta',       label: 'Quetta',       province: 'Balochistan' },
+  { value: 'gwadar',       label: 'Gwadar',       province: 'Balochistan' },
+  { value: 'turbat',       label: 'Turbat',       province: 'Balochistan' },
+  { value: 'islamabad',    label: 'Islamabad',    province: 'ICT'    },
+  { value: 'muzaffarabad', label: 'Muzaffarabad', province: 'AJK'    },
+  { value: 'mirpur',       label: 'Mirpur',       province: 'AJK'    },
+] as const;
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, getCartTotal, clearCart } = useCart();
@@ -23,31 +54,6 @@ export default function CheckoutPage() {
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoSuccessMsg, setPromoSuccessMsg] = useState('');
-
-  const pakistaniCities = [
-    { value: 'lahore',       label: 'Lahore',       province: 'Punjab' },
-    { value: 'faisalabad',   label: 'Faisalabad',   province: 'Punjab' },
-    { value: 'rawalpindi',   label: 'Rawalpindi',   province: 'Punjab' },
-    { value: 'multan',       label: 'Multan',       province: 'Punjab' },
-    { value: 'gujranwala',   label: 'Gujranwala',   province: 'Punjab' },
-    { value: 'sialkot',      label: 'Sialkot',      province: 'Punjab' },
-    { value: 'bahawalpur',   label: 'Bahawalpur',   province: 'Punjab' },
-    { value: 'sargodha',     label: 'Sargodha',     province: 'Punjab' },
-    { value: 'karachi',      label: 'Karachi',      province: 'Sindh'  },
-    { value: 'hyderabad',    label: 'Hyderabad',    province: 'Sindh'  },
-    { value: 'sukkur',       label: 'Sukkur',       province: 'Sindh'  },
-    { value: 'larkana',      label: 'Larkana',      province: 'Sindh'  },
-    { value: 'navabshah',    label: 'Nawabshah',    province: 'Sindh'  },
-    { value: 'peshawar',     label: 'Peshawar',     province: 'KPK'    },
-    { value: 'mardan',       label: 'Mardan',       province: 'KPK'    },
-    { value: 'abbottabad',   label: 'Abbottabad',   province: 'KPK'    },
-    { value: 'swat',         label: 'Swat',         province: 'KPK'    },
-    { value: 'nowshera',     label: 'Nowshera',     province: 'KPK'    },
-    { value: 'quetta',       label: 'Quetta',       province: 'Balochistan' },
-    { value: 'gwadar',       label: 'Gwadar',       province: 'Balochistan' },
-    { value: 'turbat',       label: 'Turbat',       province: 'Balochistan' },
-    { value: 'islamabad',    label: 'Islamabad',    province: 'ICT'    },
-    { value: 'muzaffarabad', label: 'Muzaffarabad', province: 'AJK'    },
     { value: 'mirpur',       label: 'Mirpur',       province: 'AJK'    },
   ];
 
@@ -285,7 +291,7 @@ export default function CheckoutPage() {
                           { label: 'Other',              filter: (c: { province: string }) => c.province === 'ICT' || c.province === 'AJK' },
                         ].map(g => (
                           <optgroup key={g.label} label={g.label}>
-                            {pakistaniCities.filter(g.filter).map(c => (
+                            {PAKISTANI_CITIES.filter(g.filter).map(c => (
                               <option key={c.value} value={c.value}>{c.label}</option>
                             ))}
                           </optgroup>
