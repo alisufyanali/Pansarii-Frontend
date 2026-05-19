@@ -3,7 +3,7 @@
 import { useDeviceDetection } from '@/app/utils/screen-detection';
 import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import DesktopProductCard from '../../components/ProductCard';
-import { recommendedProducts } from "../../data/recommendedProducts";
+import { recommendedProducts } from "@/data/recommendedProducts";
 
 export default function RecommendedProductsSection() {
   const { isMobile, isLoading } = useDeviceDetection();

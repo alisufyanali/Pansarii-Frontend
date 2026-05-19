@@ -4,21 +4,7 @@ import { FaStar, FaCheckCircle, FaShoppingCart } from "react-icons/fa";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProductDetailsModal from "./ProductDetailsModal";
-
-interface Product {
-  id?: string | number;
-  img: string;
-  nameEn: string;
-  nameUr: string;
-  description?: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  oldPrice?: number | null;
-  sale?: string | null;
-  hoverimg: string;
-  [key: string]: any;
-}
+import type { Product } from "@/types/product";
 
 export default function ProductCard2({ product }: { product: Product }) {
   const [isHovered,   setIsHovered]   = useState(false);
@@ -48,7 +34,7 @@ export default function ProductCard2({ product }: { product: Product }) {
         {/* Fixed-height image */}
         <div className="relative w-full h-44 flex-shrink-0 overflow-hidden">
           <img
-            src={isHovered ? product.hoverimg : product.img}
+            src={isHovered ? product.hoverImg : product.img}
             alt={product.nameEn}
             className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
           />

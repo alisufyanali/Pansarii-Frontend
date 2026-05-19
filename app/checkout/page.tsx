@@ -54,8 +54,6 @@ export default function CheckoutPage() {
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoSuccessMsg, setPromoSuccessMsg] = useState('');
-    { value: 'mirpur',       label: 'Mirpur',       province: 'AJK'    },
-  ];
 
   const subtotal = getCartTotal();
   const shipping = subtotal > 5000 ? 0 : 200;
