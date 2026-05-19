@@ -1,19 +1,17 @@
-"use client";
+import dynamic from 'next/dynamic';
 
-import { Suspense, lazy } from 'react';
-
-// Lazy load all sections — Suspense handles the loading state naturally
-const Banner          = lazy(() => import("../../../components/Desktop/Sections/Banner"));
-const SolutionBar     = lazy(() => import("../../../components/Desktop/Sections/SolutionBar"));
-const FeaturedProducts = lazy(() => import("../../../components/Desktop/Sections/FeaturedProducts"));
-const Category        = lazy(() => import("../../../components/Desktop/Sections/Category"));
-const NewArrivals     = lazy(() => import("../../../components/Desktop/Sections/NewArrivals"));
-const BeautyCorner    = lazy(() => import("../../../components/Desktop/Sections/BeautyCorner"));
-const PansariInn      = lazy(() => import("../../../components/Desktop/Sections/Pureinnoils"));
-const ComboDeal       = lazy(() => import("../../../components/Desktop/Sections/ComboDeal"));
-const VideoProducts   = lazy(() => import("../../../components/Desktop/Sections/VideoProducts"));
-const Review          = lazy(() => import("../../../components/Desktop/Sections/Review"));
-const Blog            = lazy(() => import("../../../components/Desktop/Sections/Blog"));
+// Lazy load all sections using next/dynamic (works in Server Components)
+const Banner          = dynamic(() => import("../../../components/Desktop/Sections/Banner"));
+const SolutionBar     = dynamic(() => import("../../../components/Desktop/Sections/SolutionBar"));
+const FeaturedProducts = dynamic(() => import("../../../components/Desktop/Sections/FeaturedProducts"));
+const Category        = dynamic(() => import("../../../components/Desktop/Sections/Category"));
+const NewArrivals     = dynamic(() => import("../../../components/Desktop/Sections/NewArrivals"));
+const BeautyCorner    = dynamic(() => import("../../../components/Desktop/Sections/BeautyCorner"));
+const PansariInn      = dynamic(() => import("../../../components/Desktop/Sections/Pureinnoils"));
+const ComboDeal       = dynamic(() => import("../../../components/Desktop/Sections/ComboDeal"));
+const VideoProducts   = dynamic(() => import("../../../components/Desktop/Sections/VideoProducts"));
+const Review          = dynamic(() => import("../../../components/Desktop/Sections/Review"));
+const Blog            = dynamic(() => import("../../../components/Desktop/Sections/Blog"));
 
 // ─── Generic shimmer block ────────────────────────────────────────────────────
 function Shimmer({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
@@ -149,7 +147,7 @@ function PageSkeleton() {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function HomePage() {
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <>
       <Banner />
       <SolutionBar />
       <FeaturedProducts />
@@ -161,6 +159,6 @@ export default function HomePage() {
       <VideoProducts />
       <Review />
       <Blog />
-    </Suspense>
+    </>
   );
 }
