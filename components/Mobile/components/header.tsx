@@ -7,7 +7,7 @@ import { useState, useRef } from 'react';
 import { FiSearch, FiX } from 'react-icons/fi';
 import { RiUserLine, RiShoppingCartLine } from 'react-icons/ri';
 import { useCart } from '@/context/CartContext';
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 
 interface HeaderProps {
   isMenuOpen: boolean;

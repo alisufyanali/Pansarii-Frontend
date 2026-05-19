@@ -1,4 +1,4 @@
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 
 export function toProductSlug(nameEn: string): string {
   return nameEn.toLowerCase().replace(/\s+/g, '-');

@@ -14,7 +14,7 @@ import {
 import { FaStar } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishList';
-import { allProducts } from '../../components/Desktop/data/products';
+import { allProducts } from '../../data/products';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

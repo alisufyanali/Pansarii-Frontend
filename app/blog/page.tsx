@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { blogPosts } from "@/components/Desktop/data/blogposts";
+import { blogPosts } from "@/data/blogposts";
 import { FaSearch, FaCalendar, FaClock, FaArrowRight, FaTag, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import PageBanner from "@/components/PageBanner";
 

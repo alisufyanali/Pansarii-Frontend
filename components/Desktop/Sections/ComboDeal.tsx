@@ -1,6 +1,6 @@
 "use client";
 
-import { allProducts } from "@/components/Desktop/data/products";
+import { allProducts } from "@/data/products";
 import ProductSection from "./ProductSection";
 
 export default function ComboDeal() {

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import ProductCard from "@components/ProductCard";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
-import { useCardsToShow, cardWidthStyle } from "@/utils/useCardsToShow";
+import { useCardsToShow, cardWidthStyle } from "@/hooks/useCardsToShow";
 import { Product } from "@/types/product";
 
 interface ProductSectionProps {

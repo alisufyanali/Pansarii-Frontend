@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import ReviewCard from '@components/ReviewCard';
 import ForwardArrow from '@components/ForwardArrow';
 import BackwardArrow from '@components/BackwardArrow';
-import { reviews } from '@/components/Desktop/data/reviews';
+import { reviews } from '@/data/reviews';
 
 export default function Review() {
   const sliderRef        = useRef<HTMLDivElement>(null);

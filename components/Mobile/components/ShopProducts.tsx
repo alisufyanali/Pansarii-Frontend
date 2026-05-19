@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { FiSearch } from 'react-icons/fi';
 import MobileProductCard from './ProductCard';
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 
 const menuTabs = [
   { id: 'all',           label: 'All'          },

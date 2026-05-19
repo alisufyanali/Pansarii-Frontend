@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import ReviewCard from "../../components/ReviewCard";
-import { reviews } from "../../data/reviews";
+import { reviews } from "../../../../data/reviews";
 
 export default function ScrollableReviews() {
   const firstRowRef = useRef<HTMLDivElement>(null);

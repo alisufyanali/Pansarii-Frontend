@@ -15,7 +15,7 @@ import {
   FaChevronDown, FaTimes, FaChevronRight, FaSearch,
 } from 'react-icons/fa';
 
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 

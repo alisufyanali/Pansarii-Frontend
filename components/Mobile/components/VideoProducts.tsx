@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaHeart, FaShareAlt } from 'react-icons/fa';
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 
 export default function MobileVideoProducts() {
   const router    = useRouter();

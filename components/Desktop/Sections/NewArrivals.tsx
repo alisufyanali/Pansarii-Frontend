@@ -1,6 +1,6 @@
 "use client";
 
-import { newArrivals } from "@/components/Desktop/data/products";
+import { newArrivals } from "@/data/products";
 import ProductSection from "./ProductSection";
 
 export default function NewArrivals() {

@@ -4,8 +4,8 @@ import { useRef, useState, useEffect } from "react";
 import ProductCard from "@components/ProductCard";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
-import { bestSellers } from "@/components/Desktop/data/products";
-import { useCardsToShow, cardWidthStyle } from "@/utils/useCardsToShow";
+import { bestSellers } from "@/data/products";
+import { useCardsToShow, cardWidthStyle } from "@/hooks/useCardsToShow";
 
 export default function FeaturedProducts() {
   const sliderRef   = useRef<HTMLDivElement>(null);

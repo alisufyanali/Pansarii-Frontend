@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FiChevronRight } from "react-icons/fi";
-import { allProducts } from "@/components/Desktop/data/products";
+import { allProducts } from "@/data/products";
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Herb':          'herbs',

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useRef, useEffect, useState } from 'react';
 import { FaStar, FaTimes } from 'react-icons/fa';
-import { reviews } from '@/components/Desktop/data/reviews';
+import { reviews } from '@/data/reviews';
 
 // ── Image lightbox ────────────────────────────────────────────────────────────
 function Lightbox({ images, startIndex, onClose }: {

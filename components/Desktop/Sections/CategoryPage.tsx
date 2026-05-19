@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 import type { Product } from '@/types/product';
 import ProductCard from '@/components/Desktop/components/ProductCard';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';

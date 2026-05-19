@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import VideoProductCard from "@components/VideoProductCard";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
-import { allProducts } from "@/components/Desktop/data/products";
+import { allProducts } from "@/data/products";
 
 export default function VideoProducts() {
   const videoProducts = allProducts.slice(0, 5).map(p => ({

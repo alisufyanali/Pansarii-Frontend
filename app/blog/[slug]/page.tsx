@@ -5,7 +5,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { blogPosts } from "@/components/Desktop/data/blogposts";
+import { blogPosts } from "@/data/blogposts";
 import { FaCalendar, FaClock, FaTag, FaArrowRight } from "react-icons/fa";
 import { BackButton, MobileShareButton, DesktopShareBar } from "./BlogDetailClient";
 

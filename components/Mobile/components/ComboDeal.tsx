@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 
 const cardGradients = [
   'from-green-100 to-yellow-100',

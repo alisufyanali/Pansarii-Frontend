@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { blogPosts } from '@/components/Desktop/data/blogposts';
+import { blogPosts } from '@/data/blogposts';
 
 interface Props {
   params: Promise<{ slug: string }>;

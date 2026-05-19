@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import ProductDetails from '@/components/Desktop/components/ProductDetails';
 import ProductDetailsSection from '@/components/Desktop/Sections/ProductDetailsSection';
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 import { findProductBySlug, toProductSlug } from '@/lib/productSlug';
 import type { Product, ProductFeature, LegacyProduct } from '@/types/product';
 

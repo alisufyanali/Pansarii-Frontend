@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 import {
   FaTimes, FaUser, FaChevronRight, FaLeaf,
   FaShoppingBag, FaGift, FaTruck, FaStar,

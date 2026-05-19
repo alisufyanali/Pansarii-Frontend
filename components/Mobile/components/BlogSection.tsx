@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiChevronRight } from 'react-icons/fi';
-import { blogPosts } from '@/components/Desktop/data/blogposts';
+import { blogPosts } from '@/data/blogposts';
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
 

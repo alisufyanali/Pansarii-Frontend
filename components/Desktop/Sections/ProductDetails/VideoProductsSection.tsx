@@ -4,8 +4,8 @@ import { useRef, useState, useEffect } from "react";
 import VideoProductCard from "@components/VideoProductCard";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
-import { allProducts } from "@/components/Desktop/data/products";
-import { useCardsToShow, cardWidthStyle } from "@/utils/useCardsToShow";
+import { allProducts } from "@/data/products";
+import { useCardsToShow, cardWidthStyle } from "@/hooks/useCardsToShow";
 
 export default function VideoProductsSection() {
   const sliderRef   = useRef<HTMLDivElement>(null);

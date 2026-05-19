@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import BackwardArrow from "@components/BackwardArrow";
 import ForwardArrow from "@components/ForwardArrow";
-import { allProducts } from "@/components/Desktop/data/products";
+import { allProducts } from "@/data/products";
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Herb':          'herbs',

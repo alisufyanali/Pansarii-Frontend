@@ -1,6 +1,6 @@
 "use client";
 
-import { blogPosts } from '../data/blogposts';
+import { blogPosts } from '../../../data/blogposts';
 import BlogCard from '../components/BlogCard';
 import Link from 'next/link';
 

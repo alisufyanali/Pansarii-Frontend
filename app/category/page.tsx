@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 import ProductCard from '@/components/Desktop/components/ProductCard';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 import SearchFilterBar from '@/components/Desktop/components/SearchFilterBar';

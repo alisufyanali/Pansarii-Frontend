@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { Product } from '@/types/product';
 import { FilterOptions, filterProducts, getCategoriesFromProducts, getPriceRangeFromProducts } from '@/utils/filterProducts';
-import { allProducts } from '@/components/Desktop/data/products';
+import { allProducts } from '@/data/products';
 
 // ─── Dynamic import at MODULE level (never inside useMemo/render) ─────────────
 const DynamicShopContent = dynamic(() => import('./ShopContent'), {
