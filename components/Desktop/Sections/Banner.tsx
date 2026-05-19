@@ -16,11 +16,7 @@ interface BannerSlide {
 
 const slides: BannerSlide[] = [
   {
-<<<<<<< HEAD
-    image: "/images/pansar-banner 1.png",
-=======
     image: "/images/new.jpg",
->>>>>>> adb68eaeb8f84254ca9195624cebb390730d04d0
   },
   {
     image: "/images/banner-3.png",
