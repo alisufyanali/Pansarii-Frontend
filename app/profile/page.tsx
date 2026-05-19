@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   RiShoppingBagLine,
@@ -13,15 +14,18 @@ import {
   RiLogoutBoxRLine,
 } from 'react-icons/ri';
 import { FiChevronRight } from 'react-icons/fi';
+import { clearAuthData, getStoredUser } from '@/lib/axios';
 
-// ── Mock user — replace with real auth context / API call ─────────────────────
-const MOCK_USER = {
-  name: 'Ali Hassan',
-  email: 'ali.hassan@example.com',
-  avatar: null as string | null, // set to image URL when available
-  notificationCount: 3,
-  appVersion: 'v1.0.0',
-};
+// ── User type ─────────────────────────────────────────────────────────────────
+interface User {
+  name: string;
+  email: string;
+  avatar?: string | null;
+}
+
+// ── App constants ─────────────────────────────────────────────────────────────
+const APP_VERSION = 'v1.0.0';
+const DEFAULT_NOTIFICATION_COUNT = 0; // TODO: Fetch from API
 
 // ── Menu row ──────────────────────────────────────────────────────────────────
 
@@ -93,13 +97,14 @@ function SectionLabel({ text }: { text: string }) {
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
 
-function Avatar({ name, src }: { name: string; src: string | null }) {
+function Avatar({ name, src }: { name: string; src: string | null | undefined }) {
   if (src) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <Image
         src={src}
         alt={name}
+        width={80}
+        height={80}
         className="w-20 h-20 rounded-full object-cover border-4 border-green-400"
       />
     );
@@ -123,12 +128,23 @@ function Avatar({ name, src }: { name: string; src: string | null }) {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const user = MOCK_USER;
+  
+  // Get user from localStorage (set during login)
+  const user = getStoredUser<User>();
+  
+  // TODO: Fetch real notification count from API
+  const notificationCount = DEFAULT_NOTIFICATION_COUNT;
 
   const handleLogout = () => {
-    // Clear auth tokens / session here
+    clearAuthData();
     router.push('/login');
   };
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28 font-poppins">
@@ -196,7 +212,7 @@ export default function ProfilePage() {
           <MenuRow
             icon={<RiBellLine className="w-4.5 h-4.5 text-amber-500" />}
             label="Notifications"
-            badge={user.notificationCount}
+            badge={notificationCount}
           />
         </div>
 
@@ -228,7 +244,7 @@ export default function ProfilePage() {
           <MenuRow
             icon={<RiInformationLine className="w-4.5 h-4.5 text-gray-500" />}
             label="About App"
-            trailing={user.appVersion}
+            trailing={APP_VERSION}
           />
         </div>
 
