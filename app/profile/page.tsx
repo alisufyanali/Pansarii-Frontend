@@ -184,7 +184,7 @@ export default function ProfilePage() {
           <MenuRow
             icon={<RiShoppingBagLine className="w-4.5 h-4.5 text-green-700" />}
             label="My Orders"
-            href="/track-order"
+            href="/orders"
           />
           <Divider />
           <MenuRow
