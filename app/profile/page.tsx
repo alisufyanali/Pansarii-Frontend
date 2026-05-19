@@ -212,7 +212,7 @@ export default function ProfilePage() {
           <MenuRow
             icon={<RiHeadphoneLine className="w-4.5 h-4.5 text-blue-500" />}
             label="Contact Support"
-            href="/contact"
+            href="/support"
           />
           <Divider />
           <MenuRow
