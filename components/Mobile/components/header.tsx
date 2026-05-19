@@ -10,21 +10,21 @@ import { useCart } from '@/context/CartContext';
 import { allProducts } from '@/components/Desktop/data/products';
 
 interface HeaderProps {
-  isMenuOpen:    boolean;
+  isMenuOpen: boolean;
   setIsMenuOpen: (v: boolean) => void;
 }
 
 // ── Search bar ────────────────────────────────────────────────────────────────
 function MobileSearchBar() {
-  const router   = useRouter();
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
-  const [open,  setOpen]  = useState(false);
+  const [open, setOpen] = useState(false);
 
   const suggestions = query.trim()
     ? allProducts
-        .filter(p => p.nameEn.toLowerCase().includes(query.toLowerCase()))
-        .slice(0, 5)
+      .filter(p => p.nameEn.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 5)
     : [];
 
   const handleSearch = (q: string) => {
@@ -90,14 +90,10 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
 
-      {/* ── Marquee bar ── */}
-      <div className="bg-green-700 py-1.5 overflow-hidden rounded-b-2xl">
-        <div className="flex whitespace-nowrap animate-marquee">
-          {[...Array(3)].map((_, i) => (
-            <span key={i} className="text-white text-xs font-medium px-8">
-              100% Ayurvedic &amp; Herbal Products &nbsp;·&nbsp; Free Delivery on orders above PKR 999 &nbsp;·&nbsp; Certified Organic &nbsp;·&nbsp;
-            </span>
-          ))}
+      {/* ── Fixed Bar ── */}
+      <div className="bg-green-700 py-1.5 rounded-b-2xl">
+        <div className="text-white text-xs font-medium px-8">
+          100% Ayurvedic & Herbal Products
         </div>
       </div>
 

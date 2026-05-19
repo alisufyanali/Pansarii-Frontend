@@ -49,7 +49,6 @@ const contactData = {
     { name: "Sales & Orders", email: "sales@pansariin.pk" },
     { name: "Wholesale", email: "wholesale@pansariin.pk" },
     { name: "Marketing & PR", email: "marketing@pansariin.pk" },
-    { name: "Careers", email: "careers@pansariin.pk" }
   ],
   businessHours: {
     weekdays: "Monday - Saturday: 9:00 AM - 6:00 PM",

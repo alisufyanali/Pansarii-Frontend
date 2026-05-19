@@ -32,7 +32,6 @@ const bottomLinks = [
   { name: 'Our Story',  href: '/our-story'  },
   { name: 'Contact Us', href: '/contact'    },
   { name: 'FAQs',       href: '/faqs'       },
-  { name: 'Careers',    href: '/careers'    },
   { name: 'Returns',    href: '/returns'    },
 ];
 
