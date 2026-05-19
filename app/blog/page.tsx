@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { blogPosts } from "@/components/Desktop/data/blogposts";
@@ -37,11 +37,6 @@ const popularTags = (() => {
 const featuredPosts = blogPosts.slice(0, 3);
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-
-/** Inline skeleton — no separate component needed */
-function Skeleton({ className }: { className: string }) {
-  return <div className={`bg-gray-200 rounded animate-pulse ${className}`} />;
-}
 
 /** Standard blog card used in the grid */
 function BlogCard({ post }: { post: typeof blogPosts[0] }) {
@@ -127,12 +122,6 @@ export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery,    setSearchQuery]    = useState('');
   const [currentPage,    setCurrentPage]    = useState(1);
-  const [isLoading,      setIsLoading]      = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(t);
-  }, []);
 
   // Reset page when filter changes
   const handleCategoryChange = (id: string) => {
@@ -154,40 +143,6 @@ export default function BlogPage() {
 
   const totalPages    = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const pagedPosts    = filteredPosts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE);
-
-  // ── Skeleton ────────────────────────────────────────────────────────────────
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white animate-pulse">
-        <div className="bg-green-700 py-10 sm:py-12">
-          <div className="max-w-3xl mx-auto px-[4%] text-center space-y-3">
-            <Skeleton className="h-8 w-32 mx-auto" />
-            <Skeleton className="h-5 w-64 mx-auto" />
-            <Skeleton className="h-10 w-full max-w-md mx-auto rounded-lg" />
-          </div>
-        </div>
-        <div className="border-b border-gray-200 py-3 px-[4%]">
-          <div className="flex gap-2 overflow-hidden">
-            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-8 w-24 rounded-full flex-shrink-0" />)}
-          </div>
-        </div>
-        <div className="max-w-[1920px] mx-auto px-[4%] py-8">
-          <Skeleton className="h-6 w-40 mb-5" />
-          <div className="grid lg:grid-cols-[1fr_320px] gap-5 mb-10">
-            <Skeleton className="h-72 rounded-xl" />
-            <div className="flex flex-col gap-4">
-              <Skeleton className="h-32 rounded-xl" />
-              <Skeleton className="h-32 rounded-xl" />
-            </div>
-          </div>
-          <Skeleton className="h-6 w-40 mb-5" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 rounded-xl" />)}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
