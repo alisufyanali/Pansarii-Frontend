@@ -19,10 +19,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: product.nameEn,
-    description: product.description || `Buy ${product.nameEn} — 100% pure Ayurvedic & herbal product from Pansari Inn.`,
+    description:
+      product.description ||
+      `Buy ${product.nameEn} — 100% pure Ayurvedic & herbal product from Pansari Inn.`,
     openGraph: {
       title: `${product.nameEn} | Pansari Inn`,
-      description: product.description || `Buy ${product.nameEn} from Pansari Inn.`,
+      description:
+        product.description || `Buy ${product.nameEn} from Pansari Inn.`,
       images: product.img ? [{ url: product.img, alt: product.nameEn }] : [],
     },
   };

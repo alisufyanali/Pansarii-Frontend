@@ -51,7 +51,7 @@ export default function MobileVideoProducts() {
         onTouchEnd={() => { setTimeout(() => { isTouch.current = false; }, 2000); }}
       >
         {products.map(p => (
-          <VideoCard key={p.id} product={p} onPress={() => router.push(`/${p.nameEn.toLowerCase().replace(/\s+/g, '-')}`)} />
+          <VideoCard key={p.id} product={p} onPress={() => router.push(`/products/${p.nameEn.toLowerCase().replace(/\s+/g, '-')}`)} />
         ))}
       </div>
     </section>

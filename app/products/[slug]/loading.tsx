@@ -1,4 +1,4 @@
-// app/[slug]/loading.tsx — matches ProductDetails layout: image gallery left + info right
+// app/products/[slug]/loading.tsx — matches ProductDetails layout: image gallery left + info right
 export default function ProductPageLoading() {
   return (
     <div className="bg-white min-h-screen">

@@ -85,7 +85,7 @@ function buildProduct(foundProduct: CatalogProduct): Product {
     benefits: getProductBenefits(foundProduct),
     infoLines: [
       '100% Ayurvedic & Herbal Product',
-      'Free Delivery On All Orders Above ₹399',
+      'Free Delivery On All Orders Above PKR 5000',
       'GST Included in Price',
       'Certified Organic Ingredients',
     ],
@@ -140,8 +140,6 @@ export default async function ProductPage({ params }: PageProps) {
     })),
   };
 
-  // Normalize features: convert any plain strings to { text, hasCheck: false }
-  // so the shape always matches FeatureItem[] expected by ProductDetails.
   const normalizedFeatures = (product.features ?? []).map(
     (f): ProductFeature => (typeof f === 'string' ? { text: f, hasCheck: false } : f),
   );

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { FaBoxOpen, FaRedo, FaStore, FaHome } from 'react-icons/fa';
+import { FaBoxOpen, FaRedo, FaStore } from 'react-icons/fa';
 
 interface ErrorProps {
   error: Error & { digest?: string };

@@ -28,7 +28,7 @@ export default function ProductCard2({ product }: { product: Product }) {
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/${product.nameEn.toLowerCase().replace(/\s+/g, '-')}`);
+    router.push(`/products/${product.nameEn.toLowerCase().replace(/\s+/g, '-')}`);
   };
 
   const handleQuickView = (e: React.MouseEvent<HTMLButtonElement>) => {
