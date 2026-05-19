@@ -220,7 +220,7 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
 
   // ─── handlers ──────────────────────────────────────────────────────────────
   const cartPayload = () => ({
-    id: productId,
+    id: productId!,
     img: product?.img || "/images/placeholder.jpg",
     nameEn: product?.nameEn || "Product",
     nameUr: product?.nameUr || "",

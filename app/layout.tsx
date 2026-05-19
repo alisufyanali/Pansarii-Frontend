@@ -14,6 +14,7 @@ const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-poppins',
   display: 'swap',
+  preload: false, // prevents build-time Google Fonts fetch failure in offline/restricted environments
 });
 
 export const metadata: Metadata = {
