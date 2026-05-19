@@ -134,11 +134,24 @@ function OrderCard({ order }: { order: Order }) {
       {/* Divider */}
       <div className="h-px bg-gray-100 mb-3" />
 
-      {/* Total amount */}
+      {/* Total amount + cancel link */}
       <div className="flex items-center justify-between">
         <span className="text-xs text-gray-400 font-medium">Total Amount</span>
         <span className="text-sm font-bold text-gray-900">{fmt(order.total)}</span>
       </div>
+
+      {/* Cancel link — only for cancellable statuses */}
+      {(status === 'processing' || status === 'pending') && (
+        <div className="mt-2 flex justify-end">
+          <Link
+            href={`/cancel-order?orderId=${order.orderId}`}
+            onClick={(e) => e.stopPropagation()}
+            className="text-xs font-semibold text-red-500 hover:text-red-600 underline underline-offset-2"
+          >
+            Cancel Order
+          </Link>
+        </div>
+      )}
     </Link>
   );
 }
