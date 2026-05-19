@@ -6,9 +6,7 @@ const linkGroups = [
     links: [
       { name: 'About Us',    url: '/aboutus'     },
       { name: 'Our Story',   url: '/our-story'   },
-      { name: 'Ingredients', url: '/ingredients' },
       { name: 'Blog',        url: '/blog'        },
-      { name: 'Careers',     url: '/careers'     },
     ],
   },
   {

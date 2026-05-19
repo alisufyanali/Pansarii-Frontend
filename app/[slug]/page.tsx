@@ -140,9 +140,15 @@ export default async function ProductPage({ params }: PageProps) {
     })),
   };
 
+  // Normalize features: convert any plain strings to { text, hasCheck: false }
+  // so the shape always matches FeatureItem[] expected by ProductDetails.
+  const normalizedFeatures = (product.features ?? []).map(
+    (f): ProductFeature => (typeof f === 'string' ? { text: f, hasCheck: false } : f),
+  );
+
   return (
     <div className="bg-white">
-      <ProductDetails product={product} />
+      <ProductDetails product={{ ...product, features: normalizedFeatures }} />
       <ProductDetailsSection product={legacyProduct} />
     </div>
   );

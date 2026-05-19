@@ -16,7 +16,11 @@ interface BannerSlide {
 
 const slides: BannerSlide[] = [
   {
+<<<<<<< HEAD
     image: "/images/pansar-banner 1.png",
+=======
+    image: "/images/new.jpg",
+>>>>>>> adb68eaeb8f84254ca9195624cebb390730d04d0
   },
   {
     image: "/images/banner-3.png",
@@ -73,11 +77,11 @@ export default function Banner() {
       <div
         className="absolute inset-0 w-full h-full"
         style={{
-          opacity:   animating ? 0 : 1,
+          opacity:   animating ? 0 : 0.9,
           transform: animating
             ? `translateX(${direction === "right" ? "-40px" : "40px"})`
             : "translateX(0)",
-          transition: "opacity 0.5s ease, transform 0.5s ease",
+          transition: "opacity 0.9s ease, transform 0.9s ease",
         }}
       >
         <Image

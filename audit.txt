@@ -1,0 +1,301 @@
+QA Audit Report — Pansari Inn Frontend
+1. ARCHITECTURE & CRITICAL ISSUES
+🔴 HIGH — Device detection causes full-page spinner on every navigation
+File: 
+screen-detection.tsx
+ — DeviceManager
+
+isLoading starts as true and only resolves after useEffect fires (client-side only). Every page load shows a full-screen spinner before any content renders. This kills perceived performance and is terrible for SEO since crawlers see an empty page.
+
+Fix: Default isMobile to false (desktop) using a synchronous check, or use CSS media queries + suppressHydrationWarning instead of JS detection. At minimum, use a cookie set on first visit so the server can make the decision.
+
+// Quick fix: detect synchronously on first render
+const [isMobile, setIsMobile] = useState(() => {
+  if (typeof window === 'undefined') return false;
+  return detectDevice();
+});
+const [isLoading, setIsLoading] = useState(false); // no spinner needed
+🔴 HIGH — Profile/Wishlist/Orders pages break on desktop
+Files: 
+layout.tsx
+, 
+layout.tsx
+, 
+layout.tsx
+
+These route layouts bypass DeviceManager entirely and render BottomNav directly. On desktop, users get a mobile-only bottom nav with no desktop header/footer. The profile page also has a hardcoded MOCK_USER — no auth check, no redirect to login.
+
+Fix:
+
+Wrap these layouts with a device check: render BottomNav only on mobile, render nothing (or the desktop nav) on desktop.
+Replace MOCK_USER with a real auth context check and redirect unauthenticated users to /login.
+🔴 HIGH — All order data stored only in localStorage
+Files: 
+page.tsx
+, 
+page.tsx
+, 
+page.tsx
+
+Orders are written to and read from localStorage. Clearing browser data, switching devices, or opening in a private window loses all order history. The cancel flow also only updates localStorage — the backend never knows about the cancellation.
+
+Fix: Connect to the Laravel API. Use localStorage only as a temporary cache with a TTL, not as the source of truth.
+
+🔴 HIGH — next.config.ts is completely empty
+File: next.config.ts
+
+No images.domains / images.remotePatterns configured. Any <Image> component loading from an external URL (product images from the API) will throw a runtime error in production.
+
+Fix:
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'your-api-domain.com' },
+    ],
+  },
+};
+🔴 HIGH — 
+page.tsx
+ missing Suspense wrapper for useSearchParams
+File: 
+page.tsx
+
+useSearchParams() is called directly in the page component without a Suspense boundary. Next.js 14+ requires this — it will throw a build/runtime error.
+
+Fix: Wrap the component in <Suspense> the same way 
+page.tsx
+ does it.
+
+2. UI STRUCTURE & CONSISTENCY
+🟠 MEDIUM — Duplicate about and aboutus routes
+Files: app/about/, app/aboutus/
+
+Two separate routes exist for what appears to be the same page. This splits SEO authority and confuses navigation.
+
+Fix: Pick one canonical URL (/about), redirect the other with a 301, and update all internal links.
+
+🟠 MEDIUM — Mobile layout pt-32 is too aggressive
+File: 
+layout.tsx
+
+<main className="min-h-screen bg-white pt-32">
+pt-32 = 128px top padding. The mobile header is approximately 96px tall (green bar + logo row + search bar). This leaves ~32px of dead space above every page's content. On pages like Profile and Wishlist that have their own headers, this padding is completely wrong since those pages bypass MobileLayout — but any page that does go through MobileLayout gets the wrong spacing.
+
+Fix: Measure the actual header height and use pt-24 (96px) or use a CSS variable.
+
+🟠 MEDIUM — Cart page uses <img> instead of <Image> for product thumbnails
+File: 
+page.tsx
+ (line ~130)
+
+<img src={item.img} alt={item.nameEn} className="w-full h-full object-cover" ... />
+Raw <img> tags bypass Next.js image optimization — no lazy loading, no WebP conversion, no size hints. The checkout page correctly uses <Image>.
+
+Fix: Replace with <Image fill sizes="72px" /> inside a relative container, matching the checkout page pattern.
+
+🟠 MEDIUM — Inconsistent green color values across the codebase
+Multiple shades of green are used with no single source of truth:
+
+Location	Value
+globals.css .me-bgcolor-g	#197B33
+Invoice.tsx BRAND_GREEN	#1a6b3a
+Tailwind classes throughout	green-600, green-700
+Profile gradient	#0f4c2a, #1a6b3a
+Fix: Define one brand green in globals.css as a CSS variable (--brand-green: #1a6b3a) and reference it everywhere. Add it to the Tailwind theme config.
+
+🟠 MEDIUM — globals.css references --font-geist-sans / --font-geist-mono which are never loaded
+File: 
+globals.css
+
+--font-sans: var(--font-geist-sans);
+--font-mono: var(--font-geist-mono);
+layout.tsx
+ only loads Poppins. Geist is never imported. These variables resolve to nothing.
+
+Fix: Either import Geist from next/font/google or remove these two CSS variable declarations.
+
+🟠 MEDIUM — 
+page.tsx
+ calls useDeviceDetection() directly, causing double detection
+File: 
+page.tsx
+
+const { isMobile } = useDeviceDetection();
+return isMobile ? <MobileHome /> : <DesktopHome />;
+DeviceManager in layout.tsx already wraps the page with the correct layout. The home page then runs its own detection again, causing two separate useEffect calls and two potential re-renders.
+
+Fix: Remove the detection from page.tsx. Let DeviceManager handle layout switching. The home page should just render its content, not decide which layout to use.
+
+🟠 MEDIUM — BottomNav active state matches /shop for both Search and Cart
+File: 
+BottomNav.tsx
+
+{ label: 'Search', href: '/shop', ... },
+{ label: 'Cart',   href: '/cart', ... },
+The Search tab points to /shop. When on /shop, the Search tab is active — fine. But pathname.startsWith('/shop') will also match /shop?search=... which is correct. However, the Cart tab uses /cart and pathname.startsWith('/cart') will also match /cart/ and /cart/anything — minor but worth noting.
+
+Fix: Use exact matching for Cart: pathname === '/cart'.
+
+🟡 LOW — MenuModal imports FaPhone and FaQuestionCircle but never uses them
+File: 
+MenuModal.tsx
+
+Two unused imports generate ESLint warnings and add to bundle size.
+
+Fix: Remove both imports.
+
+🟡 LOW — 
+page.tsx
+ — Image unused import in original, now fixed but Image from next/image is used correctly
+No action needed — already clean after the recent fix.
+
+🟡 LOW — cancel-order page has no route guard
+File: 
+page.tsx
+
+Any user can navigate to /cancel-order?orderId=anything without being logged in. The page just redirects to /orders if the order isn't found in localStorage, but there's no auth check.
+
+Fix: Add an auth check at the top of CancelOrderContent — if no auth token in localStorage, redirect to /login?returnTo=/cancel-order?orderId=....
+
+3. PERFORMANCE
+🔴 HIGH — Desktop home page: all sections inside one <Suspense> boundary
+File: 
+page.tsx
+
+<Suspense fallback={<PageSkeleton />}>
+  <Banner />
+  <SolutionBar />
+  ...11 more lazy sections
+</Suspense>
+All 11 lazy sections share one Suspense boundary. If any single section is slow, the entire page shows the skeleton. The skeleton itself is a massive component with 100+ lines of shimmer divs.
+
+Fix: Wrap each section in its own <Suspense> with a lightweight per-section skeleton. This enables progressive rendering — the banner shows immediately while lower sections load.
+
+<Suspense fallback={<BannerSkeleton />}><Banner /></Suspense>
+<Suspense fallback={<SectionSkeleton cards={5} />}><SolutionBar /></Suspense>
+// etc.
+🔴 HIGH — No image optimization config + product images likely unoptimized
+File: next.config.ts
+
+With an empty config, Next.js cannot optimize external images. Product images from the API will be served at full resolution with no WebP conversion.
+
+Fix: Add remotePatterns (see Critical Issues above). Also audit public/images/ — ensure all local images are WebP or AVIF, not PNG/JPG.
+
+🟠 MEDIUM — DeviceManager blocks rendering with a full-page spinner
+Already covered in Critical Issues. The spinner adds 100–300ms of blank screen on every page load, which directly hurts Core Web Vitals (LCP, FCP).
+
+🟠 MEDIUM — react-toastify CSS imported globally
+File: 
+layout.tsx
+
+import 'react-toastify/dist/ReactToastify.css';
+This adds ~7KB of CSS to every page, even pages that never show a toast.
+
+Fix: Move the import to only the components/pages that actually trigger toasts, or use dynamic import for the ToastContainer.
+
+🟠 MEDIUM — allProducts data imported at module level in multiple client components
+Files: 
+header.tsx
+, 
+page.tsx
+, 
+MenuModal.tsx
+
+The entire product catalog is imported synchronously into client bundles. If the catalog grows, this bloats every page's JS bundle.
+
+Fix: Move product data fetching to server components or API routes. Use dynamic(() => import(...), { ssr: false }) for components that need the full catalog client-side.
+
+🟠 MEDIUM — No loading.tsx for most routes
+Only 
+loading.tsx
+ (root) exists. Routes like /shop, /checkout, /cart have no route-level loading UI. Next.js App Router uses loading.tsx for instant loading states during navigation.
+
+Fix: Add loading.tsx files for at minimum: /shop, /cart, /checkout, /orders.
+
+🟡 LOW — 
+page.tsx
+ inlines <style jsx global> for PhoneInput
+File: 
+page.tsx
+
+<style jsx global>{`...`}</style>
+Inline global styles are injected on every render and can cause style flicker. styled-jsx is also an extra dependency.
+
+Fix: Move PhoneInput styles to globals.css or a dedicated CSS module.
+
+🟡 LOW — SpeedInsights loaded unconditionally
+File: 
+layout.tsx
+
+@vercel/speed-insights adds a script tag to every page. This is fine for production but adds noise in development.
+
+Fix: Conditionally load it:
+
+{process.env.NODE_ENV === 'production' && <SpeedInsights />}
+4. ACCESSIBILITY
+🟠 MEDIUM — Missing lang attribute value is correct but class="light" on <html> is non-standard
+File: 
+layout.tsx
+
+<html lang="en" className={`${poppins.variable} light`} ...>
+The light class has no effect — there's no dark mode CSS that reads it. It's dead markup.
+
+Fix: Remove light from the className.
+
+🟠 MEDIUM — Cart product images have no meaningful alt fallback
+File: 
+page.tsx
+
+onError={(e) => { (e.target as HTMLImageElement).src = '/images/product.png'; }}
+The fallback image 
+product.png
+ may not exist in public/images/. Verify the file exists or use a data URI placeholder.
+
+🟡 LOW — 
+page.tsx
+ uses inline SVG for back arrow instead of an icon component
+The back arrow is a raw <svg> string. This is inconsistent with the rest of the codebase which uses react-icons. It also makes the icon harder to maintain.
+
+Fix: Replace with <RiArrowLeftLine /> from react-icons/ri.
+
+5. SUMMARY TABLE
+#	Issue	File(s)	Priority
+1	Full-page spinner on every load (device detection)	screen-detection.tsx	🔴 High
+2	Profile/Wishlist/Orders break on desktop	*/layout.tsx	🔴 High
+3	All order data in localStorage only	checkout, orders, cancel-order	🔴 High
+4	next.config.ts empty — no image domains	next.config.ts	🔴 High
+5	
+page.tsx
+ missing Suspense for useSearchParams	
+page.tsx
+🔴 High
+6	Duplicate /about + /aboutus routes	app/about/, app/aboutus/	🟠 Medium
+7	pt-32 over-padding in mobile layout	
+layout.tsx
+🟠 Medium
+8	Cart uses <img> not <Image>	
+page.tsx
+🟠 Medium
+9	Inconsistent green color values	Throughout	🟠 Medium
+10	Geist font variables declared but never loaded	globals.css	🟠 Medium
+11	page.tsx runs device detection twice	
+page.tsx
+🟠 Medium
+12	All desktop sections in one Suspense boundary	
+page.tsx
+🔴 High
+13	No image optimization config	next.config.ts	🔴 High
+14	react-toastify CSS loaded globally	layout.tsx	🟠 Medium
+15	allProducts imported into client bundles	header.tsx, wishlist, MenuModal	🟠 Medium
+16	No loading.tsx for key routes	/shop, /cart, /checkout	🟠 Medium
+17	Inline <style jsx global> in checkout	
+page.tsx
+🟡 Low
+18	cancel-order has no auth guard	
+page.tsx
+🟡 Low
+19	Unused imports in MenuModal	MenuModal.tsx	🟡 Low
+20	class="light" dead markup on <html>	layout.tsx	🟡 Low
+Est. Credits Used: 3.75
+Elapsed time: 2m 32s

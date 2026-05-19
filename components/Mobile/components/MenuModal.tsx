@@ -29,11 +29,12 @@ const menuLinks = [
 ];
 
 const bottomLinks = [
-  { name: 'Our Story',  href: '/our-story'  },
-  { name: 'Contact Us', href: '/contact'    },
-  { name: 'FAQs',       href: '/faqs'       },
-  { name: 'Careers',    href: '/careers'    },
-  { name: 'Returns',    href: '/returns'    },
+  { name: 'Our Story',     href: '/our-story'    },
+  { name: 'Contact Us',    href: '/contact'      },
+  { name: 'FAQs',          href: '/faqs'         },
+  { name: 'Returns',       href: '/returns'      },
+  { name: 'Cancel Order',  href: '/orders'       },
+  { name: 'Support',       href: '/support'      },
 ];
 
 interface MenuModalProps {

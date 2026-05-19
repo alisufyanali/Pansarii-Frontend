@@ -1,0 +1,126 @@
+# Tasks
+
+- [x] 1. Set up test infrastructure and configuration
+  - Install `@playwright/test`, `jest`, `ts-jest`, `@types/jest` as dev dependencies
+  - Create `playwright.config.ts` with chromium browser, base URL `http://localhost:3000`, JSON reporter, and viewport defaults
+  - Create `jest.config.ts` for unit tests targeting `tests/unit/**/*.test.ts`
+  - Create the directory structure: `tests/playwright/`, `tests/unit/`, `tests/report/`
+  - Add `test:e2e`, `test:unit`, and `test:report` scripts to `package.json`
+
+- [-] 2. Implement Page Load & Navigation tests
+  - Test that each main route (`/`, `/shop`, `/cart`, `/checkout`, `/login`, `/register`, `/blog`, `/about`, `/contact`, `/wishlist`) loads without JS console errors
+  - Test that each page renders visible content within 3000ms
+  - Test that internal navigation links (header, footer) route to correct destinations without 404
+  - Test that navigating to a non-existent route renders the custom `not-found.tsx` page with a home link
+  - Test that `/cart` and `/checkout` show loading skeleton before content and hide it after
+  - Test that a valid product slug renders the product detail page with name, price, images, and add-to-cart controls
+  - Test that an invalid slug triggers `notFound()` and renders the 404 page
+  - _Requirements: 1_
+  - _Dependencies: 1_
+
+- [-] 3. Implement Cart Functionality tests
+  - Test adding a product from a product detail page increments the header cart count
+  - Test increasing quantity via `+` button updates subtotal and total
+  - Test decreasing quantity to 1 then clicking `−` removes the item entirely
+  - Test clicking the trash icon removes the item and updates count and totals
+  - Test that subtotal below PKR 5000 shows the free-shipping progress bar and PKR 200 shipping fee
+  - Test that subtotal at or above PKR 5000 shows the free-shipping banner and PKR 0 shipping
+  - Test that an empty cart shows the empty-cart state with a Browse Products link to `/shop`
+  - Test that cart state persists across page navigations within the same session
+  - _Requirements: 2_
+  - _Dependencies: 1_
+
+- [-] 4. Implement Checkout Flow tests
+  - Test that `/checkout` with items shows Contact Information, Shipping Address, and Payment Method sections
+  - Test that submitting with all required fields generates an order ID, stores order in localStorage, clears cart, and redirects to `/order-confirmation`
+  - Test that submitting with a missing required field shows a validation error and prevents submission
+  - Test that a valid promo code (SAVE10) calls `/api/validate-promo`, applies discount, and shows success message
+  - Test that an invalid promo code shows the error message and leaves total unchanged
+  - Test that selecting Cash on Delivery records `paymentMethod` as "Cash on Delivery" in stored order data
+  - Test that `/checkout` with empty cart shows empty-cart state and no checkout form
+  - Test that clicking Place Order disables the submit button and shows a loading spinner during submission
+  - _Requirements: 3_
+  - _Dependencies: 1_
+
+- [-] 5. Implement User Authentication tests
+  - Test login with valid credentials calls POST /auth/login (mocked), stores token, and redirects
+  - Test login with empty email shows "Email is required" and does not submit
+  - Test login with malformed email shows "Email is invalid" and does not submit
+  - Test login with password shorter than 6 characters shows "Password must be at least 6 characters" and does not submit
+  - Test login with API error response shows error banner and does not redirect
+  - Test registration with all valid fields redirects to `/login`
+  - Test registration with mismatched passwords shows "Passwords do not match" and does not submit
+  - Test registration without terms checkbox checked prevents submission via native validation
+  - Test password visibility toggle changes input type between `password` and `text` on both login and register pages
+  - _Requirements: 4_
+  - _Dependencies: 1_
+
+- [-] 6. Implement Search, Filter, and Sorting tests
+  - Test entering a search term on `/shop` shows only matching products
+  - Test entering a search term with no matches shows zero results with an appropriate message
+  - Test applying a category filter shows only products in that category
+  - Test applying a price-range filter shows only products within the range
+  - Test selecting "Price: Low to High" sort reorders products in ascending price order
+  - Test clearing all filters restores the full unfiltered product list
+  - Test applying category + price range simultaneously shows only products satisfying both conditions
+  - _Requirements: 5_
+  - _Dependencies: 1_
+
+- [-] 7. Implement Responsiveness and UI tests
+  - Test at 1280px viewport: full navigation header visible, multi-column product grid, two-column cart/checkout layout
+  - Test at 768px viewport: navigation collapses appropriately, no horizontal overflow
+  - Test at 375px viewport: MobileHome component served, interactive elements have touch target at least 44px
+  - Test product images on all pages: no broken src references, fallback to `/images/product.png` on error
+  - Test form inputs (login, register, checkout) at all viewports: no overlapping or clipping of labels, inputs, or error messages
+  - Test cart page on mobile viewport: order summary appears below cart items in single-column layout
+  - _Requirements: 6_
+  - _Dependencies: 1_
+
+- [-] 8. Implement Performance and Error Monitoring tests
+  - Test Home page loads within 3000ms under Fast 3G network simulation
+  - Test Shop page loads within 3000ms under Fast 3G network simulation
+  - Test Product Detail page loads within 3000ms under Fast 3G network simulation
+  - Test Cart page loads within 3000ms under Fast 3G network simulation
+  - Test that no unhandled JS console errors appear during any page load or interaction
+  - Test that `/api/validate-promo` returns no HTTP 4xx/5xx when called with a valid promo code
+  - Test that POST /auth/login returns no HTTP 4xx/5xx when called with valid credentials (mocked)
+  - _Requirements: 7_
+  - _Dependencies: 1_
+
+- [-] 9. Implement Edge Case tests
+  - Test that adding an out-of-stock product is blocked and shows an unavailability message
+  - Test that CartContext `updateQuantity` with a negative number clamps to the current valid quantity
+  - Test that navigating directly to `/checkout` with empty cart shows empty-cart state and no form
+  - Test that login with whitespace-only email shows "Email is required"
+  - Test that registration with a 1-character name shows "Name must be at least 2 characters"
+  - Test that checkout form submission with empty phone field is prevented and phone is indicated as required
+  - Test that applying a promo code then clicking Remove restores original total and clears success message
+  - Test that checkout form with a 500+ character street address accepts the input and includes it in stored order data
+  - _Requirements: 8_
+  - _Dependencies: 1_
+
+- [ ] 10. Implement unit tests for CartContext and validate-promo API
+  - Test `addToCart` adds a new item with quantity 1
+  - Test `addToCart` increments quantity when same id+size already in cart
+  - Test `updateQuantity` uses `Math.max(1, newQuantity)` so quantity never goes below 1
+  - Test `removeFromCart` removes only the matching id+size item
+  - Test `clearCart` empties the cart array
+  - Test `getCartTotal` returns sum of price times quantity for all items
+  - Test `getCartCount` returns sum of all quantities
+  - Test validate-promo POST with SAVE10 returns 10% discount on subtotal
+  - Test validate-promo POST with WELCOME returns fixed PKR 100 discount
+  - Test validate-promo POST with FREESHIP returns valid=true, type='freeship', value=0
+  - Test validate-promo POST with unknown code returns valid=false and "Invalid promo code"
+  - Test validate-promo POST with empty code returns valid=false and "Please enter a promo code"
+  - _Requirements: 2, 3_
+  - _Dependencies: 1_
+
+- [~] 11. Generate QA report
+  - Write `tests/report/generate-report.ts` that reads Playwright JSON output and Jest JSON output
+  - Aggregate all test failures into structured results with page, issue description, severity, and steps to reproduce
+  - Write `qa-report.md` with report header (browser, OS, resolution, date), Issue Summary Table, and Overall Feedback Report
+  - Include Performance Issues, UI/UX Problems, and Functional Bugs sections; write "No issues found" for any empty section
+  - Run all Playwright and Jest tests and capture results
+  - Generate the final `qa-report.md`
+  - _Requirements: 9_
+  - _Dependencies: 2, 3, 4, 5, 6, 7, 8, 9, 10_

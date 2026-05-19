@@ -12,17 +12,17 @@ import {
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const iconData = [
-  { icon: FaTruck,        label: 'Free Shipping'   },
-  { icon: FaMapMarkerAlt, label: 'Nationwide'       },
-  { icon: FaShieldAlt,    label: '100% Authentic'  },
-  { icon: FaClock,        label: 'Quick Delivery'  },
-  { icon: FaLeaf,         label: 'Eco-Friendly'    },
+  { icon: FaTruck, label: 'Free Shipping' },
+  { icon: FaMapMarkerAlt, label: 'Nationwide' },
+  { icon: FaShieldAlt, label: '100% Authentic' },
+  { icon: FaClock, label: 'Quick Delivery' },
+  { icon: FaLeaf, label: 'Eco-Friendly' },
 ];
 
 const socialLinks = [
-  { name: 'Facebook',  Icon: FaFacebook,  url: 'https://facebook.com/pansariin.pk'  },
-  { name: 'Twitter',   Icon: FaTwitter,   url: 'https://twitter.com/pansariin'      },
-  { name: 'YouTube',   Icon: FaYoutube,   url: 'https://youtube.com/pansariin'      },
+  { name: 'Facebook', Icon: FaFacebook, url: 'https://facebook.com/pansariin.pk' },
+  { name: 'Twitter', Icon: FaTwitter, url: 'https://twitter.com/pansariin' },
+  { name: 'YouTube', Icon: FaYoutube, url: 'https://youtube.com/pansariin' },
   { name: 'Instagram', Icon: FaInstagram, url: 'https://instagram.com/pansariin.pk' },
 ];
 
@@ -30,31 +30,29 @@ const linkGroups = [
   {
     title: 'Quick Links',
     links: [
-      { name: 'About Us',    url: '/aboutus'     },
-      { name: 'Our Story',   url: '/our-story'   },
-      { name: 'Ingredients', url: '/ingredients' },
-      { name: 'Blog',        url: '/blog'        },
-      { name: 'Careers',     url: '/careers'     },
+      { name: 'About Us', url: '/aboutus' },
+      { name: 'Our Story', url: '/our-story' },
+      { name: 'Blog', url: '/blog' },
     ],
   },
   {
     title: 'Shop',
     links: [
-      { name: 'Skincare',     url: '/beauty-corner'             },
-      { name: 'Haircare',     url: '/shop?category=Herb'        },
-      { name: 'Oils',         url: '/oils'                      },
-      { name: 'Supplements',  url: '/shop?category=Supplements' },
-      { name: 'Best Sellers', url: '/shop'                      },
+      { name: 'Skincare', url: '/beauty-corner' },
+      { name: 'Haircare', url: '/shop?category=Herb' },
+      { name: 'Oils', url: '/oils' },
+      { name: 'Supplements', url: '/shop?category=Supplements' },
+      { name: 'Best Sellers', url: '/shop' },
     ],
   },
   {
     title: 'Customer Service',
     links: [
-      { name: 'Track Order',   url: '/track-order'   },
-      { name: 'Returns',       url: '/returns'       },
+      { name: 'Track Order', url: '/track-order' },
+      { name: 'Returns', url: '/returns' },
       { name: 'Shipping Info', url: '/shipping-info' },
-      { name: 'FAQs',          url: '/faqs'          },
-      { name: 'Contact Us',    url: '/contact'       },
+      { name: 'FAQs', url: '/faqs' },
+      { name: 'Contact Us', url: '/contact' },
     ],
   },
 ];
@@ -95,17 +93,17 @@ function AccordionGroup({ title, links }: { title: string; links: { name: string
 // ── Main footer ───────────────────────────────────────────────────────────────
 
 export default function MobileFooter() {
-  const [email,        setEmail]       = useState('');
-  const [isSubmitting, setSubmitting]  = useState(false);
-  const [subscribed,   setSubscribed]  = useState(false);
-  const [error,        setError]       = useState('');
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+  const [error, setError] = useState('');
 
   const validate = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim())    return setError('Email is required');
+    if (!email.trim()) return setError('Email is required');
     if (!validate(email)) return setError('Please enter a valid email');
     setSubmitting(true);
     setTimeout(() => {
@@ -122,13 +120,16 @@ export default function MobileFooter() {
     <footer className="bg-white font-poppins">
 
       {/* ── Icon bar ── */}
-      <div className="bg-green-700 py-4 px-4">
-        <div className="flex items-center justify-around">
+      <div className="bg-green-700 py-5 px-4">
+        <div className="grid grid-cols-3 gap-y-4 gap-x-2 place-items-center max-w-xs mx-auto">
           {iconData.map(({ icon: Icon, label }) => (
             <div key={label} className="flex flex-col items-center gap-1">
               <div className="w-10 h-10 rounded-full border-2 border-white/40 flex items-center justify-center">
                 <Icon className="w-4 h-4 text-white" />
               </div>
+              <p className="text-white font-semibold text-[10px] leading-tight mt-1 text-center">
+                {label}
+              </p>
             </div>
           ))}
         </div>
