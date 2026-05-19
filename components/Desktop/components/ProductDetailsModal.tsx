@@ -1,53 +1,12 @@
 "use client";
 
 import Image from 'next/image';
-import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
+import { useState, useEffect } from "react";
 import { FaStar, FaCheckCircle, FaShoppingCart, FaTimes, FaMinus, FaPlus } from "react-icons/fa";
 import { AiOutlineShopping } from "react-icons/ai";
 import { useCart } from "@/context/CartContext";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-interface Product {
-  id?: string | number;
-  img: string;
-  nameEn: string;
-  nameUr: string;
-  description?: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  oldPrice?: number | null;
-  sale?: string | null;
-  additionalImages?: string[];
-  sizes?: string[];
-  benefits?: string[];
-  features?: (string | { text: string; hasCheck?: boolean })[];
-  infoLines?: string[];
-  points?: number;
-  [key: string]: any;
-}
-
-function ToastPortal() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-  if (!mounted) return null;
-  return createPortal(
-    <ToastContainer
-      style={{ zIndex: 99999 }}
-      position="top-right"
-      autoClose={3000}
-      hideProgressBar={false}
-      newestOnTop
-      closeOnClick
-      pauseOnHover
-      draggable
-      theme="light"
-    />,
-    document.body
-  );
-}
+import { toast } from 'react-toastify';
+import type { Product } from '@/types/product';
 
 export default function ProductDetailsModal({
   product,
@@ -112,9 +71,7 @@ export default function ProductDetailsModal({
   // ── Mobile bottom-sheet ────────────────────────────────────────────────────
   if (isMobile) {
     return (
-      <>
-        <ToastPortal />
-        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+      <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
@@ -266,16 +223,13 @@ export default function ProductDetailsModal({
             </div>
 
           </div>
-        </div>
-      </>
+      </div>
     );
   }
 
   // ── Desktop centered modal ─────────────────────────────────────────────────
   return (
-    <>
-      <ToastPortal />
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
         <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
@@ -434,6 +388,5 @@ export default function ProductDetailsModal({
           </div>
         </div>
       </div>
-    </>
-  );
+    );
 }
