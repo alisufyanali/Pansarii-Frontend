@@ -1,16 +1,18 @@
-import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
+/**
+ * Wishlist route layout
+ * ─────────────────────
+ * Suppresses the global site header/footer.
+ * The wishlist page has its own back-arrow header built in.
+ * BottomNav is still rendered so tab bar stays visible.
+ */
 
-export const metadata: Metadata = {
-  title: 'Wishlist',
-  description: 'View and manage your saved products. Move items to cart or share your wishlist.',
-  robots: { index: false, follow: false },
-  openGraph: {
-    title: 'Wishlist | Pansari Inn',
-    description: 'View and manage your saved products at Pansari Inn.',
-  },
-};
+import BottomNav from '@/components/Mobile/components/BottomNav';
 
-export default function WishlistLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+export default function WishlistLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      {children}
+      <BottomNav />
+    </>
+  );
 }
