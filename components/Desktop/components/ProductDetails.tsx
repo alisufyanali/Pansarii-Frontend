@@ -21,6 +21,7 @@ import {
 import { useCart } from "@/app/context/CartContext";
 import { useWishlist } from "@/app/context/WishList";
 import { toast } from "react-toastify";
+import type { ProductFeature } from "@/types/product";
 
 function ProductDetailsSkeleton() {
   return (
@@ -49,12 +50,6 @@ function ProductDetailsSkeleton() {
   );
 }
 
-interface FeatureItem {
-  text: string;
-  icon?: string;
-  hasCheck?: boolean;
-}
-
 interface ProductDetailsProps {
   product: {
     img: string;
@@ -67,7 +62,7 @@ interface ProductDetailsProps {
     price: number;
     oldPrice?: number | null;
     sale?: string | null;
-    features?: FeatureItem[];
+    features?: ProductFeature[];
     sizes?: string[];
     points?: number;
     benefits?: string[];
@@ -198,7 +193,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       setIsWishlisted(false);
       toast.info("Removed from wishlist");
     } else {
-      addToWishlist({ id: productId, img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr, price: product.price, oldPrice: product.oldPrice, rating: product.rating, reviews: product.reviews, inStock: true, category: product.category || "Herbal Oils" });
+      addToWishlist({ id: productId, img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr, price: product.price, oldPrice: product.oldPrice ?? undefined, rating: product.rating, reviews: product.reviews, inStock: true, category: product.category || "Herbal Oils" });
       setIsWishlisted(true);
       toast.success("Added to wishlist!");
     }
