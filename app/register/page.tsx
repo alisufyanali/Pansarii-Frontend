@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiPhone } from 'react-icons/fi';
+import { toast } from 'react-toastify';
+import { api, getApiErrorMessage } from '@/lib/axios';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function RegisterPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{
     name?: string;
     email?: string;
@@ -62,21 +65,26 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (validateForm()) {
-      // TODO: Connect to Laravel API POST /api/register
-      const { confirmPassword, ...dataToLog } = formData;
-      void confirmPassword;
+    if (!validateForm()) return;
 
-      console.log('=== REGISTRATION DATA ===');
-      console.log(JSON.stringify(dataToLog, null, 2));
-      console.log('=========================');
+    setIsLoading(true);
+    try {
+      // POST /api/auth/register
+      await api.post('/auth/register', {
+        name:     formData.name,
+        email:    formData.email,
+        phone:    formData.phone,
+        password: formData.password,
+      });
 
-      // Optionally redirect to login or home
-      alert('Registration successful! Check console for data.');
-      router.push('/login');
+      router.push('/login?registered=true');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -258,9 +266,18 @@ export default function RegisterPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+              disabled={isLoading}
+              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Create Account
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Creating account…
+                </>
+              ) : 'Create Account'}
             </button>
           </form>
 

@@ -34,8 +34,8 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
         try {
           videoRef.current.muted = true;
           await videoRef.current.play();
-        } catch (error) {
-          console.log('Autoplay prevented:', error);
+        } catch {
+          // Autoplay blocked by browser — silent fail
         }
       }
     };
