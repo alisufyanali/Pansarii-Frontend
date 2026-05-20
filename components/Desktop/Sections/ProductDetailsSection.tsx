@@ -250,7 +250,7 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
       return;
     }
     if (isWishlisted) { removeFromWishlist(productId); toast.info("Removed from wishlist"); }
-    else { addToWishlist({ ...cartPayload(), oldPrice: product?.oldPrice, rating: product?.rating, reviews: product?.reviews, inStock: true }); toast.success("Added to wishlist!"); }
+    else { addToWishlist({ ...cartPayload(), oldPrice: product?.oldPrice ?? undefined, rating: product?.rating, reviews: product?.reviews, inStock: true }); toast.success("Added to wishlist!"); }
   };
 
   const handleWhatsAppOrder = () => {
@@ -609,9 +609,9 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  {product.sizes?.length > 0 && (
+                  {(product.sizes?.length ?? 0) > 0 && (
                     <div className="flex gap-1.5">
-                      {product.sizes.slice(0,3).map((s: string) => (
+                      {product.sizes?.slice(0,3).map((s: string) => (
                         <button key={s} onClick={() => setSelectedSize(s)}
                           className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition ${selectedSize===s ? "bg-green-700 text-white border-green-700" : "text-gray-700 border-gray-300 hover:border-green-700"}`}>
                           {s}

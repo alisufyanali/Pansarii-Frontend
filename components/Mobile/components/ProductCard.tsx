@@ -5,21 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { FaStar } from 'react-icons/fa';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
-
-interface Product {
-  id?: string | number;
-  img: string;
-  hoverImg?: string;
-  nameEn: string;
-  nameUr: string;
-  description: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  oldPrice?: number | null;
-  sale?: string | null;
-  [key: string]: any;
-}
+import type { Product } from '@/types/product';
 
 export default function MobileProductCard({ product }: { product: Product }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
