@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishList';
 import type { WishlistItem } from '@/context/WishList';
 import { allProducts } from '@/data/products';
+import { getAuthToken, getStoredUser } from '@/lib/axios';
 import { 
   FaTimes, 
   FaShoppingCart, 
@@ -95,8 +96,8 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   }, [isOpen]);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const user = localStorage.getItem('user');
+    const token = getAuthToken();
+    const user = getStoredUser();
     setIsLoggedIn(!!(token && user));
   }, []);
 

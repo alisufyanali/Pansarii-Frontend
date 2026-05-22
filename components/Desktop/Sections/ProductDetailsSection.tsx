@@ -15,6 +15,7 @@ import VideoProductsSection from "./ProductDetails/VideoProductsSection";
 import RecommendedProductsSection from "./ProductDetails/RecommendedProductsSection";
 import DirectionToUse from "../components/directiontouse";
 import type { LegacyProduct } from '@/types/product';
+import { getAuthToken, getStoredUser } from '@/lib/axios';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Review {
@@ -190,8 +191,9 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
   const isWishlisted = productId ? isInWishlist(productId) : false;
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    setIsLoggedIn(!!(token && localStorage.getItem("user")));
+    const token = getAuthToken();
+    const user = getStoredUser();
+    setIsLoggedIn(!!(token && user));
     // Load reviews: start with seed + any saved
     const saved = localStorage.getItem(`reviews-${productId}`);
     const userReviews: Review[] = saved ? JSON.parse(saved) : [];

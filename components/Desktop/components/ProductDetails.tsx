@@ -22,6 +22,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishList";
 import { toast } from "react-toastify";
 import type { ProductFeature } from "@/types/product";
+import { getAuthToken, getStoredUser } from '@/lib/axios';
 
 function ProductDetailsSkeleton() {
   return (
@@ -137,8 +138,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const user = localStorage.getItem("user");
+    const token = getAuthToken();
+    const user = getStoredUser();
     setIsLoggedIn(!!(token && user));
     const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
