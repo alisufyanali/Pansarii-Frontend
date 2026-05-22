@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeviceDetection } from './utils/screen-detection';
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 import DesktopHome from "@/components/Desktop/DesktopHome";
 import MobileHome from "@/components/Mobile/MobileHome";
 import './globals.css';

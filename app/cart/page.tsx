@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { FaTrash, FaShoppingCart, FaHeart, FaTag, FaShieldAlt, FaTruck, FaArrowLeft } from 'react-icons/fa';
-import { useCart } from '../context/CartContext';
+import { useCart } from '@/context/CartContext';
 
 function CartContent() {
   const { cartItems, updateQuantity, removeFromCart, getCartTotal, getCartCount } = useCart();

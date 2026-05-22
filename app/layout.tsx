@@ -2,9 +2,9 @@
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import "./globals.css";
-import DeviceDetector from "./utils/screen-detection";
-import { CartProvider } from "./context/CartContext";
-import { WishlistProvider } from "./context/WishList";
+import DeviceDetector from "@/hooks/useDeviceDetection";
+import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishList";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SpeedInsights } from "@vercel/speed-insights/next"

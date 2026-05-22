@@ -12,8 +12,8 @@ import {
   RiShoppingCartLine,
 } from 'react-icons/ri';
 import { FaStar } from 'react-icons/fa';
-import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishList';
+import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishList';
 import { allProducts } from '../../data/products';
 
 // ── Types ─────────────────────────────────────────────────────────────────────

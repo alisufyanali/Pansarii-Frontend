@@ -22,7 +22,8 @@
     "paths": {
       "@/*": ["./*"],
       "@/components/*": ["./components/*"],
-      "@/context/*": ["./app/context/*"],
+      "@/context/*": ["./context/*"],
+      "@/hooks/*": ["./hooks/*"],
       "@/utils/*": ["./utils/*"],
       "@/types/*": ["./types/*"],
       "@/lib/*": ["./lib/*"],

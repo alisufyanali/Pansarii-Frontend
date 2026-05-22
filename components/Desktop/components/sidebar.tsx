@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishList';
-import type { WishlistItem } from '@/app/context/WishList';
+import type { WishlistItem } from '@/context/WishList';
 import { allProducts } from '@/data/products';
 import { 
   FaTimes, 

@@ -7,7 +7,7 @@ import type { FilterOptions } from '@/utils/filterProducts';
 import SearchFilterBar from "../../components/SearchFilterBar";
 import CategoryTabs from "../../components/CategoryTabs";
 import Pagination from "./Pagination";
-import { useCart } from "../../../../app/context/CartContext";
+import { useCart } from "@/context/CartContext";
 import { toast } from 'react-toastify';
 
 const ProductGrid = lazy(() => import('./ProductGrid'));

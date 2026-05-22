@@ -7,7 +7,7 @@ import Link from 'next/link';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { FaLock, FaCreditCard, FaCheckCircle, FaChevronDown, FaShieldAlt, FaTruck, FaTag, FaMoneyBillWave, FaUniversity } from 'react-icons/fa';
-import { useCart } from '../context/CartContext';
+import { useCart } from '@/context/CartContext';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 

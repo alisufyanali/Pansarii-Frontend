@@ -7,8 +7,8 @@ import {
   FaLeaf, FaShieldAlt, FaBolt, FaWhatsapp, FaUser, FaThumbsUp,
   FaChevronLeft, FaChevronRight, FaTimes,
 } from "react-icons/fa";
-import { useCart } from "../../../app/context/CartContext";
-import { useWishlist } from "../../../app/context/WishList";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishList";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import VideoProductsSection from "./ProductDetails/VideoProductsSection";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeviceDetection } from '@/app/utils/screen-detection';
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import DesktopProductCard from '../../components/ProductCard';
 import { recommendedProducts } from "@/data/recommendedProducts";
