@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { allProducts } from '@/data/products';
 import ProductCard from '@/components/Desktop/components/ProductCard';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
@@ -51,6 +51,14 @@ function GridSkeleton() {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────────
 export default function CategoryPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white"><GridSkeleton /></div>}>
+      <CategoryPageContent />
+    </Suspense>
+  );
+}
+
+function CategoryPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const categoryParam = searchParams.get('cat');

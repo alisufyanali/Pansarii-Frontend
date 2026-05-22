@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import SearchBarWrapper from './navbar/SearchBarWrapper';
 import CartSidebar from './sidebar';
@@ -59,6 +59,14 @@ const GRID = "grid grid-cols-[auto_minmax(280px,480px)_auto] items-center gap-x-
 // ── component ─────────────────────────────────────────────────────────────────
 
 export default function Navbar() {
+  return (
+    <Suspense fallback={<div className="h-32 bg-white" />}>
+      <NavbarContent />
+    </Suspense>
+  );
+}
+
+function NavbarContent() {
   const router       = useRouter();
   const pathname     = usePathname();
   const searchParams = useSearchParams();
