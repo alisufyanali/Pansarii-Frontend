@@ -5,7 +5,32 @@ import { useState } from 'react';
 import { FaChevronDown, FaSearch, FaQuestionCircle, FaShoppingCart, FaTruck, FaUndo, FaLeaf, FaUser, FaEllipsisH } from 'react-icons/fa';
 
 import PageBanner from '@/components/PageBanner';
-const faqData = {
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+interface FAQ {
+  question: string;
+  answer: string;
+}
+
+interface FAQCategory {
+  id: string;
+  name: string;
+  icon: string;
+  faqs: FAQ[];
+}
+
+interface FAQWithCategory extends FAQ {
+  category: string;
+}
+
+const faqData: {
+  hero: {
+    title: string;
+    subtitle: string;
+    description: string;
+  };
+  categories: FAQCategory[];
+} = {
   hero: {
     title: "Frequently Asked Questions",
     subtitle: "Find answers to common questions about Pansariin.pk",
@@ -195,14 +220,14 @@ export default function FAQsPage() {
 
   const selectedCategoryData = faqData.categories.find(cat => cat.id === selectedCategory);
   
-  const filteredFaqs = searchQuery 
+  const filteredFaqs: FAQWithCategory[] = searchQuery 
     ? faqData.categories.flatMap(cat => 
         cat.faqs.filter(faq => 
           faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
           faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
         ).map(faq => ({ ...faq, category: cat.name }))
       )
-    : selectedCategoryData?.faqs || [];
+    : (selectedCategoryData?.faqs.map(faq => ({ ...faq, category: selectedCategoryData.name })) || []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -280,7 +305,7 @@ export default function FAQsPage() {
                         <h3 className="font-semibold text-gray-900 pr-4">
                           {faq.question}
                         </h3>
-                        {searchQuery && ('category' in faq) && (
+                        {searchQuery && (
                           <p className="text-sm text-gray-500 mt-1">{faq.category}</p>
                         )}
                       </div>

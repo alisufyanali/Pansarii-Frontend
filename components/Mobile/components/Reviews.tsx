@@ -5,6 +5,18 @@ import { useRef, useEffect, useState } from 'react';
 import { FaStar, FaTimes } from 'react-icons/fa';
 import { reviews } from '@/data/reviews';
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+interface Review {
+  id: number;
+  name: string;
+  rating: number;
+  title: string;
+  text: string;
+  img: string;
+  designation: string;
+  images?: string[];
+}
+
 // ── Image lightbox ────────────────────────────────────────────────────────────
 function Lightbox({ images, startIndex, onClose }: {
   images: string[];
@@ -101,7 +113,7 @@ export default function MobileReviews() {
           onTouchEnd={() => { setTimeout(() => { isTouch.current = false; }, 2000); }}
         >
           {reviews.map((review, i) => {
-            const imgs: string[] = (review as typeof reviews[0] & { images?: string[] }).images ?? [review.img];
+            const imgs: string[] = review.images ?? [review.img];
 
             return (
               <div
