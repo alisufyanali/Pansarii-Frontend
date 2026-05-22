@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-  title: 'My Profile | Pansari Inn',
-  description: 'Manage your account settings, personal information, addresses, and preferences.',
+  title: 'Arqiyaat | Pansari Inn',
+  description: 'Explore our premium collection of traditional Arqiyaat (distillates) - pure, natural herbal waters for health and wellness.',
 };
 
 export default function Layout({ children }: { children: ReactNode }) {

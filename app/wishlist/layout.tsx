@@ -1,18 +1,11 @@
-/**
- * Wishlist route layout
- * ─────────────────────
- * Suppresses the global site header/footer.
- * The wishlist page has its own back-arrow header built in.
- * BottomNav is still rendered so tab bar stays visible.
- */
+import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 
-import BottomNav from '@/components/Mobile/components/BottomNav';
+export const metadata: Metadata = {
+  title: 'Wishlist | Pansari Inn',
+  description: 'Your saved items and wishlist - keep track of products you love and want to purchase later.',
+};
 
-export default function WishlistLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      {children}
-      <BottomNav />
-    </>
-  );
+export default function Layout({ children }: { children: ReactNode }) {
+  return <>{children}</>;
 }
