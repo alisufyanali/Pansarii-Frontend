@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { FilterOptions } from '@/utils/filterProducts';
+import type { FilterOptions as FilterOptionsType } from '@/utils/filterProducts';
 import {
   FiFilter,
   FiSearch,
@@ -449,10 +450,10 @@ function SearchFilterBarContent({
                   <label className="block text-sm font-bold text-gray-900 mb-4">Availability</label>
                   <div className="space-y-1">
                     {[
-                      { key: 'showInStock'     as keyof FilterOptions, label: 'In Stock Only' },
-                      { key: 'showOnSale'      as keyof FilterOptions, label: 'On Sale Only' },
-                      { key: 'showBestSellers' as keyof FilterOptions, label: 'Best Sellers' },
-                      { key: 'showNewArrivals' as keyof FilterOptions, label: 'New Arrivals' },
+                      { key: 'showInStock'     as keyof FilterOptionsType, label: 'In Stock Only' },
+                      { key: 'showOnSale'      as keyof FilterOptionsType, label: 'On Sale Only' },
+                      { key: 'showBestSellers' as keyof FilterOptionsType, label: 'Best Sellers' },
+                      { key: 'showNewArrivals' as keyof FilterOptionsType, label: 'New Arrivals' },
                     ].map(item => (
                       <label
                         key={item.key}
@@ -460,7 +461,7 @@ function SearchFilterBarContent({
                       >
                         <input
                           type="checkbox"
-                          checked={(filters[item.key] as boolean) || false}
+                          checked={(filters[item.key as keyof FilterOptionsType] as boolean) || false}
                           onChange={e => setFilters(prev => ({ ...prev, [item.key]: e.target.checked }))}
                           className="h-4 w-4 rounded border-2 border-gray-300 accent-green-600 cursor-pointer flex-shrink-0"
                         />
@@ -644,15 +645,15 @@ function SearchFilterBarContent({
                   <p className="text-sm font-bold text-gray-900 mb-3">Availability</p>
                   <div className="space-y-1">
                     {[
-                      { key: 'showInStock'     as keyof FilterOptions, label: 'In Stock Only' },
-                      { key: 'showOnSale'      as keyof FilterOptions, label: 'On Sale Only' },
-                      { key: 'showBestSellers' as keyof FilterOptions, label: 'Best Sellers' },
-                      { key: 'showNewArrivals' as keyof FilterOptions, label: 'New Arrivals' },
+                      { key: 'showInStock'     as keyof FilterOptionsType, label: 'In Stock Only' },
+                      { key: 'showOnSale'      as keyof FilterOptionsType, label: 'On Sale Only' },
+                      { key: 'showBestSellers' as keyof FilterOptionsType, label: 'Best Sellers' },
+                      { key: 'showNewArrivals' as keyof FilterOptionsType, label: 'New Arrivals' },
                     ].map(item => (
                       <label key={item.key} className={`flex items-center gap-3 cursor-pointer px-2 py-2.5 rounded-lg hover:bg-gray-50 ${tempFilters[item.key] ? 'bg-green-50' : ''}`}>
                         <input
                           type="checkbox"
-                          checked={(tempFilters[item.key] as boolean) || false}
+                          checked={(tempFilters[item.key as keyof FilterOptionsType] as boolean) || false}
                           onChange={e => setTempFilters(prev => ({ ...prev, [item.key]: e.target.checked }))}
                           className="h-4 w-4 rounded border-2 border-gray-300 accent-green-600 cursor-pointer flex-shrink-0"
                         />

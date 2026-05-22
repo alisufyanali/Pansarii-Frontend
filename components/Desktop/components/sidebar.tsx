@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishList';
+import type { WishlistItem } from '@/app/context/WishList';
 import { allProducts } from '@/data/products';
 import { 
   FaTimes, 
@@ -196,7 +197,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     }, 1500);
   };
 
-  const handleMoveToCart = (item: CartItem) => {
+  const handleMoveToCart = (item: WishlistItem) => {
     addToCart({
       id: item.id,
       nameEn: item.nameEn,
