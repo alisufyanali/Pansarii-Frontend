@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /api/
+Disallow: /checkout/
+Disallow: /cart/
+Disallow: /profile/
+Disallow: /orders/
+
+Sitemap: https://pansariinn.com/sitemap.xml
