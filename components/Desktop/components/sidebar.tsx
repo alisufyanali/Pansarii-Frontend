@@ -196,7 +196,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     }, 1500);
   };
 
-  const handleMoveToCart = (item: any) => {
+  const handleMoveToCart = (item: CartItem) => {
     addToCart({
       id: item.id,
       nameEn: item.nameEn,

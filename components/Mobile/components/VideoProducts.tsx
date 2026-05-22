@@ -58,7 +58,17 @@ export default function MobileVideoProducts() {
   );
 }
 
-function VideoCard({ product, onPress }: { product: any; onPress: () => void }) {
+// ── VideoCard product shape ───────────────────────────────────────────────────
+interface VideoCardProduct {
+  id: string | number;
+  video: string;
+  img: string;
+  nameEn: string;
+  views: string;
+  price: number;
+}
+
+function VideoCard({ product, onPress }: { product: VideoCardProduct; onPress: () => void }) {
   const videoRef    = useRef<HTMLVideoElement>(null);
   const [err, setErr] = useState(false);
 

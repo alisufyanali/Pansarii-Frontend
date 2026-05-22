@@ -15,7 +15,6 @@ interface VideoProduct {
   oldPrice?: number | string;
   sale?: string;
   views?: string;
-  [key: string]: any;
 }
 
 interface VideoProductCardProps {

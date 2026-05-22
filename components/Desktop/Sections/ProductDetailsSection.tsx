@@ -286,7 +286,8 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
     setAllReviews(prev => prev.map(r => r.id === reviewId ? { ...r, helpful: r.helpful + 1 } : r));
   };
 
-  const tabs = [
+  type TabId = "description" | "ingredients" | "reviews" | "howToUse";
+  const tabs: { id: TabId; label: string }[] = [
     { id: "description",  label: "Description"                   },
     { id: "ingredients",  label: "Ingredients"                   },
     { id: "reviews",      label: `Reviews (${allReviews.length})`},
@@ -312,7 +313,7 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
           <div className="border-b border-gray-200 mb-6">
             <nav className="flex gap-1 sm:gap-6 overflow-x-auto -mb-px" style={{ scrollbarWidth: 'none' }}>
               {tabs.map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                   className={`pb-3 px-2 sm:px-3 text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
                     activeTab === tab.id
                       ? "text-green-700 border-green-700"

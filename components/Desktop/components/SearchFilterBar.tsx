@@ -449,22 +449,22 @@ function SearchFilterBarContent({
                   <label className="block text-sm font-bold text-gray-900 mb-4">Availability</label>
                   <div className="space-y-1">
                     {[
-                      { key: 'showInStock',     label: 'In Stock Only' },
-                      { key: 'showOnSale',      label: 'On Sale Only' },
-                      { key: 'showBestSellers', label: 'Best Sellers' },
-                      { key: 'showNewArrivals', label: 'New Arrivals' },
+                      { key: 'showInStock'     as keyof FilterOptions, label: 'In Stock Only' },
+                      { key: 'showOnSale'      as keyof FilterOptions, label: 'On Sale Only' },
+                      { key: 'showBestSellers' as keyof FilterOptions, label: 'Best Sellers' },
+                      { key: 'showNewArrivals' as keyof FilterOptions, label: 'New Arrivals' },
                     ].map(item => (
                       <label
                         key={item.key}
-                        className={`flex items-center gap-3 cursor-pointer px-2 py-2.5 rounded-lg hover:bg-gray-50 transition-colors ${(filters as any)[item.key] ? 'bg-green-50' : ''}`}
+                        className={`flex items-center gap-3 cursor-pointer px-2 py-2.5 rounded-lg hover:bg-gray-50 transition-colors ${filters[item.key] ? 'bg-green-50' : ''}`}
                       >
                         <input
                           type="checkbox"
-                          checked={(filters as any)[item.key] || false}
+                          checked={(filters[item.key] as boolean) || false}
                           onChange={e => setFilters(prev => ({ ...prev, [item.key]: e.target.checked }))}
                           className="h-4 w-4 rounded border-2 border-gray-300 accent-green-600 cursor-pointer flex-shrink-0"
                         />
-                        <span className={`text-sm font-medium ${(filters as any)[item.key] ? 'text-green-700' : 'text-gray-700'}`}>
+                        <span className={`text-sm font-medium ${filters[item.key] ? 'text-green-700' : 'text-gray-700'}`}>
                           {item.label}
                         </span>
                       </label>
@@ -644,19 +644,19 @@ function SearchFilterBarContent({
                   <p className="text-sm font-bold text-gray-900 mb-3">Availability</p>
                   <div className="space-y-1">
                     {[
-                      { key: 'showInStock',     label: 'In Stock Only' },
-                      { key: 'showOnSale',      label: 'On Sale Only' },
-                      { key: 'showBestSellers', label: 'Best Sellers' },
-                      { key: 'showNewArrivals', label: 'New Arrivals' },
+                      { key: 'showInStock'     as keyof FilterOptions, label: 'In Stock Only' },
+                      { key: 'showOnSale'      as keyof FilterOptions, label: 'On Sale Only' },
+                      { key: 'showBestSellers' as keyof FilterOptions, label: 'Best Sellers' },
+                      { key: 'showNewArrivals' as keyof FilterOptions, label: 'New Arrivals' },
                     ].map(item => (
-                      <label key={item.key} className={`flex items-center gap-3 cursor-pointer px-2 py-2.5 rounded-lg hover:bg-gray-50 ${(tempFilters as any)[item.key] ? 'bg-green-50' : ''}`}>
+                      <label key={item.key} className={`flex items-center gap-3 cursor-pointer px-2 py-2.5 rounded-lg hover:bg-gray-50 ${tempFilters[item.key] ? 'bg-green-50' : ''}`}>
                         <input
                           type="checkbox"
-                          checked={(tempFilters as any)[item.key] || false}
+                          checked={(tempFilters[item.key] as boolean) || false}
                           onChange={e => setTempFilters(prev => ({ ...prev, [item.key]: e.target.checked }))}
                           className="h-4 w-4 rounded border-2 border-gray-300 accent-green-600 cursor-pointer flex-shrink-0"
                         />
-                        <span className={`text-sm font-medium ${(tempFilters as any)[item.key] ? 'text-green-700' : 'text-gray-700'}`}>
+                        <span className={`text-sm font-medium ${tempFilters[item.key] ? 'text-green-700' : 'text-gray-700'}`}>
                           {item.label}
                         </span>
                       </label>

@@ -61,8 +61,8 @@ export default function CategoryPage() {
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [filteredProducts, setFilteredProducts] = useState<typeof allProducts>([]);
+  const [selectedProduct, setSelectedProduct] = useState<typeof allProducts[0] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);

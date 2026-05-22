@@ -101,7 +101,7 @@ export default function MobileReviews() {
           onTouchEnd={() => { setTimeout(() => { isTouch.current = false; }, 2000); }}
         >
           {reviews.map((review, i) => {
-            const imgs: string[] = (review as any).images ?? [review.img];
+            const imgs: string[] = (review as typeof reviews[0] & { images?: string[] }).images ?? [review.img];
 
             return (
               <div

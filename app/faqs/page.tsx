@@ -281,7 +281,7 @@ export default function FAQsPage() {
                           {faq.question}
                         </h3>
                         {searchQuery && ('category' in faq) && (
-                          <p className="text-sm text-gray-500 mt-1">{(faq as any).category}</p>
+                          <p className="text-sm text-gray-500 mt-1">{faq.category}</p>
                         )}
                       </div>
                       <FaChevronDown 
