@@ -158,10 +158,10 @@ function OrderConfirmationContent() {
         // Try API first
         const data = await api.get<OrderDetails>(`/orders/${orderId}`);
         setOrder({
-          discount: 0,
-          tax: 0,
-          paymentStatus: 'pending',
           ...data,
+          discount: data.discount ?? 0,
+          tax: data.tax ?? 0,
+          paymentStatus: data.paymentStatus ?? 'pending',
         });
         // Cache locally for offline/fallback use
         localStorage.setItem(`order-${orderId}`, JSON.stringify(data));
