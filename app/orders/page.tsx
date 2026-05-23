@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { RiArrowLeftLine, RiShoppingCartLine, RiShoppingBagLine } from 'react-icons/ri';
+import { api, getApiErrorMessage } from '@/lib/axios';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -187,10 +188,33 @@ export default function OrderHistoryPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     setMounted(true);
-    setOrders(loadOrdersFromStorage());
+
+    async function fetchOrders() {
+      setIsLoading(true);
+      setError('');
+      try {
+        // Try API first
+        const data = await api.get<Order[]>('/orders');
+        setOrders(data);
+      } catch (err) {
+        // Fall back to localStorage
+        console.warn('Orders API failed, using localStorage fallback:', getApiErrorMessage(err));
+        setOrders(loadOrdersFromStorage());
+        // Only show error if localStorage is also empty
+        if (loadOrdersFromStorage().length === 0) {
+          setError(getApiErrorMessage(err));
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchOrders();
   }, []);
 
   const totalOrders = orders.length;
@@ -201,7 +225,7 @@ export default function OrderHistoryPage() {
 
   // ── Loading ──────────────────────────────────────────────────────────────
 
-  if (!mounted) {
+  if (!mounted || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 pb-28 font-poppins">
         <div className="bg-white px-4 pt-5 pb-4 flex items-center gap-3 border-b border-gray-100">
@@ -214,6 +238,29 @@ export default function OrderHistoryPage() {
         </div>
         <div className="px-4 space-y-3">
           {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Error state ──────────────────────────────────────────────────────────
+
+  if (error && orders.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-28 font-poppins flex flex-col">
+        <div className="bg-white px-4 pt-5 pb-4 flex items-center justify-between border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.back()} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center" aria-label="Go back">
+              <RiArrowLeftLine className="w-4 h-4 text-gray-700" />
+            </button>
+            <h1 className="text-base font-bold text-gray-900">Order History</h1>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-4">
+          <p className="text-sm text-red-500">{error}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-2xl">
+            Retry
+          </button>
         </div>
       </div>
     );

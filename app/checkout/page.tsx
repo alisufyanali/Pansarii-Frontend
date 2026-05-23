@@ -8,6 +8,7 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { FaLock, FaCreditCard, FaCheckCircle, FaChevronDown, FaShieldAlt, FaTruck, FaTag, FaMoneyBillWave, FaUniversity } from 'react-icons/fa';
 import { useCart } from '@/context/CartContext';
+import { api, getApiErrorMessage } from '@/lib/axios';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ export default function CheckoutPage() {
   const [phoneValue, setPhoneValue] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoType, setPromoType] = useState<string | null>(null);
@@ -128,6 +130,7 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError('');
     const form = e.target as HTMLFormElement;
     const data = new FormData(form);
     const orderId = `ORD-${Date.now().toString().slice(-8)}`;
@@ -152,10 +155,24 @@ export default function CheckoutPage() {
       },
       paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod === 'online' ? 'Online Payment' : 'Bank Transfer',
     };
-    localStorage.setItem(`order-${orderId}`, JSON.stringify(orderData));
-    await new Promise(r => setTimeout(r, 1500));
-    clearCart();
-    router.push(`/order-confirmation?orderId=${orderId}`);
+    setSubmitError('');
+    try {
+      // Try API first
+      const response = await api.post<{ orderId: string }>('/orders', orderData);
+      const confirmedOrderId = response.orderId;
+      // Also cache locally as fallback for order-confirmation page
+      localStorage.setItem(`order-${confirmedOrderId}`, JSON.stringify({ ...orderData, orderId: confirmedOrderId }));
+      clearCart();
+      router.push(`/order-confirmation?orderId=${confirmedOrderId}`);
+    } catch (err) {
+      // API failed — fall back to localStorage-only flow
+      console.warn('Order API failed, using localStorage fallback:', getApiErrorMessage(err));
+      localStorage.setItem(`order-${orderId}`, JSON.stringify(orderData));
+      clearCart();
+      router.push(`/order-confirmation?orderId=${orderId}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // ── Shared input class ──────────────────────────────────────────────────────
@@ -450,6 +467,9 @@ export default function CheckoutPage() {
                   </span>
                 </div>
 
+                {submitError && (
+                  <p className="text-xs text-red-500 mb-2 text-center">{submitError}</p>
+                )}
                 {/* Submit */}
                 <button type="submit" disabled={isSubmitting}
                   className={`w-full py-3 rounded-full text-sm font-bold text-white transition shadow-sm ${

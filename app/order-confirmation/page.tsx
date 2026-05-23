@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import { FiPackage } from 'react-icons/fi';
 import Invoice, { type InvoiceData, type PaymentStatus } from '@/components/Invoice/Invoice';
+import { api, getApiErrorMessage } from '@/lib/axios';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -144,6 +145,7 @@ function OrderConfirmationContent() {
   const router = useRouter();
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [fetchError, setFetchError] = useState('');
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -151,19 +153,36 @@ function OrderConfirmationContent() {
     const orderId = searchParams.get('orderId');
     if (!orderId) { router.push('/'); return; }
 
-    const saved = localStorage.getItem(`order-${orderId}`);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setOrder({
-        discount: 0,
-        tax: 0,
-        paymentStatus: 'pending',
-        ...parsed,
-      });
-    } else {
-      router.push('/');
+    async function fetchOrder() {
+      try {
+        // Try API first
+        const data = await api.get<OrderDetails>(`/orders/${orderId}`);
+        setOrder({
+          discount: 0,
+          tax: 0,
+          paymentStatus: 'pending',
+          ...data,
+        });
+        // Cache locally for offline/fallback use
+        localStorage.setItem(`order-${orderId}`, JSON.stringify(data));
+      } catch (err) {
+        console.warn('Order confirmation API failed, using localStorage fallback:', getApiErrorMessage(err));
+        // Fall back to localStorage
+        const saved = localStorage.getItem(`order-${orderId}`);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setOrder({ discount: 0, tax: 0, paymentStatus: 'pending', ...parsed });
+          } catch {
+            setFetchError('Could not load order details.');
+          }
+        } else {
+          setFetchError(getApiErrorMessage(err));
+        }
+      }
     }
 
+    fetchOrder();
     localStorage.removeItem('pansari-cart');
   }, [searchParams, router]);
 
@@ -201,6 +220,19 @@ function OrderConfirmationContent() {
   };
 
   if (!mounted || !order) return <OrderConfirmationLoading />;
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <p className="text-sm text-red-500 mb-4">{fetchError}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-full">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const invoiceData = toInvoiceData(order);
 
