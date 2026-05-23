@@ -80,7 +80,7 @@ export default function ProductCard2({ product }: { product: Product }) {
 
           <div className="flex items-center justify-center gap-2 mt-2 flex-shrink-0">
             <span className="text-sm font-bold text-gray-900">PKR {product.price}</span>
-            {product.oldPrice != null && (
+            {product.oldPrice !== null && product.oldPrice !== undefined && (
               <span className="text-xs text-gray-400 line-through">PKR {product.oldPrice}</span>
             )}
           </div>

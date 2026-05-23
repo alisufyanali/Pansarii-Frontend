@@ -15,6 +15,8 @@ import {
 } from 'react-icons/ri';
 import { FiChevronRight } from 'react-icons/fi';
 import { clearAuthData, getStoredUser } from '@/lib/axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // ── User type ─────────────────────────────────────────────────────────────────
 interface User {
@@ -213,6 +215,7 @@ export default function ProfilePage() {
             icon={<RiBellLine className="w-4.5 h-4.5 text-amber-500" />}
             label="Notifications"
             badge={notificationCount}
+            onClick={() => toast.info('Notifications coming soon!')}
           />
         </div>
 
@@ -258,6 +261,8 @@ export default function ProfilePage() {
         </button>
 
       </div>
+
+      <ToastContainer position="top-right" autoClose={3000} theme="light" />
     </div>
   );
 }

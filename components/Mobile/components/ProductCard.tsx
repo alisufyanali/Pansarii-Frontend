@@ -70,7 +70,7 @@ export default function MobileProductCard({ product }: { product: Product }) {
               <span className="text-sm font-bold text-gray-900 block leading-tight">
                 PKR {product.price.toLocaleString()}
               </span>
-              {product.oldPrice != null && (
+              {product.oldPrice !== null && product.oldPrice !== undefined && (
                 <span className="text-[10px] text-gray-400 line-through">
                   PKR {product.oldPrice.toLocaleString()}
                 </span>

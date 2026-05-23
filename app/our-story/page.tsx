@@ -1,8 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { FaLeaf, FaCheckCircle, FaBook, FaHandshake } from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import PageBanner from '@/components/PageBanner';
+import { api, getApiErrorMessage } from '@/lib/axios';
 
 const data = {
   journey: [
@@ -40,6 +44,24 @@ const data = {
 };
 
 export default function OurStoryPage() {
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    setNewsletterLoading(true);
+    try {
+      await api.post('/newsletter/subscribe', { email: newsletterEmail });
+      toast.success('Successfully subscribed!');
+      setNewsletterEmail('');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err) || 'Subscription failed. Try again.');
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
 
@@ -155,6 +177,32 @@ export default function OurStoryPage() {
         </div>
       </section>
 
+      {/* Newsletter */}
+      <section className="py-8 bg-gray-50">
+        <div className="max-w-xl mx-auto px-[4%] text-center">
+          <h2 className="text-lg font-bold mb-1 text-gray-900">Stay Updated</h2>
+          <p className="text-sm text-gray-500 mb-4">Subscribe to our newsletter for the latest products and offers.</p>
+          <form onSubmit={handleNewsletterSubmit} className="flex gap-2 max-w-sm mx-auto">
+            <input
+              type="email"
+              required
+              value={newsletterEmail}
+              onChange={e => setNewsletterEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+            <button
+              type="submit"
+              disabled={newsletterLoading}
+              className="px-5 py-2.5 bg-green-700 text-white rounded-lg text-sm font-semibold hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {newsletterLoading ? 'Subscribing…' : 'Subscribe'}
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <ToastContainer position="top-right" autoClose={3000} theme="light" />
     </div>
   );
 }

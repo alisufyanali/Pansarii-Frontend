@@ -523,7 +523,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
                           <span className="text-xl sm:text-2xl font-bold text-gray-900">
                             PKR {product.price.toLocaleString()}
                           </span>
-                          {product.oldPrice != null && (
+                          {product.oldPrice !== null && product.oldPrice !== undefined && (
                             <>
                               <span className="text-sm text-gray-400 line-through">
                                 PKR {product.oldPrice.toLocaleString()}
