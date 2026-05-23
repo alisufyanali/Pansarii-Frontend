@@ -1,6 +1,5 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
 import "./globals.css";
 import DeviceDetector from "@/hooks/useDeviceDetection";
 import { CartProvider } from "@/context/CartContext";
@@ -9,13 +8,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-poppins',
-  display: 'swap',
-  preload: false, // prevents build-time Google Fonts fetch failure in offline/restricted environments
-});
+const poppins = { variable: '--font-poppins', className: 'font-poppins' };
 
 export const metadata: Metadata = {
   title: {
@@ -45,6 +38,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} light`} suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#ffffff" />
       </head>

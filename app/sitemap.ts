@@ -1,9 +1,10 @@
 import { allProducts } from '@/data/products';
 import { blogPosts } from '@/data/blogposts';
+import { toProductSlug } from '@/lib/productSlug';
 
 export default function sitemap() {
   const productUrls = allProducts.map(p => ({
-    url: `https://pansariinn.com/products/${p.slug}`,
+    url: `https://pansariinn.com/products/${toProductSlug(p.nameEn)}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,

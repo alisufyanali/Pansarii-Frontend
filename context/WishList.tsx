@@ -8,7 +8,7 @@ const log = (...args: unknown[]): void => {
   if (process.env.NODE_ENV === 'development') console.log(...args);
 };
 
-interface WishlistItem {
+export interface WishlistItem {
   id: string | number;
   img: string;
   nameEn: string;
