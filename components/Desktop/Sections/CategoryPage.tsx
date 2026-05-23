@@ -193,6 +193,28 @@ const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
     breadcrumbCurrent: 'text-purple-700',
     Icon: FaFlask,
   },
+  'Beauty Corner': {
+    label: 'Beauty Corner',
+    subtitle: 'Natural beauty and skincare products',
+    tags: 'Skincare • Makeup • Natural',
+    emptyEmoji: '💄',
+    heroBg: 'bg-gradient-to-r from-pink-50 to-rose-50',
+    heroBorder: 'border-pink-100',
+    iconBg: 'bg-pink-100',
+    iconColor: 'text-pink-600',
+    badgeBg: 'bg-pink-100',
+    badgeText: 'text-pink-700',
+    descColor: 'text-pink-700',
+    reviewColor: 'text-pink-600',
+    saveBadgeBg: 'bg-pink-100',
+    saveBadgeText: 'text-pink-700',
+    btnClass: 'bg-pink-600 hover:bg-pink-700',
+    clearBtnClass: 'bg-pink-600 hover:bg-pink-700',
+    paginationActive: 'bg-pink-600 text-white border-pink-600',
+    breadcrumbHover: 'hover:text-pink-600',
+    breadcrumbCurrent: 'text-pink-700',
+    Icon: FaLeaf,
+  },
 };
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
