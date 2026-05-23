@@ -181,14 +181,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       addToCart({ id: productId, img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr, price: product.price, size: selectedSize, category: product.category || "Herbal Oils" });
     }
     toast.success("Added to cart! Redirecting...");
-    setTimeout(() => { router.push("/cart"); }, 1600);
+    router.push("/cart");
   };
 
   const handleWishlistToggle = () => {
     if (!productId) return;
     if (!isLoggedIn) {
       toast.warning("Please login to add to wishlist");
-      setTimeout(() => { router.push("/login?redirect=" + encodeURIComponent(window.location.pathname)); }, 1500);
+      router.push("/login?redirect=" + encodeURIComponent(window.location.pathname));
       return;
     }
     if (isWishlisted) {

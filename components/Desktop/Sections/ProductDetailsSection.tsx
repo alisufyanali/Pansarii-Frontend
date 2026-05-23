@@ -243,14 +243,14 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
     if (!productId) return toast.error("Failed to add item to cart!");
     for (let i = 0; i < quantity; i++) addToCart(cartPayload());
     toast.success("Added to cart! Redirecting…", { autoClose: 1500 });
-    setTimeout(() => { router.push("/cart"); }, 1600);
+    router.push("/cart");
   };
 
   const toggleWishlist = () => {
     if (!productId) return;
     if (!isLoggedIn) {
       toast.warning("Please login to add to wishlist");
-      setTimeout(() => { router.push("/login?redirect=" + encodeURIComponent(window.location.pathname)); }, 1500);
+      router.push("/login?redirect=" + encodeURIComponent(window.location.pathname));
       return;
     }
     if (isWishlisted) { removeFromWishlist(productId); toast.info("Removed from wishlist"); }

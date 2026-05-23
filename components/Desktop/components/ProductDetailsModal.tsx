@@ -67,7 +67,8 @@ export default function ProductDetailsModal({
     if (!product.id) return toast.error('Failed to add item to cart!');
     for (let i = 0; i < quantity; i++) addToCart(cartPayload());
     toast.success('Added to cart! Redirecting…', { autoClose: 1500, pauseOnHover: false });
-    setTimeout(() => { onClose(); router.push('/cart'); }, 1600);
+    onClose();
+    router.push('/cart');
   };
 
   // ── Mobile bottom-sheet ────────────────────────────────────────────────────
