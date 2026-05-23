@@ -11,8 +11,12 @@ interface ErrorProps {
 
 export default function GlobalError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log to an error reporting service in production
-    console.error('[Global Error]', error);
+    // Log to console in dev only
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[Global Error]', error);
+    }
+    // TODO: Add Sentry here when ready
+    // Sentry.captureException(error);
   }, [error]);
 
   return (
