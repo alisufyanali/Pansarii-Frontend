@@ -5,6 +5,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import DOMPurify from "isomorphic-dompurify";
 import { blogPosts } from "@/data/blogposts";
 import { FaCalendar, FaClock, FaTag, FaArrowRight } from "react-icons/fa";
 import { BackButton, MobileShareButton, DesktopShareBar } from "./BlogDetailClient";
@@ -111,7 +112,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
           className="prose prose-sm sm:prose-base prose-green max-w-none mb-10
                      prose-headings:font-bold prose-headings:text-gray-900
                      prose-a:text-[#197B33] prose-img:rounded-xl"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
         />
 
         {/* Tags */}
