@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   FaShoppingCart, FaStar, FaHeart, FaRegHeart, FaCheckCircle,
   FaLeaf, FaShieldAlt, FaBolt, FaWhatsapp, FaUser, FaThumbsUp,
@@ -186,6 +187,7 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
   const sectionRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
+  const router = useRouter();
 
   const productId = product?.productId || product?.id;
   const isWishlisted = productId ? isInWishlist(productId) : false;
@@ -241,14 +243,14 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
     if (!productId) return toast.error("Failed to add item to cart!");
     for (let i = 0; i < quantity; i++) addToCart(cartPayload());
     toast.success("Added to cart! Redirecting…", { autoClose: 1500 });
-    setTimeout(() => { window.location.href = "/cart"; }, 1600);
+    setTimeout(() => { router.push("/cart"); }, 1600);
   };
 
   const toggleWishlist = () => {
     if (!productId) return;
     if (!isLoggedIn) {
       toast.warning("Please login to add to wishlist");
-      setTimeout(() => { window.location.href = "/login?redirect=" + encodeURIComponent(window.location.pathname); }, 1500);
+      setTimeout(() => { router.push("/login?redirect=" + encodeURIComponent(window.location.pathname)); }, 1500);
       return;
     }
     if (isWishlisted) { removeFromWishlist(productId); toast.info("Removed from wishlist"); }

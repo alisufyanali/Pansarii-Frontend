@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   FaStar,
   FaCheckCircle,
@@ -110,6 +111,7 @@ const CollapsibleSection = ({
 export default function ProductDetails({ product }: ProductDetailsProps) {
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
+  const router = useRouter();
 
   const [selectedImage, setSelectedImage] = useState(product.img);
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "15ml");
@@ -179,14 +181,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       addToCart({ id: productId, img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr, price: product.price, size: selectedSize, category: product.category || "Herbal Oils" });
     }
     toast.success("Added to cart! Redirecting...");
-    setTimeout(() => { window.location.href = "/cart"; }, 1600);
+    setTimeout(() => { router.push("/cart"); }, 1600);
   };
 
   const handleWishlistToggle = () => {
     if (!productId) return;
     if (!isLoggedIn) {
       toast.warning("Please login to add to wishlist");
-      setTimeout(() => { window.location.href = "/login?redirect=" + encodeURIComponent(window.location.pathname); }, 1500);
+      setTimeout(() => { router.push("/login?redirect=" + encodeURIComponent(window.location.pathname)); }, 1500);
       return;
     }
     if (isWishlisted) {

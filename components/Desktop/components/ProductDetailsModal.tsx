@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { FaStar, FaCheckCircle, FaShoppingCart, FaTimes, FaMinus, FaPlus } from "react-icons/fa";
 import { AiOutlineShopping } from "react-icons/ai";
 import { useCart } from "@/context/CartContext";
@@ -21,6 +22,7 @@ export default function ProductDetailsModal({
   const [quantity, setQuantity]         = useState(1);
   const [isMobile, setIsMobile]         = useState(false);
   const { addToCart } = useCart();
+  const router = useRouter();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -65,7 +67,7 @@ export default function ProductDetailsModal({
     if (!product.id) return toast.error('Failed to add item to cart!');
     for (let i = 0; i < quantity; i++) addToCart(cartPayload());
     toast.success('Added to cart! Redirecting…', { autoClose: 1500, pauseOnHover: false });
-    setTimeout(() => { onClose(); window.location.href = '/cart'; }, 1600);
+    setTimeout(() => { onClose(); router.push('/cart'); }, 1600);
   };
 
   // ── Mobile bottom-sheet ────────────────────────────────────────────────────

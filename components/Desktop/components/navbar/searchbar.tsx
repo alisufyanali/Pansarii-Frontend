@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -58,6 +59,7 @@ export default function SearchBar({
   mockProducts = [],
   initialQuery = ''
 }: SearchBarProps) {
+  const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [suggestions, setSuggestions] = useState<ProductSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -149,7 +151,7 @@ export default function SearchBar({
       onSearch(searchQuery);
     }
 
-    window.location.href = `/shop?search=${encodeURIComponent(searchQuery)}`;
+    router.push(`/shop?search=${encodeURIComponent(searchQuery)}`);
     setIsOpen(false);
   }, [recentSearches, onSearch]);
 
