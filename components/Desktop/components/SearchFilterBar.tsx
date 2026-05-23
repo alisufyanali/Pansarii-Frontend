@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { FilterOptions } from '@/utils/filterProducts';
 import type { FilterOptions as FilterOptionsType } from '@/utils/filterProducts';
 import {
@@ -39,7 +39,6 @@ function SearchFilterBarContent({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { useSearchParams } = require('next/navigation');
   const searchParams = useSearchParams();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
