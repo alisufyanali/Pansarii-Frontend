@@ -1,6 +1,18 @@
 "use client";
 
+import type { Metadata } from 'next';
 import { useState, useEffect } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Wishlist | Pansari Inn',
+  description: 'Your saved herbal products. Save your favorite natural and ayurvedic products for later purchase.',
+  keywords: ['wishlist', 'saved products', 'favorites', 'herbal products', 'Pakistan'],
+  openGraph: {
+    title: 'Wishlist | Pansari Inn',
+    description: 'Your saved herbal products',
+    type: 'website',
+  },
+};
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

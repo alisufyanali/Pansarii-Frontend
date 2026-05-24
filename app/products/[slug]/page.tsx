@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import ProductDetails from '@/components/Desktop/components/ProductDetails';
 import ProductDetailsSection from '@/components/Desktop/Sections/ProductDetailsSection';
 import { allProducts } from '@/data/products';
@@ -6,6 +7,36 @@ import { findProductBySlug, toProductSlug } from '@/lib/productSlug';
 import type { Product, ProductFeature, LegacyProduct } from '@/types/product';
 
 type CatalogProduct = (typeof allProducts)[number];
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const foundProduct = findProductBySlug(slug);
+
+  if (!foundProduct) {
+    return {
+      title: 'Product Not Found',
+    };
+  }
+
+  return {
+    title: `${foundProduct.nameEn} | Pansari Inn`,
+    description: foundProduct.description || `Buy ${foundProduct.nameEn} - 100% pure and natural herbal product at Pansari Inn. Premium quality at PKR ${foundProduct.price.toLocaleString()}.`,
+    keywords: [foundProduct.nameEn, foundProduct.nameUr, foundProduct.category, 'herbal', 'natural', 'ayurvedic', 'Pakistan'],
+    openGraph: {
+      title: `${foundProduct.nameEn} | Pansari Inn`,
+      description: foundProduct.description || `Buy ${foundProduct.nameEn} - 100% pure and natural herbal product`,
+      images: [
+        {
+          url: foundProduct.img,
+          width: 800,
+          height: 800,
+          alt: foundProduct.nameEn,
+        },
+      ],
+      type: 'website',
+    },
+  };
+}
 
 function getProductFeatures(product: CatalogProduct): ProductFeature[] {
   const base: ProductFeature[] = [

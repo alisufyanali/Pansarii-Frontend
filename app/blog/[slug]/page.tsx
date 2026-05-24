@@ -3,6 +3,7 @@
 // generateMetadata is handled by layout.tsx in this directory.
 
 import { notFound } from "next/navigation";
+import type { Metadata } from 'next';
 import Link from "next/link";
 import Image from "next/image";
 import DOMPurify from "isomorphic-dompurify";
@@ -20,6 +21,40 @@ interface PageProps {
 
 export async function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
+}
+
+// ── Generate Metadata ─────────────────────────────────────────────────────────
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = blogPosts.find((p) => p.slug === slug);
+
+  if (!post) {
+    return {
+      title: 'Blog Post Not Found',
+    };
+  }
+
+  return {
+    title: `${post.title} | Pansari Inn Blog`,
+    description: post.excerpt || post.title,
+    keywords: [...post.tags, 'herbal', 'ayurvedic', 'natural health', 'wellness'],
+    authors: [{ name: post.author.name }],
+    openGraph: {
+      title: post.title,
+      description: post.excerpt || post.title,
+      images: [
+        {
+          url: post.image,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+      type: 'article',
+      publishedTime: post.date,
+    },
+  };
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────

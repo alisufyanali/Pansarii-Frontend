@@ -1,10 +1,22 @@
 // app/contact/page.tsx
 'use client';
 
+import type { Metadata } from 'next';
 import { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 
 import PageBanner from '@/components/PageBanner';
+
+export const metadata: Metadata = {
+  title: 'Contact Us | Pansari Inn',
+  description: 'Get in touch with Pansari Inn. Contact us for inquiries, support, or questions about our natural herbal products. Phone, email, and WhatsApp support available.',
+  keywords: ['contact pansari inn', 'customer support', 'herbal products inquiry', 'Pakistan'],
+  openGraph: {
+    title: 'Contact Us | Pansari Inn',
+    description: 'Get in touch with Pansari Inn for inquiries and support',
+    type: 'website',
+  },
+};
 
 // JSON Data
 const contactData = {

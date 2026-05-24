@@ -1,9 +1,21 @@
 "use client";
 
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import ReviewCard from "@/components/Desktop/components/ReviewCard";
 import { FaCheckCircle, FaLeaf, FaShippingFast, FaShieldAlt, FaGift, FaHeadset, FaMedkit } from "react-icons/fa";
 import PageBanner from "@/components/PageBanner";
+
+export const metadata: Metadata = {
+  title: 'About Us | Pansari Inn',
+  description: 'Learn about Pansari Inn - your trusted partner for 100% pure natural herbs and herbal products. Discover our mission, values, and commitment to quality.',
+  keywords: ['about pansari inn', 'herbal products Pakistan', 'natural herbs', 'ayurvedic', 'company story'],
+  openGraph: {
+    title: 'About Us | Pansari Inn',
+    description: 'Your trusted partner for 100% pure natural herbs and herbal products',
+    type: 'website',
+  },
+};
 
 // Data configuration - easy to update
 const pageData = {

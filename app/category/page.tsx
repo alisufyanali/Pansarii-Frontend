@@ -1,8 +1,20 @@
 // app/category/page.tsx
 'use client';
 
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import { Suspense, useState, useEffect } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Shop by Category | Pansari Inn',
+  description: 'Browse our full collection of natural & herbal products organized by category. Find herbs, oils, supplements, beauty products and more.',
+  keywords: ['herbal products', 'natural herbs', 'ayurvedic', 'categories', 'shop', 'Pakistan'],
+  openGraph: {
+    title: 'Shop by Category | Pansari Inn',
+    description: 'Browse our full collection of natural & herbal products organized by category',
+    type: 'website',
+  },
+};
 import { allProducts } from '@/data/products';
 import ProductCard from '@/components/Desktop/components/ProductCard';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
