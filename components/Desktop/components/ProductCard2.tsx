@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { FaStar, FaCheckCircle, FaShoppingCart } from "react-icons/fa";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -33,11 +34,15 @@ export default function ProductCard2({ product }: { product: Product }) {
       >
         {/* Fixed-height image */}
         <div className="relative w-full h-44 flex-shrink-0 overflow-hidden">
-          <img
-            src={isHovered ? product.hoverImg : product.img}
-            alt={product.nameEn}
-            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-          />
+          <div className="relative w-full h-full">
+            <Image
+              src={isHovered ? (product.hoverImg ?? product.img) : product.img}
+              alt={product.nameEn}
+              fill
+              className="object-cover transition-all duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 50vw, 25vw"
+            />
+          </div>
 
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
