@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState, useRef } from 'react';
+import { useState, useRef, Suspense } from 'react';
 import { FiSearch, FiX } from 'react-icons/fi';
 import { RiUserLine, RiShoppingCartLine } from 'react-icons/ri';
 import { useCart } from '@/context/CartContext';
@@ -138,7 +138,9 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
       </div>
 
       {/* ── Search bar ── */}
-      <MobileSearchBar />
+      <Suspense fallback={null}>
+        <MobileSearchBar />
+      </Suspense>
 
     </header>
   );

@@ -16,9 +16,9 @@
     "axios": "1.7.9",
     "isomorphic-dompurify": "3.14.0",
     "libphonenumber-js": "^1.12.36",
-    "next": "^16.1.1",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "next": "16.2.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-icons": "^5.5.0",
     "react-phone-number-input": "^3.4.14",
     "react-toastify": "^11.0.5"

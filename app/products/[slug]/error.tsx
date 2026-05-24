@@ -11,7 +11,9 @@ interface ErrorProps {
 
 export default function ProductPageError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    console.error('[Product Page Error]', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[Product Page Error]', error);
+    }
   }, [error]);
 
   return (
