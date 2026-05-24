@@ -2,15 +2,16 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-  title: 'Offers',
-  description:
-    'Browse exclusive deals, flash sales, and promo codes on Pansari Inn\'s premium Ayurvedic and herbal products.',
+  title: 'Special Offers & Deals | Pansari Inn',
+  description: 'Exclusive savings on Pansari Inn\'s finest herbal products. Flash sales, seasonal offers, BOGO deals and more. Limited time discounts!',
+  keywords: ['offers', 'deals', 'discounts', 'promo codes', 'herbal products sale', 'Pakistan'],
   openGraph: {
-    title: 'Offers | Pansari Inn',
-    description: 'Exclusive deals and promo codes on Pansari Inn herbal products.',
+    title: 'Special Offers & Deals | Pansari Inn',
+    description: 'Exclusive savings on Pansari Inn\'s finest herbal products',
+    type: 'website',
   },
 };
 
-export default function OffersLayout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
