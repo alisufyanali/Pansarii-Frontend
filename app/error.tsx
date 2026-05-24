@@ -15,8 +15,13 @@ export default function GlobalError({ error, reset }: ErrorProps) {
     if (process.env.NODE_ENV === 'development') {
       console.error('[Global Error]', error);
     }
-    // TODO: Add Sentry here when ready
-    // Sentry.captureException(error);
+    
+    // TODO: Install Sentry for production error tracking
+    // npm install @sentry/nextjs
+    // Then uncomment and configure:
+    // if (process.env.NODE_ENV === 'production') {
+    //   Sentry.captureException(error);
+    // }
   }, [error]);
 
   return (

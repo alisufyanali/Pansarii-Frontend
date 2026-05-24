@@ -27,7 +27,8 @@ interface User {
 
 // ── App constants ─────────────────────────────────────────────────────────────
 const APP_VERSION = 'v1.0.0';
-const DEFAULT_NOTIFICATION_COUNT = 0; // TODO: Fetch from API
+// Notifications feature coming in v2
+const DEFAULT_NOTIFICATION_COUNT = 0;
 
 // ── Menu row ──────────────────────────────────────────────────────────────────
 
@@ -134,7 +135,7 @@ export default function ProfilePage() {
   // Get user from localStorage (set during login)
   const user = getStoredUser<User>();
   
-  // TODO: Fetch real notification count from API
+  // Notifications feature coming in v2
   const notificationCount = DEFAULT_NOTIFICATION_COUNT;
 
   const handleLogout = () => {
