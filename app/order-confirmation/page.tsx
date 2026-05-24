@@ -168,7 +168,9 @@ function OrderConfirmationContent() {
         // Cache locally for offline/fallback use
         localStorage.setItem(`order-${orderId}`, JSON.stringify(data));
       } catch (err) {
-        console.warn('Order confirmation API failed, using localStorage fallback:', getApiErrorMessage(err));
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Order confirmation API failed, using localStorage fallback:', getApiErrorMessage(err));
+        }
         // Fall back to localStorage
         const saved = localStorage.getItem(`order-${orderId}`);
         if (saved) {

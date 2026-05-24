@@ -8,6 +8,7 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import SearchBarWrapper from './navbar/SearchBarWrapper';
 import CartSidebar from './sidebar';
 import { useCart } from '@/context/CartContext';
+import { SOCIAL_LINKS } from '@/lib/social-links';
 
 import {
   FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaWhatsapp,
@@ -135,10 +136,10 @@ function NavbarContent() {
               {/* Social icons */}
               <div className="flex items-center gap-3">
                 {[
-                  { href: 'https://facebook.com/pansariin.pk',  Icon: FaFacebookF, label: 'Facebook'  },
-                  { href: 'https://instagram.com/pansariin.pk', Icon: FaInstagram, label: 'Instagram' },
-                  { href: 'https://twitter.com/pansariin',      Icon: FaTwitter,   label: 'Twitter'   },
-                  { href: 'https://youtube.com/pansariin',      Icon: FaYoutube,   label: 'YouTube'   },
+                  { href: SOCIAL_LINKS.facebook,  Icon: FaFacebookF, label: 'Facebook'  },
+                  { href: SOCIAL_LINKS.instagram, Icon: FaInstagram, label: 'Instagram' },
+                  { href: SOCIAL_LINKS.twitter,   Icon: FaTwitter,   label: 'Twitter'   },
+                  { href: SOCIAL_LINKS.youtube,   Icon: FaYoutube,   label: 'YouTube'   },
                 ].map(({ href, Icon, label }) => (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer"
                     className="hover:opacity-70 transition hover:scale-110" aria-label={label}>

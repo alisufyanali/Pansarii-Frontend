@@ -193,6 +193,7 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
   const isWishlisted = productId ? isInWishlist(productId) : false;
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const token = getAuthToken();
     const user = getStoredUser();
     setIsLoggedIn(!!(token && user));

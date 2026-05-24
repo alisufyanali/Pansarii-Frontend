@@ -166,7 +166,9 @@ export default function CheckoutPage() {
       router.push(`/order-confirmation?orderId=${confirmedOrderId}`);
     } catch (err) {
       // API failed — fall back to localStorage-only flow
-      console.warn('Order API failed, using localStorage fallback:', getApiErrorMessage(err));
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Order API failed, using localStorage fallback:', getApiErrorMessage(err));
+      }
       localStorage.setItem(`order-${orderId}`, JSON.stringify(orderData));
       clearCart();
       router.push(`/order-confirmation?orderId=${orderId}`);

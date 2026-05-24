@@ -8,6 +8,7 @@ import {
   FaFacebook, FaTwitter, FaYoutube, FaInstagram,
   FaChevronDown, FaChevronUp, FaArrowRight, FaCheckCircle,
 } from 'react-icons/fa';
+import { SOCIAL_LINKS } from '@/lib/social-links';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -20,10 +21,10 @@ const iconData = [
 ];
 
 const socialLinks = [
-  { name: 'Facebook', Icon: FaFacebook, url: 'https://facebook.com/pansariin.pk' },
-  { name: 'Twitter', Icon: FaTwitter, url: 'https://twitter.com/pansariin' },
-  { name: 'YouTube', Icon: FaYoutube, url: 'https://youtube.com/pansariin' },
-  { name: 'Instagram', Icon: FaInstagram, url: 'https://instagram.com/pansariin.pk' },
+  { name: 'Facebook', Icon: FaFacebook, url: SOCIAL_LINKS.facebook },
+  { name: 'Twitter', Icon: FaTwitter, url: SOCIAL_LINKS.twitter },
+  { name: 'YouTube', Icon: FaYoutube, url: SOCIAL_LINKS.youtube },
+  { name: 'Instagram', Icon: FaInstagram, url: SOCIAL_LINKS.instagram },
 ];
 
 const linkGroups = [

@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { SOCIAL_LINKS } from '@/lib/social-links';
 
 import PageBanner from '@/components/PageBanner';
 
@@ -56,9 +57,9 @@ const contactData = {
     holidays: "We're closed on public holidays"
   },
   social: [
-    { platform: "Facebook", url: "https://facebook.com/pansariin.pk", icon: "facebook" },
-    { platform: "Instagram", url: "https://instagram.com/pansariin.pk", icon: "instagram" },
-    { platform: "Twitter", url: "https://twitter.com/pansariin", icon: "twitter" }
+    { platform: "Facebook", url: SOCIAL_LINKS.facebook, icon: "facebook" },
+    { platform: "Instagram", url: SOCIAL_LINKS.instagram, icon: "instagram" },
+    { platform: "Twitter", url: SOCIAL_LINKS.twitter, icon: "twitter" }
   ],
   faq: {
     title: "Quick Answers",
@@ -345,7 +346,7 @@ export default function ContactPage() {
           </h2>
           <div className="bg-white rounded-xl overflow-hidden border border-gray-200">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3619.456!2d67.01!3d24.86!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDUxJzM3LjYiTiA2N8KwMDAnMzYuMCJF!5e0!3m2!1sen!2s!4v1234567890"
+              src={process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_URL || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3619.456!2d67.01!3d24.86!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDUxJzM3LjYiTiA2N8KwMDAnMzYuMCJF!5e0!3m2!1sen!2s!4v1234567890"}
               width="100%"
               height="450"
               style={{ border: 0 }}

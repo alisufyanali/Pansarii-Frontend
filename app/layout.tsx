@@ -11,6 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 const poppins = { variable: '--font-poppins', className: 'font-poppins' };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://pansariinn.com'),
   title: {
     default: 'Pansari Inn - Premium Ayurvedic & Herbal Products',
     template: '%s | Pansari Inn',

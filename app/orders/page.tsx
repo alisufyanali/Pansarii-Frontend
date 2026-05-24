@@ -203,7 +203,9 @@ export default function OrderHistoryPage() {
         setOrders(data);
       } catch (err) {
         // Fall back to localStorage
-        console.warn('Orders API failed, using localStorage fallback:', getApiErrorMessage(err));
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Orders API failed, using localStorage fallback:', getApiErrorMessage(err));
+        }
         setOrders(loadOrdersFromStorage());
         // Only show error if localStorage is also empty
         if (loadOrdersFromStorage().length === 0) {
