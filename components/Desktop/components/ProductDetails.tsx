@@ -204,7 +204,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   const handleWhatsAppOrder = () => {
     const message = `🌟 *New Order Request* 🌟\n\n*Product:* ${product.nameEn}\n*Price:* PKR ${product.price.toLocaleString()}\n*Size:* ${selectedSize}\n*Quantity:* ${quantity}\n*Total:* PKR ${(product.price * quantity).toLocaleString()}\n\n_This order was placed via Pansari Inn website_`;
-    window.open(`https://wa.me/923001234567?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
  

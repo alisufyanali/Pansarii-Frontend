@@ -154,7 +154,7 @@ function NavbarContent() {
               </p>
 
               {/* WhatsApp */}
-              <a href="https://wa.me/923001234567" target="_blank" rel="noopener noreferrer"
+              <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-end gap-1.5 hover:opacity-70 transition"
                 aria-label="WhatsApp">
                 <FaWhatsapp className="w-3 h-3" />

@@ -318,7 +318,7 @@ export default function SupportPage() {
             </div>
           </div>
           <a
-            href="tel:+923001234567"
+            href={`tel:+${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
             className="bg-white text-green-700 text-xs font-black px-4 py-2 rounded-xl"
           >
             CALL NOW
@@ -328,7 +328,7 @@ export default function SupportPage() {
 
       {/* ── Floating chat button ── */}
       <a
-        href="https://wa.me/923001234567"
+        href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-36 right-4 z-40 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-xl"

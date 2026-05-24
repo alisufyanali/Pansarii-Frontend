@@ -260,7 +260,7 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
   const handleWhatsAppOrder = () => {
     const total = (product?.price || 0) * quantity;
     const msg = `🌟 *New Order Request* 🌟\n\n*Product:* ${product?.nameEn}\n*Price:* PKR ${(product?.price||0).toLocaleString()}\n*Size:* ${selectedSize}\n*Quantity:* ${quantity}\n*Total:* PKR ${total.toLocaleString()}\n\nPlease provide Full Name, Address & Phone.\n_Placed via Pansari Inn website_`;
-    window.open(`https://wa.me/923001234567?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   };
 
   const handleSubmitReview = ({ author, rating, comment }: { author: string; rating: number; comment: string }) => {

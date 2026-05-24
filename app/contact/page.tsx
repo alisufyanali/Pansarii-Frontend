@@ -18,14 +18,14 @@ const contactData = {
       icon: "phone",
       title: "Phone",
       value: "+92 300 1234567",
-      link: "tel:+923001234567",
+      link: `tel:+${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`,
       description: "Mon-Sat: 9:00 AM - 6:00 PM"
     },
     {
       icon: "whatsapp",
       title: "WhatsApp",
       value: "+92 300 1234567",
-      link: "https://wa.me/923001234567",
+      link: `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`,
       description: "Chat with us instantly"
     },
     {
