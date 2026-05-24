@@ -9,20 +9,7 @@ import DesktopProductCard from '@/components/Desktop/components/ProductCard';
 import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import { newArrivalProducts, NewArrivalProduct } from '@/data/newproducts';
 import { api, getApiErrorMessage } from '@/lib/axios';
-
-// Hook to detect mobile screen
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-  
-  return isMobile;
-};
+import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 // Categories for filter
 const categories = [
@@ -44,7 +31,7 @@ const sortOptions = [
 ];
 
 export default function NewArrivalsPage() {
-  const isMobile = useIsMobile();
+  const { isMobile } = useDeviceDetection();
   const [selectedCategory, setSelectedCategory] = useState<string>('All Products');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');

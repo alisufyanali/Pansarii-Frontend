@@ -37,6 +37,20 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/desktop',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/mobile',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
