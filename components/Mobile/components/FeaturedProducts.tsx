@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { FaStar, FaCheckCircle } from 'react-icons/fa';
 import { bestSellers } from '@/data/products';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
+import type { Product } from '@/types/product';
 
 export default function MobileFeaturedProducts() {
   const router      = useRouter();
   const sliderRef   = useRef<HTMLDivElement>(null);
   const isHovering  = useRef(false);
-  const [modal, setModal] = useState<any>(null);
+  const [modal, setModal] = useState<Product | null>(null);
 
   const products = bestSellers.slice(0, 10);
 

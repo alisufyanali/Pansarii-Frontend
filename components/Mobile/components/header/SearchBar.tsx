@@ -73,7 +73,9 @@ export default function SearchBar({
         try {
           setRecentSearches(JSON.parse(stored));
         } catch (error) {
-          console.error('Error parsing recent searches:', error);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error parsing recent searches:', error);
+          }
         }
       }
     }
@@ -107,7 +109,9 @@ export default function SearchBar({
           }
         }
       } catch (error) {
-        console.error('Failed to fetch suggestions:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to fetch suggestions:', error);
+        }
       } finally {
         setIsLoading(false);
       }

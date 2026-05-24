@@ -17,7 +17,9 @@ export interface FilterOptions {
 
 export function filterProducts(products: Product[], filters: FilterOptions): Product[] {
   if (!products || !Array.isArray(products)) {
-    console.error('Invalid products array:', products);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Invalid products array:', products);
+    }
     return [];
   }
 
@@ -104,7 +106,9 @@ export function filterProducts(products: Product[], filters: FilterOptions): Pro
 // Extract unique categories from a product list
 export function getCategoriesFromProducts(products: Product[]): string[] {
   if (!products || !Array.isArray(products)) {
-    console.error('Invalid products array in getCategoriesFromProducts:', products);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Invalid products array in getCategoriesFromProducts:', products);
+    }
     return [];
   }
 

@@ -48,7 +48,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           setCartItems(parsedCart);
         }
       } catch (error) {
-        console.error('❌ Error loading cart:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error loading cart:', error);
+        }
       }
       setIsInitialized(true);
     }
@@ -61,7 +63,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('pansari-cart', JSON.stringify(cartItems));
         log('💾 Cart saved to localStorage:', cartItems);
       } catch (error) {
-        console.error('❌ Error saving cart:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error saving cart:', error);
+        }
       }
     }
   }, [cartItems, isInitialized]);

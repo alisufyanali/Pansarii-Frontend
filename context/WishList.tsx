@@ -49,7 +49,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
           setWishlistItems(parsed);
         }
       } catch (error) {
-        console.error('❌ Error loading wishlist:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error loading wishlist:', error);
+        }
       }
       setIsInitialized(true);
     }
@@ -62,7 +64,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('pansari-wishlist', JSON.stringify(wishlistItems));
         log('💾 Wishlist saved to localStorage:', wishlistItems);
       } catch (error) {
-        console.error('❌ Error saving wishlist:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error saving wishlist:', error);
+        }
       }
     }
   }, [wishlistItems, isInitialized]);
