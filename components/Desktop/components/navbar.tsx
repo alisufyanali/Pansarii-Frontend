@@ -175,7 +175,7 @@ function NavbarContent() {
               <Link href="/" className="flex-shrink-0" aria-label="Pansariin.pk Home">
                 <div className="relative w-36 h-9">
                   <Image src="/images/logo.png" alt="Pansariin.pk Logo" fill
-                    className="object-contain object-left" priority sizes="144px" />
+                    className="object-contain object-left" priority sizes="144px" fetchPriority="high" />
                 </div>
               </Link>
 
@@ -298,10 +298,16 @@ function NavbarContent() {
               </div>
 
               <div className="mt-3 relative">
-                <input type="text" value={categorySearch}
+                <label htmlFor="category-search" className="sr-only">Search categories</label>
+                <input 
+                  id="category-search"
+                  type="text" 
+                  value={categorySearch}
                   onChange={e => setCategorySearch(e.target.value)}
                   placeholder="Search categories..."
-                  className="w-full px-3 py-2 pl-8 bg-white/10 text-white placeholder-white/70 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/20" />
+                  className="w-full px-3 py-2 pl-8 bg-white/10 text-white placeholder-white/70 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/20" 
+                  aria-label="Search categories"
+                />
                 <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/70" />
               </div>
 

@@ -44,6 +44,7 @@ export default function ProductCard({ product }: { product: Product }) {
             fill
             className="object-cover transition-all duration-300"
             sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
+            loading="lazy"
           />
           {product.sale && (
             <span className="absolute top-2 right-2 px-2 py-0.5 bg-red-500 text-white text-[11px] font-medium rounded-full">

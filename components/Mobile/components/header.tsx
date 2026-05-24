@@ -37,8 +37,10 @@ function MobileSearchBar() {
   return (
     <div className="relative px-4 pb-3">
       <form onSubmit={e => { e.preventDefault(); handleSearch(query); }}>
+        <label htmlFor="mobile-search" className="sr-only">Search products</label>
         <div className="flex items-center bg-gray-50 border border-gray-200 rounded-full px-4 py-2.5">
           <input
+            id="mobile-search"
             ref={inputRef}
             type="text"
             value={query}
@@ -46,13 +48,14 @@ function MobileSearchBar() {
             onFocus={() => setOpen(true)}
             placeholder="Search"
             className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none"
+            aria-label="Search products"
           />
           {query ? (
-            <button type="button" onClick={() => { setQuery(''); setOpen(false); }}>
-              <FiX className="w-4 h-4 text-gray-400" />
+            <button type="button" onClick={() => { setQuery(''); setOpen(false); }} aria-label="Clear search">
+              <FiX className="w-4 h-4 text-gray-400" aria-hidden="true" />
             </button>
           ) : (
-            <FiSearch className="w-4 h-4 text-gray-400" />
+            <FiSearch className="w-4 h-4 text-gray-400" aria-hidden="true" />
           )}
         </div>
       </form>
@@ -67,7 +70,7 @@ function MobileSearchBar() {
               className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-gray-50 text-left"
             >
               <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                <Image src={p.img} alt={p.nameEn} fill className="object-contain" sizes="32px" />
+                <Image src={p.img} alt={`${p.nameEn} product image`} fill className="object-contain" sizes="32px" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-gray-900 truncate">{p.nameEn}</p>
@@ -116,7 +119,7 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
         {/* Logo — absolutely centered */}
         <Link href="/" aria-label="Home" className="absolute left-1/2 -translate-x-1/2">
           <div className="relative w-28 h-8">
-            <Image src="/images/logo.png" alt="Pansari Inn" fill className="object-contain" priority sizes="112px" />
+            <Image src="/images/logo.png" alt="Pansari Inn" fill className="object-contain" priority sizes="112px" fetchPriority="high" />
           </div>
         </Link>
 

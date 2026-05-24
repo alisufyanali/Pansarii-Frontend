@@ -1,5 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
 import "./globals.css";
 import DeviceDetector from "@/hooks/useDeviceDetection";
 import { CartProvider } from "@/context/CartContext";
@@ -8,7 +9,14 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const poppins = { variable: '--font-poppins', className: 'font-poppins' };
+const poppins = Poppins({
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-poppins',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://pansariinn.com'),
@@ -39,13 +47,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} light`} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#ffffff" />
+        <link rel="preload" href="/images/logo.png" as="image" type="image/png" />
+        <link rel="preload" href="/images/new.jpg" as="image" type="image/jpeg" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
       </head>
-      <body className="bg-white text-gray-900 font-poppins antialiased" suppressHydrationWarning>
+      <body className={`${poppins.className} bg-white text-gray-900 antialiased`} suppressHydrationWarning>
         <CartProvider>
           <WishlistProvider>
             <DeviceDetector>{children}</DeviceDetector>

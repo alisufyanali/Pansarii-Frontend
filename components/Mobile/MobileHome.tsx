@@ -1,14 +1,17 @@
 'use client';
 
-import HeroBanner          from './components/HeroBanner';
-import Categories          from './components/categories';
-import SolutionBar         from './components/solutionbar';
-import MobileFeaturedProducts from './components/FeaturedProducts';
-import ShopProducts        from './components/ShopProducts';
-import MobileVideoProducts from './components/VideoProducts';
-import MobileComboDeal     from './components/ComboDeal';
-import MobileReviews       from './components/Reviews';
-import MobileBlogSection   from './components/BlogSection';
+import dynamic from 'next/dynamic';
+import HeroBanner from './components/HeroBanner';
+import SolutionBar from './components/solutionbar';
+
+// Lazy load below-the-fold components
+const Categories = dynamic(() => import('./components/categories'));
+const MobileFeaturedProducts = dynamic(() => import('./components/FeaturedProducts'));
+const ShopProducts = dynamic(() => import('./components/ShopProducts'));
+const MobileVideoProducts = dynamic(() => import('./components/VideoProducts'));
+const MobileComboDeal = dynamic(() => import('./components/ComboDeal'));
+const MobileReviews = dynamic(() => import('./components/Reviews'));
+const MobileBlogSection = dynamic(() => import('./components/BlogSection'));
 
 export default function MobileHome() {
   return (

@@ -41,6 +41,7 @@ export default function ProductCard2({ product }: { product: Product }) {
               fill
               className="object-cover transition-all duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 50vw, 25vw"
+              loading="lazy"
             />
           </div>
 
@@ -51,6 +52,7 @@ export default function ProductCard2({ product }: { product: Product }) {
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <button
               onClick={handleQuickView}
+              aria-label={`Quick view ${product.nameEn}`}
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-700 text-white text-xs font-medium shadow-lg
                          translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300"
             >

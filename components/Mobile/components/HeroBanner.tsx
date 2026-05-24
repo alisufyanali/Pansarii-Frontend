@@ -43,6 +43,8 @@ export default function HeroBanner() {
                 fill
                 className="object-cover object-center"
                 priority={index === 0}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                quality={85}
                 onError={() => setImgErrors(prev => ({ ...prev, [index]: true }))}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex flex-col items-center justify-end pb-6 text-white">
@@ -60,11 +62,13 @@ export default function HeroBanner() {
       ))}
 
       {/* Dots */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10" role="group" aria-label="Banner slides">
         {banners.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrent(idx)}
+            aria-label={`Go to slide ${idx + 1}`}
+            aria-current={idx === current ? 'true' : 'false'}
             className={`h-1.5 rounded-full transition-all ${
               idx === current ? 'w-6 bg-white' : 'w-1.5 bg-white/60'
             }`}
