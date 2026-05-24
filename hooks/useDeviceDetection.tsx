@@ -66,8 +66,12 @@ function detectDevice(): boolean {
  * return isMobile ? <MobileView /> : <DesktopView />;
  */
 export function useDeviceDetection(): DeviceDetectionResult {
-  const [isMobile, setIsMobile] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize with SSR-safe default (assume desktop, will update on client)
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return detectDevice();
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const checkDevice = () => {

@@ -85,9 +85,10 @@ export default function Banner() {
           alt={slide.title ?? "Banner"}
           fill
           className="object-fill"
-          priority
+          priority={current === 0}
+          loading={current === 0 ? undefined : 'lazy'}
           sizes="100vw"
-          quality={85}
+          quality={75}
         />
       </div>
 

@@ -1,17 +1,17 @@
 import dynamic from 'next/dynamic';
+import Banner from "./Sections/Banner";
 
-// Lazy load all sections using next/dynamic (works in Server Components)
-const Banner          = dynamic(() => import("./Sections/Banner"));
-const SolutionBar     = dynamic(() => import("./Sections/SolutionBar"));
-const FeaturedProducts = dynamic(() => import("./Sections/FeaturedProducts"));
-const Category        = dynamic(() => import("./Sections/Category"));
-const NewArrivals     = dynamic(() => import("./Sections/NewArrivals"));
-const BeautyCorner    = dynamic(() => import("./Sections/BeautyCorner"));
-const PansariInn      = dynamic(() => import("./Sections/Pureinnoils"));
-const ComboDeal       = dynamic(() => import("./Sections/ComboDeal"));
-const VideoProducts   = dynamic(() => import("./Sections/VideoProducts"));
-const Review          = dynamic(() => import("./Sections/Review"));
-const Blog            = dynamic(() => import("./Sections/Blog"));
+// Lazy load below-the-fold sections only
+const SolutionBar     = dynamic(() => import("./Sections/SolutionBar"), { ssr: false });
+const FeaturedProducts = dynamic(() => import("./Sections/FeaturedProducts"), { ssr: false });
+const Category        = dynamic(() => import("./Sections/Category"), { ssr: false });
+const NewArrivals     = dynamic(() => import("./Sections/NewArrivals"), { ssr: false });
+const BeautyCorner    = dynamic(() => import("./Sections/BeautyCorner"), { ssr: false });
+const PansariInn      = dynamic(() => import("./Sections/Pureinnoils"), { ssr: false });
+const ComboDeal       = dynamic(() => import("./Sections/ComboDeal"), { ssr: false });
+const VideoProducts   = dynamic(() => import("./Sections/VideoProducts"), { ssr: false });
+const Review          = dynamic(() => import("./Sections/Review"), { ssr: false });
+const Blog            = dynamic(() => import("./Sections/Blog"), { ssr: false });
 
 export default function DesktopHome() {
   return (

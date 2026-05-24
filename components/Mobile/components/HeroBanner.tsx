@@ -27,39 +27,45 @@ export default function HeroBanner() {
 
   return (
     <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden h-48">
-      {banners.map((banner, index) => (
-        <Link
-          key={banner.id}
-          href={banner.link}
-          className={`absolute inset-0 transition-opacity duration-700 ${
-            index === current ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-        >
-          {!imgErrors[index] ? (
-            <>
-              <Image
-                src={banner.image}
-                alt={banner.title}
-                fill
-                className="object-cover object-center"
-                priority={index === 0}
-                sizes="(max-width: 768px) 100vw, 50vw"
-                quality={85}
-                onError={() => setImgErrors(prev => ({ ...prev, [index]: true }))}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex flex-col items-center justify-end pb-6 text-white">
-                <h2 className="text-xl font-bold drop-shadow">{banner.title}</h2>
-                <p className="text-sm opacity-90 drop-shadow">{banner.subtitle}</p>
+      {banners.map((banner, index) => {
+        // Only render first banner immediately, others lazy load
+        const shouldLoad = index === 0 || index === current;
+        
+        return (
+          <Link
+            key={banner.id}
+            href={banner.link}
+            className={`absolute inset-0 transition-opacity duration-700 ${
+              index === current ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            {!imgErrors[index] ? (
+              <>
+                <Image
+                  src={banner.image}
+                  alt={banner.title}
+                  fill
+                  className="object-cover object-center"
+                  priority={index === 0}
+                  loading={index === 0 ? undefined : 'lazy'}
+                  sizes="(max-width: 768px) 92vw, 50vw"
+                  quality={75}
+                  onError={() => setImgErrors(prev => ({ ...prev, [index]: true }))}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex flex-col items-center justify-end pb-6 text-white">
+                  <h2 className="text-xl font-bold drop-shadow">{banner.title}</h2>
+                  <p className="text-sm opacity-90 drop-shadow">{banner.subtitle}</p>
+                </div>
+              </>
+            ) : (
+              <div className={`w-full h-full bg-gradient-to-br ${fallbackColors[index]} flex flex-col items-center justify-center text-white px-6`}>
+                <h2 className="text-2xl font-bold mb-1">{banner.title}</h2>
+                <p className="text-sm opacity-90">{banner.subtitle}</p>
               </div>
-            </>
-          ) : (
-            <div className={`w-full h-full bg-gradient-to-br ${fallbackColors[index]} flex flex-col items-center justify-center text-white px-6`}>
-              <h2 className="text-2xl font-bold mb-1">{banner.title}</h2>
-              <p className="text-sm opacity-90">{banner.subtitle}</p>
-            </div>
-          )}
-        </Link>
-      ))}
+            )}
+          </Link>
+        );
+      })}
 
       {/* Dots */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10" role="group" aria-label="Banner slides">
