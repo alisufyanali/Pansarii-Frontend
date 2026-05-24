@@ -2,9 +2,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import DesktopProductCard from '@/components/Desktop/components/ProductCard';
 import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import { newArrivalProducts, NewArrivalProduct } from '@/data/newproducts';
+import { api, getApiErrorMessage } from '@/lib/axios';
 
 // Hook to detect mobile screen
 const useIsMobile = () => {
@@ -118,18 +122,17 @@ export default function NewArrivalsPage() {
     onSaleCount: newArrivalProducts.filter(p => p.isNew && p.sale).length
   };
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const email = formData.get('email') as string;
-    // TODO: wire up to newsletter API
-    void email;
-    alert('Thank you for subscribing to our newsletter!');
-    (e.target as HTMLFormElement).reset();
-  };
-
-  const handleShopNow = () => {
-    // Navigate to shop — handled by Link component where used
+    try {
+      await api.post('/newsletter/subscribe', { email });
+      toast.success('Thank you for subscribing to our newsletter!');
+      (e.target as HTMLFormElement).reset();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err) || 'Subscription failed. Please try again.');
+    }
   };
 
   return (
@@ -312,12 +315,12 @@ export default function NewArrivalsPage() {
                   <p className="text-sm sm:text-base text-green-100 mb-4">
                     Get 20% OFF on all new arrivals + Free Shipping on orders above PKR 1500
                   </p>
-                  <button 
-                    onClick={handleShopNow}
-                    className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-white text-green-800 font-semibold rounded-lg hover:bg-gray-100 transition shadow-md"
+                  <Link 
+                    href="/shop"
+                    className="inline-block px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-white text-green-800 font-semibold rounded-lg hover:bg-gray-100 transition shadow-md"
                   >
                     Shop Now & Save
-                  </button>
+                  </Link>
                 </div>
                 <div className="text-center bg-white/10 p-4 sm:p-6 rounded-xl">
                   <div className="text-4xl sm:text-5xl font-bold text-white">20%</div>
@@ -469,6 +472,7 @@ export default function NewArrivalsPage() {
           scrollbar-width: none;
         }
       `}</style>
+      <ToastContainer position="top-right" autoClose={3000} theme="light" />
     </div>
   );
 }

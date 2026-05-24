@@ -14,6 +14,8 @@ import {
 import { FiPackage } from 'react-icons/fi';
 import Invoice, { type InvoiceData, type PaymentStatus } from '@/components/Invoice/Invoice';
 import { api, getApiErrorMessage } from '@/lib/axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -194,7 +196,7 @@ function OrderConfirmationContent() {
   const handleDownload = () => {
     if (!order || !printRef.current) return;
     const win = window.open('', '_blank');
-    if (!win) { alert('Please allow popups to download the invoice'); return; }
+    if (!win) { toast.warning('Please allow popups to download the invoice'); return; }
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -299,6 +301,7 @@ function OrderConfirmationContent() {
           </div>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} theme="light" />
     </div>
   );
 }
