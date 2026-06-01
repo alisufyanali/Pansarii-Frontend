@@ -87,6 +87,8 @@ export default function Category() {
                   width={170}
                   height={120}
                   className="object-contain w-[75%] h-auto drop-shadow-md mt-4"
+                  loading="lazy"
+                  quality={60}
                 />
               </div>
 

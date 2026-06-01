@@ -60,9 +60,9 @@ export default function Banner() {
           fill
           className="object-fill"
           priority={current === 0}
-          loading={current === 0 ? undefined : 'lazy'}
+          fetchPriority={current === 0 ? "high" : "low"}
           sizes="100vw"
-          quality={75}
+          quality={70}
         />
       </div>
 

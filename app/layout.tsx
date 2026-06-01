@@ -49,8 +49,8 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#ffffff" />
+        <link rel="preload" as="image" href="/images/Banner.png" fetchPriority="high" />
         <link rel="preload" href="/images/logo.png" as="image" type="image/png" />
-        <link rel="preload" href="/images/new.jpg" as="image" type="image/jpeg" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
       </head>

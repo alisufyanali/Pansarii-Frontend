@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import BackwardArrow from "@components/BackwardArrow";
@@ -122,10 +123,14 @@ export default function SolutionBar() {
               }}
             >
               {/* Background image */}
-              <img
+              <Image
                 src={pic}
                 alt={card.title}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                sizes="(max-width: 1920px) 20vw, 350px"
+                quality={60}
+                loading="lazy"
               />
 
               {/* Gradient overlay */}
