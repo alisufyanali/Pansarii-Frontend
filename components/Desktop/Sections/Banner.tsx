@@ -37,49 +37,23 @@ const slides: BannerSlide[] = [
 ];
 
 export default function Banner() {
-  const [current,   setCurrent]   = useState(0);
-  const [animating, setAnimating] = useState(false);
-  const [direction, setDirection] = useState<"left" | "right">("right");
+  const [current, setCurrent] = useState(0);
 
-  const goTo = (index: number, dir: "left" | "right") => {
-    if (animating) return;
-    setDirection(dir);
-    setAnimating(true);
-    setTimeout(() => { setCurrent(index); setAnimating(false); }, 400);
-  };
-
-  const handleNext = () => goTo((current + 1) % slides.length, "right");
-  const handlePrev = () => goTo((current - 1 + slides.length) % slides.length, "left");
+  const handleNext = () => setCurrent((current + 1) % slides.length);
+  const handlePrev = () => setCurrent((current - 1 + slides.length) % slides.length);
 
   useEffect(() => {
-    const t = setInterval(() => goTo((current + 1) % slides.length, "right"), 5000);
+    const t = setInterval(() => setCurrent(c => (c + 1) % slides.length), 5000);
     return () => clearInterval(t);
-  }, [current, animating]);
+  }, []);
 
   const slide = slides[current];
-
-  const contentStyle = {
-    opacity:   animating ? 0 : 1,
-    transform: animating
-      ? `translateX(${direction === "right" ? "-24px" : "24px"})`
-      : "translateX(0)",
-    transition: "opacity 0.4s ease, transform 0.4s ease",
-  };
 
   return (
     <section className="relative w-full overflow-hidden h-[60vh] min-h-[420px] max-h-[680px]">
 
       {/* Background image */}
-      <div
-        className="absolute inset-0 w-full h-full"
-        style={{
-          opacity:   animating ? 0 : 0.9,
-          transform: animating
-            ? `translateX(${direction === "right" ? "-40px" : "40px"})`
-            : "translateX(0)",
-          transition: "opacity 0.9s ease, transform 0.9s ease",
-        }}
-      >
+      <div className="absolute inset-0 w-full h-full transition-opacity duration-500">
         <Image
           src={slide.image}
           alt={slide.title ?? "Banner"}
@@ -100,7 +74,7 @@ export default function Banner() {
         <div className="w-full max-w-[1920px] mx-auto flex">
 
           {/* Left column */}
-          <div className="w-1/2 flex flex-col justify-center gap-3 xl:gap-4" style={contentStyle}>
+          <div className="w-1/2 flex flex-col justify-center gap-3 xl:gap-4 transition-opacity duration-300">
 
             {slide.badge && (
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6C3F3F] bg-white/70 backdrop-blur-sm px-3 py-1 rounded-full w-fit">
@@ -164,7 +138,7 @@ export default function Banner() {
         {slides.map((_, i) => (
           <button
             key={i}
-            onClick={() => goTo(i, i > current ? "right" : "left")}
+            onClick={() => setCurrent(i)}
             aria-label={`Go to slide ${i + 1}`}
             aria-current={i === current ? 'true' : 'false'}
             className={`rounded-full transition-all duration-300 ${
