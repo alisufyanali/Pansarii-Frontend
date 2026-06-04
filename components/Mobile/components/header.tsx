@@ -100,7 +100,7 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
 
       {/* ── Fixed Bar ── */}
-      <div className="bg-green-700 py-1.5 rounded-b-2xl">
+      <div className="bg-green-700 py-1.5 rounded-b-2xl text-center">
         <div className="text-white text-xs font-medium px-8">
           100% Ayurvedic & Herbal Products
         </div>

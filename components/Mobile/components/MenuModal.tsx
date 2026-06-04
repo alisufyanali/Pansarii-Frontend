@@ -6,6 +6,8 @@ import {
   FaTimes, FaUser, FaChevronRight, FaLeaf,
   FaShoppingBag, FaGift, FaTruck, FaStar,
   FaBook, FaPhone, FaQuestionCircle, FaHeart,
+  FaWhatsapp, FaFacebook, FaInstagram, FaTwitter,
+  FaEnvelope, FaMapMarkerAlt,
 } from 'react-icons/fa';
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
@@ -146,7 +148,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
           </div>
 
           {/* Footer links */}
-          <div className="border-t border-gray-100 pt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 pb-4">
+          <div className="border-t border-gray-100 pt-3 grid grid-cols-2 gap-x-4 gap-y-2.5">
             {bottomLinks.map(({ name, href }) => (
               <Link
                 key={href}
@@ -157,6 +159,102 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
                 {name}
               </Link>
             ))}
+          </div>
+
+          {/* Contact Information */}
+          <div className="bg-green-50 rounded-xl p-3 space-y-2.5">
+            <div className="flex items-center gap-2 mb-1">
+              <FaPhone className="w-3.5 h-3.5 text-green-700" />
+              <h3 className="text-sm font-bold text-gray-900">Contact Us</h3>
+            </div>
+            
+            {/* WhatsApp */}
+            <a
+              href="https://wa.me/923001234567"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-2.5 bg-white rounded-lg hover:shadow-sm active:scale-95 transition-all"
+            >
+              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <FaWhatsapp className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-gray-900">WhatsApp</p>
+                <p className="text-[10px] text-gray-500">+92 300 1234567</p>
+              </div>
+              <FaChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
+            </a>
+
+            {/* Phone */}
+            <a
+              href="tel:+923001234567"
+              className="flex items-center gap-3 p-2.5 bg-white rounded-lg hover:shadow-sm active:scale-95 transition-all"
+            >
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <FaPhone className="w-3.5 h-3.5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-gray-900">Call Us</p>
+                <p className="text-[10px] text-gray-500">+92 300 1234567</p>
+              </div>
+            </a>
+
+            {/* Email */}
+            <a
+              href="mailto:info@pansariinn.com"
+              className="flex items-center gap-3 p-2.5 bg-white rounded-lg hover:shadow-sm active:scale-95 transition-all"
+            >
+              <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <FaEnvelope className="w-3.5 h-3.5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-gray-900">Email</p>
+                <p className="text-[10px] text-gray-500">info@pansariinn.com</p>
+              </div>
+            </a>
+          </div>
+
+          {/* Social Media */}
+          <div className="border-t border-gray-100 pt-3 pb-4">
+            <h3 className="text-xs font-bold text-gray-900 mb-3">Follow Us</h3>
+            <div className="flex items-center gap-3">
+              <a
+                href="https://www.facebook.com/pansariinn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+                aria-label="Facebook"
+              >
+                <FaFacebook className="w-5 h-5 text-white" />
+              </a>
+              <a
+                href="https://www.instagram.com/pansariinn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+                aria-label="Instagram"
+              >
+                <FaInstagram className="w-5 h-5 text-white" />
+              </a>
+              <a
+                href="https://twitter.com/pansariinn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-sky-500 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+                aria-label="Twitter"
+              >
+                <FaTwitter className="w-5 h-5 text-white" />
+              </a>
+              <a
+                href="https://wa.me/923001234567"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+                aria-label="WhatsApp"
+              >
+                <FaWhatsapp className="w-5 h-5 text-white" />
+              </a>
+            </div>
           </div>
 
         </div>
