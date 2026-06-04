@@ -97,7 +97,7 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
   const cartCount = mounted ? getCartCount() : 0;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm" suppressHydrationWarning>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
 
       {/* ── Fixed Bar ── */}
       <div className="bg-green-700 py-1.5 rounded-b-2xl">
@@ -136,7 +136,7 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
           </Link>
           <Link href="/cart" className="relative p-2 text-gray-600 hover:text-green-700 transition-colors" aria-label="Cart">
             <RiShoppingCartLine className="w-5 h-5" />
-            {cartCount > 0 && (
+            {mounted && cartCount > 0 && (
               <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-green-700 text-white text-[9px] rounded-full flex items-center justify-center font-bold">
                 {cartCount > 9 ? '9+' : cartCount}
               </span>
