@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { FaStar, FaCheckCircle } from 'react-icons/fa';
 import { bestSellers } from '@/data/products';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
@@ -52,7 +53,7 @@ export default function MobileFeaturedProducts() {
           setTimeout(() => { isHovering.current = false; }, 2000);
         }}
       >
-        {products.map(product => (
+        {products.map((product, index) => (
           <div
             key={product.id}
             className="feat-card flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
@@ -63,10 +64,15 @@ export default function MobileFeaturedProducts() {
 
               {/* Image */}
               <div className="relative w-20 h-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
-                <img
+                <Image
                   src={product.img}
                   alt={product.nameEn}
-                  className="w-full h-full object-contain p-1.5"
+                  fill
+                  className="object-contain p-1.5"
+                  sizes="80px"
+                  loading={index < 2 ? "eager" : "lazy"}
+                  priority={index < 2}
+                  quality={60}
                 />
                 {product.sale && (
                   <span className="absolute top-1 left-1 text-[9px] font-bold bg-red-500 text-white px-1 py-0.5 rounded-full leading-none">

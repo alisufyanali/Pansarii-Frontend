@@ -7,7 +7,7 @@ import { FaStar } from 'react-icons/fa';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 import type { Product } from '@/types/product';
 
-export default function MobileProductCard({ product }: { product: Product }) {
+export default function MobileProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
@@ -42,7 +42,8 @@ export default function MobileProductCard({ product }: { product: Product }) {
             fill
             className="object-contain p-2"
             sizes="50vw"
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            priority={priority}
           />
         </div>
 

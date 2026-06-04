@@ -55,13 +55,13 @@ export default function FeaturedProducts() {
           ref={sliderRef}
           className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-4"
         >
-          {bestSellers.map(product => (
+          {bestSellers.map((product, index) => (
             <div
               key={product.id}
               className="card-item flex-shrink-0"
               style={{ width: cardWidthStyle(cardsToShow) }}
             >
-              <ProductCard product={product} />
+              <ProductCard product={product} priority={index < 3} />
             </div>
           ))}
         </div>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState, useRef, Suspense } from 'react';
+import { useState, useRef, Suspense, useEffect } from 'react';
 import { FiSearch, FiX } from 'react-icons/fi';
 import { RiUserLine, RiShoppingCartLine } from 'react-icons/ri';
 import { useCart } from '@/context/CartContext';
@@ -88,10 +88,16 @@ function MobileSearchBar() {
 // ── Main header ───────────────────────────────────────────────────────────────
 export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
   const { getCartCount } = useCart();
-  const cartCount = getCartCount();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const cartCount = mounted ? getCartCount() : 0;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm" suppressHydrationWarning>
 
       {/* ── Fixed Bar ── */}
       <div className="bg-green-700 py-1.5 rounded-b-2xl">

@@ -16,24 +16,30 @@ interface BannerSlide {
 
 const slides: BannerSlide[] = [
   {
-    image: "/images/new.jpg",
+    image: "/images/new-2.png",
   },
   {
-    image: "/images/banner-3.png",
-    badge: "🌿 100% Organic",
-    title: "Pure Herbal Oils",
-    description: "Cold pressed, unrefined & full of nature's goodness. Trusted by thousands of families.",
-    primaryBtn:   { label: "Shop Oils",  href: "/shop?category=oils" },
-    secondaryBtn: { label: "Learn More", href: "/blog"               },
+    image: "/images/a-3.png",
   },
   {
-    image: "/images/banner-l.png",
-    badge: "🎁 Special Offers",
-    title: "Beauty Corner",
-    description: "Discover handcrafted skincare made from the finest herbs & botanicals.",
-    primaryBtn:   { label: "Explore",     href: "/shop?category=beauty" },
-    secondaryBtn: { label: "View Offers", href: "/offers"               },
+    image: "/images/a-4.png",
   },
+  // {
+  //   image: "/images/banner-3.png",
+  //   badge: "🌿 100% Organic",
+  //   title: "Pure Herbal Oils",
+  //   description: "Cold pressed, unrefined & full of nature's goodness. Trusted by thousands of families.",
+  //   primaryBtn:   { label: "Shop Oils",  href: "/shop?category=oils" },
+  //   secondaryBtn: { label: "Learn More", href: "/blog"               },
+  // },
+  // {
+  //   image: "/images/banner-l.png",
+  //   badge: "🎁 Special Offers",
+  //   title: "Beauty Corner",
+  //   description: "Discover handcrafted skincare made from the finest herbs & botanicals.",
+  //   primaryBtn:   { label: "Explore",     href: "/shop?category=beauty" },
+  //   secondaryBtn: { label: "View Offers", href: "/offers"               },
+  // },
 ];
 
 export default function Banner() {
@@ -50,7 +56,7 @@ export default function Banner() {
   const slide = slides[current];
 
   return (
-    <section className="relative w-full overflow-hidden h-[60vh] min-h-[420px] max-h-[680px]">
+    <section className="relative w-full overflow-hidden h-[70vh] min-h-[460px] max-h-[680px]">
 
       {/* Background image */}
       <div className="absolute inset-0 w-full h-full transition-opacity duration-500">

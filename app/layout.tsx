@@ -49,10 +49,10 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#ffffff" />
-        <link rel="preload" as="image" href="/images/Banner.png" fetchPriority="high" />
-        <link rel="preload" href="/images/logo.png" as="image" type="image/png" />
+        <link rel="preload" as="image" href="/images/Banner.png" fetchPriority="high" imageSizes="(max-width: 768px) 92vw, 100vw" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="dns-prefetch" href="https://va.vercel-scripts.com" />
       </head>
       <body className={`${poppins.className} bg-white text-gray-900 antialiased`} suppressHydrationWarning>
         <CartProvider>

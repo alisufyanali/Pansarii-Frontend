@@ -7,7 +7,7 @@ import ProductDetailsModal from "./ProductDetailsModal";
 import { useRouter } from "next/navigation";
 import { Product } from '@/types/product';
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   const [isHovered,   setIsHovered]   = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
@@ -44,7 +44,8 @@ export default function ProductCard({ product }: { product: Product }) {
             fill
             className="object-cover transition-all duration-300"
             sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            priority={priority}
           />
           {product.sale && (
             <span className="absolute top-2 right-2 px-2 py-0.5 bg-red-500 text-white text-[11px] font-medium rounded-full">
