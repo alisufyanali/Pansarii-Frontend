@@ -6,7 +6,10 @@ import { allProducts } from '@/data/products';
 import {
   FaTimes, FaUser, FaChevronRight, FaLeaf,
   FaShoppingBag, FaStar, FaHeart, FaBook,
+  FaFacebook, FaYoutube,
 } from 'react-icons/fa';
+import { FaXTwitter, FaInstagram } from 'react-icons/fa6';
+import { SOCIAL_LINKS } from '@/lib/social-links';
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Herb':          'herbs',
@@ -131,6 +134,46 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
             </div>
           </div>
 
+        </div>
+
+        {/* Social Media Icons - Fixed at bottom */}
+        <div className="flex gap-5 justify-center py-4 border-t border-gray-100 bg-white">
+          <a 
+            href={SOCIAL_LINKS.facebook} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:scale-110 active:scale-95 transition-transform"
+            aria-label="Facebook"
+          >
+            <FaFacebook size={22} color="#1877F2" />
+          </a>
+          <a 
+            href={SOCIAL_LINKS.instagram} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:scale-110 active:scale-95 transition-transform"
+            aria-label="Instagram"
+          >
+            <FaInstagram size={22} color="#E1306C" />
+          </a>
+          <a 
+            href={SOCIAL_LINKS.youtube} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:scale-110 active:scale-95 transition-transform"
+            aria-label="YouTube"
+          >
+            <FaYoutube size={22} color="#FF0000" />
+          </a>
+          <a 
+            href={SOCIAL_LINKS.twitter} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:scale-110 active:scale-95 transition-transform"
+            aria-label="Twitter"
+          >
+            <FaXTwitter size={22} color="#000000" />
+          </a>
         </div>
 
       </div>

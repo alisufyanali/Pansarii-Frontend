@@ -55,7 +55,7 @@ export default function MobileProductCard({ product, priority = false }: { produ
             <h3 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-snug mb-1">
               {product.nameEn}
             </h3>
-            <p className="text-[10px] text-gray-400 line-clamp-1 mb-1 overflow-hidden max-w-full">
+            <p className="text-[12px] text-gray-400 line-clamp-1 mb-1 overflow-hidden max-w-full">
               {product.nameUr}
             </p>
             
