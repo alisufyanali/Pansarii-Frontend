@@ -5,6 +5,7 @@ import "./globals.css";
 import DeviceDetector from "@/hooks/useDeviceDetection";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishList";
+import { AuthProvider } from "@/context/AuthContext";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -55,23 +56,25 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://va.vercel-scripts.com" />
       </head>
       <body className={`${poppins.className} bg-white text-gray-900 antialiased`} suppressHydrationWarning>
-        <CartProvider>
-          <WishlistProvider>
-            <DeviceDetector>{children}</DeviceDetector>
-            <ToastContainer
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
-          </WishlistProvider>
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <DeviceDetector>{children}</DeviceDetector>
+              <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
         <SpeedInsights />
       </body>
     </html>

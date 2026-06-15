@@ -14,7 +14,7 @@ import {
   RiLogoutBoxRLine,
 } from 'react-icons/ri';
 import { FiChevronRight } from 'react-icons/fi';
-import { clearAuthData, getStoredUser } from '@/lib/axios';
+import { clearAuthData, getStoredUser, api } from '@/lib/axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -138,7 +138,12 @@ export default function ProfilePage() {
   // Notifications feature coming in v2
   const notificationCount = DEFAULT_NOTIFICATION_COUNT;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post('/logout');
+    } catch {
+      // Ignore — token may already be expired
+    }
     clearAuthData();
     router.push('/login');
   };

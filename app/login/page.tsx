@@ -5,82 +5,77 @@ import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
-import { api, setAuthData, getApiErrorMessage } from '../../lib/axios';
+import { toast } from 'react-toastify';
+import { useAuth, extractFieldErrors } from '@/context/AuthContext';
+import { getApiErrorMessage } from '@/lib/axios';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface LoginResponse {
-  token: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-  };
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Wrapper ──────────────────────────────────────────────────────────────────
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700" />
+        </div>
+      }
+    >
       <LoginPageContent />
     </Suspense>
   );
 }
 
+// ─── Field error shape ────────────────────────────────────────────────────────
+interface LoginFields {
+  email: string;
+  password: string;
+}
+
+// ─── Content ──────────────────────────────────────────────────────────────────
+
 function LoginPageContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
+  const { login }    = useAuth();
 
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState<LoginFields>({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading,    setIsLoading]    = useState(false);
   const [apiError,     setApiError]     = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [fieldErrors,  setFieldErrors]  = useState<Partial<LoginFields>>({});
 
-  // ── Validation ──────────────────────────────────────────────────────────────
-  const validateForm = (): boolean => {
-    const newErrors: typeof errors = {};
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  // ── Client validation ───────────────────────────────────────────────────────
+  const validate = (): boolean => {
+    const errs: Partial<LoginFields> = {};
+    if (!formData.email)                         errs.email    = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errs.email = 'Email is invalid';
+    if (!formData.password)                      errs.password = 'Password is required';
+    else if (formData.password.length < 6)       errs.password = 'Password must be at least 6 characters';
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError('');
-
-    if (!validateForm()) return;
+    if (!validate()) return;
 
     setIsLoading(true);
     try {
-      // POST /api/auth/login  →  { token, user }
-      const data = await api.post<LoginResponse>('/auth/login', {
-        email:    formData.email,
-        password: formData.password,
-      });
-
-      // Persist token + user so every subsequent request is authenticated
-      setAuthData(data.token, data.user);
-
-      // Redirect back to the page the user was trying to reach, or home
+      await login({ email: formData.email, password: formData.password });
+      toast.success('Login successful!');
       const returnTo = searchParams.get('returnTo') ?? '/';
       router.push(decodeURIComponent(returnTo));
     } catch (err) {
-      setApiError(getApiErrorMessage(err));
+      // Map Laravel 422 field errors
+      const fields = extractFieldErrors<LoginFields>(err);
+      if (Object.keys(fields).length) {
+        setFieldErrors(fields);
+      } else {
+        // 401 → "These credentials do not match our records."
+        setApiError(getApiErrorMessage(err));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -90,11 +85,7 @@ function LoginPageContent() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear field-level error as the user types
-    if (errors[name as keyof typeof errors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
-    }
-    // Clear API-level error too
+    if (fieldErrors[name as keyof LoginFields]) setFieldErrors(prev => ({ ...prev, [name]: undefined }));
     if (apiError) setApiError('');
   };
 
@@ -103,17 +94,15 @@ function LoginPageContent() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white p-4">
       <div className="w-full max-w-md">
 
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your Pansari account</p>
         </div>
 
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
 
-            {/* API-level error banner */}
+            {/* API error banner */}
             {apiError && (
               <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                 {apiError}
@@ -128,22 +117,13 @@ function LoginPageContent() {
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${
-                    errors.email ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  id="email" name="email" type="email" autoComplete="email"
+                  value={formData.email} onChange={handleChange} disabled={isLoading}
                   placeholder="your@email.com"
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'}`}
                 />
               </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-              )}
+              {fieldErrors.email && <p className="mt-1 text-sm text-red-500">{fieldErrors.email}</p>}
             </div>
 
             {/* Password */}
@@ -154,39 +134,27 @@ function LoginPageContent() {
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  id="password" name="password" type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${
-                    errors.password ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  value={formData.password} onChange={handleChange} disabled={isLoading}
                   placeholder="Enter your password"
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${fieldErrors.password ? 'border-red-500' : 'border-gray-300'}`}
                 />
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(p => !p)}
+                  type="button" onClick={() => setShowPassword(p => !p)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-500">{errors.password}</p>
-              )}
+              {fieldErrors.password && <p className="mt-1 text-sm text-red-500">{fieldErrors.password}</p>}
             </div>
 
-            {/* Remember me + Forgot */}
+            {/* Remember + Forgot */}
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                />
+                <input type="checkbox" className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500" />
                 <span className="text-sm text-gray-600">Remember me</span>
               </label>
               <Link href="/forgot-password" className="text-sm text-green-600 hover:text-green-700 font-medium">
@@ -196,8 +164,7 @@ function LoginPageContent() {
 
             {/* Submit */}
             <button
-              type="submit"
-              disabled={isLoading}
+              type="submit" disabled={isLoading}
               className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
@@ -212,14 +179,12 @@ function LoginPageContent() {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="my-6 flex items-center">
             <div className="flex-1 border-t border-gray-300" />
             <span className="px-4 text-sm text-gray-500">or</span>
             <div className="flex-1 border-t border-gray-300" />
           </div>
 
-          {/* Sign up link */}
           <p className="text-center text-sm text-gray-600">
             Don&apos;t have an account?{' '}
             <Link href="/register" className="text-green-600 hover:text-green-700 font-semibold">
