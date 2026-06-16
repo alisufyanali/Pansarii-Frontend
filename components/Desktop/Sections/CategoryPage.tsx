@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { allProducts } from '@/data/products';
 import type { Product } from '@/types/product';
+import { getProducts, getCategories } from '@/lib/products';
 import ProductCard from '@/components/Desktop/components/ProductCard';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 import SearchFilterBar from '@/components/Desktop/components/SearchFilterBar';
@@ -290,17 +291,22 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
 
   const { Icon } = config;
 
-  const categoryProducts = allProducts.filter(p => p.category === categoryName);
+  const [categoryProducts, setCategoryProducts] = useState<Product[]>(
+    allProducts.filter(p => p.category === categoryName) as Product[]
+  );
   const productCount = categoryProducts.length;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(categoryProducts);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(
+    allProducts.filter(p => p.category === categoryName) as Product[]
+  );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage, setProductsPerPage] = useState(20);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
 
   const [filters, setFilters] = useState<FilterOptions>({
     searchQuery: '', minPrice: 0, maxPrice: 5000, categories: [],
@@ -322,13 +328,61 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Initial load
+  // Fetch category ID from API
   useEffect(() => {
-    setFilteredProducts(categoryProducts);
-    const t = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(t);
+    getCategories().then(cats => {
+      const found = cats.find(c =>
+        c.name === categoryName ||
+        c.slug === categoryName.toLowerCase().replace(/\s+/g, '-')
+      );
+      if (found) setCategoryId(found.id);
+      else setCategoryId(0); // no match — trigger static fallback in next effect
+    }).catch(() => setCategoryId(0));
+  }, [categoryName]);
+
+  // Fetch products when categoryId is resolved
+  useEffect(() => {
+    // Wait until categoryId has been resolved (null = not yet fetched)
+    if (categoryId === null) return;
+
+    if (categoryId === 0) {
+      // Use static fallback
+      const staticProducts = allProducts.filter(p => p.category === categoryName) as Product[];
+      setFilteredProducts(staticProducts);
+      setCategoryProducts(staticProducts);
+      const t = setTimeout(() => setIsLoading(false), 300);
+      return () => clearTimeout(t);
+    }
+
+    setIsLoading(true);
+    getProducts({ category_id: categoryId, per_page: 100 }).then(res => {
+      const products: Product[] = res.data.map(p => {
+        const price = p.variants?.length ? Math.min(...p.variants.map(v => v.price)) : (p.sale_price ?? p.price);
+        return {
+          id: p.id,
+          img: p.thumbnail || '/images/product.png',
+          nameEn: p.name,
+          nameUr: p.name,
+          description: p.description || '',
+          rating: p.rating || 4.5,
+          reviews: p.reviews_count || 0,
+          price,
+          oldPrice: p.sale_price && p.price > p.sale_price ? p.price : null,
+          sale: p.sale_price ? `${Math.round(((p.price - p.sale_price) / p.price) * 100)}% OFF` : null,
+          category: p.category?.name,
+          inStock: p.variants?.some(v => v.stock > 0) ?? true,
+        };
+      });
+      const result = products.length > 0 ? products : (allProducts.filter(p => p.category === categoryName) as Product[]);
+      setCategoryProducts(result);
+      setFilteredProducts(result);
+    }).catch(() => {
+      const fallback = allProducts.filter(p => p.category === categoryName) as Product[];
+      setCategoryProducts(fallback);
+      setFilteredProducts(fallback);
+    }).finally(() => setIsLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [categoryId, categoryName]);
 
   const applyFilters = (newFilters: FilterOptions) => {
     let products = [...categoryProducts];

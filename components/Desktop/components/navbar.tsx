@@ -17,18 +17,9 @@ import {
 } from 'react-icons/fa';
 
 import { allProducts } from '@/data/products';
+import { getCategories } from '@/lib/products';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-
-const getCategoriesFromProducts = () => {
-  const set = new Set<string>();
-  allProducts.forEach(p => { if (p.category) set.add(p.category); });
-  return Array.from(set).sort().map(category => ({
-    name: category,
-    slug: category,
-    count: allProducts.filter(p => p.category === category).length,
-  }));
-};
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Herb':          'herbs',
@@ -78,7 +69,30 @@ function NavbarContent() {
   const [categorySearch,        setCategorySearch]        = useState('');
   const [scrolled,              setScrolled]              = useState(false);
 
-  const categories        = getCategoriesFromProducts();
+  const [categories, setCategories] = useState(() => {
+    // Initial value from static data as fallback
+    const set = new Set<string>();
+    allProducts.forEach(p => { if (p.category) set.add(p.category); });
+    return Array.from(set).sort().map((name, i) => ({
+      id: i + 1,
+      name,
+      slug: CATEGORY_SLUG_MAP[name] || name.toLowerCase().replace(/\s+/g, '-'),
+      count: allProducts.filter(p => p.category === name).length,
+    }));
+  });
+
+  useEffect(() => {
+    getCategories().then(cats => {
+      if (cats.length > 0) {
+        setCategories(cats.map(c => ({
+          id: c.id,
+          name: c.name,
+          slug: CATEGORY_SLUG_MAP[c.name] || c.slug,
+          count: allProducts.filter(p => p.category === c.name).length,
+        })));
+      }
+    }).catch(() => {/* keep static fallback */});
+  }, []);
   const currentCategory   = searchParams.get('category');
   const filteredCategories = categories.filter(c =>
     c.name.toLowerCase().includes(categorySearch.toLowerCase())

@@ -1,6 +1,72 @@
 // types/product.ts
 // Shared Product type used across the entire application
 
+// ─── API Product types (from Laravel) ────────────────────────────────────────
+
+export interface ProductVariant {
+  id: number;
+  name: string;
+  sku: string;
+  price: number;
+  stock: number;
+  is_default: boolean;
+}
+
+export interface ApiCategory {
+  id: number;
+  name: string;
+  slug: string;
+  children?: ApiCategory[];
+}
+
+export interface ApiProduct {
+  id: number;
+  name: string;
+  slug: string;
+  sku?: string;
+  price: number;
+  sale_price: number | null;
+  unit?: string;
+  featured?: boolean;
+  thumbnail: string | null;
+  description?: string;
+  category: ApiCategory;
+  variants: ProductVariant[];
+  gallery?: string[];
+  rating?: number;
+  reviews_count?: number;
+}
+
+// Helper: get display price from ApiProduct (cheapest variant or sale_price or price)
+export function getDisplayPrice(product: ApiProduct): number {
+  if (product.variants && product.variants.length > 0) {
+    return Math.min(...product.variants.map(v => v.price));
+  }
+  return product.sale_price ?? product.price;
+}
+
+// Helper: convert ApiProduct to legacy Product shape for existing components
+export function apiProductToLegacy(p: ApiProduct): Product {
+  const price = getDisplayPrice(p);
+  return {
+    id: p.id,
+    img: p.thumbnail || '/images/product.png',
+    nameEn: p.name,
+    nameUr: p.name,
+    description: p.description || '',
+    rating: p.rating || 4.5,
+    reviews: p.reviews_count || 0,
+    price,
+    oldPrice: p.sale_price && p.price > p.sale_price ? p.price : null,
+    sale: p.sale_price ? `${Math.round(((p.price - p.sale_price) / p.price) * 100)}% OFF` : null,
+    category: p.category?.name,
+    inStock: p.variants?.some(v => v.stock > 0) ?? true,
+    isBestSeller: p.featured,
+  };
+}
+
+// ─── Core Product types ───────────────────────────────────────────────────────
+
 export interface ProductFeature {
   text: string;
   hasCheck: boolean;

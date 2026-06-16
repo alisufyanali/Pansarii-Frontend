@@ -1,11 +1,11 @@
 // app/shop/page.tsx
 'use client';
 
-import { Suspense, useState, useMemo, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { Product } from '@/types/product';
-import { FilterOptions, filterProducts, getCategoriesFromProducts, getPriceRangeFromProducts } from '@/utils/filterProducts';
+import { FilterOptions, getCategoriesFromProducts, getPriceRangeFromProducts } from '@/utils/filterProducts';
 import { allProducts } from '@/data/products';
 
 // ─── Dynamic import at MODULE level (never inside useMemo/render) ─────────────
@@ -91,21 +91,34 @@ function ShopContent() {
 
   const initialSearchQuery = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || '';
-  const initialCategories = searchParams.get('categories')?.split(',') || [];
 
-  const safeProducts = useMemo((): Product[] => {
-    if (!allProducts || !Array.isArray(allProducts)) return [];
-    return allProducts.map(product => ({ ...product, inStock: product.inStock !== false }));
+  // API state
+  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const [apiCategories, setApiCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
+  const [apiMeta, setApiMeta] = useState<{ current_page: number; last_page: number; total: number; per_page: number } | null>(null);
+  const [isApiLoading, setIsApiLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Responsive products per page
+  const [productsPerPage, setProductsPerPage] = useState(20);
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      if (w >= 2560) setProductsPerPage(25);
+      else if (w >= 1280) setProductsPerPage(20);
+      else if (w >= 768) setProductsPerPage(12);
+      else setProductsPerPage(10);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, []);
-
-  const categories = useMemo(() => getCategoriesFromProducts(safeProducts), [safeProducts]);
-  const priceRange = useMemo(() => getPriceRangeFromProducts(safeProducts), [safeProducts]);
 
   const [filters, setFilters] = useState<FilterOptions>(() => ({
     searchQuery: initialSearchQuery,
     minPrice: 0,
-    maxPrice: priceRange.max || 5000,
-    categories: initialCategory ? [initialCategory] : initialCategories.length > 0 ? initialCategories : [],
+    maxPrice: 5000,
+    categories: initialCategory ? [initialCategory] : [],
     sortBy: 'default',
     showOnSale: false,
     showInStock: true,
@@ -113,56 +126,75 @@ function ShopContent() {
     showBestSellers: false,
   }));
 
+  // Fetch categories once
   useEffect(() => {
-    if (priceRange.max && priceRange.max !== filters.maxPrice) {
-      setFilters(prev => ({ ...prev, maxPrice: priceRange.max }));
-    }
-  }, [priceRange.max]);
-
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Responsive products per page: 25 on 4K (5x5), 20 on large desktop, 12 on laptop
-  const [productsPerPage, setProductsPerPage] = useState(20);
-
-  useEffect(() => {
-    const update = () => {
-      const w = window.innerWidth;
-      if (w >= 2560) setProductsPerPage(25);      // 4K: 5 cols × 5 rows
-      else if (w >= 1280) setProductsPerPage(20); // Laptop+: 5 cols × 4 rows
-      else if (w >= 768) setProductsPerPage(12);  // Tablet: 3 cols × 4 rows
-      else setProductsPerPage(10);                // Mobile: 2 cols × 5 rows
-    };
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    import('@/lib/products').then(({ getCategories }) => {
+      getCategories().then(cats => setApiCategories(cats));
+    });
   }, []);
 
-  const filteredProducts = useMemo(() => filterProducts(safeProducts, filters), [safeProducts, filters]);
-
-  const { totalPages, indexOfLastProduct, indexOfFirstProduct, currentProducts } = useMemo(() => {
-    const total = Math.ceil(filteredProducts.length / productsPerPage) || 1;
-    const last = Math.min(currentPage * productsPerPage, filteredProducts.length);
-    const first = (currentPage - 1) * productsPerPage;
-    return {
-      totalPages: total,
-      indexOfLastProduct: last,
-      indexOfFirstProduct: first,
-      currentProducts: filteredProducts.slice(first, last),
-    };
-  }, [filteredProducts, currentPage, productsPerPage]);
-
+  // Fetch products when filters/page change
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
+    setIsApiLoading(true);
+
+    const selectedCategoryId = filters.categories.length === 1
+      ? apiCategories.find(c => c.name === filters.categories[0] || c.slug === filters.categories[0])?.id
+      : undefined;
+
+    const sortMap: Record<string, { sort_by?: string; sort_order?: 'asc' | 'desc' }> = {
+      'price-low':  { sort_by: 'price', sort_order: 'asc'  },
+      'price-high': { sort_by: 'price', sort_order: 'desc' },
+      'rating':     { sort_by: 'rating', sort_order: 'desc' },
+      'name':       { sort_by: 'name', sort_order: 'asc'   },
+    };
+    const sortParams = sortMap[filters.sortBy] || {};
+
+    import('@/lib/products').then(({ getProducts }) => {
+      getProducts({
+        search:      filters.searchQuery || undefined,
+        category_id: selectedCategoryId,
+        min_price:   filters.minPrice > 0 ? filters.minPrice : undefined,
+        max_price:   filters.maxPrice < 5000 ? filters.maxPrice : undefined,
+        per_page:    productsPerPage,
+        page:        currentPage,
+        ...sortParams,
+      }).then(res => {
+        setApiProducts(res.data.map(p => {
+          const price = p.variants?.length ? Math.min(...p.variants.map(v => v.price)) : (p.sale_price ?? p.price);
+          return {
+            id: p.id,
+            img: p.thumbnail || '/images/product.png',
+            nameEn: p.name,
+            nameUr: p.name,
+            description: p.description || '',
+            rating: p.rating || 4.5,
+            reviews: p.reviews_count || 0,
+            price,
+            oldPrice: p.sale_price && p.price > p.sale_price ? p.price : null,
+            sale: p.sale_price ? `${Math.round(((p.price - p.sale_price) / p.price) * 100)}% OFF` : null,
+            category: p.category?.name,
+            inStock: p.variants?.some(v => v.stock > 0) ?? true,
+            isBestSeller: p.featured,
+          };
+        }));
+        setApiMeta(res.meta);
+      }).finally(() => setIsApiLoading(false));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, currentPage, productsPerPage, apiCategories]);
+
+  // URL sync
+  useEffect(() => {
+    const t = setTimeout(() => {
       const params = new URLSearchParams();
       if (filters.searchQuery.trim()) params.set('search', filters.searchQuery.trim());
       if (filters.categories.length === 1) params.set('category', filters.categories[0]);
-      else if (filters.categories.length > 1) params.set('categories', filters.categories.join(','));
       const newUrl = params.toString() ? `/shop?${params.toString()}` : '/shop';
       if (newUrl !== window.location.pathname + window.location.search) {
         router.replace(newUrl, { scroll: false });
       }
     }, 300);
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(t);
   }, [filters.searchQuery, filters.categories, router]);
 
   const handlePageChange = useCallback((page: number) => {
@@ -179,7 +211,7 @@ function ShopContent() {
     setFilters({
       searchQuery: '',
       minPrice: 0,
-      maxPrice: priceRange.max || 5000,
+      maxPrice: 5000,
       categories: [],
       sortBy: 'default',
       showOnSale: false,
@@ -189,48 +221,40 @@ function ShopContent() {
     });
     setCurrentPage(1);
     router.push('/shop');
-  }, [priceRange.max, router]);
+  }, [router]);
 
-  if (safeProducts.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-screen-2xl px-3 sm:px-4 lg:px-6 2xl:px-10 py-4 sm:py-6">
-          <div className="bg-white rounded-lg p-4">
-            <div className="mb-6"><div className="h-12 bg-gray-200 rounded-lg animate-pulse" /></div>
-            <div className="mb-6">
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-10 bg-gray-200 rounded-full animate-pulse w-24 flex-shrink-0" />
-                ))}
-              </div>
-            </div>
-            <ProductGridSkeleton count={productsPerPage} />
-            <div className="mt-6 sm:mt-8 flex justify-center">
-              <div className="h-8 sm:h-10 bg-gray-200 rounded-lg animate-pulse w-48 sm:w-64" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const totalPages = apiMeta?.last_page ?? 1;
+  const indexOfFirstProduct = ((apiMeta?.current_page ?? 1) - 1) * (apiMeta?.per_page ?? productsPerPage);
+  const indexOfLastProduct = Math.min(indexOfFirstProduct + (apiMeta?.per_page ?? productsPerPage), apiMeta?.total ?? apiProducts.length);
+
+  // Categories for filter bar — use API categories if available
+  const filterCategories = apiCategories.length > 0
+    ? apiCategories.map(c => c.name)
+    : getCategoriesFromProducts(apiProducts.length > 0 ? apiProducts : (allProducts as Product[]));
+
+  const priceRange = getPriceRangeFromProducts(apiProducts.length > 0 ? apiProducts : (allProducts as Product[]));
+
+  // suppress unused warning — priceRange is available for future use
+  void priceRange;
 
   return (
-    <div className="min-h-screen bg-white ">
+    <div className="min-h-screen bg-white">
       <div className="pt-4">
         <DynamicShopContent
-          categories={categories}
+          categories={filterCategories}
           filters={filters}
           setFilters={handleFilterChange}
-          filteredProducts={filteredProducts}
-          currentProducts={currentProducts}
-          currentPage={currentPage}
+          filteredProducts={apiProducts}
+          currentProducts={apiProducts}
+          currentPage={apiMeta?.current_page ?? currentPage}
           totalPages={totalPages}
           indexOfFirstProduct={indexOfFirstProduct}
           indexOfLastProduct={indexOfLastProduct}
           productsPerPage={productsPerPage}
           onPageChange={handlePageChange}
           initialSearchQuery={initialSearchQuery}
-          allProducts={safeProducts}
+          allProducts={apiProducts.length > 0 ? apiProducts : (allProducts as Product[])}
+          isLoading={isApiLoading}
         />
       </div>
     </div>
