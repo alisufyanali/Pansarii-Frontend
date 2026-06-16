@@ -3,8 +3,9 @@
 
 import { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import { SOCIAL_LINKS } from '@/lib/social-links';
-
+import { submitContact } from '@/lib/contact';
 import PageBanner from '@/components/PageBanner';
 
 // JSON Data
@@ -74,18 +75,39 @@ const contactData = {
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
+    name: '', email: '', phone: '', subject: '', message: '',
   });
-  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    setIsSubmitting(true);
+    setFieldErrors({});
+    try {
+      await submitContact({
+        name:    formData.name,
+        email:   formData.email,
+        phone:   formData.phone || undefined,
+        subject: formData.subject || undefined,
+        message: formData.message,
+      });
+      toast.success('Your message has been sent successfully!');
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    } catch (err) {
+      const e422 = err as { response?: { status?: number; data?: { errors?: Record<string, string[]> } } };
+      if (e422?.response?.status === 422 && e422.response.data?.errors) {
+        const mapped: Record<string, string> = {};
+        Object.entries(e422.response.data.errors).forEach(([k, msgs]) => {
+          mapped[k] = Array.isArray(msgs) ? msgs[0] : String(msgs);
+        });
+        setFieldErrors(mapped);
+      } else {
+        toast.error('Failed to send message. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -163,97 +185,64 @@ export default function ContactPage() {
           {/* Contact Form */}
           <div className="bg-white rounded-xl border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h2>
-            
-            {submitted && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                Thank you! Your message has been sent successfully. We'll get back to you soon.
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Your Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter your name"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Your Name *</label>
+                <input type="text" name="name" required value={formData.name} onChange={handleChange}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${fieldErrors.name ? 'border-red-400' : 'border-gray-300'}`}
+                  placeholder="Enter your name" />
+                {fieldErrors.name && <p className="mt-1 text-xs text-red-500">{fieldErrors.name}</p>}
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="your@email.com"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                  <input type="email" name="email" required value={formData.email} onChange={handleChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${fieldErrors.email ? 'border-red-400' : 'border-gray-300'}`}
+                    placeholder="your@email.com" />
+                  {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="+92 300 1234567"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                  <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${fieldErrors.phone ? 'border-red-400' : 'border-gray-300'}`}
+                    placeholder="+92 300 1234567" />
+                  {fieldErrors.phone && <p className="mt-1 text-xs text-red-500">{fieldErrors.phone}</p>}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject *
-                </label>
-                <select
-                  name="subject"
-                  required
-                  value={formData.subject}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+                <select name="subject" required value={formData.subject} onChange={handleChange}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${fieldErrors.subject ? 'border-red-400' : 'border-gray-300'}`}>
                   <option value="">Select a subject</option>
                   {contactData.departments.map((dept, idx) => (
                     <option key={idx} value={dept.name}>{dept.name}</option>
                   ))}
                 </select>
+                {fieldErrors.subject && <p className="mt-1 text-xs text-red-500">{fieldErrors.subject}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message *
-                </label>
-                <textarea
-                  name="message"
-                  required
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="How can we help you?"
-                ></textarea>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Message *</label>
+                <textarea name="message" required value={formData.message} onChange={handleChange} rows={6}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${fieldErrors.message ? 'border-red-400' : 'border-gray-300'}`}
+                  placeholder="How can we help you?" />
+                {fieldErrors.message && <p className="mt-1 text-xs text-red-500">{fieldErrors.message}</p>}
               </div>
 
-              <button
-                type="submit"
-                className="w-full px-8 py-4 bg-green-700 text-white rounded-lg hover:bg-green-600 transition font-semibold text-lg"
-              >
-                Send Message
+              <button type="submit" disabled={isSubmitting}
+                className="w-full px-8 py-4 bg-green-700 text-white rounded-lg hover:bg-green-600 transition font-semibold text-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Sending…
+                  </>
+                ) : 'Send Message'}
               </button>
             </form>
           </div>
