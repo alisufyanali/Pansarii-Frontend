@@ -43,6 +43,19 @@
 - **Fix**: Updated the suite to use `/products/${slug}` for valid/invalid product routes.
 - **File**: `tests/playwright/01-page-load.spec.ts`
 
+### 4) CSP blocked Laravel API calls in browser (connect-src missing backend)
+- **Issue**: `Content-Security-Policy` in dev did not allow `connect-src` to `http://127.0.0.1:8000` / `http://localhost:8000`.
+- **Impact**: Client-side auth/cart/wishlist/checkout API calls could be blocked by the browser.
+- **Fix**: Added `http://localhost:8000` and `http://127.0.0.1:8000` to dev `connect-src`.
+- **File**: `next.config.ts`
+
+### 5) localStorage cart/wishlist keys should not exist when empty
+- **Issue**: Guest persistence wrote `pansari-cart = "[]"` and `pansari-wishlist = "[]"`, which violates “no localStorage cart data while logged in”.
+- **Fix**: When arrays are empty, remove keys instead of storing empty arrays.
+- **Files**:
+  - `context/CartContext.tsx`
+  - `context/WishList.tsx`
+
 ---
 
 ## Scenario Results (8/8)
@@ -53,7 +66,7 @@
 > - ⚠️ Warning: Works but needs improvement / flaky / environment-dependent
 
 ### Scenario 1 — Guest Browsing
-- **Status**: ⏳ Pending final automated run
+- **Status**: ✅ Passed
 - **Expected screenshots**
   - Home shows “Featured Products” slider populated from API.
   - `/shop` shows “Showing X–Y of Z products” and paging controls.
@@ -65,7 +78,7 @@
   - `GET /api/blogs`, `GET /api/blogs/{slug}`
 
 ### Scenario 2 — Guest Cart & Wishlist
-- **Status**: ⏳ Pending final automated run
+- **Status**: ✅ Passed
 - **localStorage expectations**
   - `pansari-cart` set/updated
   - `pansari-wishlist` set/updated
@@ -74,7 +87,7 @@
   - **No** `POST/DELETE /api/wishlist*`
 
 ### Scenario 3 — Register & Merge
-- **Status**: ⏳ Pending final automated run
+- **Status**: ✅ Passed
 - **Network expectations**
   - `POST /api/register`
   - Merge calls after auth:
@@ -85,7 +98,7 @@
   - `pansari-wishlist` removed
 
 ### Scenario 4 — Logged-in Cart & Wishlist
-- **Status**: ⏳ Pending final automated run
+- **Status**: ✅ Passed
 - **Network expectations**
   - `POST /api/cart`
   - `PATCH /api/cart/{id}`
@@ -96,7 +109,9 @@
   - No `pansari-cart` / `pansari-wishlist` usage when authenticated
 
 ### Scenario 5 — Checkout Flow
-- **Status**: ⏳ Pending final automated run
+- **Status**: ❌ Failed
+- **Issue**: Checkout E2E is unstable because adding an item via the UI did not reliably result in a non-empty cart, so `/checkout` frequently rendered the empty-cart state (not the checkout form).
+- **Where to fix**: Product add-to-cart path on product page (`components/Desktop/components/ProductDetails.tsx`) and/or logged-in cart sync (`context/CartContext.tsx`).
 - **Network expectations**
   - `POST /api/coupons/validate` (valid + invalid)
   - `POST /api/orders`
@@ -104,20 +119,20 @@
   - `GET /api/orders/{id}` for confirmation display
 
 ### Scenario 6 — Orders Page
-- **Status**: ⏳ Pending final automated run
+- **Status**: ❌ Failed (blocked by Scenario 5)
 - **UI expectations**
   - Recently placed order visible
   - Status badge color: pending = yellow
   - Payment badge color: unpaid = red
 
 ### Scenario 7 — Contact Form
-- **Status**: ⏳ Pending final automated run
+- **Status**: ✅ Passed
 - **Network expectations**
   - Invalid email -> `POST /api/contact` returns 422 with field errors
   - Valid submission -> `POST /api/contact` success, toast shown, form reset
 
 ### Scenario 8 — Logout
-- **Status**: ⏳ Pending final automated run
+- **Status**: ✅ Passed
 - **Network expectations**
   - `POST /api/logout`
 - **localStorage expectations**
@@ -129,12 +144,12 @@
 
 ## Console errors & network failures
 
-- **Console errors**: ⏳ Pending final automated run
-- **Network failures**: ⏳ Pending final automated run
+- **Console errors**: No blocking console errors observed during passing scenarios (Playwright suite includes route-level console error checks in `tests/playwright/01-page-load.spec.ts`).
+- **Network failures**: Coupon/order coverage incomplete due to Scenario 5 instability.
 
 ---
 
 ## Final score
 
-**⏳ Pending** — after Playwright connected-flow suite completes.
+**6/8 scenarios passed** (Scenarios 5–6 failed).
 
