@@ -256,15 +256,25 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
     } catch { /* error already toasted by context */ }
   };
 
-  const toggleWishlist = () => {
+  const toggleWishlist = async () => {
     if (!productId) return;
-    if (!isLoggedIn) {
-      toast.warning("Please login to add to wishlist");
-      router.push("/login?redirect=" + encodeURIComponent(window.location.pathname));
-      return;
+    const wishlistPayload = {
+      id: productId,
+      productId: Number(productId),
+      variantId: (product as unknown as { variants?: Array<{ id: number; is_default?: boolean }> })
+        ?.variants?.find(v => v.is_default)?.id
+        ?? (product as unknown as { variants?: Array<{ id: number }> })?.variants?.[0]?.id,
+      ...cartPayload(),
+      oldPrice: product?.oldPrice ?? undefined,
+      rating: product?.rating,
+      reviews: product?.reviews,
+      inStock: true,
+    };
+    if (isWishlisted) {
+      await removeFromWishlist(productId);
+    } else {
+      await addToWishlist(wishlistPayload);
     }
-    if (isWishlisted) { removeFromWishlist(productId); toast.info("Removed from wishlist"); }
-    else { addToWishlist({ ...cartPayload(), oldPrice: product?.oldPrice ?? undefined, rating: product?.rating, reviews: product?.reviews, inStock: true }); toast.success("Added to wishlist!"); }
   };
 
   const handleWhatsAppOrder = () => {

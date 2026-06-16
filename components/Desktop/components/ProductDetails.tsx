@@ -204,21 +204,30 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     } catch { /* error already toasted by context */ }
   };
 
-  const handleWishlistToggle = () => {
+  const handleWishlistToggle = async () => {
     if (!productId) return;
-    if (!isLoggedIn) {
-      toast.warning("Please login to add to wishlist");
-      router.push("/login?redirect=" + encodeURIComponent(window.location.pathname));
-      return;
-    }
+    const wishlistPayload: import('@/context/WishList').WishlistItem = {
+      id: productId,
+      productId: Number(productId),
+      variantId: (product as unknown as { variants?: Array<{ id: number; is_default?: boolean }> })
+        ?.variants?.find(v => v.is_default)?.id
+        ?? (product as unknown as { variants?: Array<{ id: number }> })?.variants?.[0]?.id,
+      img: selectedImage,
+      nameEn: product.nameEn,
+      nameUr: product.nameUr,
+      price: product.price,
+      oldPrice: product.oldPrice ?? undefined,
+      rating: product.rating,
+      reviews: product.reviews,
+      inStock: true,
+      category: product.category || 'Herbal Oils',
+    };
     if (isWishlisted) {
-      removeFromWishlist(productId);
+      await removeFromWishlist(productId);
       setIsWishlisted(false);
-      toast.info("Removed from wishlist");
     } else {
-      addToWishlist({ id: productId, img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr, price: product.price, oldPrice: product.oldPrice ?? undefined, rating: product.rating, reviews: product.reviews, inStock: true, category: product.category || "Herbal Oils" });
+      await addToWishlist(wishlistPayload);
       setIsWishlisted(true);
-      toast.success("Added to wishlist!");
     }
   };
 

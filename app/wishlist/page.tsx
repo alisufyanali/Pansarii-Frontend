@@ -59,6 +59,7 @@ export default function WishlistPage() {
     toggleWishlist,
     getWishlistCount,
     clearWishlist,
+    isWishlistLoading,
   } = useWishlist();
 
   const count = getWishlistCount();
@@ -93,7 +94,7 @@ export default function WishlistPage() {
     );
   }, [wishlistItems, mounted]);
 
-  const handleAddToCart = (item: {
+  const handleAddToCart = async (item: {
     id: string | number;
     img: string;
     nameEn: string;
@@ -101,7 +102,7 @@ export default function WishlistPage() {
     price: number;
     category?: string;
   }) => {
-    addToCart({
+    await addToCart({
       id: item.id,
       img: item.img,
       nameEn: item.nameEn,
@@ -110,12 +111,12 @@ export default function WishlistPage() {
       size: '15ml',
       category: item.category ?? 'Wishlist',
     });
-    removeFromWishlist(item.id);
+    await removeFromWishlist(item.id);
   };
 
   // ── Loading skeleton ──────────────────────────────────────────────────────
 
-  if (!mounted) {
+  if (!mounted || isWishlistLoading) {
     return (
       <div className="min-h-screen bg-gray-50 pb-28 font-poppins">
         <div className="px-4 pt-5 pb-3 flex items-center gap-3">

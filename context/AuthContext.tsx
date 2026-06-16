@@ -64,6 +64,8 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   /** Inject cart merge callback — called by CartProvider */
   setCartMerge: (fn: () => Promise<void>) => void;
+  /** Inject wishlist merge callback — called by WishlistProvider */
+  setWishlistMerge: (fn: () => Promise<void>) => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -78,9 +80,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   // Cart merge callback — injected by CartContext after it mounts
   const cartMergeRef = useRef<(() => Promise<void>) | null>(null);
+  // Wishlist merge callback — injected by WishlistContext after it mounts
+  const wishlistMergeRef = useRef<(() => Promise<void>) | null>(null);
 
   const setCartMerge = useCallback((fn: () => Promise<void>) => {
     cartMergeRef.current = fn;
+  }, []);
+
+  const setWishlistMerge = useCallback((fn: () => Promise<void>) => {
+    wishlistMergeRef.current = fn;
   }, []);
 
   // Rehydrate from localStorage on mount
@@ -101,11 +109,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(loggedInUser);
     // Merge guest cart into API cart after successful login
     if (cartMergeRef.current) {
-      try {
-        await cartMergeRef.current();
-      } catch {
-        // Non-blocking — cart merge failure should not break login flow
-      }
+      try { await cartMergeRef.current(); } catch { /* non-blocking */ }
+    }
+    // Merge guest wishlist into API wishlist after successful login
+    if (wishlistMergeRef.current) {
+      try { await wishlistMergeRef.current(); } catch { /* non-blocking */ }
     }
   }, []);
 
@@ -117,9 +125,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(newUser);
     // Merge guest cart after registration too
     if (cartMergeRef.current) {
-      try {
-        await cartMergeRef.current();
-      } catch { /* non-blocking */ }
+      try { await cartMergeRef.current(); } catch { /* non-blocking */ }
+    }
+    // Merge guest wishlist after registration too
+    if (wishlistMergeRef.current) {
+      try { await wishlistMergeRef.current(); } catch { /* non-blocking */ }
     }
   }, []);
 
@@ -145,6 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         setCartMerge,
+        setWishlistMerge,
       }}
     >
       {children}

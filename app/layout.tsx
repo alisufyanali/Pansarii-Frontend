@@ -7,6 +7,7 @@ import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishList";
 import { AuthProvider } from "@/context/AuthContext";
 import CartAuthBridge from "@/components/CartAuthBridge";
+import WishlistAuthBridge from "@/components/WishlistAuthBridge";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -61,6 +62,7 @@ export default function RootLayout({
           <CartProvider>
             <CartAuthBridge />
             <WishlistProvider>
+              <WishlistAuthBridge />
               <DeviceDetector>{children}</DeviceDetector>
               <ToastContainer
                 position="top-right"
