@@ -259,12 +259,11 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
   const toggleWishlist = async () => {
     if (!productId) return;
     const wishlistPayload = {
-      id: productId,
+      ...cartPayload(),
       productId: Number(productId),
       variantId: (product as unknown as { variants?: Array<{ id: number; is_default?: boolean }> })
         ?.variants?.find(v => v.is_default)?.id
         ?? (product as unknown as { variants?: Array<{ id: number }> })?.variants?.[0]?.id,
-      ...cartPayload(),
       oldPrice: product?.oldPrice ?? undefined,
       rating: product?.rating,
       reviews: product?.reviews,

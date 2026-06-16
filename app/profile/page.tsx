@@ -150,7 +150,12 @@ export default function ProfilePage() {
 
   // Redirect to login if not authenticated
   if (!user) {
-    router.push('/login');
+    // During SSR/static pre-render `user` is null and Next's router
+    // internals may touch `location` (browser-only). Guard to avoid
+    // "ReferenceError: location is not defined" during build.
+    if (typeof window !== 'undefined') {
+      router.push('/login');
+    }
     return null;
   }
 
