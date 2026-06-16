@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   ReactNode,
 } from 'react';
 import { useRouter } from 'next/navigation';
@@ -61,6 +62,8 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
+  /** Inject cart merge callback — called by CartProvider */
+  setCartMerge: (fn: () => Promise<void>) => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -73,6 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Cart merge callback — injected by CartContext after it mounts
+  const cartMergeRef = useRef<(() => Promise<void>) | null>(null);
+
+  const setCartMerge = useCallback((fn: () => Promise<void>) => {
+    cartMergeRef.current = fn;
+  }, []);
 
   // Rehydrate from localStorage on mount
   useEffect(() => {
@@ -90,6 +99,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { token, user: loggedInUser } = res.data;
     setAuthData(token, loggedInUser);
     setUser(loggedInUser);
+    // Merge guest cart into API cart after successful login
+    if (cartMergeRef.current) {
+      try {
+        await cartMergeRef.current();
+      } catch {
+        // Non-blocking — cart merge failure should not break login flow
+      }
+    }
   }, []);
 
   // ── register ───────────────────────────────────────────────────────────────
@@ -98,6 +115,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { token, user: newUser } = res.data;
     setAuthData(token, newUser);
     setUser(newUser);
+    // Merge guest cart after registration too
+    if (cartMergeRef.current) {
+      try {
+        await cartMergeRef.current();
+      } catch { /* non-blocking */ }
+    }
   }, []);
 
   // ── logout ─────────────────────────────────────────────────────────────────
@@ -121,6 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        setCartMerge,
       }}
     >
       {children}

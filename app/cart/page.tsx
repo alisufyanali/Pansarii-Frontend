@@ -8,7 +8,7 @@ import { FaTrash, FaShoppingCart, FaHeart, FaTag, FaShieldAlt, FaTruck, FaArrowL
 import { useCart } from '@/context/CartContext';
 
 function CartContent() {
-  const { cartItems, updateQuantity, removeFromCart, getCartTotal, getCartCount } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal, getCartCount, isCartLoading } = useCart();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
@@ -16,7 +16,8 @@ function CartContent() {
   const shipping = getCartTotal() > 5000 ? 0 : 200;
   const total = getCartTotal() + shipping;
 
-  if (!mounted) {
+  // Show skeleton while waiting for mount OR API cart sync
+  if (!mounted || isCartLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white border-b border-gray-200">

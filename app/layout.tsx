@@ -6,6 +6,7 @@ import DeviceDetector from "@/hooks/useDeviceDetection";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishList";
 import { AuthProvider } from "@/context/AuthContext";
+import CartAuthBridge from "@/components/CartAuthBridge";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -58,6 +59,7 @@ export default function RootLayout({
       <body className={`${poppins.className} bg-white text-gray-900 antialiased`} suppressHydrationWarning>
         <AuthProvider>
           <CartProvider>
+            <CartAuthBridge />
             <WishlistProvider>
               <DeviceDetector>{children}</DeviceDetector>
               <ToastContainer

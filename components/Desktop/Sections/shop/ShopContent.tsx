@@ -121,23 +121,28 @@ function ShopContent({
     setFilters({ ...filters, categories: (category && category !== 'all') ? [category] : [] });
   };
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = async (product: Product) => {
     if (!product || !product.id) {
       toast.error('Failed to add item to cart!', { position: "top-right", autoClose: 3000 });
       return;
     }
-    addToCart({
-      id: product.id,
-      img: product.img,
-      nameEn: product.nameEn,
-      nameUr: product.nameUr,
-      price: product.price,
-      size: product.sizes?.[0] || 'Default',
-    });
-    toast.success(
-      <div><div className="font-semibold">Added to Cart!</div><div className="text-sm opacity-90">{product.nameEn}</div></div>,
-      { position: "top-right", autoClose: 3000 }
-    );
+    try {
+      await addToCart({
+        id: product.id,
+        variantId: (product as unknown as { variants?: Array<{ id: number; is_default?: boolean }> })
+          ?.variants?.find(v => v.is_default)?.id
+          ?? (product as unknown as { variants?: Array<{ id: number }> })?.variants?.[0]?.id,
+        img: product.img,
+        nameEn: product.nameEn,
+        nameUr: product.nameUr,
+        price: product.price,
+        size: product.sizes?.[0] || 'Default',
+      });
+      toast.success(
+        <div><div className="font-semibold">Added to Cart!</div><div className="text-sm opacity-90">{product.nameEn}</div></div>,
+        { position: "top-right", autoClose: 3000 }
+      );
+    } catch { /* error already toasted by context */ }
   };
 
   const categoryData = (categories || []).map(category => ({

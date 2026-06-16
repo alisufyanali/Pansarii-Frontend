@@ -167,21 +167,41 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     });
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!productId) { toast.error("Failed to add item to cart!"); return; }
-    for (let i = 0; i < quantity; i++) {
-      addToCart({ id: productId, img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr, price: product.price, size: selectedSize, category: product.category || "Herbal Oils" });
-    }
-    toast.success(`Added ${quantity} × ${product.nameEn} (${selectedSize}) to cart!`);
+    try {
+      for (let i = 0; i < quantity; i++) {
+        await addToCart({
+          id: productId,
+          variantId: (product as unknown as { variants?: Array<{ id: number; name: string }> })
+            ?.variants?.find(v => v.name === selectedSize)?.id
+            ?? (product as unknown as { variants?: Array<{ id: number; name: string }> })
+            ?.variants?.[0]?.id,
+          img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr,
+          price: product.price, size: selectedSize, category: product.category || "Herbal Oils",
+        });
+      }
+      toast.success(`Added ${quantity} × ${product.nameEn} (${selectedSize}) to cart!`);
+    } catch { /* error already toasted by context */ }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!productId) { toast.error("Failed to add item to cart!"); return; }
-    for (let i = 0; i < quantity; i++) {
-      addToCart({ id: productId, img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr, price: product.price, size: selectedSize, category: product.category || "Herbal Oils" });
-    }
-    toast.success("Added to cart! Redirecting...");
-    router.push("/cart");
+    try {
+      for (let i = 0; i < quantity; i++) {
+        await addToCart({
+          id: productId,
+          variantId: (product as unknown as { variants?: Array<{ id: number; name: string }> })
+            ?.variants?.find(v => v.name === selectedSize)?.id
+            ?? (product as unknown as { variants?: Array<{ id: number; name: string }> })
+            ?.variants?.[0]?.id,
+          img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr,
+          price: product.price, size: selectedSize, category: product.category || "Herbal Oils",
+        });
+      }
+      toast.success("Added to cart! Redirecting...");
+      router.push("/cart");
+    } catch { /* error already toasted by context */ }
   };
 
   const handleWishlistToggle = () => {

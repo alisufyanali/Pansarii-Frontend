@@ -226,6 +226,11 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
   // ─── handlers ──────────────────────────────────────────────────────────────
   const cartPayload = () => ({
     id: productId!,
+    // Find matching variant id from product sizes
+    variantId: (product as unknown as { variants?: Array<{ id: number; name: string }> })
+      ?.variants?.find(v => v.name === selectedSize)?.id
+      ?? (product as unknown as { variants?: Array<{ id: number; name: string }> })
+      ?.variants?.[0]?.id,
     img: product?.img || "/images/placeholder.jpg",
     nameEn: product?.nameEn || "Product",
     nameUr: product?.nameUr || "",
@@ -234,17 +239,21 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
     category: product?.category || "Herbal Oils",
   });
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!productId) return toast.error("Failed to add item to cart!");
-    for (let i = 0; i < quantity; i++) addToCart(cartPayload());
-    toast.success(`Added ${quantity} × ${product?.nameEn} (${selectedSize}) to cart!`);
+    try {
+      for (let i = 0; i < quantity; i++) await addToCart(cartPayload());
+      toast.success(`Added ${quantity} × ${product?.nameEn} (${selectedSize}) to cart!`);
+    } catch { /* error already toasted by context */ }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!productId) return toast.error("Failed to add item to cart!");
-    for (let i = 0; i < quantity; i++) addToCart(cartPayload());
-    toast.success("Added to cart! Redirecting…", { autoClose: 1500 });
-    router.push("/cart");
+    try {
+      for (let i = 0; i < quantity; i++) await addToCart(cartPayload());
+      toast.success("Added to cart! Redirecting…", { autoClose: 1500 });
+      router.push("/cart");
+    } catch { /* error already toasted by context */ }
   };
 
   const toggleWishlist = () => {

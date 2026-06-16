@@ -49,26 +49,32 @@ export default function ProductDetailsModal({
   }, [onClose]);
 
   const cartPayload = () => ({
-    id:     product.id!,
-    img:    product.img,
-    nameEn: product.nameEn,
-    nameUr: product.nameUr,
-    price:  product.price,
-    size:   selectedSize,
+    id:        product.id!,
+    variantId: (product as { variants?: Array<{ id: number; name: string; is_default?: boolean }> }).variants?.find(v => v.name === selectedSize)?.id
+               ?? (product as { variants?: Array<{ id: number; name: string; is_default?: boolean }> }).variants?.[0]?.id,
+    img:       product.img,
+    nameEn:    product.nameEn,
+    nameUr:    product.nameUr,
+    price:     product.price,
+    size:      selectedSize,
   });
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product.id) return toast.error('Failed to add item to cart!');
-    for (let i = 0; i < quantity; i++) addToCart(cartPayload());
-    toast.success(`Added ${quantity} × ${product.nameEn} to cart!`);
+    try {
+      for (let i = 0; i < quantity; i++) await addToCart(cartPayload());
+      toast.success(`Added ${quantity} × ${product.nameEn} to cart!`);
+    } catch { /* error already toasted by context */ }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!product.id) return toast.error('Failed to add item to cart!');
-    for (let i = 0; i < quantity; i++) addToCart(cartPayload());
-    toast.success('Added to cart! Redirecting…', { autoClose: 1500, pauseOnHover: false });
-    onClose();
-    router.push('/cart');
+    try {
+      for (let i = 0; i < quantity; i++) await addToCart(cartPayload());
+      toast.success('Added to cart! Redirecting…', { autoClose: 1500, pauseOnHover: false });
+      onClose();
+      router.push('/cart');
+    } catch { /* error already toasted by context */ }
   };
 
   // ── Mobile bottom-sheet ────────────────────────────────────────────────────
