@@ -143,6 +143,35 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     initializedRef.current = true;
 
     if (isLoggedIn()) {
+      const guestItems = readLocalWishlist();
+      if (guestItems.length > 0) {
+        // Token restored from storage — merge pending guest wishlist
+        setIsWishlistLoading(true);
+        (async () => {
+          for (const item of guestItems) {
+            const productId = item.productId ?? Number(item.id);
+            if (!productId) continue;
+            try {
+              await addToWishlistApi(productId, item.variantId);
+            } catch (err) {
+              if (getHttpStatus(err) === 422 && isAlreadyInWishlist(err)) continue;
+              log('⚠️  Mount merge failed for', item.nameEn, apiErrMsg(err));
+            }
+          }
+          clearLocalWishlist();
+          try {
+            const items = await getWishlist();
+            setWishlistItems(items.map(apiItemToWishlistItem));
+            log('✅ Guest wishlist merged on mount:', items.length, 'items');
+          } catch {
+            setWishlistItems([]);
+          } finally {
+            setIsWishlistLoading(false);
+          }
+        })();
+        return;
+      }
+
       setIsWishlistLoading(true);
       getWishlist()
         .then(items => {

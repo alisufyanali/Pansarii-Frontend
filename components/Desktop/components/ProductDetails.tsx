@@ -22,7 +22,7 @@ import {
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishList";
 import { toast } from "react-toastify";
-import type { ProductFeature } from "@/types/product";
+import type { ProductFeature, ProductVariant } from "@/types/product";
 import { getAuthToken, getStoredUser } from '@/lib/axios';
 
 function ProductDetailsSkeleton() {
@@ -71,6 +71,7 @@ interface ProductDetailsProps {
     infoLines?: string[];
     productId?: string | number;
     category?: string;
+    variants?: ProductVariant[];
   };
 }
 
@@ -167,41 +168,69 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     });
   };
 
+  const resolveVariantId = (): number | undefined => {
+    const variants = product.variants;
+    if (!variants?.length) return undefined;
+    return (
+      variants.find(v => v.name === selectedSize)?.id
+      ?? variants.find(v => v.is_default)?.id
+      ?? variants[0]?.id
+    );
+  };
+
+  const buildCartPayload = (variantId?: number) => ({
+    id: productId!,
+    variantId,
+    img: selectedImage,
+    nameEn: product.nameEn,
+    nameUr: product.nameUr,
+    price: product.price,
+    size: selectedSize,
+    category: product.category || "Herbal Oils",
+  });
+
   const handleAddToCart = async () => {
-    if (!productId) { toast.error("Failed to add item to cart!"); return; }
+    if (!productId) {
+      toast.error("Failed to add item to cart!");
+      return;
+    }
+
+    const variantId = resolveVariantId();
+    if (getAuthToken() && !variantId) {
+      toast.error("Please select a valid size before adding to cart.");
+      return;
+    }
+
     try {
       for (let i = 0; i < quantity; i++) {
-        await addToCart({
-          id: productId,
-          variantId: (product as unknown as { variants?: Array<{ id: number; name: string }> })
-            ?.variants?.find(v => v.name === selectedSize)?.id
-            ?? (product as unknown as { variants?: Array<{ id: number; name: string }> })
-            ?.variants?.[0]?.id,
-          img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr,
-          price: product.price, size: selectedSize, category: product.category || "Herbal Oils",
-        });
+        await addToCart(buildCartPayload(variantId));
       }
       toast.success(`Added ${quantity} × ${product.nameEn} (${selectedSize}) to cart!`);
-    } catch { /* error already toasted by context */ }
+    } catch {
+      // error already toasted by CartContext
+    }
   };
 
   const handleBuyNow = async () => {
-    if (!productId) { toast.error("Failed to add item to cart!"); return; }
+    if (!productId) {
+      toast.error("Failed to add item to cart!");
+      return;
+    }
+
+    const variantId = resolveVariantId();
+    if (getAuthToken() && !variantId) {
+      toast.error("Please select a valid size before adding to cart.");
+      return;
+    }
+
     try {
       for (let i = 0; i < quantity; i++) {
-        await addToCart({
-          id: productId,
-          variantId: (product as unknown as { variants?: Array<{ id: number; name: string }> })
-            ?.variants?.find(v => v.name === selectedSize)?.id
-            ?? (product as unknown as { variants?: Array<{ id: number; name: string }> })
-            ?.variants?.[0]?.id,
-          img: selectedImage, nameEn: product.nameEn, nameUr: product.nameUr,
-          price: product.price, size: selectedSize, category: product.category || "Herbal Oils",
-        });
+        await addToCart(buildCartPayload(variantId));
       }
-      toast.success("Added to cart! Redirecting...");
       router.push("/cart");
-    } catch { /* error already toasted by context */ }
+    } catch {
+      // error already toasted by CartContext
+    }
   };
 
   const handleWishlistToggle = async () => {

@@ -138,6 +138,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
     initializedRef.current = true;
 
     if (isLoggedIn()) {
+      const guestItems = readLocalCart();
+      if (guestItems.length > 0) {
+        // Token restored from storage (e.g. page reload after API register) — merge pending guest cart
+        setIsCartLoading(true);
+        (async () => {
+          for (const item of guestItems) {
+            if (!item.variantId) continue;
+            try {
+              await addToCartApi(item.variantId, item.quantity);
+            } catch (err) {
+              log('⚠️  Mount merge failed for', item.nameEn, apiErrMsg(err));
+            }
+          }
+          clearLocalCart();
+          try {
+            const items = await getCart();
+            setCartItems(items.map(apiItemToCartItem));
+            log('✅ Guest cart merged on mount:', items.length, 'items');
+          } catch {
+            setCartItems([]);
+          } finally {
+            setIsCartLoading(false);
+          }
+        })();
+        return;
+      }
+
       // Authenticated → pull from API
       setIsCartLoading(true);
       getCart()
@@ -215,26 +242,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (isLoggedIn()) {
       // ── Logged-in: API path ──
       if (!item.variantId) {
-        toast.error('Please select a size/variant before adding to cart.');
-        return;
+        const msg = 'Please select a size/variant before adding to cart.';
+        toast.error(msg);
+        throw new Error(msg);
       }
+      setIsCartLoading(true);
       try {
         const apiItem = await addToCartApi(item.variantId, 1);
-        // Update local state: if the API item already exists, increment; else push
+        const mapped = apiItemToCartItem(apiItem);
+        // Update local state: if the API item already exists, replace; else push
         setCartItems(prev => {
           const idx = prev.findIndex(c => c.cartItemId === apiItem.id);
           if (idx !== -1) {
             const next = [...prev];
-            next[idx] = apiItemToCartItem(apiItem);
+            next[idx] = mapped;
             return next;
           }
-          return [...prev, apiItemToCartItem(apiItem)];
+          return [...prev, mapped];
         });
         log('✅ Added via API:', apiItem);
       } catch (err) {
         const msg = apiErrMsg(err);
         toast.error(msg);
-        throw err; // re-throw so callers can react
+        throw err;
+      } finally {
+        setIsCartLoading(false);
       }
     } else {
       // ── Guest: localStorage path ──

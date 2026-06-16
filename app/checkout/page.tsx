@@ -48,7 +48,7 @@ const PAKISTANI_CITIES = [
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { cartItems, getCartTotal, clearCart, isCartLoading, syncFromApi } = useCart();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [paymentMethod, setPaymentMethod] = useState('cod');
@@ -79,6 +79,13 @@ export default function CheckoutPage() {
       router.replace('/login?returnTo=/checkout');
     }
   }, [isAuthenticated, authLoading, router]);
+
+  // ── Refresh cart from API when checkout mounts (logged-in users) ───────────
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      syncFromApi();
+    }
+  }, [authLoading, isAuthenticated, syncFromApi]);
 
   // ── Coupon handlers ───────────────────────────────────────────────────────
   const handleApplyPromo = async () => {
@@ -164,8 +171,8 @@ export default function CheckoutPage() {
   const inputCls = "w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition bg-white";
   const labelCls = "block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide";
 
-  // ── Show loading while auth resolves ─────────────────────────────────────
-  if (authLoading) {
+  // ── Show loading while auth or cart resolves ─────────────────────────────
+  if (authLoading || isCartLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-700" />
@@ -176,7 +183,7 @@ export default function CheckoutPage() {
   if (!isAuthenticated) return null; // redirect already fired
 
   // ── Empty cart ────────────────────────────────────────────────────────────
-  if (cartItems.length === 0) {
+  if (!isCartLoading && cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="text-center max-w-sm">

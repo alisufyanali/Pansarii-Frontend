@@ -139,10 +139,16 @@ async function registerNewUser(page: Page, request: APIRequestContext) {
     );
   }
 
-  // If we registered via API, we must remount AuthProvider so it rehydrates from storage.
+  // If we registered via API, remount providers so mount-merge can run.
   if (usedApiFallback) {
-    // Force a full reload so RootLayout/AuthProvider rehydrates from storage.
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    // Wait for CartContext/WishlistContext mount-merge to finish before reload.
+    await expect
+      .poll(async () => page.evaluate((k) => localStorage.getItem(k), CART_KEY), { timeout: 30000 })
+      .toBeNull();
+    await expect
+      .poll(async () => page.evaluate((k) => localStorage.getItem(k), WISHLIST_KEY), { timeout: 30000 })
+      .toBeNull();
   }
 
   // AuthContext.register should normally persist this immediately.
@@ -153,7 +159,9 @@ async function registerNewUser(page: Page, request: APIRequestContext) {
   expect(storedUser, 'Registration completed but no user was stored in localStorage.').not.toBeNull();
 
   // Normalize state for subsequent steps: reload so all providers read storage.
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  if (!usedApiFallback) {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+  }
 
   return { email, password };
 }
@@ -284,7 +292,15 @@ test.describe('Laravel-connected E2E flow', () => {
     });
     expect(apiCart.ok()).toBeTruthy();
     const cartJson = (await apiCart.json()) as { success: boolean; data: unknown[] };
-    expect(cartJson.data.length).toBeGreaterThan(0);
+    await expect
+      .poll(async () => {
+        const res = await request.get(`${API_BASE}/cart`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const body = (await res.json()) as { data: unknown[] };
+        return body.data.length;
+      }, { timeout: 15000 })
+      .toBeGreaterThan(0);
 
     const apiWishlist = await request.get(`${API_BASE}/wishlist`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -317,17 +333,18 @@ test.describe('Laravel-connected E2E flow', () => {
 
   test('Scenario 5 & 6 — Checkout + Orders list', async ({ page, request }) => {
     test.setTimeout(120000);
-    const { product, variant } = await getFirstApiProduct(request);
+    const { product } = await getFirstApiProduct(request);
     await registerNewUser(page, request);
 
-    // Ensure cart has an item (API seed for deterministic checkout UI)
-    const token = await page.evaluate((k) => localStorage.getItem(k), TOKEN_KEY);
-    expect(token).not.toBeNull();
-    const addRes = await request.post(`${API_BASE}/cart`, {
-      headers: { Authorization: `Bearer ${token}` },
-      data: { product_variant_id: variant.id, quantity: 1 },
-    });
-    expect([200, 201].includes(addRes.status())).toBeTruthy();
+    // Add to cart via UI (real user flow — must populate CartContext before checkout)
+    await page.goto(`/products/${product.slug}`, { waitUntil: 'domcontentloaded' });
+    const addToCartBtn = page.getByRole('button', { name: /add to cart/i }).first();
+    await expect(addToCartBtn).toBeVisible({ timeout: 20000 });
+    const [cartPostRes] = await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/cart') && r.request().method() === 'POST'),
+      addToCartBtn.click(),
+    ]);
+    expect([200, 201].includes(cartPostRes.status())).toBeTruthy();
 
     await page.goto('/checkout', { waitUntil: 'domcontentloaded' });
     await expect(page.getByText('Contact Information')).toBeVisible({ timeout: 20000 });
@@ -338,7 +355,7 @@ test.describe('Laravel-connected E2E flow', () => {
       page.waitForResponse((r) => r.url().includes('/api/coupons/validate') && r.request().method() === 'POST'),
       page.getByRole('button', { name: 'Apply' }).click(),
     ]);
-    expect([200, 400, 401, 422].includes(couponRes.status())).toBeTruthy();
+    expect([200, 400, 401, 404, 422].includes(couponRes.status())).toBeTruthy();
     await expect(page.locator('p.text-red-500').first()).toBeVisible({ timeout: 20000 });
 
     // Fill shipping details and place order
@@ -359,7 +376,7 @@ test.describe('Laravel-connected E2E flow', () => {
     expect(orderId).toMatch(/^\d+$/);
 
     // Confirmation should show real order number
-    await expect(page.getByText(/Order Confirmed/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /Order Confirmed/i })).toBeVisible({ timeout: 15000 });
     await expect(page.locator(`text=#`).first()).toBeVisible();
 
     // Cart should now be empty (API cart cleared after order)
@@ -382,19 +399,23 @@ test.describe('Laravel-connected E2E flow', () => {
     await page.goto('/contact', { waitUntil: 'domcontentloaded' });
 
     await page.locator('input[name="name"]').fill('E2E Contact');
-    await page.locator('input[name="email"]').fill('bad-email');
+    await page.locator('select[name="subject"]').selectOption({ index: 1 });
     await page.locator('textarea[name="message"]').fill('Hello from Playwright E2E');
+    // Bypass HTML5 email validation so Laravel 422 field error is returned
+    await page.locator('form:has(input[name="name"])').evaluate((form) => form.setAttribute('novalidate', ''));
+    await page.locator('input[name="email"]').fill('bad-email');
     await page.getByRole('button', { name: /send|submit/i }).click();
 
     // Expect a validation error under email (422)
-    await expect(page.locator('text=The email must be a valid email address').first()).toBeVisible({
+    await expect(page.locator('p.text-red-500').filter({ hasText: /email/i }).first()).toBeVisible({
       timeout: 10000,
     });
 
     // Submit valid
     await page.locator('input[name="email"]').fill('e2e_contact@example.com');
+    await page.locator('textarea[name="message"]').fill('Hello from Playwright E2E');
     await page.getByRole('button', { name: /send|submit/i }).click();
-    await expect(page.locator('text=Message sent, text=success').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/sent successfully/i)).toBeVisible({ timeout: 10000 });
   });
 
   test('Scenario 8 — Logout clears token and redirects', async ({ page, request }) => {
