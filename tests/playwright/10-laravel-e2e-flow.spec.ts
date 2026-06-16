@@ -28,10 +28,17 @@ async function getFirstApiProduct(request: APIRequestContext) {
     }>;
   };
   expect(Array.isArray(json.data)).toBeTruthy();
-  const p = json.data.find((x) => x.variants?.length);
+  const p =
+    json.data.find((x) => x.variants?.some((v) => v.stock > 0)) ?? json.data.find((x) => x.variants?.length);
   expect(p, 'No product with variants returned from API').toBeTruthy();
+
+  const inStock = p!.variants.filter((v) => v.stock > 0);
   const variant =
-    p!.variants.find((v) => v.is_default) ?? p!.variants.find((v) => v.stock > 0) ?? p!.variants[0];
+    inStock.find((v) => v.is_default) ??
+    inStock[0] ??
+    p!.variants.find((v) => v.is_default) ??
+    p!.variants[0];
+
   return { product: p!, variant };
 }
 

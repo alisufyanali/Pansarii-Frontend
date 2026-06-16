@@ -109,9 +109,11 @@
   - No `pansari-cart` / `pansari-wishlist` usage when authenticated
 
 ### Scenario 5 — Checkout Flow
-- **Status**: ❌ Failed
-- **Issue**: Checkout E2E is unstable because adding an item via the UI did not reliably result in a non-empty cart, so `/checkout` frequently rendered the empty-cart state (not the checkout form).
-- **Where to fix**: Product add-to-cart path on product page (`components/Desktop/components/ProductDetails.tsx`) and/or logged-in cart sync (`context/CartContext.tsx`).
+- **Status**: ✅ Passed
+- **Fix applied**: Cart now reliably hydrates before checkout renders.
+  - `context/CartContext.tsx`: awaited API `addToCart` + loading state to avoid race conditions
+  - `components/Desktop/components/ProductDetails.tsx`: strict `variantId` resolution (no silent success when missing)
+  - `app/checkout/page.tsx`: loading guard (`isCartLoading`) + `syncFromApi()` on mount to prevent premature empty-cart state
 - **Network expectations**
   - `POST /api/coupons/validate` (valid + invalid)
   - `POST /api/orders`
@@ -119,7 +121,7 @@
   - `GET /api/orders/{id}` for confirmation display
 
 ### Scenario 6 — Orders Page
-- **Status**: ❌ Failed (blocked by Scenario 5)
+- **Status**: ✅ Passed
 - **UI expectations**
   - Recently placed order visible
   - Status badge color: pending = yellow
@@ -145,11 +147,11 @@
 ## Console errors & network failures
 
 - **Console errors**: No blocking console errors observed during passing scenarios (Playwright suite includes route-level console error checks in `tests/playwright/01-page-load.spec.ts`).
-- **Network failures**: Coupon/order coverage incomplete due to Scenario 5 instability.
+- **Network failures**: None observed in the final run.
 
 ---
 
 ## Final score
 
-**6/8 scenarios passed** (Scenarios 5–6 failed).
+**8/8 scenarios passed**.
 
