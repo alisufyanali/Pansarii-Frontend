@@ -12,6 +12,7 @@
     "test:report": "ts-node tests/report/generate-report.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
     "@vercel/speed-insights": "^2.0.0",
     "axios": "1.7.9",
     "isomorphic-dompurify": "3.14.0",
@@ -19,9 +20,11 @@
     "next": "16.2.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-hook-form": "^7.79.0",
     "react-icons": "^5.5.0",
     "react-phone-number-input": "^3.4.14",
-    "react-toastify": "^11.0.5"
+    "react-toastify": "^11.0.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

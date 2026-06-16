@@ -114,7 +114,6 @@ export default function SolutionBar() {
                 relative flex flex-col justify-end flex-shrink-0 rounded-xl overflow-hidden
                 cursor-pointer group transition-transform duration-300
                 hover:scale-[1.03] hover:shadow-xl
-                ${card.offset ? "mt-6" : ""}
               `}
               style={{
                 /* 5 cards visible, 4 gaps of 16px */
