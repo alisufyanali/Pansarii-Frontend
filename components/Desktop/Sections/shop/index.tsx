@@ -175,6 +175,8 @@ function ShopContent() {
             category: p.category?.name,
             inStock: p.variants?.some(v => v.stock > 0) ?? true,
             isBestSeller: p.featured,
+            variants: p.variants,
+            sizes: p.variants?.length ? p.variants.map(v => v.name) : undefined,
           };
         }));
         setApiMeta(res.meta);

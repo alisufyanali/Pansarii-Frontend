@@ -173,6 +173,7 @@ export default async function ProductPage({ params }: PageProps) {
       sizes: apiProduct.variants?.length
         ? apiProduct.variants.map(v => v.name)
         : ['15ml', '30ml', '60ml'],
+      variants: apiProduct.variants,
       features: [
         { text: '100% Natural & Organic', hasCheck: true },
         { text: 'No Chemical Preservatives', hasCheck: true },

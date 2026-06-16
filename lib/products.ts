@@ -40,10 +40,11 @@ export interface ProductsParams {
 
 export async function getProducts(params?: ProductsParams): Promise<ProductsResponse> {
   try {
-    const res = await api.get<{ success: boolean; data: ApiProduct[]; meta: ProductsResponse['meta'] }>(
-      '/products',
-      params as Record<string, unknown>,
-    );
+    const res = await api.get<{
+      success: boolean;
+      data: ApiProduct[];
+      meta: ProductsResponse['meta'];
+    }>('/products', params as Record<string, unknown>);
     return { data: res.data, meta: res.meta };
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {

@@ -55,6 +55,7 @@ async function navigateWithNoErrors(page: Page, url: string): Promise<string[]> 
 // ---------------------------------------------------------------------------
 // Known product slug derived from products data (id: '1', nameEn: "Organic Ashwagandha Root")
 // toProductSlug("Organic Ashwagandha Root") → "organic-ashwagandha-root"
+// Product detail route is `/products/[slug]`
 // ---------------------------------------------------------------------------
 const VALID_PRODUCT_SLUG = 'organic-ashwagandha-root';
 const INVALID_PRODUCT_SLUG = 'this-product-does-not-exist-xyz-99999';
@@ -350,10 +351,10 @@ test.describe('1.5 — Loading skeletons on /cart and /checkout', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('1.6 — Valid product slug renders product detail page', () => {
-  test(`/${VALID_PRODUCT_SLUG} — page loads without JS console errors`, async ({
+  test(`/products/${VALID_PRODUCT_SLUG} — page loads without JS console errors`, async ({
     page,
   }) => {
-    const errors = await navigateWithNoErrors(page, `/${VALID_PRODUCT_SLUG}`);
+    const errors = await navigateWithNoErrors(page, `/products/${VALID_PRODUCT_SLUG}`);
     const significantErrors = errors.filter(
       (e) =>
         !e.includes('speed-insights') &&
@@ -362,12 +363,12 @@ test.describe('1.6 — Valid product slug renders product detail page', () => {
     );
     expect(
       significantErrors,
-      `Console errors on /${VALID_PRODUCT_SLUG}: ${significantErrors.join('; ')}`,
+      `Console errors on /products/${VALID_PRODUCT_SLUG}: ${significantErrors.join('; ')}`,
     ).toHaveLength(0);
   });
 
-  test(`/${VALID_PRODUCT_SLUG} — renders product name`, async ({ page }) => {
-    await page.goto(`/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
+  test(`/products/${VALID_PRODUCT_SLUG} — renders product name`, async ({ page }) => {
+    await page.goto(`/products/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
 
     // The product name "Organic Ashwagandha Root" should appear on the page
     await expect(
@@ -375,17 +376,17 @@ test.describe('1.6 — Valid product slug renders product detail page', () => {
     ).toBeVisible({ timeout: 3000 });
   });
 
-  test(`/${VALID_PRODUCT_SLUG} — renders product price`, async ({ page }) => {
-    await page.goto(`/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
+  test(`/products/${VALID_PRODUCT_SLUG} — renders product price`, async ({ page }) => {
+    await page.goto(`/products/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
 
     // Price is PKR 899 for Organic Ashwagandha Root
     await expect(page.locator('text=899').first()).toBeVisible({ timeout: 3000 });
   });
 
-  test(`/${VALID_PRODUCT_SLUG} — renders at least one product image`, async ({
+  test(`/products/${VALID_PRODUCT_SLUG} — renders at least one product image`, async ({
     page,
   }) => {
-    await page.goto(`/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`/products/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
 
     // There should be at least one <img> element visible on the product page
     const images = page.locator('img');
@@ -394,10 +395,10 @@ test.describe('1.6 — Valid product slug renders product detail page', () => {
     expect(count).toBeGreaterThan(0);
   });
 
-  test(`/${VALID_PRODUCT_SLUG} — renders add-to-cart controls`, async ({
+  test(`/products/${VALID_PRODUCT_SLUG} — renders add-to-cart controls`, async ({
     page,
   }) => {
-    await page.goto(`/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`/products/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
 
     // The product detail page should have a button that adds the item to cart.
     // We look for a button whose text contains "Add" (case-insensitive).
@@ -408,10 +409,10 @@ test.describe('1.6 — Valid product slug renders product detail page', () => {
     await expect(addToCartButton).toBeVisible({ timeout: 3000 });
   });
 
-  test(`/${VALID_PRODUCT_SLUG} — does NOT render the 404 page`, async ({
+  test(`/products/${VALID_PRODUCT_SLUG} — does NOT render the 404 page`, async ({
     page,
   }) => {
-    await page.goto(`/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`/products/${VALID_PRODUCT_SLUG}`, { waitUntil: 'domcontentloaded' });
 
     // The custom 404 page has an h1 with "404"; it must not appear here
     const notFoundHeading = page.locator('h1').filter({ hasText: '404' });
@@ -424,10 +425,10 @@ test.describe('1.6 — Valid product slug renders product detail page', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('1.7 — Invalid product slug renders 404 page', () => {
-  test(`/${INVALID_PRODUCT_SLUG} — renders the custom 404 heading`, async ({
+  test(`/products/${INVALID_PRODUCT_SLUG} — renders the custom 404 heading`, async ({
     page,
   }) => {
-    await page.goto(`/${INVALID_PRODUCT_SLUG}`, {
+    await page.goto(`/products/${INVALID_PRODUCT_SLUG}`, {
       waitUntil: 'domcontentloaded',
     });
 
@@ -437,10 +438,10 @@ test.describe('1.7 — Invalid product slug renders 404 page', () => {
     ).toBeVisible({ timeout: 3000 });
   });
 
-  test(`/${INVALID_PRODUCT_SLUG} — renders "Page Not Found" message`, async ({
+  test(`/products/${INVALID_PRODUCT_SLUG} — renders "Page Not Found" message`, async ({
     page,
   }) => {
-    await page.goto(`/${INVALID_PRODUCT_SLUG}`, {
+    await page.goto(`/products/${INVALID_PRODUCT_SLUG}`, {
       waitUntil: 'domcontentloaded',
     });
 
@@ -449,10 +450,10 @@ test.describe('1.7 — Invalid product slug renders 404 page', () => {
     ).toBeVisible({ timeout: 3000 });
   });
 
-  test(`/${INVALID_PRODUCT_SLUG} — renders a link back to home`, async ({
+  test(`/products/${INVALID_PRODUCT_SLUG} — renders a link back to home`, async ({
     page,
   }) => {
-    await page.goto(`/${INVALID_PRODUCT_SLUG}`, {
+    await page.goto(`/products/${INVALID_PRODUCT_SLUG}`, {
       waitUntil: 'domcontentloaded',
     });
 
@@ -460,10 +461,10 @@ test.describe('1.7 — Invalid product slug renders 404 page', () => {
     await expect(homeLink).toBeVisible({ timeout: 3000 });
   });
 
-  test(`/${INVALID_PRODUCT_SLUG} — does NOT render product detail content`, async ({
+  test(`/products/${INVALID_PRODUCT_SLUG} — does NOT render product detail content`, async ({
     page,
   }) => {
-    await page.goto(`/${INVALID_PRODUCT_SLUG}`, {
+    await page.goto(`/products/${INVALID_PRODUCT_SLUG}`, {
       waitUntil: 'domcontentloaded',
     });
 

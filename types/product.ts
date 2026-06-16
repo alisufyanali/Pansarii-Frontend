@@ -62,6 +62,8 @@ export function apiProductToLegacy(p: ApiProduct): Product {
     category: p.category?.name,
     inStock: p.variants?.some(v => v.stock > 0) ?? true,
     isBestSeller: p.featured,
+    variants: p.variants,
+    sizes: p.variants?.length ? p.variants.map(v => v.name) : undefined,
   };
 }
 
@@ -90,6 +92,8 @@ export interface Product {
   isBestSeller?: boolean;
   tags?: string[];
   additionalImages?: string[];
+  /** API variants (present when product comes from Laravel). */
+  variants?: ProductVariant[];
   // Product detail page fields — accepts both plain strings (legacy) and structured objects
   features?: ProductFeature[] | string[];
   sizes?: string[];
