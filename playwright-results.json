@@ -64,16 +64,16 @@
         {
           "title": "Laravel-connected E2E flow",
           "file": "10-laravel-e2e-flow.spec.ts",
-          "line": 151,
+          "line": 163,
           "column": 6,
           "specs": [
             {
-              "title": "Scenario 3 — Register & Merge (POST /cart and /wishlist, then clear localStorage keys)",
+              "title": "Scenario 5 & 6 — Checkout + Orders list",
               "ok": false,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 90000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -83,52 +83,52 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 33506,
+                      "duration": 13654,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Shopping Cart, text=cart').first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Shopping Cart, text=cart').first()\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Shopping Cart, text=cart').first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Shopping Cart, text=cart').first()\u001b[22m\n\n    at D:\\laragon\\www\\Pansarii-Frontend\\tests\\playwright\\10-laravel-e2e-flow.spec.ts:268:73",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n    at D:\\laragon\\www\\Pansarii-Frontend\\tests\\playwright\\10-laravel-e2e-flow.spec.ts:341:63",
                         "location": {
                           "file": "D:\\laragon\\www\\Pansarii-Frontend\\tests\\playwright\\10-laravel-e2e-flow.spec.ts",
-                          "column": 73,
-                          "line": 268
+                          "column": 63,
+                          "line": 341
                         },
-                        "snippet": "  266 |     // Pages show items (from API)\n  267 |     await page.goto('/cart', { waitUntil: 'domcontentloaded' });\n> 268 |     await expect(page.locator('text=Shopping Cart, text=cart').first()).toBeVisible();\n      |                                                                         ^\n  269 |     await page.goto('/wishlist', { waitUntil: 'domcontentloaded' });\n  270 |     await expect(page.locator('body')).toBeVisible();\n  271 |   });"
+                        "snippet": "  339 |       page.getByRole('button', { name: 'Apply' }).click(),\n  340 |     ]);\n> 341 |     expect([200, 400, 401, 422].includes(couponRes.status())).toBeTruthy();\n      |                                                               ^\n  342 |     await expect(page.locator('p.text-red-500').first()).toBeVisible({ timeout: 20000 });\n  343 |\n  344 |     // Fill shipping details and place order"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "D:\\laragon\\www\\Pansarii-Frontend\\tests\\playwright\\10-laravel-e2e-flow.spec.ts",
-                            "column": 73,
-                            "line": 268
+                            "column": 63,
+                            "line": 341
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Shopping Cart, text=cart').first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Shopping Cart, text=cart').first()\u001b[22m\n\n\n  266 |     // Pages show items (from API)\n  267 |     await page.goto('/cart', { waitUntil: 'domcontentloaded' });\n> 268 |     await expect(page.locator('text=Shopping Cart, text=cart').first()).toBeVisible();\n      |                                                                         ^\n  269 |     await page.goto('/wishlist', { waitUntil: 'domcontentloaded' });\n  270 |     await expect(page.locator('body')).toBeVisible();\n  271 |   });\n    at D:\\laragon\\www\\Pansarii-Frontend\\tests\\playwright\\10-laravel-e2e-flow.spec.ts:268:73"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n  339 |       page.getByRole('button', { name: 'Apply' }).click(),\n  340 |     ]);\n> 341 |     expect([200, 400, 401, 422].includes(couponRes.status())).toBeTruthy();\n      |                                                               ^\n  342 |     await expect(page.locator('p.text-red-500').first()).toBeVisible({ timeout: 20000 });\n  343 |\n  344 |     // Fill shipping details and place order\n    at D:\\laragon\\www\\Pansarii-Frontend\\tests\\playwright\\10-laravel-e2e-flow.spec.ts:341:63"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-16T09:43:34.508Z",
+                      "startTime": "2026-06-16T10:00:46.271Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "D:\\laragon\\www\\Pansarii-Frontend\\test-results\\10-laravel-e2e-flow-Larave-770e2-en-clear-localStorage-keys--chromium\\error-context.md"
+                          "path": "D:\\laragon\\www\\Pansarii-Frontend\\test-results\\10-laravel-e2e-flow-Larave-b58c5--5-6-—-Checkout-Orders-list-chromium\\error-context.md"
                         }
                       ],
                       "errorLocation": {
                         "file": "D:\\laragon\\www\\Pansarii-Frontend\\tests\\playwright\\10-laravel-e2e-flow.spec.ts",
-                        "column": 73,
-                        "line": 268
+                        "column": 63,
+                        "line": 341
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "fc90c7bde316e2335247-b84d5569557f90072fe0",
+              "id": "fc90c7bde316e2335247-c8353264649b3bf8de78",
               "file": "10-laravel-e2e-flow.spec.ts",
-              "line": 235,
+              "line": 318,
               "column": 7
             }
           ]
@@ -138,8 +138,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-16T09:43:32.838Z",
-    "duration": 38222.542,
+    "startTime": "2026-06-16T10:00:44.806Z",
+    "duration": 15452.390000000001,
     "expected": 0,
     "skipped": 0,
     "unexpected": 1,

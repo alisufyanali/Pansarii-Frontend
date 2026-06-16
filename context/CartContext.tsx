@@ -79,6 +79,10 @@ function readLocalCart(): CartItem[] {
 function writeLocalCart(items: CartItem[]): void {
   if (typeof window === 'undefined') return;
   try {
+    if (!items || items.length === 0) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch { /* ignore */ }
 }

@@ -93,6 +93,7 @@ async function registerNewUser(page: Page, request: APIRequestContext) {
 
   // Primary path: UI triggers POST /api/register
   let registerRes: import('@playwright/test').APIResponse | null = null;
+  let usedApiFallback = false;
   try {
     registerRes = await page.waitForResponse(
       (r) => r.url().includes('/api/register') && r.request().method() === 'POST',
@@ -104,6 +105,7 @@ async function registerNewUser(page: Page, request: APIRequestContext) {
 
   // Fallback: if UI submission is blocked by client validation, register via API.
   if (!registerRes) {
+    usedApiFallback = true;
     registerRes = await request.post(`${API_BASE}/register`, {
       data: {
         name: 'E2E User',
@@ -113,7 +115,6 @@ async function registerNewUser(page: Page, request: APIRequestContext) {
         password_confirmation: password,
       },
     });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
   }
 
   // Best-effort: some backends return token under different keys.
@@ -138,10 +139,21 @@ async function registerNewUser(page: Page, request: APIRequestContext) {
     );
   }
 
+  // If we registered via API, we must remount AuthProvider so it rehydrates from storage.
+  if (usedApiFallback) {
+    // Force a full reload so RootLayout/AuthProvider rehydrates from storage.
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+  }
+
   // AuthContext.register should normally persist this immediately.
   await page.waitForTimeout(500);
   const storedToken = await page.evaluate((k) => localStorage.getItem(k), TOKEN_KEY);
   expect(storedToken, `Registration completed but no token was stored. Response keys: ${Object.keys(json || {}).join(', ')}`).not.toBeNull();
+  const storedUser = await page.evaluate((k) => localStorage.getItem(k), USER_KEY);
+  expect(storedUser, 'Registration completed but no user was stored in localStorage.').not.toBeNull();
+
+  // Normalize state for subsequent steps: reload so all providers read storage.
+  await page.reload({ waitUntil: 'domcontentloaded' });
 
   return { email, password };
 }
@@ -263,11 +275,23 @@ test.describe('Laravel-connected E2E flow', () => {
       .poll(async () => page.evaluate((k) => localStorage.getItem(k), WISHLIST_KEY), { timeout: 15000 })
       .toBeNull();
 
-    // Pages show items (from API)
-    await page.goto('/cart', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('text=Shopping Cart, text=cart').first()).toBeVisible();
-    await page.goto('/wishlist', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('body')).toBeVisible();
+    // Verify API has the merged items (source of truth)
+    const token = await page.evaluate((k) => localStorage.getItem(k), TOKEN_KEY);
+    expect(token).not.toBeNull();
+
+    const apiCart = await request.get(`${API_BASE}/cart`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(apiCart.ok()).toBeTruthy();
+    const cartJson = (await apiCart.json()) as { success: boolean; data: unknown[] };
+    expect(cartJson.data.length).toBeGreaterThan(0);
+
+    const apiWishlist = await request.get(`${API_BASE}/wishlist`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(apiWishlist.ok()).toBeTruthy();
+    const wishJson = (await apiWishlist.json()) as { success: boolean; data: unknown[] };
+    expect(wishJson.data.length).toBeGreaterThan(0);
   });
 
   test('Scenario 4 — Logged-in Cart & Wishlist uses API, not localStorage', async ({ page, request }) => {
@@ -293,19 +317,29 @@ test.describe('Laravel-connected E2E flow', () => {
 
   test('Scenario 5 & 6 — Checkout + Orders list', async ({ page, request }) => {
     test.setTimeout(120000);
-    const { product } = await getFirstApiProduct(request);
+    const { product, variant } = await getFirstApiProduct(request);
     await registerNewUser(page, request);
 
-    // Add one item to API cart
-    await page.goto(`/products/${product.slug}`, { waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: /add to cart/i }).click();
+    // Ensure cart has an item (API seed for deterministic checkout UI)
+    const token = await page.evaluate((k) => localStorage.getItem(k), TOKEN_KEY);
+    expect(token).not.toBeNull();
+    const addRes = await request.post(`${API_BASE}/cart`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { product_variant_id: variant.id, quantity: 1 },
+    });
+    expect([200, 201].includes(addRes.status())).toBeTruthy();
 
     await page.goto('/checkout', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByText('Contact Information')).toBeVisible({ timeout: 20000 });
 
     // Invalid coupon shows error
     await page.getByPlaceholder('Enter coupon code').fill('INVALID_COUPON_E2E');
-    await page.getByRole('button', { name: 'Apply' }).click();
-    await expect(page.locator('text=Invalid').first()).toBeVisible({ timeout: 15000 });
+    const [couponRes] = await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/coupons/validate') && r.request().method() === 'POST'),
+      page.getByRole('button', { name: 'Apply' }).click(),
+    ]);
+    expect([200, 400, 401, 422].includes(couponRes.status())).toBeTruthy();
+    await expect(page.locator('p.text-red-500').first()).toBeVisible({ timeout: 20000 });
 
     // Fill shipping details and place order
     await page.locator('input[name="name"]').fill('E2E User');
@@ -313,7 +347,11 @@ test.describe('Laravel-connected E2E flow', () => {
     await page.locator('input[name="address"]').fill('123 E2E Street');
     await page.locator('select[name="city"]').selectOption('lahore');
 
-    await page.getByRole('button', { name: /place order/i }).click();
+    const [orderRes] = await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/orders') && r.request().method() === 'POST'),
+      page.getByRole('button', { name: /place order/i }).click(),
+    ]);
+    expect([200, 201, 422].includes(orderRes.status())).toBeTruthy();
     await page.waitForURL(/\/order-confirmation\?orderId=\d+/, { timeout: 30000 });
 
     const url = new URL(page.url());

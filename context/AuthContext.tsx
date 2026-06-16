@@ -149,7 +149,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: Boolean(user),
+        // Treat presence of a token as authenticated; user may be null briefly
+        // until rehydration completes or profile endpoint is added.
+        isAuthenticated: Boolean(getAuthToken()),
         isLoading,
         login,
         register,

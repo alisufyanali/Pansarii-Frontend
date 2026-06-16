@@ -77,7 +77,13 @@ function readLocalWishlist(): WishlistItem[] {
 
 function writeLocalWishlist(items: WishlistItem[]): void {
   if (typeof window === 'undefined') return;
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+  try {
+    if (!items || items.length === 0) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
   catch { /* ignore */ }
 }
 
