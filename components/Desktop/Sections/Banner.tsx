@@ -16,13 +16,13 @@ interface BannerSlide {
 
 const slides: BannerSlide[] = [
   {
-    image: "/images/new-2.png",
+    image: "/images/ban-1.jpeg",
   },
   {
-    image: "/images/a-3.png",
+    image: "/images/ban-2.jpeg",
   },
   {
-    image: "/images/a-4.png",
+    image: "/images/ban-3.jpeg",
   },
   // {
   //   image: "/images/banner-3.png",
