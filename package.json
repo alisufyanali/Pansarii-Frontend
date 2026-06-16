@@ -3,13 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test:e2e": "playwright test",
-    "test:unit": "jest",
-    "test:report": "ts-node tests/report/generate-report.ts"
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint",
+  "test:e2e": "playwright test",
+  "test:unit": "jest"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
