@@ -147,6 +147,22 @@ function OrderConfirmationContent() {
     const orderId = Number(orderIdRaw);
     if (isNaN(orderId)) { setFetchError('Invalid order ID.'); setLoading(false); return; }
 
+    // Guest orders: use data stored at checkout (no auth token for API fetch)
+    try {
+      const cached = sessionStorage.getItem('last-guest-order');
+      if (cached) {
+        const parsed = JSON.parse(cached) as ApiOrder;
+        if (parsed.id === orderId) {
+          setOrder(parsed);
+          sessionStorage.removeItem('last-guest-order');
+          setLoading(false);
+          return;
+        }
+      }
+    } catch {
+      // fall through to API fetch
+    }
+
     getOrderById(orderId)
       .then(data => setOrder(data))
       .catch(() => setFetchError('Could not load order details. The order may not exist or you may not have permission to view it.'))

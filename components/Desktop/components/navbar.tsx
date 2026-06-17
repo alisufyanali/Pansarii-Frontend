@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { Suspense, useState, useEffect } from 'react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import SearchBarWrapper from './navbar/SearchBarWrapper';
-import CartSidebar from './sidebar';
 import { useCart } from '@/context/CartContext';
 import { SOCIAL_LINKS } from '@/lib/social-links';
 
@@ -65,7 +64,6 @@ function NavbarContent() {
   const { getCartCount, getCartTotal } = useCart();
 
   const [isCategorySidebarOpen, setIsCategorySidebarOpen] = useState(false);
-  const [isCartSidebarOpen,     setIsCartSidebarOpen]     = useState(false);
   const [categorySearch,        setCategorySearch]        = useState('');
   const [scrolled,              setScrolled]              = useState(false);
 
@@ -123,8 +121,6 @@ function NavbarContent() {
   const cartTotal    = getCartTotal();
   const totalProducts = categories.reduce((s, c) => s + c.count, 0);
 
-  const openCartSidebar      = () => setIsCartSidebarOpen(true);
-  const closeCartSidebar     = () => setIsCartSidebarOpen(false);
   const closeCategorySidebar = () => { setIsCategorySidebarOpen(false); setCategorySearch(''); };
 
   const handleCategorySelect = (slug: string) => {
@@ -222,7 +218,7 @@ function NavbarContent() {
                   </span>
                 </Link>
 
-                <button onClick={openCartSidebar}
+                <Link href="/cart"
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition group relative"
                   aria-label="Shopping Cart">
                   <div className="relative">
@@ -239,7 +235,7 @@ function NavbarContent() {
                       <span className="text-[11px] text-gray-500">PKR {cartTotal.toLocaleString()}</span>
                     )}
                   </div>
-                </button>
+                </Link>
 
               </div>
             </div>
@@ -394,8 +390,6 @@ function NavbarContent() {
         </div>
       )}
 
-      {/* Cart Sidebar */}
-      <CartSidebar isOpen={isCartSidebarOpen} onClose={closeCartSidebar} />
     </>
   );
 }

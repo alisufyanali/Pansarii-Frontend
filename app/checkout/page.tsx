@@ -12,8 +12,8 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useCart } from '@/context/CartContext';
-import { useAuth } from '@/context/AuthContext';
-import { createOrder } from '@/lib/orders';
+import { useAuth, extractFieldErrors } from '@/context/AuthContext';
+import { createOrder, createGuestOrder } from '@/lib/orders';
 import { validateCoupon, type CouponResult } from '@/lib/coupons';
 
 // ── Pakistani cities ──────────────────────────────────────────────────────────
@@ -44,12 +44,28 @@ const PAKISTANI_CITIES = [
   { value: 'mirpur',       label: 'Mirpur',       province: 'AJK'         },
 ] as const;
 
+type CheckoutMode = 'pending' | 'guest' | 'auth';
+
+interface GuestFields {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, getCartTotal, clearCart, isCartLoading, syncFromApi } = useCart();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>('pending');
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [guestFieldErrors, setGuestFieldErrors] = useState<Partial<GuestFields>>({});
 
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [phoneValue,    setPhoneValue]    = useState<string>('');
@@ -72,13 +88,15 @@ export default function CheckoutPage() {
   const calculatedShipping = shippingFree ? 0 : baseShipping;
   const total = subtotal + calculatedShipping - discount;
 
-  // ── Redirect unauthenticated users ────────────────────────────────────────
+  // ── Set checkout mode on auth resolve ─────────────────────────────────────
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      toast.info('Please login to checkout');
-      router.replace('/login?returnTo=/checkout');
+    if (authLoading) return;
+    if (isAuthenticated) {
+      setCheckoutMode('auth');
+    } else {
+      setShowCheckoutModal(true);
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [authLoading, isAuthenticated]);
 
   // ── Refresh cart from API when checkout mounts (logged-in users) ───────────
   useEffect(() => {
@@ -118,15 +136,45 @@ export default function CheckoutPage() {
     setPromoError('');
   };
 
+  // ── Guest field validation ──────────────────────────────────────────────────
+  const validateGuestFields = (): boolean => {
+    const errs: Partial<GuestFields> = {};
+    if (!guestName.trim()) errs.name = 'Full name is required';
+    if (!guestEmail.trim()) errs.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(guestEmail)) errs.email = 'Email is invalid';
+    if (!guestPhone) errs.phone = 'Phone number is required';
+    setGuestFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleGuestFieldChange = (field: keyof GuestFields, value: string) => {
+    if (field === 'name') setGuestName(value);
+    else if (field === 'email') setGuestEmail(value);
+    else setGuestPhone(value);
+    if (guestFieldErrors[field]) {
+      setGuestFieldErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handleContinueAsGuest = () => {
+    setCheckoutMode('guest');
+    setShowCheckoutModal(false);
+  };
+
   // ── Order submission ──────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setSubmitError('');
+
+    if (checkoutMode === 'guest' && !validateGuestFields()) return;
+
+    setIsSubmitting(true);
 
     const form    = e.target as HTMLFormElement;
     const data    = new FormData(form);
-    const name    = (data.get('name')    as string) || '';
+    const name    = checkoutMode === 'guest'
+      ? guestName.trim()
+      : ((data.get('name') as string) || '');
     const address = (data.get('address') as string) || '';
     const area    = (data.get('area')    as string) || '';
 
@@ -141,23 +189,56 @@ export default function CheckoutPage() {
     }));
 
     try {
-      const order = await createOrder({
-        shipping_address:  fullAddress,
-        payment_method:    paymentMethod,
-        order_note:        orderNote || undefined,
-        shipping_charges:  calculatedShipping,
-        invoice_discount:  discount > 0 ? discount : undefined,
-        items,
-      });
+      if (checkoutMode === 'guest') {
+        const order = await createGuestOrder({
+          name:             guestName.trim(),
+          email:            guestEmail.trim(),
+          phone:            guestPhone,
+          shipping_address: fullAddress,
+          payment_method:   paymentMethod,
+          order_note:       orderNote || undefined,
+          shipping_charges: calculatedShipping,
+          invoice_discount: discount > 0 ? discount : undefined,
+          items,
+        });
 
-      await clearCart();
-      router.push(`/order-confirmation?orderId=${order.id}`);
+        sessionStorage.setItem('last-guest-order', JSON.stringify(order));
+        await clearCart();
+
+        if (order.account_created) {
+          toast.success("Order placed! We've created an account for you — check your email for login details.");
+        } else {
+          toast.success('Order placed successfully!');
+        }
+
+        router.push(`/order-confirmation?orderId=${order.id}`);
+      } else {
+        const order = await createOrder({
+          shipping_address:  fullAddress,
+          payment_method:    paymentMethod,
+          order_note:        orderNote || undefined,
+          shipping_charges:  calculatedShipping,
+          invoice_discount:  discount > 0 ? discount : undefined,
+          items,
+        });
+
+        await clearCart();
+        router.push(`/order-confirmation?orderId=${order.id}`);
+      }
     } catch (err) {
       const e422 = err as { response?: { status?: number; data?: { message?: string } } };
       const msg = e422?.response?.data?.message || 'Failed to place order. Please try again.';
 
-      if (e422?.response?.status === 422) {
-        // Stock error — show exact API message
+      if (checkoutMode === 'guest') {
+        const fields = extractFieldErrors<GuestFields>(err);
+        if (Object.keys(fields).length) {
+          setGuestFieldErrors(fields);
+        } else if (e422?.response?.status === 422) {
+          toast.error(msg);
+        } else {
+          setSubmitError(msg);
+        }
+      } else if (e422?.response?.status === 422) {
         toast.error(msg);
       } else {
         setSubmitError(msg);
@@ -172,7 +253,7 @@ export default function CheckoutPage() {
   const labelCls = "block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide";
 
   // ── Show loading while auth or cart resolves ─────────────────────────────
-  if (authLoading || isCartLoading) {
+  if (authLoading || (checkoutMode === 'auth' && isCartLoading)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-700" />
@@ -180,7 +261,44 @@ export default function CheckoutPage() {
     );
   }
 
-  if (!isAuthenticated) return null; // redirect already fired
+  // ── Guest / login choice modal (unauthenticated only) ─────────────────────
+  if (checkoutMode === 'pending' && showCheckoutModal) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/50" aria-hidden />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="checkout-choice-title"
+            className="relative bg-white rounded-2xl shadow-xl p-6 max-w-md w-full"
+          >
+            <h2 id="checkout-choice-title" className="text-xl font-bold text-gray-900 mb-2 text-center">
+              How would you like to checkout?
+            </h2>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              Sign in to your account or continue without creating one.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/login?returnTo=/checkout"
+                className="w-full py-3 bg-green-700 text-white font-semibold rounded-full text-center hover:bg-green-600 transition text-sm"
+              >
+                Login to my account
+              </Link>
+              <button
+                type="button"
+                onClick={handleContinueAsGuest}
+                className="w-full py-3 border border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-50 transition text-sm"
+              >
+                Continue as Guest
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── Empty cart ────────────────────────────────────────────────────────────
   if (!isCartLoading && cartItems.length === 0) {
@@ -244,26 +362,81 @@ export default function CheckoutPage() {
             {/* ── LEFT ── */}
             <div className="flex flex-col gap-4">
 
-              {/* Contact */}
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-                <h2 className="text-sm font-bold text-gray-900 mb-4">Contact Information</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="sm:col-span-2">
-                    <label className={labelCls}>Full Name *</label>
-                    <input name="name" type="text" required className={inputCls} placeholder="Ahmed Khan" />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Email Address *</label>
-                    <input name="email" type="email" required className={inputCls} placeholder="ahmed@example.com" />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Phone Number *</label>
-                    <PhoneInput international defaultCountry="PK"
-                      value={phoneValue} onChange={v => setPhoneValue(v || '')}
-                      placeholder="Enter phone number" />
+              {/* Guest contact — top of form in guest mode */}
+              {checkoutMode === 'guest' && (
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                  <h2 className="text-sm font-bold text-gray-900 mb-4">Your Details</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className={labelCls}>Full Name *</label>
+                      <input
+                        name="guest_name"
+                        type="text"
+                        value={guestName}
+                        onChange={e => handleGuestFieldChange('name', e.target.value)}
+                        className={`${inputCls} ${guestFieldErrors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                        placeholder="Ahmed Khan"
+                      />
+                      {guestFieldErrors.name && (
+                        <p className="mt-1 text-xs text-red-500">{guestFieldErrors.name}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className={labelCls}>Email Address *</label>
+                      <input
+                        name="guest_email"
+                        type="email"
+                        value={guestEmail}
+                        onChange={e => handleGuestFieldChange('email', e.target.value)}
+                        className={`${inputCls} ${guestFieldErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                        placeholder="ahmed@example.com"
+                      />
+                      {guestFieldErrors.email && (
+                        <p className="mt-1 text-xs text-red-500">{guestFieldErrors.email}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className={labelCls}>Phone Number *</label>
+                      <PhoneInput
+                        international
+                        defaultCountry="PK"
+                        value={guestPhone}
+                        onChange={v => handleGuestFieldChange('phone', v || '')}
+                        placeholder="Enter phone number"
+                      />
+                      {guestFieldErrors.phone && (
+                        <p className="mt-1 text-xs text-red-500">{guestFieldErrors.phone}</p>
+                      )}
+                      <p className="mt-1.5 text-[11px] text-gray-400 leading-snug">
+                        This will also be your account password if we create one for you
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Contact — authenticated checkout only */}
+              {checkoutMode === 'auth' && (
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                  <h2 className="text-sm font-bold text-gray-900 mb-4">Contact Information</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className={labelCls}>Full Name *</label>
+                      <input name="name" type="text" required className={inputCls} placeholder="Ahmed Khan" />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Email Address *</label>
+                      <input name="email" type="email" required className={inputCls} placeholder="ahmed@example.com" />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Phone Number *</label>
+                      <PhoneInput international defaultCountry="PK"
+                        value={phoneValue} onChange={v => setPhoneValue(v || '')}
+                        placeholder="Enter phone number" />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Shipping */}
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">

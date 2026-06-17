@@ -3,7 +3,7 @@
  * API service functions for orders (authentication required).
  */
 
-import apiClient from './axios';
+import apiClient, { api } from './axios';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -73,6 +73,29 @@ export const createOrder = async (orderData: CreateOrderPayload): Promise<ApiOrd
     orderData,
   );
   return res.data.data;
+};
+
+export interface CreateGuestOrderPayload {
+  name: string;
+  email: string;
+  phone: string;
+  shipping_address: string;
+  billing_address?: string;
+  city_id?: number;
+  payment_method?: string;
+  order_note?: string;
+  shipping_charges?: number;
+  invoice_discount?: number;
+  items: OrderItem[];
+}
+
+export interface GuestOrderResult extends ApiOrder {
+  account_created?: boolean;
+}
+
+export const createGuestOrder = async (payload: CreateGuestOrderPayload): Promise<GuestOrderResult> => {
+  const res = await api.post<{ success: boolean; data: GuestOrderResult }>('/orders/guest', payload);
+  return res.data;
 };
 
 export const getOrders = async (
