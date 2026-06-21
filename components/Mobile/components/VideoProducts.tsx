@@ -4,23 +4,45 @@ import Image from 'next/image';
 import { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaHeart, FaShareAlt } from 'react-icons/fa';
-import { allProducts } from '@/data/products';
+import {
+  getVideoProducts,
+  mapApiProductToVideoCard,
+  DEFAULT_VIDEO_PRODUCTS,
+  type VideoProductCardData,
+} from '@/lib/products';
+
+function VideoProductsSkeleton() {
+  return (
+    <section className="py-4">
+      <div className="px-4 mb-3 h-5 w-40 bg-gray-200 rounded animate-pulse" />
+      <div className="flex gap-3 pl-4 overflow-hidden">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="flex-shrink-0 rounded-2xl bg-gray-200 animate-pulse aspect-[9/14]" style={{ width: 'calc((100vw - 56px) / 2.6)' }} />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default function MobileVideoProducts() {
   const router    = useRouter();
   const sliderRef = useRef<HTMLDivElement>(null);
   const isTouch   = useRef(false);
+  const [products, setProducts] = useState<VideoProductCardData[] | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const products = allProducts.slice(0, 6).map(p => ({
-    id:    p.id,
-    video: '/images/review.mp4',
-    img:   p.img,
-    nameEn: p.nameEn,
-    views: '860',
-    price: p.price,
-  }));
+  useEffect(() => {
+    getVideoProducts()
+      .then(data => {
+        const mapped = (data ?? []).map(mapApiProductToVideoCard);
+        setProducts(mapped.length > 0 ? mapped : null);
+      })
+      .catch(() => setProducts(null))
+      .finally(() => setLoading(false));
+  }, []);
 
-  // Auto-slide every 3s
+  const displayProducts = products ?? DEFAULT_VIDEO_PRODUCTS;
+
   useEffect(() => {
     const t = setInterval(() => {
       if (isTouch.current) return;
@@ -34,7 +56,9 @@ export default function MobileVideoProducts() {
       }
     }, 3000);
     return () => clearInterval(t);
-  }, []);
+  }, [displayProducts.length]);
+
+  if (loading) return <VideoProductsSkeleton />;
 
   return (
     <section className="py-4">
@@ -50,25 +74,19 @@ export default function MobileVideoProducts() {
         onTouchStart={() => { isTouch.current = true; }}
         onTouchEnd={() => { setTimeout(() => { isTouch.current = false; }, 2000); }}
       >
-        {products.map(p => (
-          <VideoCard key={p.id} product={p} onPress={() => router.push(`/products/${p.nameEn.toLowerCase().replace(/\s+/g, '-')}`)} />
+        {displayProducts.map(p => (
+          <VideoCard
+            key={p.id}
+            product={p}
+            onPress={() => router.push(`/products/${p.slug ?? p.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
+          />
         ))}
       </div>
     </section>
   );
 }
 
-// ── VideoCard product shape ───────────────────────────────────────────────────
-interface VideoCardProduct {
-  id: string | number;
-  video: string;
-  img: string;
-  nameEn: string;
-  views: string;
-  price: number;
-}
-
-function VideoCard({ product, onPress }: { product: VideoCardProduct; onPress: () => void }) {
+function VideoCard({ product, onPress }: { product: VideoProductCardData; onPress: () => void }) {
   const videoRef    = useRef<HTMLVideoElement>(null);
   const [err, setErr] = useState(false);
 
@@ -85,34 +103,32 @@ function VideoCard({ product, onPress }: { product: VideoCardProduct; onPress: (
       style={{ width: 'calc((100vw - 56px) / 2.6)' }}
       onClick={onPress}
     >
-      {/* Video / fallback */}
       {!err ? (
         <video
           ref={videoRef}
           src={product.video}
           className="w-full h-full object-cover"
           loop muted autoPlay playsInline
+          poster={product.topImage}
           onError={() => setErr(true)}
         />
       ) : (
         <div className="relative w-full h-full">
-          <Image src={product.img} alt={product.nameEn} fill className="object-cover" sizes="(max-width: 768px) 50vw, 20vw" />
+          <Image src={product.topImage} alt={product.nameEn} fill className="object-cover" sizes="(max-width: 768px) 50vw, 20vw" />
         </div>
       )}
 
-      {/* Bottom overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
         <div className="flex items-center justify-between">
-          <span className="text-white text-[10px] font-medium">{product.views} Views</span>
+          <span className="text-white text-[10px] font-medium">{product.views ?? '—'} Views</span>
           <div className="flex items-center gap-2">
             <FaHeart className="w-3 h-3 text-white/80" />
             <FaShareAlt className="w-3 h-3 text-white/80" />
           </div>
         </div>
-        {/* Small product image */}
         <div className="flex items-center gap-1.5 mt-1">
           <div className="relative w-7 h-7 rounded-md overflow-hidden flex-shrink-0 bg-white/20">
-            <Image src={product.img} alt="" fill className="object-cover" sizes="28px" />
+            <Image src={product.productImage} alt="" fill className="object-cover" sizes="28px" />
           </div>
           <span className="text-white text-[10px] font-medium line-clamp-1">{product.nameEn}</span>
         </div>

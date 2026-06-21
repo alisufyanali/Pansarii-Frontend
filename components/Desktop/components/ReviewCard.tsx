@@ -1,5 +1,6 @@
 import { FaStar } from 'react-icons/fa';
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface Review {
   title:       string;
@@ -8,7 +9,9 @@ interface Review {
   designation: string;
   img:         string;
   rating?:     number;
-  images?:     string[]; // optional review photos
+  images?:     string[];
+  productName?: string;
+  productImage?: string;
 }
 
 export default function ReviewCard({ review }: { review: Review }) {
@@ -70,9 +73,17 @@ export default function ReviewCard({ review }: { review: Review }) {
               className="w-full h-full rounded-full object-cover"
             />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-[12px] font-semibold text-gray-900 truncate">{review.name}</p>
             <p className="text-[11px] text-gray-400 truncate">{review.designation}</p>
+            {review.productName && review.productImage && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <div className="relative w-5 h-5 rounded overflow-hidden flex-shrink-0">
+                  <Image src={review.productImage} alt={review.productName} fill className="object-cover" sizes="20px" />
+                </div>
+                <p className="text-[10px] text-green-700 truncate">{review.productName}</p>
+              </div>
+            )}
           </div>
           {/* Verified badge */}
           <div className="ml-auto flex-shrink-0">

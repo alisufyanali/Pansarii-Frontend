@@ -16,6 +16,7 @@ export interface ApiCategory {
   id: number;
   name: string;
   slug: string;
+  products_count?: number;
   children?: ApiCategory[];
 }
 
@@ -33,6 +34,7 @@ export interface ApiProduct {
   category: ApiCategory;
   variants: ProductVariant[];
   gallery?: string[];
+  video?: string | null;
   rating?: number;
   reviews_count?: number;
 }

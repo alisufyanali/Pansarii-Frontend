@@ -125,6 +125,63 @@ export async function getCategories(): Promise<ApiCategory[]> {
     }
     // Build category list from static products
     const cats = Array.from(new Set(allProducts.map(p => p.category).filter(Boolean)));
-    return cats.map((name, i) => ({ id: i + 1, name: name!, slug: name!.toLowerCase().replace(/\s+/g, '-') }));
+    return cats.map((name, i) => ({
+      id: i + 1,
+      name: name!,
+      slug: name!.toLowerCase().replace(/\s+/g, '-'),
+      products_count: allProducts.filter(p => p.category === name).length,
+    }));
   }
+}
+
+export async function getVideoProducts(): Promise<ApiProduct[]> {
+  const res = await api.get<{ success: boolean; data: ApiProduct[] }>('/products/with-video');
+  return res.data ?? [];
+}
+
+export interface VideoProductCardData {
+  id: string | number;
+  video: string;
+  topImage: string;
+  productImage: string;
+  nameEn: string;
+  nameUr: string;
+  price: number;
+  oldPrice?: number;
+  sale?: string;
+  views?: string;
+  slug?: string;
+}
+
+export const DEFAULT_VIDEO_PRODUCTS: VideoProductCardData[] = (allProducts as Product[])
+  .slice(0, 2)
+  .map(p => ({
+    id: p.id,
+    video: '/images/review.mp4',
+    topImage: p.img,
+    productImage: p.img,
+    nameEn: p.nameEn,
+    nameUr: p.nameUr,
+    price: p.price,
+    oldPrice: p.oldPrice ?? undefined,
+    sale: p.sale ?? undefined,
+    views: '860',
+    slug: p.slug ?? p.nameEn.toLowerCase().replace(/\s+/g, '-'),
+  }));
+
+export function mapApiProductToVideoCard(p: ApiProduct): VideoProductCardData {
+  const legacy = apiProductToLegacy(p);
+  return {
+    id: p.id,
+    video: p.video || '/images/review.mp4',
+    topImage: legacy.img,
+    productImage: legacy.img,
+    nameEn: legacy.nameEn,
+    nameUr: legacy.nameUr,
+    price: legacy.price,
+    oldPrice: legacy.oldPrice ?? undefined,
+    sale: legacy.sale ?? undefined,
+    views: p.reviews_count ? String(p.reviews_count) : undefined,
+    slug: p.slug,
+  };
 }

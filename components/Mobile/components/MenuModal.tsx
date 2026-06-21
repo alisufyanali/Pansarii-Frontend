@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { allProducts } from '@/data/products';
+import { getCategories } from '@/lib/products';
 import {
   FaTimes, FaUser, FaChevronRight, FaLeaf,
   FaShoppingBag, FaStar, FaHeart, FaBook,
@@ -35,15 +37,35 @@ interface MenuModalProps {
 }
 
 export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
-  if (!isOpen) return null;
+  const [categories, setCategories] = useState<Array<{ name: string; slug: string; count?: number }>>(() =>
+    Array.from(new Set(allProducts.map(p => p.category)))
+      .filter(Boolean)
+      .map(category => {
+        const staticCount = allProducts.filter(p => p.category === category).length;
+        return {
+          name: category as string,
+          slug: CATEGORY_SLUG_MAP[category as string] || (category as string).toLowerCase().replace(/\s+/g, '-'),
+          count: staticCount > 0 ? staticCount : undefined,
+        };
+      }),
+  );
 
-  const categories = Array.from(new Set(allProducts.map(p => p.category)))
-    .filter(Boolean)
-    .map(category => ({
-      name:  category,
-      slug:  CATEGORY_SLUG_MAP[category] || category.toLowerCase().replace(/\s+/g, '-'),
-      count: allProducts.filter(p => p.category === category).length,
-    }));
+  useEffect(() => {
+    if (!isOpen) return;
+    getCategories().then(cats => {
+      if (cats.length > 0) {
+        setCategories(cats.map(c => ({
+          name: c.name,
+          slug: CATEGORY_SLUG_MAP[c.name] || c.slug,
+          count: typeof c.products_count === 'number' && c.products_count > 0
+            ? c.products_count
+            : undefined,
+        })));
+      }
+    }).catch(() => {/* keep fallback */});
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[60]">
@@ -127,8 +149,13 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
                   onClick={onClose}
                   className="flex items-center justify-between py-2.5 px-3 bg-white rounded-lg border border-gray-100 active:border-green-200 active:shadow-sm transition-all"
                 >
-                  <span className="text-sm font-medium text-gray-800">{cat.name}</span>
-                  <span className="text-xs text-gray-400">{cat.count}</span>
+                  <span className="text-sm font-medium text-gray-800">
+                    {cat.name}
+                    {cat.count != null && cat.count > 0 && (
+                      <span className="text-gray-400 font-normal ml-1">({cat.count})</span>
+                    )}
+                  </span>
+                  <FaChevronRight className="w-3.5 h-3.5 text-gray-300" />
                 </Link>
               ))}
             </div>

@@ -1,15 +1,22 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import HeroBanner from './components/HeroBanner';
+import { Suspense } from 'react';
 import SolutionBar from './components/solutionbar';
+
+const HeroBanner = dynamic(() => import('./components/HeroBanner'), { ssr: false });
+
+function HeroBannerFallback() {
+  return (
+    <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden h-48 bg-gray-200 animate-pulse" />
+  );
+}
 
 const CategoryProductsSection = dynamic(
   () => import('@/components/Desktop/Sections/CategoryProductsSection'),
   { ssr: false },
 );
 
-// Lazy load below-the-fold components with SSR disabled for faster initial load
 const Categories = dynamic(() => import('./components/categories'), { ssr: false });
 const ShopProducts = dynamic(() => import('./components/ShopProducts'), { ssr: false });
 const MobileVideoProducts = dynamic(() => import('./components/VideoProducts'), { ssr: false });
@@ -20,15 +27,25 @@ const MobileBlogSection = dynamic(() => import('./components/BlogSection'), { ss
 export default function MobileHome() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <HeroBanner />
+      <Suspense fallback={<HeroBannerFallback />}>
+        <HeroBanner />
+      </Suspense>
       <SolutionBar />
-      <CategoryProductsSection variant="mobile" />
+      <Suspense fallback={null}>
+        <CategoryProductsSection variant="mobile" />
+      </Suspense>
       <Categories />
       <ShopProducts />
       <MobileComboDeal />
-      <MobileVideoProducts />
-      <MobileReviews />
-      <MobileBlogSection />
+      <Suspense fallback={null}>
+        <MobileVideoProducts />
+      </Suspense>
+      <Suspense fallback={null}>
+        <MobileReviews />
+      </Suspense>
+      <Suspense fallback={null}>
+        <MobileBlogSection />
+      </Suspense>
     </div>
   );
 }

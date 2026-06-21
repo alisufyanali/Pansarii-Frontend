@@ -67,16 +67,23 @@ function NavbarContent() {
   const [categorySearch,        setCategorySearch]        = useState('');
   const [scrolled,              setScrolled]              = useState(false);
 
-  const [categories, setCategories] = useState(() => {
-    // Initial value from static data as fallback
+  const [categories, setCategories] = useState<Array<{
+    id: number;
+    name: string;
+    slug: string;
+    count?: number;
+  }>>(() => {
     const set = new Set<string>();
     allProducts.forEach(p => { if (p.category) set.add(p.category); });
-    return Array.from(set).sort().map((name, i) => ({
-      id: i + 1,
-      name,
-      slug: CATEGORY_SLUG_MAP[name] || name.toLowerCase().replace(/\s+/g, '-'),
-      count: allProducts.filter(p => p.category === name).length,
-    }));
+    return Array.from(set).sort().map((name, i) => {
+      const staticCount = allProducts.filter(p => p.category === name).length;
+      return {
+        id: i + 1,
+        name,
+        slug: CATEGORY_SLUG_MAP[name] || name.toLowerCase().replace(/\s+/g, '-'),
+        count: staticCount > 0 ? staticCount : undefined,
+      };
+    });
   });
 
   useEffect(() => {
@@ -86,7 +93,9 @@ function NavbarContent() {
           id: c.id,
           name: c.name,
           slug: CATEGORY_SLUG_MAP[c.name] || c.slug,
-          count: allProducts.filter(p => p.category === c.name).length,
+          count: typeof c.products_count === 'number' && c.products_count > 0
+            ? c.products_count
+            : undefined,
         })));
       }
     }).catch(() => {/* keep static fallback */});
@@ -119,7 +128,8 @@ function NavbarContent() {
 
   const cartCount    = getCartCount();
   const cartTotal    = getCartTotal();
-  const totalProducts = categories.reduce((s, c) => s + c.count, 0);
+  const totalProducts = categories.reduce((s, c) => s + (c.count ?? 0), 0);
+  const showTotalProducts = totalProducts > 0;
 
   const closeCategorySidebar = () => { setIsCategorySidebarOpen(false); setCategorySearch(''); };
 
@@ -326,7 +336,7 @@ function NavbarContent() {
                   !currentCategory ? 'bg-white text-green-700 font-semibold' : 'text-white hover:bg-green-600'
                 }`}>
                 <span>All Categories</span>
-                <span className="opacity-75">({totalProducts})</span>
+                {showTotalProducts && <span className="opacity-75">({totalProducts})</span>}
               </button>
             </div>
 
@@ -355,9 +365,15 @@ function NavbarContent() {
                           }`}>
                             <FaLeaf className={`w-3 h-3 ${isSelected ? 'text-green-700' : 'text-green-600'}`} />
                           </div>
-                          <span className="text-[13px] font-medium">{category.name}</span>
+                          <span className="text-[13px] font-medium">
+                            {category.name}
+                            {category.count != null && category.count > 0 && (
+                              <span className="text-gray-400 font-normal ml-1">({category.count})</span>
+                            )}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1.5">
+                          {category.count != null && category.count > 0 && (
                           <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${
                             isSelected
                               ? 'bg-green-200 text-green-800'
@@ -365,6 +381,7 @@ function NavbarContent() {
                           }`}>
                             {category.count}
                           </span>
+                          )}
                           <FaChevronRight className={`w-2.5 h-2.5 ${
                             isSelected ? 'text-green-700' : 'text-gray-400 group-hover:text-green-600'
                           }`} />

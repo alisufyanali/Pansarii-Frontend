@@ -4,25 +4,47 @@ import { useRef, useState, useEffect } from "react";
 import VideoProductCard from "@components/VideoProductCard";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
-import { allProducts } from "@/data/products";
+import {
+  getVideoProducts,
+  mapApiProductToVideoCard,
+  DEFAULT_VIDEO_PRODUCTS,
+  type VideoProductCardData,
+} from "@/lib/products";
+
+function VideoProductsSkeleton() {
+  return (
+    <section className="mx-[4%] my-8">
+      <div className="max-w-[1920px] mx-auto">
+        <div className="mb-5 h-8 w-48 bg-gray-200 rounded animate-pulse" />
+        <div className="flex gap-6 overflow-hidden pb-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex-shrink-0 w-52 h-72 bg-gray-200 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function VideoProducts() {
-  const videoProducts = allProducts.slice(0, 5).map(p => ({
-    id:           p.id,
-    topImage:     p.img,
-    productImage: p.img,
-    video:        '/images/review.mp4',
-    nameEn:       p.nameEn,
-    nameUr:       p.nameUr,
-    views:        '860',
-    sale:         p.sale || '',
-    price:        p.price,
-    oldPrice:     p.oldPrice || undefined,
-  }));
+  const [videoProducts, setVideoProducts] = useState<VideoProductCardData[] | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const sliderRef        = useRef<HTMLDivElement>(null);
   const [canScrollLeft,  setCanScrollLeft]  = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+
+  useEffect(() => {
+    getVideoProducts()
+      .then(data => {
+        const mapped = (data ?? []).map(mapApiProductToVideoCard);
+        setVideoProducts(mapped.length > 0 ? mapped : null);
+      })
+      .catch(() => setVideoProducts(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const displayProducts = videoProducts ?? DEFAULT_VIDEO_PRODUCTS;
 
   const checkScroll = () => {
     const el = sliderRef.current;
@@ -45,7 +67,9 @@ export default function VideoProducts() {
     checkScroll();
     el.addEventListener("scroll", checkScroll, { passive: true });
     return () => el.removeEventListener("scroll", checkScroll);
-  }, []);
+  }, [displayProducts]);
+
+  if (loading) return <VideoProductsSkeleton />;
 
   return (
     <section className="mx-[4%] my-8">
@@ -70,7 +94,7 @@ export default function VideoProducts() {
           ref={sliderRef}
           className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-4"
         >
-          {videoProducts.map(product => (
+          {displayProducts.map(product => (
             <div
               key={product.id}
               className="card-item flex-shrink-0"

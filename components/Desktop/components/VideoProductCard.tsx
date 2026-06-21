@@ -15,6 +15,7 @@ interface VideoProduct {
   oldPrice?: number | string;
   sale?: string;
   views?: string;
+  slug?: string;
 }
 
 interface VideoProductCardProps {
@@ -45,7 +46,7 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     // Navigate to product details page
-    const slug = product.nameEn.toLowerCase().replace(/\s+/g, '-');
+    const slug = product.slug ?? product.nameEn.toLowerCase().replace(/\s+/g, '-');
     router.push(`/products/${slug}`);
   };
 
@@ -62,6 +63,7 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
             src={product.video}
             className="w-full h-full object-cover"
             loop muted autoPlay playsInline
+            poster={product.topImage}
             onError={() => setVideoError(true)}
             onLoadedData={() => setVideoLoaded(true)}
             onCanPlay={() => setVideoLoaded(true)}

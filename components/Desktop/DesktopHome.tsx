@@ -1,5 +1,13 @@
 import dynamic from 'next/dynamic';
-import Banner from "./Sections/Banner";
+import { Suspense } from 'react';
+
+const Banner = dynamic(() => import("./Sections/Banner"), { ssr: false });
+
+function BannerFallback() {
+  return (
+    <section className="relative w-full overflow-hidden h-[70vh] min-h-[460px] max-h-[680px] bg-gray-200 animate-pulse" />
+  );
+}
 
 // Lazy load below-the-fold sections only
 const SolutionBar     = dynamic(() => import("./Sections/SolutionBar"), { ssr: false });
@@ -16,17 +24,27 @@ const Blog            = dynamic(() => import("./Sections/Blog"), { ssr: false })
 export default function DesktopHome() {
   return (
     <>
-      <Banner />
+      <Suspense fallback={<BannerFallback />}>
+        <Banner />
+      </Suspense>
       <SolutionBar />
-      <CategoryProductsSection />
+      <Suspense fallback={null}>
+        <CategoryProductsSection />
+      </Suspense>
       <Category />
       <NewArrivals />
       <BeautyCorner />
       <PansariInn />
       <ComboDeal />
-      <VideoProducts />
-      <Review />
-      <Blog />
+      <Suspense fallback={null}>
+        <VideoProducts />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Review />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Blog />
+      </Suspense>
     </>
   );
 }
