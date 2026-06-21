@@ -16,13 +16,13 @@ interface BannerSlide {
 
 const slides: BannerSlide[] = [
   {
-    image: "/images/ban-1.jpeg",
+    image: "/images/final-banner (1).jpeg",
   },
   {
-    image: "/images/ban-2.jpeg",
+    image: "/images/final-banner (2).jpeg",
   },
   {
-    image: "/images/ban-3.jpeg",
+    image: "/images/final-banner (3).jpeg",
   },
   // {
   //   image: "/images/banner-3.png",
@@ -59,7 +59,7 @@ export default function Banner() {
     <section className="relative w-full overflow-hidden h-[70vh] min-h-[460px] max-h-[680px]">
 
       {/* Background image */}
-      <div className="absolute inset-0 w-full h-full transition-opacity duration-500">
+      <div className="absolute w-full h-full  duration-500">
         <Image
           src={slide.image}
           alt={slide.title ?? "Banner"}

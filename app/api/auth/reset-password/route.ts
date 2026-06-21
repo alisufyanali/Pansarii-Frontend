@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { laravelErrorMessage, laravelPost } from '@/lib/laravel-server';
 
 interface ResetPasswordRequestBody {
   token?: string;
+  email?: string;
   password?: string;
 }
 
@@ -14,6 +16,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ResetPass
   try {
     const body = (await request.json()) as ResetPasswordRequestBody;
     const token = (body.token ?? '').trim();
+    const email = (body.email ?? '').trim();
     const password = body.password ?? '';
 
     if (!token || !password) {
@@ -23,9 +26,28 @@ export async function POST(request: NextRequest): Promise<NextResponse<ResetPass
       );
     }
 
-    // TODO: Implement actual reset-password logic (verify token + update password)
+    const result = await laravelPost('/reset-password', {
+      token,
+      email,
+      password,
+      password_confirmation: password,
+    });
+
+    if (!result.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: laravelErrorMessage(result.data, 'Unable to reset password.'),
+        },
+        { status: result.status === 404 ? 503 : result.status },
+      );
+    }
+
     return NextResponse.json(
-      { success: true, message: 'Password reset successfully.' },
+      {
+        success: result.data.success ?? true,
+        message: result.data.message ?? 'Password reset successfully.',
+      },
       { status: 200 },
     );
   } catch {

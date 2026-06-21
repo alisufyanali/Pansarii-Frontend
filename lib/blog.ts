@@ -63,11 +63,6 @@ export const getBlogs = async (params?: BlogsParams): Promise<BlogsResponse> => 
   return res.data;
 };
 
-export const getBlogBySlug = async (slug: string): Promise<ApiBlogDetail> => {
-  const res = await apiClient.get<{ success: boolean; data: ApiBlogDetail }>(`/blogs/${slug}`);
-  return res.data.data;
-};
-
 // ─── Server-safe fetchers (use in Server Components / generateMetadata) ───────
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';

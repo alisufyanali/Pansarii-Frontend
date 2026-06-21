@@ -112,3 +112,11 @@ export const getOrderById = async (id: number): Promise<ApiOrder> => {
   const res = await apiClient.get<{ success: boolean; data: ApiOrder }>(`/orders/${id}`);
   return res.data.data;
 };
+
+export const trackOrder = async (orderNumber: string, email: string): Promise<ApiOrder> => {
+  const res = await api.get<{ success: boolean; data: ApiOrder }>('/orders/track', {
+    order_number: orderNumber,
+    email,
+  });
+  return res.data;
+};

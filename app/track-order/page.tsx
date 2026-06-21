@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+import { isAxiosError } from "@/lib/axios";
+import { trackOrder, type ApiOrder } from "@/lib/orders";
 import { 
   FaSearch, 
   FaBox, 
@@ -45,123 +47,135 @@ type Order = {
   }[];
 };
 
-// Mock data
-const mockOrders: Order[] = [
-  {
-    orderNumber: "PANS-789456",
-    status: "shipped",
-    customer: {
-      name: "Ahmed Raza",
-      phone: "+923001234567",
+function formatDisplayDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+}
+
+function formatDisplayTime(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
+function estimatedDeliveryDate(createdAt: string): string {
+  try {
+    const d = new Date(createdAt);
+    d.setDate(d.getDate() + 5);
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  } catch {
+    return '5–7 business days';
+  }
+}
+
+const STATUS_ORDER: ApiOrder['status'][] = ['pending', 'processing', 'shipped', 'delivered'];
+
+function mapApiOrderToDisplay(api: ApiOrder): Order {
+  const currentIdx = STATUS_ORDER.indexOf(api.status);
+  const created = api.created_at;
+
+  const tracking = [
+    {
+      status: 'pending' as OrderStatus,
+      title: 'Order Placed',
+      description: 'Your order has been received',
+      location: api.city || 'Processing centre',
+      date: formatDisplayDate(created),
+      time: formatDisplayTime(created),
+      completed: currentIdx >= 0,
     },
-    tracking: [
-      {
-        status: "pending",
-        title: "Order Placed",
-        description: "Your order has been placed successfully",
-        location: "Karachi Warehouse",
-        date: "Jan 15, 2024",
-        time: "10:30 AM",
-        completed: true,
-      },
-      {
-        status: "confirmed",
-        title: "Order Confirmed",
-        description: "Your order has been confirmed",
-        location: "Karachi Warehouse",
-        date: "Jan 15, 2024",
-        time: "11:45 AM",
-        completed: true,
-      },
-      {
-        status: "processing",
-        title: "Processing",
-        description: "Your order is being prepared and packed",
-        location: "Karachi Warehouse",
-        date: "Jan 16, 2024",
-        time: "09:00 AM",
-        completed: true,
-      },
-      {
-        status: "shipped",
-        title: "Shipped",
-        description: "Your order has been shipped via TCS Express",
-        location: "Karachi Hub",
-        date: "Jan 17, 2024",
-        time: "08:30 AM",
-        completed: true,
-      },
-      {
-        status: "out-for-delivery",
-        title: "Out for Delivery",
-        description: "Your order is out for delivery",
-        location: "DHA Phase 5, Karachi",
-        date: "Jan 18, 2024",
-        time: "Expected: 2:00 PM - 5:00 PM",
-        completed: false,
-      },
-      {
-        status: "delivered",
-        title: "Delivered",
-        description: "Your order has been delivered",
-        location: "Your Address",
-        date: "Jan 18, 2024",
-        time: "TBD",
-        completed: false,
-      },
-    ],
-    estimatedDelivery: "January 18, 2024",
-    shippingAddress: "House #123, Street 45, DHA Phase 5, Karachi, Pakistan",
-    paymentMethod: "Cash on Delivery",
-    items: [
-      {
-        name: "Pure Honey - 100% Natural",
-        quantity: 2,
-        price: 999,
-        image: "/products/honey.jpg"
-      },
-      {
-        name: "Extra Virgin Coconut Oil",
-        quantity: 1,
-        price: 699,
-        image: "/products/coconut-oil.jpg"
-      },
-    ],
-  },
-];
+    {
+      status: 'processing' as OrderStatus,
+      title: 'Processing',
+      description: 'We are preparing your items',
+      location: api.city || 'Warehouse',
+      date: formatDisplayDate(created),
+      time: '',
+      completed: currentIdx >= 1,
+    },
+    {
+      status: 'shipped' as OrderStatus,
+      title: 'Shipped',
+      description: 'Your order is on the way',
+      location: 'In transit',
+      date: '',
+      time: '',
+      completed: currentIdx >= 2,
+    },
+    {
+      status: 'delivered' as OrderStatus,
+      title: 'Delivered',
+      description: 'Your order has been delivered',
+      location: api.shipping_address || 'Your address',
+      date: '',
+      time: '',
+      completed: currentIdx >= 3,
+    },
+  ];
+
+  const uiStatus: OrderStatus =
+    api.status === 'cancelled' ? 'pending' :
+    api.status === 'processing' ? 'processing' :
+    api.status === 'shipped' ? 'shipped' :
+    api.status === 'delivered' ? 'delivered' :
+    'pending';
+
+  return {
+    orderNumber: api.order_number,
+    status: uiStatus,
+    customer: {
+      name: 'Customer',
+      phone: '',
+    },
+    tracking,
+    estimatedDelivery: estimatedDeliveryDate(created),
+    shippingAddress: api.shipping_address || '—',
+    paymentMethod: api.payment_method || 'Cash on Delivery',
+    items: (api.items ?? []).map(item => ({
+      name: item.product_name,
+      quantity: item.quantity,
+      price: item.price,
+      image: item.thumbnail || '/images/product.png',
+    })),
+  };
+}
 
 export default function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expandedItems, setExpandedItems] = useState(false);
 
-  const handleSearch = () => {
-    if (!orderNumber.trim() || !phone.trim()) {
-      setError("Please enter both Order Number and Phone");
+  const handleSearch = async () => {
+    if (!orderNumber.trim() || !email.trim()) {
+      setError("Please enter both Order Number and Email");
       return;
     }
 
     setLoading(true);
     setError("");
+    setOrder(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      const found = mockOrders.find(
-        (o) =>
-          o.orderNumber.toLowerCase() === orderNumber.toLowerCase() &&
-          o.customer.phone.replace(/\s/g, "") === phone.replace(/\s/g, "")
-      );
-
-      if (found) {
-        setOrder(found);
+    try {
+      const apiOrder = await trackOrder(orderNumber.trim(), email.trim());
+      setOrder(mapApiOrderToDisplay(apiOrder));
+    } catch (err) {
+      if (isAxiosError(err)) {
+        const msg = (err.response?.data as { message?: string })?.message;
+        setError(msg || "Order not found. Please check your details.");
       } else {
         setError("Order not found. Please check your details.");
       }
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const getStatusIcon = (status: OrderStatus) => {
@@ -226,16 +240,16 @@ export default function TrackOrderPage() {
               />
             </div>
 
-            {/* Phone Input */}
+            {/* Email Input */}
             <div className="md:col-span-1">
               <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-1.5 sm:mb-2">
-                Phone Number
+                Email Address
               </label>
               <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+92 300 1234567"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition bg-white text-gray-900"
               />
             </div>
@@ -290,7 +304,7 @@ export default function TrackOrderPage() {
                       <span className="font-medium">Customer:</span> {order.customer.name}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-700 break-all">
-                      <span className="font-medium">Phone:</span> {order.customer.phone}
+                      <span className="font-medium">Email:</span> {email}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-700">
                       <span className="font-medium">Shipping:</span>{" "}
@@ -539,7 +553,7 @@ export default function TrackOrderPage() {
               Track Your Order
             </h3>
             <p className="text-sm sm:text-base text-gray-700 mb-6 sm:mb-8 px-4">
-              Enter your order number and phone number above to see real-time tracking updates
+              Enter your order number and email above to see real-time tracking updates
             </p>
             
             {/* Feature steps - grid on mobile, row on larger */}
@@ -549,7 +563,7 @@ export default function TrackOrderPage() {
                   <FaSearch className="w-4 h-4 sm:w-5 sm:h-5 text-green-700" />
                 </div>
                 <p className="font-semibold text-gray-900 text-xs sm:text-sm">Enter Details</p>
-                <p className="text-gray-600 text-xs mt-1">Order number & phone</p>
+                <p className="text-gray-600 text-xs mt-1">Order number &amp; email</p>
               </div>
               <div className="bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
