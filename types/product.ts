@@ -50,6 +50,7 @@ export function apiProductToLegacy(p: ApiProduct): Product {
   const price = getDisplayPrice(p);
   return {
     id: p.id,
+    slug: p.slug,
     img: p.thumbnail || '/images/product.png',
     nameEn: p.name,
     nameUr: p.name,
@@ -76,6 +77,8 @@ export interface ProductFeature {
 
 export interface Product {
   id: string | number;
+  /** Laravel slug — used for /products/{slug} links when present */
+  slug?: string;
   img: string;
   hoverImg?: string;
   nameEn: string;

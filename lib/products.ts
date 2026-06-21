@@ -79,6 +79,18 @@ export async function getProducts(params?: ProductsParams): Promise<ProductsResp
   }
 }
 
+export interface HomepageCategorySection {
+  category: ApiCategory;
+  products: ApiProduct[];
+}
+
+export async function getHomepageCategoryProducts(): Promise<HomepageCategorySection[]> {
+  const res = await api.get<{ success: boolean; data: HomepageCategorySection[] }>(
+    '/homepage/category-products',
+  );
+  return res.data;
+}
+
 export async function getFeaturedProducts(): Promise<Product[]> {
   try {
     const res = await api.get<{ success: boolean; data: ApiProduct[] }>('/products/featured');

@@ -3,7 +3,7 @@ import Banner from "./Sections/Banner";
 
 // Lazy load below-the-fold sections only
 const SolutionBar     = dynamic(() => import("./Sections/SolutionBar"), { ssr: false });
-const FeaturedProducts = dynamic(() => import("./Sections/FeaturedProducts"), { ssr: false });
+const CategoryProductsSection = dynamic(() => import("./Sections/CategoryProductsSection"), { ssr: false });
 const Category        = dynamic(() => import("./Sections/Category"), { ssr: false });
 const NewArrivals     = dynamic(() => import("./Sections/NewArrivals"), { ssr: false });
 const BeautyCorner    = dynamic(() => import("./Sections/BeautyCorner"), { ssr: false });
@@ -18,7 +18,7 @@ export default function DesktopHome() {
     <>
       <Banner />
       <SolutionBar />
-      <FeaturedProducts />
+      <CategoryProductsSection />
       <Category />
       <NewArrivals />
       <BeautyCorner />

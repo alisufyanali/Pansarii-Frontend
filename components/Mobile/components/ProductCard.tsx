@@ -14,7 +14,7 @@ export default function MobileProductCard({ product, priority = false }: { produ
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/products/${product.nameEn.toLowerCase().replace(/\s+/g, '-')}`);
+    router.push(`/products/${product.slug ?? product.nameEn.toLowerCase().replace(/\s+/g, '-')}`);
   };
 
   const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {

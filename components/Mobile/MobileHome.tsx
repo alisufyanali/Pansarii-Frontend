@@ -3,7 +3,11 @@
 import dynamic from 'next/dynamic';
 import HeroBanner from './components/HeroBanner';
 import SolutionBar from './components/solutionbar';
-import MobileFeaturedProducts from './components/FeaturedProducts';
+
+const CategoryProductsSection = dynamic(
+  () => import('@/components/Desktop/Sections/CategoryProductsSection'),
+  { ssr: false },
+);
 
 // Lazy load below-the-fold components with SSR disabled for faster initial load
 const Categories = dynamic(() => import('./components/categories'), { ssr: false });
@@ -18,7 +22,7 @@ export default function MobileHome() {
     <div className="min-h-screen bg-gray-50">
       <HeroBanner />
       <SolutionBar />
-      <MobileFeaturedProducts />
+      <CategoryProductsSection variant="mobile" />
       <Categories />
       <ShopProducts />
       <MobileComboDeal />
