@@ -15,15 +15,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-
-// ─── Base URL ─────────────────────────────────────────────────────────────────
-// Falls back to localhost so the app never crashes if .env.local is missing
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';
-
-if (!process.env.NEXT_PUBLIC_API_URL && process.env.NODE_ENV === 'production') {
-  console.warn('NEXT_PUBLIC_API_URL is not set!');
-}
+import { API_BASE_URL } from './api-config';
 
 // ─── Create instance ──────────────────────────────────────────────────────────
 const apiClient = axios.create({

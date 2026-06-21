@@ -5,6 +5,7 @@
  */
 
 import apiClient from './axios';
+import { API_BASE_URL } from './api-config';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,14 +66,12 @@ export const getBlogs = async (params?: BlogsParams): Promise<BlogsResponse> => 
 
 // ─── Server-safe fetchers (use in Server Components / generateMetadata) ───────
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';
-
 export async function fetchBlogsServer(params?: BlogsParams): Promise<BlogsResponse | null> {
   try {
     const query = params
       ? '?' + new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])).toString()
       : '';
-    const res = await fetch(`${API_BASE}/blogs${query}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE_URL}/blogs${query}`, { next: { revalidate: 60 } });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -82,7 +81,7 @@ export async function fetchBlogsServer(params?: BlogsParams): Promise<BlogsRespo
 
 export async function fetchBlogServer(slug: string): Promise<ApiBlogDetail | null> {
   try {
-    const res = await fetch(`${API_BASE}/blogs/${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE_URL}/blogs/${slug}`, { next: { revalidate: 60 } });
     if (!res.ok) return null;
     const json = await res.json();
     return json.data ?? null;

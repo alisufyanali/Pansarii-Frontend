@@ -2,7 +2,7 @@
  * Server-side helper for Next.js API routes proxying to Laravel.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';
+import { API_BASE_URL } from './api-config';
 
 export interface LaravelProxyResult {
   ok: boolean;
@@ -11,7 +11,7 @@ export interface LaravelProxyResult {
 }
 
 export async function laravelPost(path: string, body: Record<string, unknown>): Promise<LaravelProxyResult> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
