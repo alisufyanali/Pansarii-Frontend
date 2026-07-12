@@ -1,5 +1,25 @@
 import type { NextConfig } from "next";
 
+const remotePatterns: Array<{ protocol: "http" | "https"; hostname: string; port?: string; pathname?: string }> = [
+  {
+    protocol: "https",
+    hostname: "*.amazonaws.com",
+    pathname: "/**",
+  },
+  {
+    protocol: "https",
+    hostname: "custom.pansariinn.pk",
+    pathname: "/storage/**",
+  },
+];
+
+if (process.env.NODE_ENV !== "production") {
+  remotePatterns.push(
+    { protocol: "http", hostname: "localhost", port: "8000", pathname: "/storage/**" },
+    { protocol: "http", hostname: "127.0.0.1", port: "8000", pathname: "/storage/**" }
+  );
+}
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   compress: true,
@@ -15,32 +35,7 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    remotePatterns: [
-      ...(process.env.NODE_ENV !== 'production' ? [
-        {
-          protocol: 'http',
-          hostname: 'localhost',
-          port: '8000',
-          pathname: '/storage/**',
-        },
-        {
-          protocol: 'http',
-          hostname: '127.0.0.1',
-          port: '8000',
-          pathname: '/storage/**',
-        },
-      ] : []),
-      {
-        protocol: 'https',
-        hostname: '*.amazonaws.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'custom.pansariinn.pk',
-        pathname: '/storage/**',
-      },
-    ],
+    remotePatterns,
   },
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
