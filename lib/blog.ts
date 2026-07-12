@@ -6,6 +6,7 @@
 
 import apiClient from './axios';
 import { API_BASE_URL } from './api-config';
+import type { PaginatedResponse, ApiResponse } from '@/types/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,16 +39,7 @@ export interface ApiBlogDetail extends ApiBlog {
   meta_desc?: string;
 }
 
-export interface BlogsResponse {
-  success: boolean;
-  data: ApiBlog[];
-  meta: {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-  };
-}
+export type BlogsResponse = PaginatedResponse<ApiBlog>;
 
 export interface BlogsParams {
   search?: string;
@@ -59,8 +51,8 @@ export interface BlogsParams {
 
 // ─── Client-side API functions ────────────────────────────────────────────────
 
-export const getBlogs = async (params?: BlogsParams): Promise<BlogsResponse> => {
-  const res = await apiClient.get<BlogsResponse>('/blogs', { params });
+export const getBlogs = async (params?: BlogsParams, options?: { signal?: AbortSignal }): Promise<BlogsResponse> => {
+  const res = await apiClient.get<BlogsResponse>('/blogs', { params, signal: options?.signal });
   return res.data;
 };
 
@@ -83,7 +75,7 @@ export async function fetchBlogServer(slug: string): Promise<ApiBlogDetail | nul
   try {
     const res = await fetch(`${API_BASE_URL}/blogs/${slug}`, { next: { revalidate: 60 } });
     if (!res.ok) return null;
-    const json = await res.json();
+    const json = await res.json() as ApiResponse<ApiBlogDetail>;
     return json.data ?? null;
   } catch {
     return null;

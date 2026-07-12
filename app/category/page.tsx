@@ -119,8 +119,15 @@ function CategoryBrowseContent() {
     setSelectedCategoryId(undefined);
   }, [categoryParam, apiCategories]);
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (signal?: AbortSignal) => {
     setIsLoading(true);
+
+    const safePage = Math.max(1, Math.min(currentPage, totalPages || 1));
+    if (safePage !== currentPage) {
+      setCurrentPage(safePage);
+      return;
+    }
+
     const sortMap: Record<string, { sort_by?: string; sort_order?: 'asc' | 'desc' }> = {
       'price-low':  { sort_by: 'price', sort_order: 'asc'  },
       'price-high': { sort_by: 'price', sort_order: 'desc' },
@@ -136,9 +143,9 @@ function CategoryBrowseContent() {
         min_price:   filters.minPrice > 0 ? filters.minPrice : undefined,
         max_price:   filters.maxPrice < 5000 ? filters.maxPrice : undefined,
         per_page:    productsPerPage,
-        page:        currentPage,
+        page:        safePage,
         ...sortParams,
-      });
+      }, { signal });
       setProducts(mapApiProducts(res.data));
       setTotalProducts(res.meta.total);
       setTotalPages(res.meta.last_page);
@@ -149,10 +156,12 @@ function CategoryBrowseContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, selectedCategoryId, currentPage, productsPerPage]);
+  }, [filters, selectedCategoryId, currentPage, totalPages, productsPerPage]);
 
   useEffect(() => {
-    fetchProducts();
+    const controller = new AbortController();
+    fetchProducts(controller.signal);
+    return () => controller.abort();
   }, [fetchProducts]);
 
   const allCategories = [ALL_PRODUCTS_LABEL, ...apiCategories.map(c => c.name)];

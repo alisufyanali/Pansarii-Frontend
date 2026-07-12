@@ -173,8 +173,8 @@ export const api = {
    * GET /endpoint
    * @example const products = await api.get<Product[]>('/products');
    */
-  get: async <T>(url: string, params?: Record<string, unknown>): Promise<T> => {
-    const res = await apiClient.get<T>(url, { params });
+  get: async <T>(url: string, params?: Record<string, unknown>, config?: { signal?: AbortSignal }): Promise<T> => {
+    const res = await apiClient.get<T>(url, { params, signal: config?.signal });
     return res.data;
   },
 

@@ -4,6 +4,7 @@
  */
 
 import apiClient from './axios';
+import type { ApiResponse } from '@/types/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ export const validateCoupon = async (
   amount: number,
   productId?: number,
 ): Promise<CouponResult> => {
-  const res = await apiClient.post<{ success: boolean; message: string; data: CouponResult }>(
+  const res = await apiClient.post<ApiResponse<CouponResult>>(
     '/coupons/validate',
     { code, amount, ...(productId ? { product_id: productId } : {}) },
   );

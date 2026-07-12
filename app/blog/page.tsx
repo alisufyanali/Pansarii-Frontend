@@ -155,7 +155,7 @@ export default function BlogPage() {
   const [totalCount,     setTotalCount]     = useState(0);
 
   // ── Fetch ────────────────────────────────────────────────────────────────────
-  const fetchPosts = useCallback(async (page: number, catId: number | 'all', search: string) => {
+  const fetchPosts = useCallback(async (page: number, catId: number | 'all', search: string, signal?: AbortSignal) => {
     setIsLoading(true);
     try {
       const res = await getBlogs({
@@ -163,7 +163,7 @@ export default function BlogPage() {
         per_page:    POSTS_PER_PAGE,
         ...(catId !== 'all' ? { category_id: catId } : {}),
         ...(search ? { search } : {}),
-      });
+      }, { signal });
       const norm = res.data.map(normApi);
       setPosts(norm);
       setTotalPages(res.meta.last_page);
@@ -185,7 +185,8 @@ export default function BlogPage() {
         res.data.forEach(p => p.tags.forEach(t => tagMap.set(t.name, (tagMap.get(t.name) ?? 0) + 1)));
         setPopularTags(Array.from(tagMap.entries()).sort((a,b) => b[1]-a[1]).slice(0,10).map(([t]) => t));
       }
-    } catch {
+    } catch (err) {
+      if (signal?.aborted) return;
       // Fallback to static data
       const norm = blogPosts.map(normStatic);
       const filtered = norm.filter(p => {
@@ -215,7 +216,11 @@ export default function BlogPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { fetchPosts(currentPage, activeCategory, searchQuery); }, [currentPage, activeCategory, searchQuery, fetchPosts]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchPosts(currentPage, activeCategory, searchQuery, controller.signal);
+    return () => controller.abort();
+  }, [currentPage, activeCategory, searchQuery, fetchPosts]);
 
   const handleCategoryChange = (id: number | 'all') => { setActiveCategory(id); setCurrentPage(1); };
   const handleSearch         = (q: string)           => { setSearchQuery(q);    setCurrentPage(1); };

@@ -9,19 +9,13 @@ import type { ApiProduct, ApiCategory } from '@/types/product';
 import { allProducts, bestSellers } from '@/data/products';
 import { apiProductToLegacy } from '@/types/product';
 import type { Product } from '@/types/product';
+import type { ApiResponse, PaginatedResponse, PaginatedMeta } from '@/types/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ProductsResponse {
   data: ApiProduct[];
-  meta: {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-    from: number;
-    to: number;
-  };
+  meta: PaginatedMeta;
 }
 
 export interface ProductsParams {
@@ -38,13 +32,9 @@ export interface ProductsParams {
 
 // ─── API functions ────────────────────────────────────────────────────────────
 
-export async function getProducts(params?: ProductsParams): Promise<ProductsResponse> {
+export async function getProducts(params?: ProductsParams, options?: { signal?: AbortSignal }): Promise<ProductsResponse> {
   try {
-    const res = await api.get<{
-      success: boolean;
-      data: ApiProduct[];
-      meta: ProductsResponse['meta'];
-    }>('/products', params as Record<string, unknown>);
+    const res = await api.get<PaginatedResponse<ApiProduct>>('/products', params as Record<string, unknown>, { signal: options?.signal });
     return { data: res.data, meta: res.meta };
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
@@ -85,7 +75,7 @@ export interface HomepageCategorySection {
 }
 
 export async function getHomepageCategoryProducts(): Promise<HomepageCategorySection[]> {
-  const res = await api.get<{ success: boolean; data: HomepageCategorySection[] }>(
+  const res = await api.get<ApiResponse<HomepageCategorySection[]>>(
     '/homepage/category-products',
   );
   return res.data;
@@ -93,7 +83,7 @@ export async function getHomepageCategoryProducts(): Promise<HomepageCategorySec
 
 export async function getFeaturedProducts(): Promise<Product[]> {
   try {
-    const res = await api.get<{ success: boolean; data: ApiProduct[] }>('/products/featured');
+    const res = await api.get<ApiResponse<ApiProduct[]>>('/products/featured');
     return res.data.map(apiProductToLegacy);
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
@@ -105,7 +95,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 
 export async function getProductBySlug(slug: string): Promise<ApiProduct | null> {
   try {
-    const res = await api.get<{ success: boolean; data: ApiProduct }>(`/products/${slug}`);
+    const res = await api.get<ApiResponse<ApiProduct>>(`/products/${slug}`);
     return res.data;
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
@@ -149,7 +139,7 @@ export const getCategoriesCached = async () => {
 };
 
 export async function getVideoProducts(): Promise<ApiProduct[]> {
-  const res = await api.get<{ success: boolean; data: ApiProduct[] }>('/products/with-video');
+  const res = await api.get<ApiResponse<ApiProduct[]>>('/products/with-video');
   return res.data ?? [];
 }
 

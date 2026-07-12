@@ -95,7 +95,7 @@ function ShopContent() {
   // API state
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
   const [apiCategories, setApiCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
-  const [apiMeta, setApiMeta] = useState<{ current_page: number; last_page: number; total: number; per_page: number } | null>(null);
+  const [apiMeta, setApiMeta] = useState<{ current_page: number; last_page: number; total: number; per_page?: number } | null>(null);
   const [isApiLoading, setIsApiLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -136,6 +136,7 @@ function ShopContent() {
   // Fetch products when filters/page change
   useEffect(() => {
     setIsApiLoading(true);
+    const controller = new AbortController();
 
     const selectedCategoryId = filters.categories.length === 1
       ? apiCategories.find(c => c.name === filters.categories[0] || c.slug === filters.categories[0])?.id
@@ -158,7 +159,7 @@ function ShopContent() {
         per_page:    productsPerPage,
         page:        currentPage,
         ...sortParams,
-      }).then(res => {
+      }, { signal: controller.signal }).then(res => {
         setApiProducts(res.data.map(p => {
           const price = p.variants?.length ? Math.min(...p.variants.map(v => v.price)) : (p.sale_price ?? p.price);
           return {
@@ -182,6 +183,8 @@ function ShopContent() {
         setApiMeta(res.meta);
       }).finally(() => setIsApiLoading(false));
     });
+
+    return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, currentPage, productsPerPage, apiCategories]);
 

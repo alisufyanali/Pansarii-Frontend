@@ -4,6 +4,7 @@
  */
 
 import apiClient, { api } from './axios';
+import type { ApiResponse, PaginatedResponse } from '@/types/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,21 +55,12 @@ export interface ApiOrderItem {
   thumbnail?: string;
 }
 
-export interface OrdersListResponse {
-  success: boolean;
-  data: ApiOrder[];
-  meta: {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-  };
-}
+export type OrdersListResponse = PaginatedResponse<ApiOrder>;
 
 // ─── API functions ────────────────────────────────────────────────────────────
 
 export const createOrder = async (orderData: CreateOrderPayload): Promise<ApiOrder> => {
-  const res = await apiClient.post<{ success: boolean; message: string; data: ApiOrder }>(
+  const res = await apiClient.post<ApiResponse<ApiOrder>>(
     '/orders',
     orderData,
   );
@@ -94,7 +86,7 @@ export interface GuestOrderResult extends ApiOrder {
 }
 
 export const createGuestOrder = async (payload: CreateGuestOrderPayload): Promise<GuestOrderResult> => {
-  const res = await api.post<{ success: boolean; data: GuestOrderResult }>('/orders/guest', payload);
+  const res = await api.post<ApiResponse<GuestOrderResult>>('/orders/guest', payload);
   return res.data;
 };
 
@@ -109,12 +101,12 @@ export const getOrders = async (
 };
 
 export const getOrderById = async (id: number): Promise<ApiOrder> => {
-  const res = await apiClient.get<{ success: boolean; data: ApiOrder }>(`/orders/${id}`);
+  const res = await apiClient.get<ApiResponse<ApiOrder>>(`/orders/${id}`);
   return res.data.data;
 };
 
 export const trackOrder = async (orderNumber: string, email: string): Promise<ApiOrder> => {
-  const res = await api.get<{ success: boolean; data: ApiOrder }>('/orders/track', {
+  const res = await api.get<ApiResponse<ApiOrder>>('/orders/track', {
     order_number: orderNumber,
     email,
   });
