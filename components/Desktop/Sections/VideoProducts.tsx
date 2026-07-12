@@ -5,46 +5,19 @@ import VideoProductCard from "@components/VideoProductCard";
 import ForwardArrow from "@components/ForwardArrow";
 import BackwardArrow from "@components/BackwardArrow";
 import {
-  getVideoProducts,
   mapApiProductToVideoCard,
   DEFAULT_VIDEO_PRODUCTS,
-  type VideoProductCardData,
 } from "@/lib/products";
+import type { ApiProduct } from "@/types/product";
 
-function VideoProductsSkeleton() {
-  return (
-    <section className="mx-[4%] my-8">
-      <div className="max-w-[1920px] mx-auto">
-        <div className="mb-5 h-8 w-48 bg-gray-200 rounded animate-pulse" />
-        <div className="flex gap-6 overflow-hidden pb-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-52 h-72 bg-gray-200 rounded-2xl animate-pulse" />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export default function VideoProducts() {
-  const [videoProducts, setVideoProducts] = useState<VideoProductCardData[] | null>(null);
-  const [loading, setLoading] = useState(true);
-
+export default function VideoProducts({ products }: { products?: ApiProduct[] }) {
   const sliderRef        = useRef<HTMLDivElement>(null);
   const [canScrollLeft,  setCanScrollLeft]  = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  useEffect(() => {
-    getVideoProducts()
-      .then(data => {
-        const mapped = (data ?? []).map(mapApiProductToVideoCard);
-        setVideoProducts(mapped.length > 0 ? mapped : null);
-      })
-      .catch(() => setVideoProducts(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const displayProducts = videoProducts ?? DEFAULT_VIDEO_PRODUCTS;
+  const displayProducts = (products && products.length > 0
+    ? products.map(mapApiProductToVideoCard)
+    : DEFAULT_VIDEO_PRODUCTS);
 
   const checkScroll = () => {
     const el = sliderRef.current;
@@ -68,8 +41,6 @@ export default function VideoProducts() {
     el.addEventListener("scroll", checkScroll, { passive: true });
     return () => el.removeEventListener("scroll", checkScroll);
   }, [displayProducts]);
-
-  if (loading) return <VideoProductsSkeleton />;
 
   return (
     <section className="mx-[4%] my-8">

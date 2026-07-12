@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiChevronRight } from 'react-icons/fi';
-import { useEffect, useState } from 'react';
 import { blogPosts } from '@/data/blogposts';
-import { getBlogs, type ApiBlog } from '@/lib/blog';
+import { type ApiBlog } from '@/lib/blog';
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
 
@@ -41,39 +40,10 @@ function mapApiBlogToCard(blog: ApiBlog): BlogCardItem {
   };
 }
 
-function BlogSkeleton() {
-  return (
-    <section className="py-4 px-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
-        <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {[...Array(2)].map((_, i) => (
-          <div key={i} className="h-40 bg-gray-200 rounded-xl animate-pulse" />
-        ))}
-      </div>
-    </section>
-  );
-}
+export default function MobileBlogSection({ posts }: { posts?: ApiBlog[] }) {
+  const displayBlogs = ((posts && posts.length > 0 ? posts.map(mapApiBlogToCard) : DEFAULT_BLOGS)).slice(0, 2);
 
-export default function MobileBlogSection() {
-  const [blogs, setBlogs] = useState<BlogCardItem[] | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getBlogs({ per_page: 4 })
-      .then(res => {
-        const mapped = (res.data ?? []).map(mapApiBlogToCard);
-        setBlogs(mapped.length > 0 ? mapped : null);
-      })
-      .catch(() => setBlogs(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const displayBlogs = (blogs ?? DEFAULT_BLOGS).slice(0, 2);
-
-  if (loading) return <BlogSkeleton />;
+  if (displayBlogs.length === 0) return null;
 
   return (
     <section className="py-4 px-4">

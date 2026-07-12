@@ -5,43 +5,20 @@ import { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaHeart, FaShareAlt } from 'react-icons/fa';
 import {
-  getVideoProducts,
   mapApiProductToVideoCard,
   DEFAULT_VIDEO_PRODUCTS,
   type VideoProductCardData,
 } from '@/lib/products';
+import type { ApiProduct } from '@/types/product';
 
-function VideoProductsSkeleton() {
-  return (
-    <section className="py-4">
-      <div className="px-4 mb-3 h-5 w-40 bg-gray-200 rounded animate-pulse" />
-      <div className="flex gap-3 pl-4 overflow-hidden">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="flex-shrink-0 rounded-2xl bg-gray-200 animate-pulse aspect-[9/14]" style={{ width: 'calc((100vw - 56px) / 2.6)' }} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export default function MobileVideoProducts() {
+export default function MobileVideoProducts({ products }: { products?: ApiProduct[] }) {
   const router    = useRouter();
   const sliderRef = useRef<HTMLDivElement>(null);
   const isTouch   = useRef(false);
-  const [products, setProducts] = useState<VideoProductCardData[] | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    getVideoProducts()
-      .then(data => {
-        const mapped = (data ?? []).map(mapApiProductToVideoCard);
-        setProducts(mapped.length > 0 ? mapped : null);
-      })
-      .catch(() => setProducts(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const displayProducts = products ?? DEFAULT_VIDEO_PRODUCTS;
+  const displayProducts = (products && products.length > 0
+    ? products.map(mapApiProductToVideoCard)
+    : DEFAULT_VIDEO_PRODUCTS);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -57,8 +34,6 @@ export default function MobileVideoProducts() {
     }, 3000);
     return () => clearInterval(t);
   }, [displayProducts.length]);
-
-  if (loading) return <VideoProductsSkeleton />;
 
   return (
     <section className="py-4">

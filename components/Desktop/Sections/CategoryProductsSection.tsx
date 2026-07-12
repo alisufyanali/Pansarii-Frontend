@@ -1,8 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { getHomepageCategoryProducts } from "@/lib/products";
 import type { HomepageCategorySection } from "@/lib/products";
 
 const CategoryProductRow = dynamic(() => import("./CategoryProductRow"), {
@@ -12,6 +11,7 @@ const CategoryProductRow = dynamic(() => import("./CategoryProductRow"), {
 
 interface CategoryProductsSectionProps {
   variant?: "desktop" | "mobile";
+  data?: HomepageCategorySection[];
 }
 
 function CategoryRowSkeleton({ variant }: { variant: "desktop" | "mobile" }) {
@@ -63,41 +63,13 @@ function CategoryRowSkeleton({ variant }: { variant: "desktop" | "mobile" }) {
   );
 }
 
-function SectionLoadingFallback({ variant }: { variant: "desktop" | "mobile" }) {
-  return (
-    <>
-      <CategoryRowSkeleton variant={variant} />
-      <CategoryRowSkeleton variant={variant} />
-    </>
-  );
-}
-
 export default function CategoryProductsSection({
   variant = "desktop",
+  data,
 }: CategoryProductsSectionProps) {
-  const [sections, setSections] = useState<HomepageCategorySection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    getHomepageCategoryProducts()
-      .then(data => {
-        const filtered = (data ?? []).filter(
-          section => section.products && section.products.length > 0,
-        );
-        setSections(filtered);
-      })
-      .catch(err => {
-        if (process.env.NODE_ENV === "development") {
-          console.warn("[homepage] category-products API unavailable:", err);
-        }
-        setSections([]);
-      })
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  if (isLoading) {
-    return <SectionLoadingFallback variant={variant} />;
-  }
+  const sections = (data && data.length > 0 ? data : []).filter(
+    section => section.products && section.products.length > 0,
+  );
 
   if (sections.length === 0) {
     return null;

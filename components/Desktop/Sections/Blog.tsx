@@ -1,10 +1,9 @@
 "use client";
 
+import Link from 'next/link';
 import { blogPosts } from '../../../data/blogposts';
 import BlogCard from '../components/BlogCard';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { getBlogs, type ApiBlog } from '@/lib/blog';
+import { type ApiBlog } from '@/lib/blog';
 
 interface BlogCardItem {
   id: string | number;
@@ -46,38 +45,10 @@ function mapApiBlogToCard(blog: ApiBlog): BlogCardItem {
   };
 }
 
-function BlogSkeleton() {
-  return (
-    <section className="mx-[4%] my-8">
-      <div className="max-w-[1920px] mx-auto">
-        <div className="mb-5 h-8 w-48 bg-gray-200 rounded animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-72 bg-gray-200 rounded-2xl animate-pulse" />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+export default function Blog({ posts }: { posts?: ApiBlog[] }) {
+  const displayBlogs = ((posts && posts.length > 0 ? posts.map(mapApiBlogToCard) : DEFAULT_BLOGS)).slice(0, 3);
 
-export default function Blog() {
-  const [blogs, setBlogs] = useState<BlogCardItem[] | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getBlogs({ per_page: 4 })
-      .then(res => {
-        const mapped = (res.data ?? []).map(mapApiBlogToCard);
-        setBlogs(mapped.length > 0 ? mapped : null);
-      })
-      .catch(() => setBlogs(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const displayBlogs = (blogs ?? DEFAULT_BLOGS).slice(0, 3);
-
-  if (loading) return <BlogSkeleton />;
+  if (displayBlogs.length === 0) return null;
 
   return (
     <section className="mx-[4%] my-8">

@@ -1,5 +1,9 @@
+'use client';
+
 import dynamic from 'next/dynamic';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+
+import { getHomepageData, EMPTY_HOMEPAGE, type HomepageData } from '@/lib/homepage';
 
 const Banner = dynamic(() => import("./Sections/Banner"), { ssr: false });
 
@@ -22,14 +26,24 @@ const Review          = dynamic(() => import("./Sections/Review"), { ssr: false 
 const Blog            = dynamic(() => import("./Sections/Blog"), { ssr: false });
 
 export default function DesktopHome() {
+  const [homepageData, setHomepageData] = useState<HomepageData>(EMPTY_HOMEPAGE);
+
+  useEffect(() => {
+    let active = true;
+    getHomepageData().then(data => {
+      if (active) setHomepageData(data);
+    });
+    return () => { active = false; };
+  }, []);
+
   return (
     <>
       <Suspense fallback={<BannerFallback />}>
-        <Banner />
+        <Banner slides={homepageData.banners} />
       </Suspense>
       <SolutionBar />
       <Suspense fallback={null}>
-        <CategoryProductsSection />
+        <CategoryProductsSection data={homepageData.category_products} />
       </Suspense>
       <Category />
       <NewArrivals />
@@ -37,13 +51,13 @@ export default function DesktopHome() {
       <PansariInn />
       <ComboDeal />
       <Suspense fallback={null}>
-        <VideoProducts />
+        <VideoProducts products={homepageData.video_products} />
       </Suspense>
       <Suspense fallback={null}>
-        <Review />
+        <Review reviews={homepageData.reviews} />
       </Suspense>
       <Suspense fallback={null}>
-        <Blog />
+        <Blog posts={homepageData.blogs} />
       </Suspense>
     </>
   );

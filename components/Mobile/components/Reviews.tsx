@@ -4,10 +4,9 @@ import Image from 'next/image';
 import { useRef, useEffect, useState } from 'react';
 import { FaStar, FaTimes } from 'react-icons/fa';
 import {
-  getHomepageReviews,
   mapHomepageReviewToCard,
   DEFAULT_REVIEWS,
-  type ReviewCardData,
+  type HomepageReview,
 } from '@/lib/reviews';
 
 // ── Image lightbox ────────────────────────────────────────────────────────────
@@ -61,39 +60,16 @@ function Lightbox({ images, startIndex, onClose }: {
   );
 }
 
-function ReviewsSkeleton() {
-  return (
-    <section className="py-4 bg-cream">
-      <div className="px-4 mb-4 h-5 w-48 bg-gray-200 rounded animate-pulse mx-auto" />
-      <div className="flex gap-4 px-4 overflow-hidden">
-        {[...Array(2)].map((_, i) => (
-          <div key={i} className="flex-shrink-0 bg-gray-200 rounded-2xl animate-pulse" style={{ width: 'calc((100vw - 56px) / 2)', height: '180px' }} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
-export default function MobileReviews() {
+export default function MobileReviews({ reviews }: { reviews?: HomepageReview[] }) {
   const sliderRef = useRef<HTMLDivElement>(null);
   const isTouch   = useRef(false);
-  const [reviews, setReviews] = useState<ReviewCardData[] | null>(null);
-  const [loading, setLoading] = useState(true);
   const [active,   setActive]   = useState(0);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
-  useEffect(() => {
-    getHomepageReviews()
-      .then(data => {
-        const mapped = (data ?? []).map(mapHomepageReviewToCard);
-        setReviews(mapped.length > 0 ? mapped : null);
-      })
-      .catch(() => setReviews(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const displayReviews = reviews ?? DEFAULT_REVIEWS;
+  const displayReviews = (reviews && reviews.length > 0
+    ? reviews.map(mapHomepageReviewToCard)
+    : DEFAULT_REVIEWS);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -108,8 +84,6 @@ export default function MobileReviews() {
     }, 4000);
     return () => clearInterval(t);
   }, [displayReviews.length]);
-
-  if (loading) return <ReviewsSkeleton />;
 
   return (
     <>

@@ -5,49 +5,23 @@ import ReviewCard from '@components/ReviewCard';
 import ForwardArrow from '@components/ForwardArrow';
 import BackwardArrow from '@components/BackwardArrow';
 import {
-  getHomepageReviews,
   mapHomepageReviewToCard,
   DEFAULT_REVIEWS,
-  type ReviewCardData,
+  type HomepageReview,
 } from '@/lib/reviews';
 
-function ReviewSkeleton() {
-  return (
-    <section className="mx-[4%] my-8">
-      <div className="max-w-[1920px] mx-auto">
-        <div className="mb-6 h-8 w-64 bg-gray-200 rounded animate-pulse" />
-        <div className="flex gap-6 overflow-hidden pb-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-72 h-56 bg-gray-200 rounded-2xl animate-pulse" />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export default function Review() {
+export default function Review({ reviews }: { reviews?: HomepageReview[] }) {
   const sliderRef        = useRef<HTMLDivElement>(null);
   const [canScrollLeft,  setCanScrollLeft]  = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const [reviews, setReviews] = useState<ReviewCardData[] | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const isDragging  = useRef(false);
   const startX      = useRef(0);
   const scrollStart = useRef(0);
 
-  useEffect(() => {
-    getHomepageReviews()
-      .then(data => {
-        const mapped = (data ?? []).map(mapHomepageReviewToCard);
-        setReviews(mapped.length > 0 ? mapped : null);
-      })
-      .catch(() => setReviews(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const displayReviews = reviews ?? DEFAULT_REVIEWS;
+  const displayReviews = (reviews && reviews.length > 0
+    ? reviews.map(mapHomepageReviewToCard)
+    : DEFAULT_REVIEWS);
 
   const checkScroll = () => {
     const el = sliderRef.current;
@@ -88,8 +62,6 @@ export default function Review() {
     const x = e.pageX - sliderRef.current.offsetLeft;
     sliderRef.current.scrollLeft = scrollStart.current - (x - startX.current);
   };
-
-  if (loading) return <ReviewSkeleton />;
 
   return (
     <section className="mx-[4%] my-8">

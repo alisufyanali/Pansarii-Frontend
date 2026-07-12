@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  getSlides,
   mapApiSlideToBanner,
   DEFAULT_MOBILE_SLIDES,
-  type BannerSlide,
+  type ApiSlide,
 } from '@/lib/slides';
 
 const fallbackColors = [
@@ -16,39 +15,19 @@ const fallbackColors = [
   'from-purple-600 to-pink-500',
 ];
 
-function HeroBannerSkeleton() {
-  return (
-    <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden h-48 bg-gray-200 animate-pulse" />
-  );
-}
-
-export default function HeroBanner() {
-  const [slides, setSlides] = useState<BannerSlide[] | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function HeroBanner({ slides }: { slides?: ApiSlide[] }) {
   const [current, setCurrent] = useState(0);
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    getSlides()
-      .then(apiSlides => {
-        const mapped = (apiSlides ?? [])
-          .filter(s => s.image || s.video)
-          .map(mapApiSlideToBanner);
-        setSlides(mapped.length > 0 ? mapped : null);
-      })
-      .catch(() => setSlides(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const banners = slides ?? DEFAULT_MOBILE_SLIDES;
+  const banners = (slides && slides.length > 0
+    ? slides.filter(s => s.image || s.video).map(mapApiSlideToBanner)
+    : DEFAULT_MOBILE_SLIDES);
 
   useEffect(() => {
     if (banners.length <= 1) return;
     const t = setInterval(() => setCurrent(p => (p + 1) % banners.length), 5000);
     return () => clearInterval(t);
   }, [banners.length]);
-
-  if (loading) return <HeroBannerSkeleton />;
 
   return (
     <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden h-48">
