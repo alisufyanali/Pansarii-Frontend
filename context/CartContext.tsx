@@ -143,21 +143,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
         // Token restored from storage (e.g. page reload after API register) — merge pending guest cart
         setIsCartLoading(true);
         (async () => {
+          const failedItems: CartItem[] = [];
           for (const item of guestItems) {
             if (!item.variantId) continue;
             try {
               await addToCartApi(item.variantId, item.quantity);
             } catch (err) {
+              failedItems.push(item);
               log('⚠️  Mount merge failed for', item.nameEn, apiErrMsg(err));
             }
           }
-          clearLocalCart();
+
+          // Sync first; only clear local storage after a confirmed successful read-back.
           try {
             const items = await getCart();
             setCartItems(items.map(apiItemToCartItem));
-            log('✅ Guest cart merged on mount:', items.length, 'items');
-          } catch {
-            setCartItems([]);
+            if (failedItems.length > 0) {
+              writeLocalCart(failedItems);
+              toast.warning(`${failedItems.length} item(s) could not be added — please check stock.`);
+            } else {
+              clearLocalCart();
+            }
+          } catch (err) {
+            log('⚠️  Sync failed on mount, keeping local cart as fallback:', apiErrMsg(err));
+            if (failedItems.length > 0) writeLocalCart(failedItems);
+            toast.error('Failed to sync cart. Your items are saved locally.');
           } finally {
             setIsCartLoading(false);
           }
@@ -219,6 +229,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     log('🔀 Merging', guestItems.length, 'guest items into API cart…');
 
+    const failedItems: CartItem[] = [];
     for (const item of guestItems) {
       if (!item.variantId) {
         log('⚠️  Skipping item without variantId:', item.nameEn);
@@ -227,14 +238,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         await addToCartApi(item.variantId, item.quantity);
       } catch (err) {
-        const msg = apiErrMsg(err);
-        toast.warning(`Could not add "${item.nameEn}" to cart: ${msg}`);
+        failedItems.push(item);
+        log('⚠️  Merge failed for', item.nameEn, apiErrMsg(err));
       }
     }
 
-    clearLocalCart();
-    await syncFromApi();
-    log('✅ Guest cart merge complete');
+    // Only sync and clear AFTER confirming the API cart can be read back.
+    try {
+      const items = await getCart();
+      setCartItems(items.map(apiItemToCartItem));
+
+      if (failedItems.length > 0) {
+        // Keep failed items in localStorage for later retry; do NOT wipe them.
+        writeLocalCart(failedItems);
+        toast.warning(`${failedItems.length} item(s) could not be added — please check stock.`);
+      } else {
+        clearLocalCart();
+      }
+    } catch (err) {
+      // Sync failed — DO NOT clear local storage; keep guest items as fallback.
+      log('⚠️  Sync failed, keeping local cart as fallback:', apiErrMsg(err));
+      if (failedItems.length > 0) writeLocalCart(failedItems);
+      toast.error('Failed to sync cart. Your items are saved locally.');
+    }
   }, [syncFromApi]);
 
   // ── addToCart ───────────────────────────────────────────────────────────────

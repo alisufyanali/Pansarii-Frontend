@@ -148,6 +148,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         // Token restored from storage — merge pending guest wishlist
         setIsWishlistLoading(true);
         (async () => {
+          const failedItems: WishlistItem[] = [];
           for (const item of guestItems) {
             const productId = item.productId ?? Number(item.id);
             if (!productId) continue;
@@ -155,16 +156,25 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
               await addToWishlistApi(productId, item.variantId);
             } catch (err) {
               if (getHttpStatus(err) === 422 && isAlreadyInWishlist(err)) continue;
+              failedItems.push(item);
               log('⚠️  Mount merge failed for', item.nameEn, apiErrMsg(err));
             }
           }
-          clearLocalWishlist();
+
+          // Sync first; only clear local storage after a confirmed successful read-back.
           try {
             const items = await getWishlist();
             setWishlistItems(items.map(apiItemToWishlistItem));
-            log('✅ Guest wishlist merged on mount:', items.length, 'items');
-          } catch {
-            setWishlistItems([]);
+            if (failedItems.length > 0) {
+              writeLocalWishlist(failedItems);
+              toast.warning(`${failedItems.length} item(s) could not be added to your wishlist — please check stock.`);
+            } else {
+              clearLocalWishlist();
+            }
+          } catch (err) {
+            log('⚠️  Sync failed on mount, keeping local wishlist as fallback:', apiErrMsg(err));
+            if (failedItems.length > 0) writeLocalWishlist(failedItems);
+            toast.error('Failed to sync wishlist. Your items are saved locally.');
           } finally {
             setIsWishlistLoading(false);
           }
@@ -224,21 +234,37 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
     log('🔀 Merging', guestItems.length, 'guest wishlist items into API…');
 
+    const failedItems: WishlistItem[] = [];
     for (const item of guestItems) {
       const productId = item.productId ?? Number(item.id);
       if (!productId) continue;
       try {
         await addToWishlistApi(productId, item.variantId);
       } catch (err) {
-        // 422 "already in wishlist" is fine — skip silently
+        // 422 "already in wishlist" is treated as success — skip silently
         if (getHttpStatus(err) === 422 && isAlreadyInWishlist(err)) continue;
+        failedItems.push(item);
         log('⚠️ Could not merge wishlist item:', item.nameEn, apiErrMsg(err));
       }
     }
 
-    clearLocalWishlist();
-    await syncFromApi();
-    log('✅ Guest wishlist merge complete');
+    // Only sync and clear AFTER confirming the API wishlist can be read back.
+    try {
+      const items = await getWishlist();
+      setWishlistItems(items.map(apiItemToWishlistItem));
+      if (failedItems.length > 0) {
+        // Keep failed items in localStorage for later retry; do NOT wipe them.
+        writeLocalWishlist(failedItems);
+        toast.warning(`${failedItems.length} item(s) could not be added to your wishlist — please check stock.`);
+      } else {
+        clearLocalWishlist();
+      }
+    } catch (err) {
+      // Sync failed — DO NOT clear local storage; keep guest items as fallback.
+      log('⚠️ Sync failed, keeping local wishlist as fallback:', apiErrMsg(err));
+      if (failedItems.length > 0) writeLocalWishlist(failedItems);
+      toast.error('Failed to sync wishlist. Your items are saved locally.');
+    }
   }, [syncFromApi]);
 
   // ── addToWishlist ───────────────────────────────────────────────────────────
