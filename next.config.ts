@@ -16,18 +16,20 @@ const nextConfig: NextConfig = {
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '8000',
-        pathname: '/storage/**',
-      },
-      {
-        protocol: 'http',
-        hostname: '127.0.0.1',
-        port: '8000',
-        pathname: '/storage/**',
-      },
+      ...(process.env.NODE_ENV !== 'production' ? [
+        {
+          protocol: 'http',
+          hostname: 'localhost',
+          port: '8000',
+          pathname: '/storage/**',
+        },
+        {
+          protocol: 'http',
+          hostname: '127.0.0.1',
+          port: '8000',
+          pathname: '/storage/**',
+        },
+      ] : []),
       {
         protocol: 'https',
         hostname: '*.amazonaws.com',
@@ -54,7 +56,7 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: isDev
               ? "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://va.vercel-scripts.com ws: wss: http://localhost:8000 http://127.0.0.1:8000 https://custom.pansariinn.pk;"
-              : "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://va.vercel-scripts.com https://custom.pansariinn.pk;",
+              : "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://va.vercel-scripts.com" + (process.env.NODE_ENV !== 'production' ? " http://localhost:8000 http://127.0.0.1:8000" : "") + " https://custom.pansariinn.pk;",
           },
         ],
       },
