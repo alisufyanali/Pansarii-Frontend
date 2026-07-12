@@ -128,8 +128,8 @@ function ShopContent() {
 
   // Fetch categories once
   useEffect(() => {
-    import('@/lib/products').then(({ getCategories }) => {
-      getCategories().then(cats => setApiCategories(cats));
+    import('@/lib/products').then(({ getCategoriesCached }) => {
+      getCategoriesCached().then(cats => setApiCategories(cats));
     });
   }, []);
 

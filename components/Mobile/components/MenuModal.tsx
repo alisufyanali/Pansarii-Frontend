@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { allProducts } from '@/data/products';
-import { getCategories } from '@/lib/products';
+import { getCategoriesCached } from '@/lib/products';
 import {
   FaTimes, FaUser, FaChevronRight, FaLeaf,
   FaShoppingBag, FaStar, FaHeart, FaBook,
@@ -52,7 +52,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
 
   useEffect(() => {
     if (!isOpen) return;
-    getCategories().then(cats => {
+    getCategoriesCached().then(cats => {
       if (cats.length > 0) {
         setCategories(cats.map(c => ({
           name: c.name,

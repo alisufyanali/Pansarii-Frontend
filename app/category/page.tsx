@@ -10,7 +10,7 @@ import { FilterOptions } from '@/utils/filterProducts';
 import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MobileProductCard from '@/components/Mobile/components/ProductCard';
-import { getCategories, getProducts } from '@/lib/products';
+import { getCategoriesCached, getProducts } from '@/lib/products';
 import type { Product } from '@/types/product';
 import { apiProductToLegacy } from '@/types/product';
 
@@ -100,7 +100,7 @@ function CategoryBrowseContent() {
   }, []);
 
   useEffect(() => {
-    getCategories().then(cats => setApiCategories(cats));
+    getCategoriesCached().then(cats => setApiCategories(cats));
   }, []);
 
   useEffect(() => {

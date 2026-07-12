@@ -134,6 +134,20 @@ export async function getCategories(): Promise<ApiCategory[]> {
   }
 }
 
+let categoriesPromise: Promise<ApiCategory[]> | null = null;
+let categoriesCacheTime = 0;
+const CACHE_TTL = 60000; // 60 seconds
+
+export const getCategoriesCached = async () => {
+  const now = Date.now();
+  if (categoriesPromise && (now - categoriesCacheTime) < CACHE_TTL) {
+    return categoriesPromise;
+  }
+  categoriesCacheTime = now;
+  categoriesPromise = getCategories();
+  return categoriesPromise;
+};
+
 export async function getVideoProducts(): Promise<ApiProduct[]> {
   const res = await api.get<{ success: boolean; data: ApiProduct[] }>('/products/with-video');
   return res.data ?? [];

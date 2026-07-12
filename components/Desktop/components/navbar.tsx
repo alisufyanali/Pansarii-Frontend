@@ -16,7 +16,7 @@ import {
 } from 'react-icons/fa';
 
 import { allProducts } from '@/data/products';
-import { getCategories } from '@/lib/products';
+import { getCategoriesCached } from '@/lib/products';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -87,7 +87,7 @@ function NavbarContent() {
   });
 
   useEffect(() => {
-    getCategories().then(cats => {
+    getCategoriesCached().then(cats => {
       if (cats.length > 0) {
         setCategories(cats.map(c => ({
           id: c.id,

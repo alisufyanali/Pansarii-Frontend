@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { allProducts } from '@/data/products';
 import type { Product } from '@/types/product';
-import { getProducts, getCategories } from '@/lib/products';
+import { getProducts, getCategoriesCached } from '@/lib/products';
 import ProductCard from '@/components/Desktop/components/ProductCard';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 import SearchFilterBar from '@/components/Desktop/components/SearchFilterBar';
@@ -330,7 +330,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
 
   // Fetch category ID from API
   useEffect(() => {
-    getCategories().then(cats => {
+    getCategoriesCached().then(cats => {
       const found = cats.find(c =>
         c.name === categoryName ||
         c.slug === categoryName.toLowerCase().replace(/\s+/g, '-')
