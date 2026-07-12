@@ -1,7 +1,7 @@
 // app/cart/page.tsx
 "use client";
 
-import Image from 'next/image';
+import SafeImage from '@/components/SafeImage';
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { FaTrash, FaShoppingCart, FaHeart, FaTag, FaShieldAlt, FaTruck, FaArrowLeft } from 'react-icons/fa';
@@ -146,7 +146,7 @@ function CartContent() {
                         {/* Product image */}
                         <div className="w-18 h-18 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 relative"
                           style={{ width: '72px', height: '72px' }}>
-                          <Image
+                          <SafeImage
                             src={item.img}
                             alt={item.nameEn}
                             fill

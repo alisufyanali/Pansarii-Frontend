@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/SafeImage';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishList';
@@ -331,7 +331,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         <div key={`${item.id}-${item.size}`} className="flex gap-3 p-3 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                           {/* Image */}
                           <div className="w-[70px] h-[70px] flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-50">
-                            <Image src={item.img} alt={item.nameEn} fill className="object-cover" sizes="70px" />
+                            <SafeImage src={item.img} alt={item.nameEn} fill className="object-cover" sizes="70px" />
                             {discount > 0 && (
                               <div className="absolute top-1 left-1 bg-red-500 text-white text-[9px] font-bold px-1 rounded">
                                 -{discount}%
@@ -420,7 +420,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       {suggestedProducts.map((product) => (
                         <div key={product.id} className="flex items-center gap-3 p-2.5 bg-gray-50 hover:bg-green-50 rounded-xl transition group">
                           <div className="relative w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden">
-                            <Image src={product.img} alt={product.nameEn} fill className="object-cover" sizes="44px" />
+                            <SafeImage src={product.img} alt={product.nameEn} fill className="object-cover" sizes="44px" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-800 truncate">{product.nameEn}</p>
@@ -481,7 +481,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                     {wishlistItems.map((item) => (
                       <div key={item.id} className="flex gap-3 p-3 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                         <div className="w-[70px] h-[70px] flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-50">
-                          <Image src={item.img} alt={item.nameEn} fill className="object-cover" sizes="70px" />
+                          <SafeImage src={item.img} alt={item.nameEn} fill className="object-cover" sizes="70px" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start">

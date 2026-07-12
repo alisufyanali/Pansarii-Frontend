@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/SafeImage';
 import { 
   FiSearch, 
   FiX, 
@@ -305,7 +305,7 @@ export default function SearchBar({
                   >
                     {product.image ? (
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                        <Image
+                        <SafeImage
                           src={product.image}
                           alt={product.name}
                           fill

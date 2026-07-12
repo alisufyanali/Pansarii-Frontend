@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/SafeImage';
 import { useRouter } from 'next/navigation';
 import {
   RiShoppingBagLine,
@@ -103,7 +103,7 @@ function SectionLabel({ text }: { text: string }) {
 function Avatar({ name, src }: { name: string; src: string | null | undefined }) {
   if (src) {
     return (
-      <Image
+      <SafeImage
         src={src}
         alt={name}
         width={80}

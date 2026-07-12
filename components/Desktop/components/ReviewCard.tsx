@@ -1,6 +1,6 @@
 import { FaStar } from 'react-icons/fa';
 import { useState } from 'react';
-import Image from 'next/image';
+import SafeImage from '@/components/SafeImage';
 
 interface Review {
   title:       string;
@@ -79,7 +79,7 @@ export default function ReviewCard({ review }: { review: Review }) {
             {review.productName && review.productImage && (
               <div className="flex items-center gap-1.5 mt-1">
                 <div className="relative w-5 h-5 rounded overflow-hidden flex-shrink-0">
-                  <Image src={review.productImage} alt={review.productName} fill className="object-cover" sizes="20px" />
+                  <SafeImage src={review.productImage} alt={review.productName} fill className="object-cover" sizes="20px" />
                 </div>
                 <p className="text-[10px] text-green-700 truncate">{review.productName}</p>
               </div>

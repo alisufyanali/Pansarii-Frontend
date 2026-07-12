@@ -2,7 +2,7 @@
 
 import { useState, MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import SafeImage from '@/components/SafeImage';
 import { FaStar } from 'react-icons/fa';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 import type { Product } from '@/types/product';
@@ -36,7 +36,7 @@ export default function MobileProductCard({ product, priority = false }: { produ
               {product.sale}
             </span>
           )}
-          <Image
+          <SafeImage
             src={product.img}
             alt={product.nameEn}
             fill

@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import SafeImage from '@/components/SafeImage';
 import { FaStar, FaCheckCircle, FaShoppingCart } from "react-icons/fa";
 import { useState, MouseEvent } from "react";
 import ProductDetailsModal from "./ProductDetailsModal";
@@ -38,7 +38,7 @@ export default function ProductCard({ product, priority = false }: { product: Pr
       >
         {/* Fixed-height image */}
         <div className="relative w-full h-44 flex-shrink-0 border-b border-gray-100">
-          <Image
+          <SafeImage
             src={displayImage}
             alt={product.nameEn}
             fill

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import SafeImage from '@/components/SafeImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -218,7 +218,7 @@ export default function WishlistPage() {
           >
             {/* Image */}
             <div className="relative aspect-square bg-gray-50">
-              <Image
+              <SafeImage
                 src={item.img}
                 alt={item.nameEn}
                 fill
@@ -322,7 +322,7 @@ export default function WishlistPage() {
                 className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100"
               >
                 <div className="relative aspect-square bg-gray-50">
-                  <Image
+                  <SafeImage
                     src={product.img}
                     alt={product.nameEn}
                     fill

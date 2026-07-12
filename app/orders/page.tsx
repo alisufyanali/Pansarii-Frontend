@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import SafeImage from '@/components/SafeImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -105,7 +105,7 @@ function OrderCard({ order }: { order: ApiOrder }) {
         <div className="flex items-center gap-2 my-3">
           {visibleItems.map(item => (
             <div key={item.id} className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
-              <Image
+              <SafeImage
                 src={item.thumbnail || '/images/product.png'}
                 alt={item.product_name}
                 width={56} height={56}

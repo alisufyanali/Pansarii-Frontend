@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/SafeImage';
 
 interface Blog {
   id:       string | number;
@@ -25,7 +25,7 @@ export default function BlogCard({ blog }: { blog: Blog }) {
 
       {/* Image */}
       <Link href={`/blog/${blog.slug}`} className="block relative w-full aspect-video overflow-hidden flex-shrink-0">
-        <Image
+        <SafeImage
           src={blog.image}
           alt={title}
           fill
