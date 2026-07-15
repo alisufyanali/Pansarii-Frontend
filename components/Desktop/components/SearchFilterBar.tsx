@@ -65,6 +65,12 @@ function SearchFilterBarContent({
   const filterPanelRef = useRef<HTMLDivElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Keep a ref to the latest onFilterChange so the debounce effect never
+  // needs to list it as a dependency — prevents the callback identity from
+  // re-triggering the effect on every parent render.
+  const onFilterChangeRef = useRef(onFilterChange);
+  useEffect(() => { onFilterChangeRef.current = onFilterChange; }, [onFilterChange]);
+
   const sortOptions = [
     { value: 'default',    label: 'Default' },
     { value: 'price-low',  label: 'Price: Low to High' },
@@ -126,9 +132,9 @@ function SearchFilterBarContent({
 
   useEffect(() => {
     if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-    debounceTimeoutRef.current = setTimeout(() => onFilterChange(filters), 300);
+    debounceTimeoutRef.current = setTimeout(() => onFilterChangeRef.current(filters), 300);
     return () => { if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current); };
-  }, [filters, onFilterChange]);
+  }, [filters]);
 
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode);
