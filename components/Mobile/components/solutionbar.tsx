@@ -7,7 +7,7 @@ import { FiChevronRight } from "react-icons/fi";
 import { allProducts } from "@/data/products";
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
-  'Herb':          'herbs',
+  'Herb':          'herb',
   'Oils':          'oils',
   'Supplements':   'supplements',
   'Beauty Corner': 'beauty-corner',

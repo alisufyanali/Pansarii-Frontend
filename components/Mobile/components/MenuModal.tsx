@@ -14,7 +14,7 @@ import { FaXTwitter, FaInstagram } from 'react-icons/fa6';
 import { SOCIAL_LINKS } from '@/lib/social-links';
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
-  'Herb':          'herbs',
+  'Herb':          'herb',
   'Oils':          'oils',
   'Supplements':   'supplements',
   'Beauty Corner': 'beauty-corner',

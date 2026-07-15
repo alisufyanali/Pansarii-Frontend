@@ -21,7 +21,7 @@ import { getCategoriesCached } from '@/lib/products';
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
-  'Herb':          'herbs',
+  'Herb':          'herb',
   'Oils':          'oils',
   'Supplements':   'supplements',
   'Beauty Corner': 'beauty-corner',

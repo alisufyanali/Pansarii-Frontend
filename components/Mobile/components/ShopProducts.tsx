@@ -11,7 +11,7 @@ const menuTabs = [
   { id: 'new',           label: 'New In'       },
   { id: 'bestsellers',   label: 'Best Sellers' },
   { id: 'Oils',          label: 'Oils'         },
-  { id: 'Herb',          label: 'Herbs'        },
+  { id: 'Herb',          label: 'Herb'        },
   { id: 'Beauty Corner', label: 'Beauty'       },
   { id: 'Supplements',   label: 'Supplements'  },
 ];

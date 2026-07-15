@@ -6,7 +6,7 @@ import { allProducts } from "@/data/products";
 
 // Category slug mapping
 const CATEGORY_SLUG_MAP: { [key: string]: string } = {
-  'Herb': 'herbs',
+  'Herb': 'herb',
   'Oils': 'oils',
   'Supplements': 'supplements',
   'Beauty Corner': 'beauty-corner',
