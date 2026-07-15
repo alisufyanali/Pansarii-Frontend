@@ -91,8 +91,14 @@ function SearchFilterBarContent({
     const urlCategory = searchParams.get('category');
     const urlCategories = searchParams.get('categories')?.split(',').filter(Boolean) || [];
     const initial = urlCategory ? [urlCategory] : urlCategories;
-    setFilters(prev => ({ ...prev, categories: initial }));
-    setTempFilters(prev => ({ ...prev, categories: initial }));
+    setFilters(prev => {
+      if (JSON.stringify(prev.categories) === JSON.stringify(initial)) return prev;
+      return { ...prev, categories: initial };
+    });
+    setTempFilters(prev => {
+      if (JSON.stringify(prev.categories) === JSON.stringify(initial)) return prev;
+      return { ...prev, categories: initial };
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
