@@ -63,6 +63,7 @@ interface ShopContentProps {
   setFilters: (filters: FilterOptions) => void;
   filteredProducts: Product[];
   currentProducts: Product[];
+  totalProductCount?: number;
   currentPage: number;
   totalPages: number;
   indexOfFirstProduct: number;
@@ -80,6 +81,7 @@ function ShopContent({
   setFilters,
   filteredProducts = [],
   currentProducts = [],
+  totalProductCount = 0,
   currentPage,
   totalPages,
   indexOfFirstProduct,
@@ -148,6 +150,9 @@ function ShopContent({
     } catch { /* error already toasted by context */ }
   };
 
+  // NOTE: Per-category counts here are scoped to the current page's items only
+  // (not the full 554 total) since a separate category-counts API endpoint
+  // would be needed to get accurate totals per category. Acceptable for now.
   const categoryData = (categories || []).map(category => ({
     name: category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
     count: (allProducts || []).filter(p => p?.category?.toLowerCase() === category.toLowerCase()).length,
@@ -175,7 +180,7 @@ function ShopContent({
       {/* Search and Filter Bar — always mounted, never conditionally removed */}
       <SearchFilterBar
         onFilterChange={setFilters}
-        productCount={filteredProducts.length}
+        productCount={totalProductCount}
         categories={categories}
         onViewModeChange={setViewMode}
         initialSearchQuery={initialSearchQuery}
@@ -202,7 +207,7 @@ function ShopContent({
           <>
             <div>
               <h2 className="text-sm sm:text-base lg:text-lg 2xl:text-xl font-semibold text-gray-900">
-                Showing {indexOfFirstProduct + 1}–{Math.min(indexOfLastProduct, filteredProducts.length)} of {filteredProducts.length} products
+                Showing {indexOfFirstProduct + 1}–{indexOfLastProduct} of {totalProductCount} products
               </h2>
               {filters.searchQuery && (
                 <p className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">

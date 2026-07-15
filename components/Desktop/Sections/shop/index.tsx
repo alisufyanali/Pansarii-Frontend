@@ -254,6 +254,7 @@ function ShopContent() {
           setFilters={handleFilterChange}
           filteredProducts={apiProducts}
           currentProducts={apiProducts}
+          totalProductCount={apiMeta?.total ?? 0}
           currentPage={apiMeta?.current_page ?? currentPage}
           totalPages={totalPages}
           indexOfFirstProduct={indexOfFirstProduct}
