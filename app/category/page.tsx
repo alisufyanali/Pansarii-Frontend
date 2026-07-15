@@ -119,14 +119,15 @@ function CategoryBrowseContent() {
     setSelectedCategoryId(undefined);
   }, [categoryParam, apiCategories]);
 
+  // Clamp currentPage when totalPages shrinks (e.g. filter reduces result set)
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
   const fetchProducts = useCallback(async (signal?: AbortSignal) => {
     setIsLoading(true);
-
-    const safePage = Math.max(1, Math.min(currentPage, totalPages || 1));
-    if (safePage !== currentPage) {
-      setCurrentPage(safePage);
-      return;
-    }
 
     const sortMap: Record<string, { sort_by?: string; sort_order?: 'asc' | 'desc' }> = {
       'price-low':  { sort_by: 'price', sort_order: 'asc'  },
@@ -143,7 +144,7 @@ function CategoryBrowseContent() {
         min_price:   filters.minPrice > 0 ? filters.minPrice : undefined,
         max_price:   filters.maxPrice < 5000 ? filters.maxPrice : undefined,
         per_page:    productsPerPage,
-        page:        safePage,
+        page:        currentPage,
         ...sortParams,
       }, { signal });
       setProducts(mapApiProducts(res.data));
@@ -156,7 +157,7 @@ function CategoryBrowseContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, selectedCategoryId, currentPage, totalPages, productsPerPage]);
+  }, [filters, selectedCategoryId, currentPage, productsPerPage]);
 
   useEffect(() => {
     const controller = new AbortController();

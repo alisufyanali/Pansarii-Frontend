@@ -1,7 +1,7 @@
 // app/shop/page.tsx
 'use client';
 
-import { Suspense, useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { Product } from '@/types/product';
@@ -133,14 +133,18 @@ function ShopContent() {
     });
   }, []);
 
+  // Stable resolved category ID — only changes when the selected category name/slug actually changes
+  const selectedCategoryId = useMemo(() => {
+    if (filters.categories.length !== 1) return undefined;
+    return apiCategories.find(
+      c => c.name === filters.categories[0] || c.slug === filters.categories[0],
+    )?.id;
+  }, [filters.categories, apiCategories]);
+
   // Fetch products when filters/page change
   useEffect(() => {
     setIsApiLoading(true);
     const controller = new AbortController();
-
-    const selectedCategoryId = filters.categories.length === 1
-      ? apiCategories.find(c => c.name === filters.categories[0] || c.slug === filters.categories[0])?.id
-      : undefined;
 
     const sortMap: Record<string, { sort_by?: string; sort_order?: 'asc' | 'desc' }> = {
       'price-low':  { sort_by: 'price', sort_order: 'asc'  },
@@ -185,8 +189,7 @@ function ShopContent() {
     });
 
     return () => controller.abort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, currentPage, productsPerPage, apiCategories]);
+  }, [filters, currentPage, productsPerPage, selectedCategoryId]);
 
   // URL sync
   useEffect(() => {
