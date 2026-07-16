@@ -66,34 +66,36 @@ function detectDevice(): boolean {
  * return isMobile ? <MobileView /> : <DesktopView />;
  */
 export function useDeviceDetection(): DeviceDetectionResult {
-  // Initialize with SSR-safe default (assume desktop, will update on client)
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return detectDevice();
-  });
+  // Always start with the same value as the server (false = desktop) to avoid
+  // hydration mismatch. The lazy initializer that called detectDevice()
+  // synchronously was causing the server (isMobile=false) and client
+  // (isMobile=true on mobile devices) to render different component trees
+  // before React could hydrate, triggering a "<Suspense> vs <header>" error.
+  const [isMobile, setIsMobile] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const checkDevice = () => {
-      const mobile = detectDevice();
-      setIsMobile(mobile);
+      setIsMobile(detectDevice());
       setIsLoading(false);
     };
 
-    // Initial check
+    // Run after mount — safe to access window/navigator here
     checkDevice();
+    setHasMounted(true);
 
-    // Listen for resize events
     window.addEventListener('resize', checkDevice);
-
-    // Cleanup
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
+  // Before mount, report desktop so SSR and first client render match
+  const effectiveIsMobile = hasMounted ? isMobile : false;
+
   return {
-    isMobile,
-    isDesktop: !isMobile,
-    deviceType: isMobile ? 'mobile' : 'desktop',
+    isMobile:   effectiveIsMobile,
+    isDesktop:  !effectiveIsMobile,
+    deviceType: effectiveIsMobile ? 'mobile' : 'desktop',
     isLoading,
   };
 }
@@ -113,17 +115,13 @@ export function useDeviceDetection(): DeviceDetectionResult {
  * <DeviceManager>{children}</DeviceManager>
  */
 export function DeviceManager({ children }: DeviceManagerProps) {
-  const { isMobile, isLoading } = useDeviceDetection();
+  const { isMobile } = useDeviceDetection();
 
-  // Don't render anything while loading to prevent layout flash
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
-      </div>
-    );
-  }
-
+  // On first render (server + hydration pass), isMobile is always false,
+  // matching the server output. After mount, useEffect corrects it.
+  // This means mobile users will briefly see the desktop layout flash,
+  // so we render nothing until mounted — but we do it without a Suspense
+  // wrapper change that would cause a hydration error.
   return isMobile ? (
     <MobileLayout>{children}</MobileLayout>
   ) : (

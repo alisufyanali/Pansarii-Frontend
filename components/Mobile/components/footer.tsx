@@ -197,7 +197,7 @@ export default function MobileFooter() {
       </div>
 
       {/* ── Also available on ── */}
-      <div className="px-4 py-5 text-center border-t border-gray-100">
+      {/* <div className="px-4 py-5 text-center border-t border-gray-100">
         <p className="text-xs text-gray-500 mb-3 font-medium">Also available on</p>
         <div className="flex items-center justify-center gap-4">
           <div className="h-10 px-3 bg-orange-500 rounded-lg flex items-center justify-center">
@@ -210,13 +210,12 @@ export default function MobileFooter() {
             <span className="text-gray-900 text-[10px] font-bold">Amazon</span>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* ── Copyright ── */}
       <div className="px-4 py-4 border-t border-gray-100 text-center">
         <p className="text-xs text-gray-400 leading-relaxed">
-          © {currentYear} | Pansari Inn | All Rights Reserved |<br />
-          Designed by Epic Web Service
+          © {currentYear} | Pansari Inn | All Rights Reserved 
         </p>
       </div>
 
