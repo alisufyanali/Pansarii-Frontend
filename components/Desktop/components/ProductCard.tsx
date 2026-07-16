@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { Product } from '@/types/product';
 
 export default function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
-  const [isHovered,   setIsHovered]   = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
@@ -29,24 +29,25 @@ export default function ProductCard({ product, priority = false }: { product: Pr
   return (
     <>
       <div
-        className={`w-full h-full rounded-2xl overflow-hidden flex flex-col bg-white cursor-pointer transition-all duration-300 border-2 ${
-          isHovered ? 'border-green-700' : 'border-gray-200'
-        }`}
+        className={`w-full h-full rounded-2xl overflow-hidden flex flex-col bg-white cursor-pointer transition-all duration-300 border-2 ${isHovered ? 'border-green-700' : 'border-gray-200'
+          }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}
       >
         {/* Fixed-height image */}
         <div className="relative w-full h-44 flex-shrink-0 border-b border-gray-100">
-          <SafeImage
-            src={displayImage}
-            alt={product.nameEn}
-            fill
-            className="object-cover transition-all duration-300"
-            sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
-            loading={priority ? "eager" : "lazy"}
-            priority={priority}
-          />
+          <div className="absolute inset-y-0 left-1/4 w-1/2">
+            <SafeImage
+              src={displayImage}
+              alt={product.nameEn}
+              fill
+              className="object-contain transition-all duration-300"
+              sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
+              loading={priority ? "eager" : "lazy"}
+              priority={priority}
+            />
+          </div>
           {product.sale && (
             <span className="absolute top-2 right-2 px-2 py-0.5 bg-red-500 text-white text-[11px] font-medium rounded-full">
               {product.sale}

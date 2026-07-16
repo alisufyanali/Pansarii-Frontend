@@ -74,6 +74,7 @@ function SkeletonCard() {
 // ── Order card ────────────────────────────────────────────────────────────────
 
 function OrderCard({ order }: { order: ApiOrder }) {
+  const router        = useRouter();
   const status        = (order.status        || 'pending')  as OrderStatus;
   const paymentStatus = (order.payment_status || 'unpaid') as PaymentStatus;
 
@@ -84,9 +85,14 @@ function OrderCard({ order }: { order: ApiOrder }) {
   const cancellable = status === 'pending' || status === 'processing';
 
   return (
-    <Link
-      href={`/order-confirmation?orderId=${order.id}`}
-      className="block bg-white rounded-2xl shadow-sm border border-gray-100 p-4 active:bg-gray-50 transition-colors"
+    // Outer element must NOT be <a>/<Link> because Cancel Order button is also a link.
+    // Using a div + cursor-pointer + onClick avoids the invalid nested <a> error.
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => router.push(`/order-confirmation?orderId=${order.id}`)}
+      onKeyDown={e => { if (e.key === 'Enter') router.push(`/order-confirmation?orderId=${order.id}`); }}
+      className="block bg-white rounded-2xl shadow-sm border border-gray-100 p-4 cursor-pointer hover:bg-gray-50 active:bg-gray-50 transition-colors"
     >
       {/* Top row */}
       <div className="flex items-start justify-between mb-1">
@@ -131,16 +137,15 @@ function OrderCard({ order }: { order: ApiOrder }) {
 
       {cancellable && (
         <div className="mt-2 flex justify-end">
-          <Link
-            href={`/cancel-order?orderId=${order.id}`}
-            onClick={e => e.stopPropagation()}
+          <button
+            onClick={e => { e.stopPropagation(); router.push(`/cancel-order?orderId=${order.id}`); }}
             className="text-xs font-semibold text-red-500 hover:text-red-600 underline underline-offset-2"
           >
             Cancel Order
-          </Link>
+          </button>
         </div>
       )}
-    </Link>
+    </div>
   );
 }
 
