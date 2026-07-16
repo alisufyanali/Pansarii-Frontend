@@ -42,11 +42,11 @@ export default function DesktopHome() {
         <Banner slides={homepageData.banners} />
       </Suspense>
       <SolutionBar />
+      <Category />
+      <NewArrivals />
       <Suspense fallback={null}>
         <CategoryProductsSection data={homepageData.category_products} />
       </Suspense>
-      <Category />
-      <NewArrivals />
       <BeautyCorner />
       <PansariInn />
       <ComboDeal />

@@ -38,9 +38,19 @@ export interface ApiOrder {
   shipping: number;
   discount: number;
   tax: number;
-  city?: string;
-  created_at: string;
+  city?: string | null;
+  billing_address?: string;
   shipping_address?: string;
+  order_note?: string | null;
+  account_created?: boolean;
+  /**
+   * Courier tracking payload — currently always null in the API response.
+   * Shape is unknown until a courier integration (e.g. Movex/PostEx/Leopard)
+   * populates it. Typed as unknown until the backend defines and documents
+   * this field's structure.
+   */
+  tracking?: unknown;
+  created_at: string;
   items?: ApiOrderItem[];
 }
 

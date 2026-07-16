@@ -23,10 +23,6 @@ type OrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "out-for
 type Order = {
   orderNumber: string;
   status: OrderStatus;
-  customer: {
-    name: string;
-    phone: string;
-  };
   tracking: {
     status: OrderStatus;
     title: string;
@@ -63,6 +59,11 @@ function formatDisplayTime(dateStr: string): string {
   }
 }
 
+/**
+ * Frontend-only delivery estimate: order date + 5 days.
+ * The backend does not return an estimated_delivery field.
+ * This is a rough guide only — not an authoritative delivery date.
+ */
 function estimatedDeliveryDate(createdAt: string): string {
   try {
     const d = new Date(createdAt);
@@ -128,10 +129,6 @@ function mapApiOrderToDisplay(api: ApiOrder): Order {
   return {
     orderNumber: api.order_number,
     status: uiStatus,
-    customer: {
-      name: 'Customer',
-      phone: '',
-    },
     tracking,
     estimatedDelivery: estimatedDeliveryDate(created),
     shippingAddress: api.shipping_address || '—',
@@ -300,9 +297,6 @@ export default function TrackOrderPage() {
                   
                   {/* Mobile-friendly customer info */}
                   <div className="space-y-1.5 sm:space-y-2">
-                    <p className="text-xs sm:text-sm text-gray-700">
-                      <span className="font-medium">Customer:</span> {order.customer.name}
-                    </p>
                     <p className="text-xs sm:text-sm text-gray-700 break-all">
                       <span className="font-medium">Email:</span> {email}
                     </p>
@@ -317,7 +311,7 @@ export default function TrackOrderPage() {
                 </div>
                 
                 <div className="w-full lg:w-auto bg-green-50 p-3 sm:p-4 rounded-lg border border-green-200">
-                  <p className="text-xs sm:text-sm text-gray-700 mb-0.5 sm:mb-1">Estimated Delivery</p>
+                  <p className="text-xs sm:text-sm text-gray-700 mb-0.5 sm:mb-1">Estimated Delivery <span className="text-gray-400 font-normal">(based on order date)</span></p>
                   <p className="text-base sm:text-lg lg:text-xl font-bold text-green-800">
                     {order.estimatedDelivery}
                   </p>
