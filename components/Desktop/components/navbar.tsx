@@ -181,7 +181,7 @@ function NavbarContent() {
                 className="flex items-center justify-end gap-1.5 hover:opacity-70 transition"
                 aria-label="WhatsApp">
                 <FaWhatsapp className="w-3 h-3" />
-                <span className="text-[11px] font-medium whitespace-nowrap">+92 300 1234567</span>
+                <span className="text-[11px] font-medium whitespace-nowrap">+92 304 5779900</span>
               </a>
 
             </div>

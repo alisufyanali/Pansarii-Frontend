@@ -144,7 +144,7 @@ export default function RegisterPage() {
                 <input
                   id="phone" name="phone" type="tel" autoComplete="tel"
                   value={formData.phone} onChange={handleChange} disabled={isLoading}
-                  placeholder="+92 300 1234567"
+                  placeholder="+92 304 5779900"
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${fieldErrors.phone ? 'border-red-500' : 'border-gray-300'}`}
                 />
               </div>

@@ -19,14 +19,14 @@ const contactData = {
     {
       icon: "phone",
       title: "Phone",
-      value: "+92 300 1234567",
+      value: "++92 304 5779900",
       link: `tel:+${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`,
       description: "Mon-Sat: 9:00 AM - 6:00 PM"
     },
     {
       icon: "whatsapp",
       title: "WhatsApp",
-      value: "+92 300 1234567",
+      value: "++92 304 5779900",
       link: `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`,
       description: "Chat with us instantly"
     },
@@ -207,7 +207,7 @@ export default function ContactPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
                   <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${fieldErrors.phone ? 'border-red-400' : 'border-gray-300'}`}
-                    placeholder="+92 300 1234567" />
+                    placeholder="+92 304 5779900" />
                   {fieldErrors.phone && <p className="mt-1 text-xs text-red-500">{fieldErrors.phone}</p>}
                 </div>
               </div>
