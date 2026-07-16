@@ -1,7 +1,7 @@
 // app/login/page.tsx
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
@@ -36,7 +36,15 @@ interface LoginFields {
 function LoginPageContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
-  const { login }    = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Redirect already-authenticated users away from the login page
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      const returnTo = searchParams.get('returnTo') ?? '/';
+      router.replace(decodeURIComponent(returnTo));
+    }
+  }, [isAuthenticated, authLoading, router, searchParams]);
 
   const [formData, setFormData] = useState<LoginFields>({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);

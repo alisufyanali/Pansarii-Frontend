@@ -7,6 +7,7 @@ import { Suspense, useState, useEffect } from 'react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import SearchBarWrapper from './navbar/SearchBarWrapper';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { SOCIAL_LINKS } from '@/lib/social-links';
 
 import {
@@ -62,6 +63,7 @@ function NavbarContent() {
   const pathname     = usePathname();
   const searchParams = useSearchParams();
   const { getCartCount, getCartTotal } = useCart();
+  const { isAuthenticated, user, logout, isLoading: authLoading } = useAuth();
 
   const [isCategorySidebarOpen, setIsCategorySidebarOpen] = useState(false);
   const [categorySearch,        setCategorySearch]        = useState('');
@@ -219,14 +221,47 @@ function NavbarContent() {
                   </span>
                 </Link>
 
-                <Link href="/login"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition group"
-                  aria-label="Sign In">
-                  <FaUser className="w-4 h-4 text-gray-600 group-hover:text-green-700 transition" />
-                  <span className="text-[13px] font-medium text-gray-700 group-hover:text-green-700 whitespace-nowrap hidden xl:inline">
-                    Sign In
-                  </span>
-                </Link>
+                {/* Auth — waits for rehydration to avoid flash of wrong state */}
+                {!authLoading && (
+                  isAuthenticated ? (
+                    <div className="relative group">
+                      <button
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition"
+                        aria-label="Account menu"
+                      >
+                        <FaUser className="w-4 h-4 text-green-700" />
+                        <span className="text-[13px] font-medium text-green-700 whitespace-nowrap hidden xl:inline">
+                          {user?.name?.split(' ')[0] ?? 'Account'}
+                        </span>
+                      </button>
+                      {/* Dropdown */}
+                      <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                        <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-700">
+                          My Orders
+                        </Link>
+                        <Link href="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-green-700">
+                          Wishlist
+                        </Link>
+                        <hr className="my-1 border-gray-100" />
+                        <button
+                          onClick={() => logout()}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Link href="/login"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition group"
+                      aria-label="Sign In">
+                      <FaUser className="w-4 h-4 text-gray-600 group-hover:text-green-700 transition" />
+                      <span className="text-[13px] font-medium text-gray-700 group-hover:text-green-700 whitespace-nowrap hidden xl:inline">
+                        Sign In
+                      </span>
+                    </Link>
+                  )
+                )}
 
                 <Link href="/cart"
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition group relative"

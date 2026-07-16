@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from 'react';
 import { FiSearch, FiX } from 'react-icons/fi';
 import { RiUserLine, RiShoppingCartLine } from 'react-icons/ri';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { allProducts } from '@/data/products';
 
 interface HeaderProps {
@@ -88,6 +89,7 @@ function MobileSearchBar() {
 // ── Main header ───────────────────────────────────────────────────────────────
 export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
   const { getCartCount } = useCart();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -132,7 +134,8 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
         {/* Icons — right */}
         <div className="flex items-center gap-0.5">
           <Link href="/login" className="p-2 text-gray-600 hover:text-green-700 transition-colors" aria-label="Account">
-            <RiUserLine className="w-5 h-5" />
+            {/* Show profile icon in green when authenticated, grey when not */}
+            <RiUserLine className={`w-5 h-5 ${(!authLoading && isAuthenticated) ? 'text-green-700' : 'text-gray-600'}`} />
           </Link>
           <Link href="/cart" className="relative p-2 text-gray-600 hover:text-green-700 transition-colors" aria-label="Cart">
             <RiShoppingCartLine className="w-5 h-5" />
