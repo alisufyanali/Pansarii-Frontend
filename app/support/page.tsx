@@ -3,6 +3,8 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import { api, getApiErrorMessage } from '@/lib/axios';
 import {
   RiArrowLeftLine,
   RiSearchLine,
@@ -101,16 +103,23 @@ function SupportForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Replace with real API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await api.post('/support', {
+        subject: form.subject,
+        message: `Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`,
+      });
       setSubmitted(true);
+      toast.success("Message sent! We'll reply within 1–3 hours.");
       setTimeout(() => setSubmitted(false), 4000);
       setForm({ name: '', email: '', subject: SUBJECT_OPTIONS[0], message: '' });
-    }, 1200);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

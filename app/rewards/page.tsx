@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { api, getApiErrorMessage } from '@/lib/axios';
 import {
   FaStar, FaGift, FaFire, FaTrophy, FaLeaf, FaCrown,
   FaShoppingBag, FaShare, FaUserFriends, FaCheckCircle,
@@ -9,7 +11,30 @@ import {
   FaBolt, FaHistory
 } from 'react-icons/fa';
 
-// ─── Data ──────────────────────────────────────────────────────────────────────
+// ─── API Types ─────────────────────────────────────────────────────────────────
+
+interface RewardsTransaction {
+  id: number;
+  label: string;
+  points: number;
+  created_at: string;
+}
+
+interface RewardsData {
+  balance: number;
+  lifetime_points?: number;
+  orders_count?: number;
+  tier?: string;
+  transactions: RewardsTransaction[];
+}
+
+interface RewardsApiResponse {
+  success: boolean;
+  data: RewardsData;
+}
+
+// ─── Static tier / earn / redeem config ───────────────────────────────────────
+
 const tiers = [
   { id: 'seedling', name: 'Seedling', nameUr: 'پودا', minPoints: 0, color: 'text-gray-600',
     gradient: 'from-gray-400 to-gray-500', bgLight: 'bg-gray-50', borderColor: 'border-gray-200',
@@ -30,50 +55,42 @@ const tiers = [
 ];
 
 const earnWays = [
-  { id: 'purchase', title: 'Make a Purchase', titleUr: 'خریداری کریں', points: 10, pointsLabel: '+1 pt / PKR 10',
+  { id: 'purchase', title: 'Make a Purchase', titleUr: 'خریداری کریں', pointsLabel: '+1 pt / PKR 10',
     desc: 'Earn 1 point for every PKR 10 you spend on any order.', icon: <FaShoppingBag className="w-5 h-5" />, color: 'text-green-600', bg: 'bg-green-50', cta: 'Shop Now', ctaLink: '/shop' },
-  { id: 'review', title: 'Write a Review', titleUr: 'جائزہ لکھیں', points: 50, pointsLabel: '+50 pts',
+  { id: 'review', title: 'Write a Review', titleUr: 'جائزہ لکھیں', pointsLabel: '+50 pts',
     desc: 'Share your experience with a verified product review.', icon: <FaStar className="w-5 h-5" />, color: 'text-amber-600', bg: 'bg-amber-50', cta: 'Browse Products', ctaLink: '/shop' },
-  { id: 'refer', title: 'Refer a Friend', titleUr: 'دوست کو بتائیں', points: 200, pointsLabel: '+200 pts',
+  { id: 'refer', title: 'Refer a Friend', titleUr: 'دوست کو بتائیں', pointsLabel: '+200 pts',
     desc: 'When your friend places their first order using your referral code.', icon: <FaUserFriends className="w-5 h-5" />, color: 'text-blue-600', bg: 'bg-blue-50' },
-  { id: 'share', title: 'Share on Social', titleUr: 'سوشل میڈیا پر شیئر', points: 25, pointsLabel: '+25 pts',
+  { id: 'share', title: 'Share on Social', titleUr: 'سوشل میڈیا پر شیئر', pointsLabel: '+25 pts',
     desc: 'Share a product or your order on Instagram or Facebook.', icon: <FaShare className="w-5 h-5" />, color: 'text-pink-600', bg: 'bg-pink-50' },
-  { id: 'birthday', title: 'Birthday Bonus', titleUr: 'سالگرہ بونس', points: 100, pointsLabel: '+100 pts/year',
+  { id: 'birthday', title: 'Birthday Bonus', titleUr: 'سالگرہ بونس', pointsLabel: '+100 pts/year',
     desc: 'Receive bonus points on your birthday every year automatically.', icon: <FaGift className="w-5 h-5" />, color: 'text-purple-600', bg: 'bg-purple-50' },
-  { id: 'streak', title: 'Monthly Streak', titleUr: 'ماہانہ آرڈر', points: 150, pointsLabel: '+150 pts',
+  { id: 'streak', title: 'Monthly Streak', titleUr: 'ماہانہ آرڈر', pointsLabel: '+150 pts',
     desc: 'Place an order every month and earn streak bonus points.', icon: <FaBolt className="w-5 h-5" />, color: 'text-red-600', bg: 'bg-red-50' },
 ];
 
 const redeemOptions = [
-  { id: 'r1', title: '5% Discount', titleUr: '5% رعایت', cost: 100, value: '~PKR 150 off',
-    desc: 'Apply as a discount on your next order.', icon: <FaPercent className="w-5 h-5" />, gradient: 'from-green-400 to-emerald-500', available: true },
-  { id: 'r2', title: 'Free Shipping', titleUr: 'مفت ترسیل', cost: 150, value: 'Save PKR 200+',
-    desc: 'Free delivery on your next order, any size.', icon: <FaTruck className="w-5 h-5" />, gradient: 'from-blue-400 to-cyan-500', available: true },
-  { id: 'r3', title: '10% Discount', titleUr: '10% رعایت', cost: 200, value: '~PKR 300 off',
-    desc: 'Bigger savings on orders over PKR 2,000.', icon: <FaTag className="w-5 h-5" />, gradient: 'from-amber-400 to-orange-500', available: true },
-  { id: 'r4', title: 'Free Product Sample', titleUr: 'مفت سیمپل', cost: 350, value: 'Worth PKR 500',
-    desc: 'Choose a free sample added to your next order.', icon: <FaGift className="w-5 h-5" />, gradient: 'from-purple-400 to-pink-500', available: true },
-  { id: 'r5', title: '20% Discount', titleUr: '20% رعایت', cost: 500, value: '~PKR 600 off',
-    desc: 'Premium discount on any order over PKR 3,000.', icon: <FaPercent className="w-5 h-5" />, gradient: 'from-rose-400 to-red-500', available: true },
-  { id: 'r6', title: 'Luxury Hamper', titleUr: 'لگژری ہیمپر', cost: 5000, value: 'Worth PKR 8,000+',
-    desc: 'Exclusive curated gift set — our premium collections.', icon: <FaTrophy className="w-5 h-5" />, gradient: 'from-yellow-400 to-amber-500', available: false },
+  { id: 'r1', title: '5% Discount', titleUr: '5% رعایت', cost: 100, value: '~PKR 150 off', desc: 'Apply as a discount on your next order.', icon: <FaPercent className="w-5 h-5" />, gradient: 'from-green-400 to-emerald-500', available: true },
+  { id: 'r2', title: 'Free Shipping', titleUr: 'مفت ترسیل', cost: 150, value: 'Save PKR 200+', desc: 'Free delivery on your next order, any size.', icon: <FaTruck className="w-5 h-5" />, gradient: 'from-blue-400 to-cyan-500', available: true },
+  { id: 'r3', title: '10% Discount', titleUr: '10% رعایت', cost: 200, value: '~PKR 300 off', desc: 'Bigger savings on orders over PKR 2,000.', icon: <FaTag className="w-5 h-5" />, gradient: 'from-amber-400 to-orange-500', available: true },
+  { id: 'r4', title: 'Free Product Sample', titleUr: 'مفت سیمپل', cost: 350, value: 'Worth PKR 500', desc: 'Choose a free sample added to your next order.', icon: <FaGift className="w-5 h-5" />, gradient: 'from-purple-400 to-pink-500', available: true },
+  { id: 'r5', title: '20% Discount', titleUr: '20% رعایت', cost: 500, value: '~PKR 600 off', desc: 'Premium discount on any order over PKR 3,000.', icon: <FaPercent className="w-5 h-5" />, gradient: 'from-rose-400 to-red-500', available: true },
+  { id: 'r6', title: 'Luxury Hamper', titleUr: 'لگژری ہیمپر', cost: 5000, value: 'Worth PKR 8,000+', desc: 'Exclusive curated gift set — our premium collections.', icon: <FaTrophy className="w-5 h-5" />, gradient: 'from-yellow-400 to-amber-500', available: false },
 ];
 
-const recentActivity = [
-  { label: 'Purchase — Order #1042', pts: '+120', date: '25 Feb 2026', positive: true },
-  { label: 'Product Review — Black Seed Oil', pts: '+50', date: '20 Feb 2026', positive: true },
-  { label: 'Redeemed — Free Shipping', pts: '−150', date: '15 Feb 2026', positive: false },
-  { label: 'Purchase — Order #1038', pts: '+80', date: '10 Feb 2026', positive: true },
-  { label: 'Birthday Bonus', pts: '+100', date: '5 Feb 2026', positive: true },
-];
+// ─── Helper: resolve tier from points ─────────────────────────────────────────
 
-const demoUser = { name: 'Ahmed', points: 750, tier: 'bloom', ordersCount: 12, lifetimePoints: 1200 };
+function resolveTier(points: number) {
+  return [...tiers].reverse().find((t) => t.minPoints <= points) || tiers[0];
+}
 
 // ─── PointsBar ─────────────────────────────────────────────────────────────────
 function PointsBar({ current }: { current: number }) {
-  const currentTier = [...tiers].reverse().find((t) => t.minPoints <= current) || tiers[0];
+  const currentTier = resolveTier(current);
   const nextTier = tiers.find((t) => t.minPoints > current);
-  const pct = nextTier ? Math.min(100, ((current - currentTier.minPoints) / (nextTier.minPoints - currentTier.minPoints)) * 100) : 100;
+  const pct = nextTier
+    ? Math.min(100, ((current - currentTier.minPoints) / (nextTier.minPoints - currentTier.minPoints)) * 100)
+    : 100;
   return (
     <div className="mt-4">
       <div className="flex justify-between text-xs text-white/60 mb-1.5">
@@ -124,15 +141,26 @@ function TierCard({ tier, isCurrent, userPoints }: { tier: typeof tiers[0]; isCu
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function RewardsPage() {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'earn' | 'redeem' | 'tiers'>('overview');
+  const [rewardsData, setRewardsData] = useState<RewardsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const [redeemed, setRedeemed] = useState<Set<string>>(new Set());
 
-  useEffect(() => { setTimeout(() => setIsLoading(false), 600); }, []);
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
+    api.get<RewardsApiResponse>('/rewards')
+      .then((res) => setRewardsData(res.data))
+      .catch((err) => setError(getApiErrorMessage(err)))
+      .finally(() => setIsLoading(false));
+  }, [isAuthenticated, authLoading]);
 
-  const currentTier = [...tiers].reverse().find((t) => t.minPoints <= demoUser.points) || tiers[0];
-
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 animate-pulse">
         <div className="h-64 bg-gradient-to-br from-[#197B33] to-emerald-600" />
@@ -142,6 +170,41 @@ export default function RewardsPage() {
       </div>
     );
   }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div className="text-5xl mb-4">🌿</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Sign in to view your rewards</h2>
+          <p className="text-gray-500 text-sm mb-6">Earn points on every purchase and unlock exclusive benefits.</p>
+          <a href="/login?returnTo=/rewards" className="inline-block px-8 py-3 bg-[#197B33] text-white font-semibold rounded-full hover:bg-[#156529] transition text-sm">
+            Sign In
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <p className="text-red-500 text-sm mb-4">{error}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2.5 bg-[#197B33] text-white text-sm font-semibold rounded-2xl">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const points = rewardsData?.balance ?? 0;
+  const lifetimePoints = rewardsData?.lifetime_points ?? 0;
+  const ordersCount = rewardsData?.orders_count ?? 0;
+  const transactions = rewardsData?.transactions ?? [];
+  const currentTier = resolveTier(points);
+  const firstName = user?.name?.split(' ')[0] ?? 'there';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -155,19 +218,18 @@ export default function RewardsPage() {
                 <FaStar className="w-3 h-3 text-yellow-300" /> Pansari Inn Rewards Program
               </div>
               <h1 className="text-3xl sm:text-4xl 2xl:text-5xl font-black mb-2">
-                Welcome back, {demoUser.name}! 👋
+                Welcome back, {firstName}! 👋
               </h1>
               <p className="text-white/70 text-sm sm:text-base mb-1">
-                You're a <span className="font-bold text-white">{currentTier.name}</span> member.
+                You&apos;re a <span className="font-bold text-white">{currentTier.name}</span> member.
               </p>
-              <PointsBar current={demoUser.points} />
+              <PointsBar current={points} />
             </div>
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-3 w-full lg:w-auto lg:flex-shrink-0">
               {[
-                { label: 'Available Points', value: demoUser.points.toLocaleString(), sub: 'Redeemable', accent: 'text-yellow-300' },
-                { label: 'Lifetime Points', value: demoUser.lifetimePoints.toLocaleString(), sub: 'Total earned', accent: 'text-emerald-300' },
-                { label: 'Orders', value: String(demoUser.ordersCount), sub: 'Completed', accent: 'text-blue-300' },
+                { label: 'Available Points', value: points.toLocaleString(), sub: 'Redeemable', accent: 'text-yellow-300' },
+                { label: 'Lifetime Points', value: lifetimePoints.toLocaleString(), sub: 'Total earned', accent: 'text-emerald-300' },
+                { label: 'Orders', value: String(ordersCount), sub: 'Completed', accent: 'text-blue-300' },
               ].map((stat) => (
                 <div key={stat.label} className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-center">
                   <div className={`text-2xl sm:text-3xl font-black ${stat.accent}`}>{stat.value}</div>
@@ -203,14 +265,13 @@ export default function RewardsPage() {
 
       <div className="max-w-[1920px] mx-auto px-[4%] py-8 sm:py-12">
 
-        {/* ── OVERVIEW ───────────────────────────────────────────────────────── */}
+        {/* ── OVERVIEW ── */}
         {activeTab === 'overview' && (
           <div className="space-y-10">
-            {/* Quick actions */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { icon: <FaShoppingBag className="w-5 h-5" />, label: 'Shop & Earn', sub: 'Earn points now', color: 'bg-green-600', link: '/shop' },
-                { icon: <FaGift className="w-5 h-5" />, label: 'Redeem Points', sub: `${demoUser.points} pts available`, color: 'bg-purple-600', onClick: () => setActiveTab('redeem') },
+                { icon: <FaShoppingBag className="w-5 h-5" />, label: 'Shop & Earn', sub: 'Earn points now', color: 'bg-green-600', href: '/shop' },
+                { icon: <FaGift className="w-5 h-5" />, label: 'Redeem Points', sub: `${points.toLocaleString()} pts available`, color: 'bg-purple-600', onClick: () => setActiveTab('redeem') },
                 { icon: <FaUserFriends className="w-5 h-5" />, label: 'Refer & Earn', sub: '+200 pts per referral', color: 'bg-blue-600' },
                 { icon: <FaTrophy className="w-5 h-5" />, label: 'View Tiers', sub: `You're ${currentTier.name}`, color: 'bg-amber-600', onClick: () => setActiveTab('tiers') },
               ].map((action, i) => (
@@ -223,7 +284,6 @@ export default function RewardsPage() {
               ))}
             </div>
 
-            {/* Current tier */}
             <div className={`rounded-2xl ${currentTier.bgLight} border border-gray-100 p-6 sm:p-8`}>
               <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
@@ -246,28 +306,36 @@ export default function RewardsPage() {
               </div>
             </div>
 
-            {/* Recent activity */}
+            {/* Recent Activity — from API */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <FaHistory className="w-4 h-4 text-gray-400" />
                 <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                {recentActivity.map((item, i) => (
-                  <div key={i} className={`flex items-center justify-between px-5 py-4 text-sm ${i < recentActivity.length - 1 ? 'border-b border-gray-50' : ''}`}>
-                    <div>
-                      <div className="font-medium text-gray-900">{item.label}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">{item.date}</div>
+                {transactions.length === 0 ? (
+                  <div className="px-5 py-8 text-center text-sm text-gray-400">No activity yet. Start shopping to earn points!</div>
+                ) : (
+                  transactions.slice(0, 10).map((item, i) => (
+                    <div key={item.id} className={`flex items-center justify-between px-5 py-4 text-sm ${i < transactions.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                      <div>
+                        <div className="font-medium text-gray-900">{item.label}</div>
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          {new Date(item.created_at).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </div>
+                      </div>
+                      <div className={`font-bold text-base ${item.points >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                        {item.points >= 0 ? `+${item.points}` : item.points} pts
+                      </div>
                     </div>
-                    <div className={`font-bold text-base ${item.positive ? 'text-green-600' : 'text-red-500'}`}>{item.pts} pts</div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* ── EARN ──────────────────────────────────────────────────────────── */}
+        {/* ── EARN ── */}
         {activeTab === 'earn' && (
           <div className="space-y-8">
             <div>
@@ -285,8 +353,7 @@ export default function RewardsPage() {
                   <p className="text-xs text-gray-400 mb-2">{way.titleUr}</p>
                   <p className="text-sm text-gray-600 leading-relaxed flex-1 mb-4">{way.desc}</p>
                   {way.cta && (
-                    <Link href={way.ctaLink || '#'}
-                      className="w-full py-2.5 text-center rounded-xl text-sm font-semibold bg-gray-900 text-white hover:bg-gray-700 transition">
+                    <Link href={way.ctaLink || '#'} className="w-full py-2.5 text-center rounded-xl text-sm font-semibold bg-gray-900 text-white hover:bg-gray-700 transition">
                       {way.cta}
                     </Link>
                   )}
@@ -297,19 +364,19 @@ export default function RewardsPage() {
               <FaFire className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
                 <div className="font-bold text-gray-900 mb-1">Points Multiplier Active!</div>
-                <p className="text-sm text-gray-600">As a <strong>{currentTier.name}</strong> member, you earn <strong>1.5× points</strong> on every purchase. Upgrade to Herb Master for 2× multiplier.</p>
+                <p className="text-sm text-gray-600">As a <strong>{currentTier.name}</strong> member, you earn bonus points on every purchase. Upgrade your tier for higher multipliers.</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* ── REDEEM ────────────────────────────────────────────────────────── */}
+        {/* ── REDEEM ── */}
         {activeTab === 'redeem' && (
           <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-2xl font-black text-gray-900 mb-1">Redeem Your Points</h2>
-                <p className="text-gray-500">You have <strong className="text-[#197B33]">{demoUser.points.toLocaleString()} points</strong> available to redeem.</p>
+                <p className="text-gray-500">You have <strong className="text-[#197B33]">{points.toLocaleString()} points</strong> available to redeem.</p>
               </div>
               {redeemed.size > 0 && (
                 <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-xl text-sm font-semibold">
@@ -319,7 +386,7 @@ export default function RewardsPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {redeemOptions.map((opt) => {
-                const canAfford = demoUser.points >= opt.cost;
+                const canAfford = points >= opt.cost;
                 const isRedeemed = redeemed.has(opt.id);
                 return (
                   <div key={opt.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col ${!opt.available ? 'opacity-60' : ''}`}>
@@ -344,7 +411,7 @@ export default function RewardsPage() {
                           canAfford && opt.available ? `bg-gradient-to-r ${opt.gradient} text-white hover:opacity-90` :
                           'bg-gray-100 text-gray-400 cursor-not-allowed'
                         }`}>
-                        {isRedeemed ? '✓ Redeemed!' : !opt.available ? 'Coming Soon' : !canAfford ? `Need ${opt.cost - demoUser.points} more pts` : 'Redeem Now'}
+                        {isRedeemed ? '✓ Redeemed!' : !opt.available ? 'Coming Soon' : !canAfford ? `Need ${opt.cost - points} more pts` : 'Redeem Now'}
                       </button>
                     </div>
                   </div>
@@ -354,7 +421,7 @@ export default function RewardsPage() {
           </div>
         )}
 
-        {/* ── TIERS ─────────────────────────────────────────────────────────── */}
+        {/* ── TIERS ── */}
         {activeTab === 'tiers' && (
           <div className="space-y-8">
             <div>
@@ -363,10 +430,9 @@ export default function RewardsPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {tiers.map((tier) => (
-                <TierCard key={tier.id} tier={tier} isCurrent={tier.id === currentTier.id} userPoints={demoUser.points} />
+                <TierCard key={tier.id} tier={tier} isCurrent={tier.id === currentTier.id} userPoints={points} />
               ))}
             </div>
-            {/* Comparison table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 overflow-x-auto">
               <h3 className="font-bold text-gray-900 mb-5">Tier Comparison</h3>
               <table className="w-full text-sm min-w-[500px]">
@@ -397,7 +463,6 @@ export default function RewardsPage() {
                 </tbody>
               </table>
             </div>
-            {/* CTA */}
             <div className="bg-gradient-to-br from-[#197B33] to-emerald-600 rounded-2xl p-6 sm:p-8 text-white text-center">
               <h3 className="text-xl font-black mb-2">Ready to Level Up?</h3>
               <p className="text-white/75 text-sm mb-5">Place more orders, write reviews, and refer friends to earn points faster.</p>

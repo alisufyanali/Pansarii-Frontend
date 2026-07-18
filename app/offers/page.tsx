@@ -7,78 +7,92 @@ import ProductCard from '@/components/Desktop/components/ProductCard';
 import {
   FaTag, FaPercent, FaFire, FaClock, FaShoppingCart,
   FaGift, FaBolt, FaCheckCircle, FaFilter, FaTimes, FaLeaf,
-  FaTruck, FaShieldAlt, FaChevronDown, FaChevronUp, FaStar
+  FaTruck, FaShieldAlt, FaChevronDown, FaChevronUp,
 } from 'react-icons/fa';
 import { FiCopy, FiCheck } from 'react-icons/fi';
+import { api, getApiErrorMessage } from '@/lib/axios';
 
-// ─── Types & Data ─────────────────────────────────────────────────────────────
-type OfferType = 'discount' | 'bogo' | 'flash' | 'seasonal' | 'bundle' | 'freeship';
+// ─── Types ─────────────────────────────────────────────────────────────────────
+type OfferType = 'discount' | 'bogo' | 'flash' | 'seasonal' | 'bundle' | 'freeship' | string;
 
 interface Offer {
-  id: string; type: OfferType; title: string; titleUr: string;
-  description: string; discount: string; code?: string;
-  validUntil: string; minPurchase?: number; maxDiscount?: number;
-  featured?: boolean; usageLeft?: number; totalUsage?: number;
-  perks?: string[]; color: string; bgColor: string; gradient: string;
+  id: string;
+  type: OfferType;
+  title: string;
+  titleUr?: string;
+  description: string;
+  discount: string;
+  code?: string;
+  validUntil: string;
+  minPurchase?: number;
+  maxDiscount?: number;
+  featured?: boolean;
+  usageLeft?: number;
+  totalUsage?: number;
+  perks?: string[];
+  color: string;
+  bgColor: string;
+  gradient: string;
 }
 
-const offers: Offer[] = [
-  { id: '1', type: 'flash', title: 'Mega Flash Sale — 40% OFF', titleUr: 'میگا فلیش سیل — 40% آف',
-    description: "Limited time offer on all premium herbal oils. Today only — don't miss out!",
-    discount: '40%', code: 'FLASH40', validUntil: '2026-03-31', minPurchase: 2000, maxDiscount: 1500,
-    featured: true, usageLeft: 47, totalUsage: 200,
-    perks: ['Free gift wrapping', 'Same day dispatch', 'Priority support'],
-    color: 'text-red-600', bgColor: 'bg-red-50', gradient: 'from-red-500 to-orange-500' },
-  { id: '2', type: 'seasonal', title: 'Spring Wellness Bundle', titleUr: 'بہار ویلنس بنڈل',
-    description: 'Refresh your routine this spring. Save 30% on our bestselling wellness combos.',
-    discount: '30%', code: 'SPRING30', validUntil: '2026-04-30', minPurchase: 1500,
-    featured: true, usageLeft: 120, totalUsage: 300,
-    perks: ['Free shipping', 'Bonus sample included', 'Extra 5% on repeat order'],
-    color: 'text-emerald-600', bgColor: 'bg-emerald-50', gradient: 'from-emerald-500 to-teal-500' },
-  { id: '3', type: 'bogo', title: 'Buy 1 Get 1 Free', titleUr: 'ایک خریدیں ایک مفت پائیں',
-    description: 'On all honey & herbal tea products. Stock up on your favourites!',
-    discount: 'BOGO', code: 'HONEY2X', validUntil: '2026-05-31', usageLeft: 60, totalUsage: 100,
-    perks: ['No min. purchase', 'Mix & match allowed'],
-    color: 'text-purple-600', bgColor: 'bg-purple-50', gradient: 'from-purple-500 to-pink-500' },
-  { id: '4', type: 'discount', title: 'New Customer Welcome', titleUr: 'نئے گاہک کا خیرمقدم',
-    description: 'Get 20% off your very first order. Welcome to Pansari Inn!',
-    discount: '20%', code: 'NEW20', validUntil: '2026-12-31', minPurchase: 1000,
-    perks: ['One time use', 'Stackable with free shipping'],
-    color: 'text-blue-600', bgColor: 'bg-blue-50', gradient: 'from-blue-500 to-indigo-500' },
-  { id: '5', type: 'bundle', title: 'Skincare Ritual Bundle', titleUr: 'اسکن کیئر ریچوئل بنڈل',
-    description: 'Complete natural skincare set — face oil, serum & moisturizer at 35% off.',
-    discount: '35%', code: 'SKIN35', validUntil: '2026-05-31', minPurchase: 3000,
-    perks: ['Curated by experts', 'Gift box included', 'Free engraving'],
-    color: 'text-rose-600', bgColor: 'bg-rose-50', gradient: 'from-rose-500 to-pink-500' },
-  { id: '6', type: 'freeship', title: 'Free Nationwide Shipping', titleUr: 'مفت قومی ترسیل',
-    description: 'Shop for PKR 3,000 or more and enjoy free delivery anywhere in Pakistan.',
-    discount: 'FREE', code: 'FREESHIP', validUntil: '2026-12-31', minPurchase: 3000,
-    perks: ['All cities covered', '2–4 day delivery', 'Real-time tracking'],
-    color: 'text-cyan-600', bgColor: 'bg-cyan-50', gradient: 'from-cyan-500 to-blue-500' },
-  { id: '7', type: 'discount', title: 'Weekend Special — 15% OFF', titleUr: 'ویک اینڈ اسپیشل',
-    description: 'Every Saturday & Sunday — enjoy weekend savings across all categories.',
-    discount: '15%', code: 'WKND15', validUntil: '2026-12-31',
-    perks: ['Auto applied on weekends', 'All products eligible'],
-    color: 'text-amber-600', bgColor: 'bg-amber-50', gradient: 'from-amber-500 to-yellow-500' },
-  { id: '8', type: 'bundle', title: 'Haircare Complete Set', titleUr: 'ہیئرکیئر کمپلیٹ سیٹ',
-    description: 'Strengthen, nourish & grow. All-in-one haircare bundle at 25% off.',
-    discount: '25%', code: 'HAIR25', validUntil: '2026-06-30', minPurchase: 2500,
-    perks: ['3 full-size products', 'Dermatologist tested', '30-day results guarantee'],
-    color: 'text-violet-600', bgColor: 'bg-violet-50', gradient: 'from-violet-500 to-purple-500' },
-];
+interface ApiOfferItem {
+  id: string | number;
+  code?: string;
+  description?: string;
+  discount_type: string;
+  discount_value: number;
+  min_purchase_amount?: number;
+  end_date?: string;
+  title?: string;
+}
+
+// Map API item → display Offer
+function mapApiOffer(o: ApiOfferItem): Offer {
+  const typeMap: Record<string, { color: string; bgColor: string; gradient: string }> = {
+    percentage: { color: 'text-green-600',  bgColor: 'bg-green-50',  gradient: 'from-green-500 to-emerald-500'  },
+    fixed:      { color: 'text-blue-600',   bgColor: 'bg-blue-50',   gradient: 'from-blue-500 to-indigo-500'    },
+    freeship:   { color: 'text-cyan-600',   bgColor: 'bg-cyan-50',   gradient: 'from-cyan-500 to-blue-500'      },
+    bogo:       { color: 'text-purple-600', bgColor: 'bg-purple-50', gradient: 'from-purple-500 to-pink-500'    },
+    flash:      { color: 'text-red-600',    bgColor: 'bg-red-50',    gradient: 'from-red-500 to-orange-500'     },
+    seasonal:   { color: 'text-emerald-600',bgColor: 'bg-emerald-50',gradient: 'from-emerald-500 to-teal-500'  },
+    bundle:     { color: 'text-rose-600',   bgColor: 'bg-rose-50',   gradient: 'from-rose-500 to-pink-500'      },
+  };
+  const style = typeMap[o.discount_type] ?? typeMap.percentage;
+  const discountLabel =
+    o.discount_type === 'percentage' ? `${o.discount_value}%` :
+    o.discount_type === 'freeship'   ? 'FREE' :
+    o.discount_type === 'bogo'       ? 'BOGO' :
+    `PKR ${o.discount_value.toLocaleString()}`;
+
+  return {
+    id:          String(o.id),
+    type:        o.discount_type,
+    title:       o.title ?? o.code ?? `${discountLabel} OFF`,
+    titleUr:     undefined,
+    description: o.description ?? '',
+    discount:    discountLabel,
+    code:        o.code,
+    validUntil:  o.end_date ?? '',
+    minPurchase: o.min_purchase_amount,
+    ...style,
+  };
+}
 
 const typeLabels: Record<string, string> = {
   all: 'All', flash: 'Flash Sale', seasonal: 'Seasonal', bogo: 'BOGO',
   bundle: 'Bundles', discount: 'Discount', freeship: 'Free Shipping',
+  percentage: 'Discount', fixed: 'Fixed Off',
 };
 
 const typeIcons: Record<string, React.ReactNode> = {
-  flash: <FaBolt className="w-3 h-3" />, 
+  flash: <FaBolt className="w-3 h-3" />,
   seasonal: <FaLeaf className="w-3 h-3" />,
-  bogo: <FaGift className="w-3 h-3" />, 
+  bogo: <FaGift className="w-3 h-3" />,
   bundle: <FaShoppingCart className="w-3 h-3" />,
-  freeship: <FaTruck className="w-3 h-3" />, 
+  freeship: <FaTruck className="w-3 h-3" />,
   discount: <FaPercent className="w-3 h-3" />,
+  percentage: <FaPercent className="w-3 h-3" />,
+  fixed: <FaTag className="w-3 h-3" />,
 };
 
 // ─── CountdownTimer ────────────────────────────────────────────────────────────
@@ -254,12 +268,19 @@ function OffersPageSkeleton() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function OffersPage() {
+  const [offers, setOffers] = useState<Offer[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | OfferType>('all');
+  const [filter, setFilter] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [showMobileFilter, setShowMobileFilter] = useState(false);
 
-  useEffect(() => { setTimeout(() => setIsLoading(false), 700); }, []);
+  useEffect(() => {
+    api.get<{ success: boolean; data: ApiOfferItem[] }>('/offers')
+      .then((res) => setOffers((res.data ?? []).map(mapApiOffer)))
+      .catch((err) => setFetchError(getApiErrorMessage(err)))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -272,6 +293,20 @@ export default function OffersPage() {
   const saleProducts = newArrivalProducts.filter((p) => p.sale).slice(0, 5);
 
   if (isLoading) return <OffersPageSkeleton />;
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div className="text-5xl mb-4">🏷️</div>
+          <p className="text-red-500 text-sm mb-4">{fetchError}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -286,7 +321,7 @@ export default function OffersPage() {
             </div>
             <div className="hidden sm:flex items-center gap-2">
               <div className="bg-red-50 px-3 py-1.5 rounded-lg text-center">
-                <div className="text-red-600 font-bold text-sm">{offers.length}</div>
+                <div className="text-red-600 font-bold text-sm">{filteredOffers.length}</div>
                 <div className="text-xs text-red-400">Active Deals</div>
               </div>
             </div>

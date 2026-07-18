@@ -7,9 +7,8 @@
  * Step 2 : Confirmation bottom-sheet
  * Step 3 : Success screen
  *
- * Data is read from localStorage (same shape as order-confirmation page).
- * On confirm, the order's status is updated to 'cancelled' in localStorage.
- * Replace the localStorage logic with a real API call when backend is ready.
+ * Order data is fetched from GET /orders/{id}.
+ * Cancellation is sent to PATCH /orders/{id}/cancel.
  */
 
 import { Suspense, useEffect, useState } from 'react';
@@ -23,29 +22,8 @@ import {
   RiDeleteBin6Line,
   RiCheckboxCircleFill,
 } from 'react-icons/ri';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-interface OrderItem {
-  id: number;
-  nameEn: string;
-  img: string;
-  price: number;
-  quantity: number;
-  size: string;
-}
-
-interface Order {
-  orderId: string;
-  orderDate: string;
-  items: OrderItem[];
-  total: number;
-  paymentStatus: string;
-  paymentMethod: string;
-  status?: string;
-}
-
-type Step = 'reason' | 'confirm' | 'success';
+import { toast } from 'react-toastify';
+import { getOrderById, cancelOrder, type ApiOrder } from '@/lib/orders';
 
 // ── Cancel reasons ────────────────────────────────────────────────────────────
 
@@ -64,14 +42,8 @@ function fmt(n: number) {
   return `PKR ${n.toLocaleString()}`;
 }
 
-function canCancel(order: Order): boolean {
-  const s = order.status ?? order.paymentStatus;
-  return s !== 'shipped' && s !== 'delivered' && s !== 'cancelled';
-}
-
-function generateCancellationId(): string {
-  const now = new Date();
-  return `CAN-${String(now.getFullYear()).slice(-4)}-${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+function canCancel(order: ApiOrder): boolean {
+  return order.status !== 'shipped' && order.status !== 'delivered' && order.status !== 'cancelled';
 }
 
 function todayFormatted(): string {
@@ -82,19 +54,33 @@ function todayFormatted(): string {
   });
 }
 
+function formatDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString('en-PK', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
 // ── Step 1 — Reason selection ─────────────────────────────────────────────────
 
 function ReasonStep({
   order,
   onNext,
 }: {
-  order: Order;
+  order: ApiOrder;
   onNext: (reason: string, comment: string) => void;
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState(REASONS[0]);
   const [comment, setComment] = useState('');
   const cancellable = canCancel(order);
+
+  const firstItem = order.items?.[0];
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28 font-poppins">
@@ -121,15 +107,15 @@ function ReasonStep({
         {/* Order summary card */}
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold text-amber-800">Order #{order.orderId}</p>
-            <p className="text-[11px] text-amber-600 mt-0.5">Placed: {order.orderDate}</p>
-            <p className="text-sm font-black text-amber-900 mt-1">Total: {fmt(order.total)}</p>
+            <p className="text-xs font-bold text-amber-800">Order #{order.order_number}</p>
+            <p className="text-[11px] text-amber-600 mt-0.5">Placed: {formatDate(order.created_at)}</p>
+            <p className="text-sm font-black text-amber-900 mt-1">Total: {fmt(order.grand_total)}</p>
           </div>
-          {order.items[0] && (
+          {firstItem?.thumbnail && (
             <div className="w-14 h-14 rounded-xl overflow-hidden bg-white border border-amber-200 flex-shrink-0">
               <Image
-                src={order.items[0].img}
-                alt={order.items[0].nameEn}
+                src={firstItem.thumbnail}
+                alt={firstItem.product_name}
                 width={56}
                 height={56}
                 className="object-cover w-full h-full"
@@ -214,12 +200,16 @@ function ConfirmStep({
   reason,
   onConfirm,
   onBack,
+  isSubmitting,
 }: {
-  order: Order;
+  order: ApiOrder;
   reason: string;
   onConfirm: () => void;
   onBack: () => void;
+  isSubmitting: boolean;
 }) {
+  const firstItem = order.items?.[0];
+
   return (
     <div className="min-h-screen bg-gray-50 font-poppins flex flex-col">
 
@@ -245,33 +235,37 @@ function ConfirmStep({
         <div className="bg-white rounded-2xl p-4 border border-gray-100">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <p className="text-sm font-bold text-gray-800">Order #{order.orderId}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">Placed on {order.orderDate}</p>
+              <p className="text-sm font-bold text-gray-800">Order #{order.order_number}</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">Placed on {formatDate(order.created_at)}</p>
             </div>
-            <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-green-500 text-white">
-              Processing
+            <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-green-500 text-white capitalize">
+              {order.status}
             </span>
           </div>
-          {order.items.slice(0, 1).map((item) => (
-            <div key={item.id} className="flex items-center gap-3">
+          {firstItem && (
+            <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                <Image src={item.img} alt={item.nameEn} width={56} height={56} className="object-cover w-full h-full" />
+                {firstItem.thumbnail ? (
+                  <Image src={firstItem.thumbnail} alt={firstItem.product_name} width={56} height={56} className="object-cover w-full h-full" />
+                ) : (
+                  <div className="w-full h-full bg-gray-200" />
+                )}
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-800">{item.nameEn}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{item.size} · Qty {item.quantity}</p>
-                <p className="text-xs font-bold text-gray-900 mt-0.5">{fmt(item.price)}</p>
+                <p className="text-xs font-semibold text-gray-800">{firstItem.product_name}</p>
+                {firstItem.variant_name && (
+                  <p className="text-xs text-gray-400 mt-0.5">{firstItem.variant_name} · Qty {firstItem.quantity}</p>
+                )}
+                <p className="text-xs font-bold text-gray-900 mt-0.5">{fmt(firstItem.price)}</p>
               </div>
             </div>
-          ))}
+          )}
         </div>
 
         <div className="bg-white rounded-2xl p-4 border border-gray-100 mt-3">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Shipping Address</p>
           <p className="text-xs text-gray-500 leading-relaxed">
-            {order.items[0]?.nameEn ?? 'Customer'}<br />
-            Pansari Inn Delivery Network<br />
-            Pakistan
+            {order.shipping_address ?? 'Pansari Inn Delivery Network, Pakistan'}
           </p>
         </div>
       </div>
@@ -288,7 +282,7 @@ function ConfirmStep({
 
         <h2 className="text-lg font-black text-gray-900 text-center mb-2">Cancel this order?</h2>
         <p className="text-xs text-gray-500 text-center leading-relaxed mb-1">
-          Order #{order.orderId} will be permanently cancelled.
+          Order #{order.order_number} will be permanently cancelled.
         </p>
         <p className="text-xs text-gray-500 text-center leading-relaxed mb-1">
           Reason: <span className="font-semibold text-gray-700">{reason}</span>
@@ -299,13 +293,17 @@ function ConfirmStep({
 
         <button
           onClick={onConfirm}
-          className="w-full py-4 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-sm font-bold rounded-2xl transition-colors mb-3"
+          disabled={isSubmitting}
+          className="w-full py-4 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-sm font-bold rounded-2xl transition-colors mb-3 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          Yes, Cancel Order
+          {isSubmitting ? (
+            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+          ) : 'Yes, Cancel Order'}
         </button>
         <button
           onClick={onBack}
-          className="w-full py-3.5 border border-gray-200 text-gray-700 text-sm font-semibold rounded-2xl hover:bg-gray-50 transition-colors"
+          disabled={isSubmitting}
+          className="w-full py-3.5 border border-gray-200 text-gray-700 text-sm font-semibold rounded-2xl hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
           Keep My Order
         </button>
@@ -316,8 +314,7 @@ function ConfirmStep({
 
 // ── Step 3 — Success ──────────────────────────────────────────────────────────
 
-function SuccessStep({ order }: { order: Order }) {
-  const cancellationId = generateCancellationId();
+function SuccessStep({ order }: { order: ApiOrder }) {
   const cancellationDate = todayFormatted();
 
   return (
@@ -351,9 +348,9 @@ function SuccessStep({ order }: { order: Order }) {
         <div>
           <h2 className="text-xl font-black text-gray-900 mb-2">Order Cancelled</h2>
           <p className="text-xs text-gray-500 leading-relaxed max-w-xs">
-            Your order <span className="font-bold text-gray-700">#{order.orderId}</span> has been
+            Your order <span className="font-bold text-gray-700">#{order.order_number}</span> has been
             successfully cancelled. Refund of{' '}
-            <span className="font-bold text-gray-700">{fmt(order.total)}</span> will be credited
+            <span className="font-bold text-gray-700">{fmt(order.grand_total)}</span> will be credited
             within 5–7 business days.
           </p>
         </div>
@@ -362,9 +359,9 @@ function SuccessStep({ order }: { order: Order }) {
         <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-              Cancellation ID
+              Order Number
             </span>
-            <span className="text-xs font-black text-gray-900">{cancellationId}</span>
+            <span className="text-xs font-black text-gray-900">#{order.order_number}</span>
           </div>
           <div className="flex items-center justify-between px-4 py-3.5">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -408,46 +405,59 @@ function SuccessStep({ order }: { order: Order }) {
 function CancelOrderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [order, setOrder] = useState<Order | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [step, setStep] = useState<Step>('reason');
+  const [order, setOrder] = useState<ApiOrder | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [step, setStep] = useState<'reason' | 'confirm' | 'success'>('reason');
   const [selectedReason, setSelectedReason] = useState('');
+  const [selectedComment, setSelectedComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const orderId = searchParams.get('orderId');
-    if (!orderId) { router.push('/orders'); return; }
-
-    const raw = localStorage.getItem(`order-${orderId}`);
-    if (raw) {
-      setOrder(JSON.parse(raw));
-    } else {
+    if (!orderId) {
       router.push('/orders');
+      return;
     }
+
+    getOrderById(Number(orderId))
+      .then((data) => setOrder(data))
+      .catch(() => {
+        toast.error('Order not found.');
+        router.push('/orders');
+      })
+      .finally(() => setIsLoading(false));
   }, [searchParams, router]);
 
-  const handleReasonNext = (reason: string, _comment: string) => {
+  const handleReasonNext = (reason: string, comment: string) => {
     setSelectedReason(reason);
+    setSelectedComment(comment);
     setStep('confirm');
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!order) return;
-    // Update status in localStorage
-    const updated = { ...order, status: 'cancelled' };
-    localStorage.setItem(`order-${order.orderId}`, JSON.stringify(updated));
-    setOrder(updated);
-    setStep('success');
+    setIsSubmitting(true);
+    try {
+      await cancelOrder(order.id, selectedReason, selectedComment || undefined);
+      // Update local state to reflect the new status
+      setOrder((prev) => prev ? { ...prev, status: 'cancelled' } : prev);
+      setStep('success');
+    } catch {
+      toast.error('Failed to cancel the order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Loading
-  if (!mounted || !order) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
+
+  if (!order) return null;
 
   if (step === 'reason') {
     return <ReasonStep order={order} onNext={handleReasonNext} />;
@@ -459,6 +469,7 @@ function CancelOrderContent() {
         reason={selectedReason}
         onConfirm={handleConfirm}
         onBack={() => setStep('reason')}
+        isSubmitting={isSubmitting}
       />
     );
   }

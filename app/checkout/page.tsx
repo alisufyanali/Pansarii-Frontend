@@ -57,7 +57,7 @@ interface GuestFields {
 export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, getCartTotal, clearCart, isCartLoading, syncFromApi } = useCart();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>('pending');
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -93,10 +93,12 @@ export default function CheckoutPage() {
     if (authLoading) return;
     if (isAuthenticated) {
       setCheckoutMode('auth');
+      // Pre-fill phone from stored user profile
+      if (user?.phone) setPhoneValue(user.phone);
     } else {
       setShowCheckoutModal(true);
     }
-  }, [authLoading, isAuthenticated]);
+  }, [authLoading, isAuthenticated, user]);
 
   // ── Refresh cart from API when checkout mounts (logged-in users) ───────────
   useEffect(() => {
@@ -214,6 +216,7 @@ export default function CheckoutPage() {
         router.push(`/order-confirmation?orderId=${order.id}`);
       } else {
         const order = await createOrder({
+          phone:             phoneValue || undefined,
           shipping_address:  fullAddress,
           payment_method:    paymentMethod,
           order_note:        orderNote || undefined,
@@ -422,17 +425,35 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
                       <label className={labelCls}>Full Name *</label>
-                      <input name="name" type="text" required className={inputCls} placeholder="Ahmed Khan" />
+                      <input
+                        name="name"
+                        type="text"
+                        required
+                        defaultValue={user?.name ?? ''}
+                        className={inputCls}
+                        placeholder="Ahmed Khan"
+                      />
                     </div>
                     <div>
                       <label className={labelCls}>Email Address *</label>
-                      <input name="email" type="email" required className={inputCls} placeholder="ahmed@example.com" />
+                      <input
+                        name="email"
+                        type="email"
+                        required
+                        defaultValue={user?.email ?? ''}
+                        className={inputCls}
+                        placeholder="ahmed@example.com"
+                      />
                     </div>
                     <div>
                       <label className={labelCls}>Phone Number *</label>
-                      <PhoneInput international defaultCountry="PK"
-                        value={phoneValue} onChange={v => setPhoneValue(v || '')}
-                        placeholder="Enter phone number" />
+                      <PhoneInput
+                        international
+                        defaultCountry="PK"
+                        value={phoneValue}
+                        onChange={v => setPhoneValue(v || '')}
+                        placeholder="Enter phone number"
+                      />
                     </div>
                   </div>
                 </div>

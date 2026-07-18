@@ -17,6 +17,7 @@ export interface OrderItem {
 }
 
 export interface CreateOrderPayload {
+  phone?: string;
   city_id?: number;
   shipping_address?: string;
   billing_address?: string;
@@ -112,6 +113,23 @@ export const getOrders = async (
 
 export const getOrderById = async (id: number): Promise<ApiOrder> => {
   const res = await apiClient.get<ApiResponse<ApiOrder>>(`/orders/${id}`);
+  return res.data.data;
+};
+
+export interface CancelOrderResult {
+  order_number: string;
+  status: string;
+}
+
+export const cancelOrder = async (
+  id: number,
+  reason: string,
+  comment?: string,
+): Promise<CancelOrderResult> => {
+  const res = await apiClient.patch<ApiResponse<CancelOrderResult>>(
+    `/orders/${id}/cancel`,
+    { reason, ...(comment ? { comment } : {}) },
+  );
   return res.data.data;
 };
 
