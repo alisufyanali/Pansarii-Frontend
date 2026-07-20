@@ -10,10 +10,12 @@ import {
   RiDeleteBinLine,
   RiArrowLeftLine,
   RiShoppingCartLine,
+  RiArrowRightLine,
 } from 'react-icons/ri';
 import { FaStar } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import { useCart } from '@/context/CartContext';
-import { useWishlist } from '@/context/WishList';
+import { useWishlist, type WishlistItem } from '@/context/WishList';
 import { allProducts } from '../../data/products';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -94,24 +96,28 @@ export default function WishlistPage() {
     );
   }, [wishlistItems, mounted]);
 
-  const handleAddToCart = async (item: {
-    id: string | number;
-    img: string;
-    nameEn: string;
-    nameUr?: string;
-    price: number;
-    category?: string;
-  }) => {
-    await addToCart({
-      id: item.id,
-      img: item.img,
-      nameEn: item.nameEn,
-      nameUr: item.nameUr ?? item.nameEn,
-      price: item.price,
-      size: '15ml',
-      category: item.category ?? 'Wishlist',
-    });
-    await removeFromWishlist(item.id);
+  const handleAddToCart = async (item: WishlistItem) => {
+    if (!item.variantId) {
+      // No variant stored — send user to the product page to select one
+      toast.info('Please select a size/variant on the product page first.');
+      router.push(item.slug ? `/products/${item.slug}` : '/shop');
+      return;
+    }
+    try {
+      await addToCart({
+        id: item.id,
+        img: item.img,
+        nameEn: item.nameEn,
+        nameUr: item.nameUr ?? item.nameEn,
+        price: item.price,
+        variantId: item.variantId,
+        size: item.variantName ?? String(item.variantId),
+        category: item.category ?? 'Wishlist',
+      });
+      await removeFromWishlist(item.id);
+    } catch {
+      // addToCart already shows a toast on error; no double-toast needed
+    }
   };
 
   // ── Loading skeleton ──────────────────────────────────────────────────────
@@ -274,14 +280,24 @@ export default function WishlistPage() {
               </div>
 
               {/* Add to Cart */}
-              <button
-                onClick={() => handleAddToCart(item)}
-                disabled={item.inStock === false}
-                className="w-full py-2 bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <RiShoppingBagLine className="w-3.5 h-3.5" />
-                Add to Cart
-              </button>
+              {item.variantId ? (
+                <button
+                  onClick={() => handleAddToCart(item)}
+                  disabled={item.inStock === false}
+                  className="w-full py-2 bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RiShoppingBagLine className="w-3.5 h-3.5" />
+                  Add to Cart
+                </button>
+              ) : (
+                <Link
+                  href={item.slug ? `/products/${item.slug}` : '/shop'}
+                  className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  Select Variant
+                  <RiArrowRightLine className="w-3.5 h-3.5" />
+                </Link>
+              )}
             </div>
           </div>
         ))}
@@ -366,7 +382,7 @@ export default function WishlistPage() {
                         nameEn: product.nameEn,
                         nameUr: product.nameEn,
                         price: product.price,
-                        size: '15ml',
+                        size: 'default',
                         category: product.category ?? 'Suggested',
                       })
                     }

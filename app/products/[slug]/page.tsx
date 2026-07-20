@@ -4,7 +4,7 @@ import ProductDetails from '@/components/Desktop/components/ProductDetails';
 import ProductDetailsSection from '@/components/Desktop/Sections/ProductDetailsSection';
 import { allProducts } from '@/data/products';
 import { findProductBySlug, toProductSlug } from '@/lib/productSlug';
-import { getProductBySlug as fetchApiProduct } from '@/lib/products';
+import { getProductBySlug as fetchApiProduct, getProducts as fetchApiProducts } from '@/lib/products';
 import type { Product, ProductFeature, LegacyProduct } from '@/types/product';
 
 type CatalogProduct = (typeof allProducts)[number];
@@ -50,41 +50,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-function getProductFeatures(product: CatalogProduct): ProductFeature[] {
-  const base: ProductFeature[] = [
-    { text: '100% Natural & Organic', hasCheck: true },
-    { text: 'No Chemical Preservatives', hasCheck: true },
-    { text: 'Cruelty Free', hasCheck: true },
-    { text: 'Ayurvedic Formulation', hasCheck: true },
-    { text: 'Gluten Free', hasCheck: true },
-    { text: 'Vegan Friendly', hasCheck: true },
-  ];
-  const extra: ProductFeature[] = [];
-  const cat = product.category?.toLowerCase() || '';
-  if (cat.includes('skin')) {
-    extra.push(
-      { text: 'Anti-Aging Properties', hasCheck: true },
-      { text: 'Moisturizing Effect', hasCheck: true },
-      { text: 'Brightens Skin Tone', hasCheck: true },
-    );
-  }
-  if (cat.includes('hair')) {
-    extra.push(
-      { text: 'Promotes Hair Growth', hasCheck: true },
-      { text: 'Reduces Hair Fall', hasCheck: true },
-      { text: 'Strengthens Hair Roots', hasCheck: true },
-    );
-  }
-  if (cat.includes('oil')) {
-    extra.push(
-      { text: 'Cold Pressed Extraction', hasCheck: true },
-      { text: 'Pure & Unrefined', hasCheck: true },
-      { text: 'Rich in Antioxidants', hasCheck: true },
-    );
-  }
-  return [...extra, ...base].slice(0, 8);
-}
-
 function getProductBenefits(product: CatalogProduct): string[] {
   const cat = product.category?.toLowerCase() || '';
   if (cat.includes('skin')) {
@@ -106,39 +71,50 @@ function getProductBenefits(product: CatalogProduct): string[] {
 function buildProduct(foundProduct: CatalogProduct): Product {
   return {
     img: foundProduct.img,
-    additionalImages: foundProduct.additionalImages || [
-      '/images/category.png',
-      '/images/Skincare.png',
-      '/images/whisk.png',
-    ],
+    additionalImages: foundProduct.additionalImages?.length
+      ? foundProduct.additionalImages
+      : undefined,
     nameEn: foundProduct.nameEn,
     nameUr: foundProduct.nameUr || foundProduct.nameEn,
-    description: foundProduct.description || 'Pure ayurvedic product for natural wellness',
+    description: foundProduct.description || '',
     rating: foundProduct.rating || 4.5,
-    reviews: foundProduct.reviews || 100,
+    reviews: foundProduct.reviews || 0,
     price: foundProduct.price,
-    oldPrice: foundProduct.oldPrice,
-    sale: foundProduct.sale || '20% OFF',
+    oldPrice: foundProduct.oldPrice ?? null,
+    // Only show a real sale badge — never fabricate '20% OFF'
+    sale: foundProduct.sale ?? null,
     productId: foundProduct.id,
     id: foundProduct.id,
     category: foundProduct.category,
-    features: getProductFeatures(foundProduct),
-    sizes: ['15ml', '30ml', '60ml', '120ml', '150ml'],
+    // Only expose features if the static product actually has them defined
+    features: foundProduct.features?.length ? foundProduct.features : [],
+    // Only expose sizes if the static product actually has them defined
+    sizes: foundProduct.sizes?.length ? foundProduct.sizes : [],
     points: Math.floor(foundProduct.price / 100) || 14,
     benefits: getProductBenefits(foundProduct),
     infoLines: [
       '100% Ayurvedic & Herbal Product',
       'Free Delivery On All Orders Above PKR 5000',
       'GST Included in Price',
-      'Certified Organic Ingredients',
     ],
   };
 }
 
 export async function generateStaticParams() {
-  return allProducts.map((p) => ({
-    slug: toProductSlug(p.nameEn),
-  }));
+  const staticSlugs = allProducts.map((p) => toProductSlug(p.nameEn));
+
+  let apiSlugs: string[] = [];
+  try {
+    // Fetch all products from the API (up to 500) to collect their slugs.
+    // This runs at build time only, so a single large fetch is acceptable.
+    const res = await fetchApiProducts({ per_page: 500, page: 1 });
+    apiSlugs = res.data.map((p) => p.slug).filter(Boolean);
+  } catch {
+    // API unavailable at build time — fall back to static slugs only.
+  }
+
+  const merged = Array.from(new Set([...apiSlugs, ...staticSlugs]));
+  return merged.map((slug) => ({ slug }));
 }
 
 interface PageProps {
@@ -223,7 +199,7 @@ export default async function ProductPage({ params }: PageProps) {
       ...p,
       nameUr: p.nameUr || p.nameEn,
       description: p.description || '',
-      features: getProductFeatures(p).slice(0, 2),
+      features: [],
     }));
 
   const legacyProduct: LegacyProduct = {

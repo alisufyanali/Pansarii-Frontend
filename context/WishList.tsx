@@ -32,8 +32,12 @@ export interface WishlistItem {
   wishlistId?: number;
   /** product id as number (for POST calls) */
   productId?: number;
-  /** optional variant id */
+  /** variant id — comes directly from the API wishlist item's product_variant_id */
   variantId?: number;
+  /** variant name / size label (e.g. "15ml") */
+  variantName?: string;
+  /** product slug — used to navigate to product page when no variant is stored */
+  slug?: string;
   img: string;
   nameEn: string;
   nameUr: string;
@@ -94,12 +98,14 @@ function clearLocalWishlist(): void {
 }
 
 function apiItemToWishlistItem(a: ApiWishlistItem): WishlistItem {
-  const displayPrice = a.product.sale_price ?? a.product.price;
+  const displayPrice = a.variant?.price ?? a.product.sale_price ?? a.product.price;
   return {
     id: a.product.id,
     wishlistId: a.id,
     productId: a.product.id,
     variantId: a.variant?.id,
+    variantName: a.variant?.name,
+    slug: a.product.slug,
     img: a.product.thumbnail || '/images/product.png',
     nameEn: a.product.name,
     nameUr: a.product.name,
@@ -107,7 +113,7 @@ function apiItemToWishlistItem(a: ApiWishlistItem): WishlistItem {
     oldPrice: a.product.sale_price && a.product.price > a.product.sale_price
       ? a.product.price
       : undefined,
-    inStock: true,
+    inStock: a.variant ? a.variant.stock > 0 : true,
   };
 }
 

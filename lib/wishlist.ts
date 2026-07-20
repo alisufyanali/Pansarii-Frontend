@@ -9,6 +9,7 @@ import apiClient from './axios';
 
 export interface ApiWishlistItem {
   id: number;
+  product_variant_id: number | null;
   created_at: string;
   product: {
     id: number;
@@ -22,6 +23,9 @@ export interface ApiWishlistItem {
     id: number;
     name: string;
     sku: string;
+    price: number;
+    sale_price: number | null;
+    stock: number;
   } | null;
 }
 

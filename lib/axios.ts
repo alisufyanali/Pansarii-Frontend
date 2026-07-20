@@ -47,6 +47,10 @@ export function setAuthData(token: string, user: unknown): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  // Write a companion cookie so middleware can detect auth state on the Edge.
+  // SameSite=Lax prevents cross-site request forgery while allowing normal
+  // navigation. The cookie is intentionally NOT HttpOnly so JS can clear it.
+  document.cookie = `${TOKEN_KEY}=1; path=/; SameSite=Lax`;
 }
 
 /** Wipe auth data (called on logout or 401). */
@@ -54,6 +58,8 @@ export function clearAuthData(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  // Clear the companion middleware cookie.
+  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Lax`;
 }
 
 /** Read the stored user object, or null if not logged in. */

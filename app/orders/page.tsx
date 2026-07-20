@@ -8,6 +8,7 @@ import {
   RiArrowLeftLine, RiShoppingCartLine, RiShoppingBagLine,
 } from 'react-icons/ri';
 import { getOrders, type ApiOrder } from '@/lib/orders';
+import { useAuth } from '@/context/AuthContext';
 
 // ── Status config (Steps 7) ───────────────────────────────────────────────────
 
@@ -172,6 +173,7 @@ function Pagination({ current, total, onChange }: { current: number; total: numb
 
 export default function OrderHistoryPage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [orders,      setOrders]     = useState<ApiOrder[]>([]);
   const [isLoading,   setIsLoading]  = useState(true);
   const [error,       setError]      = useState('');
@@ -179,6 +181,15 @@ export default function OrderHistoryPage() {
   const [totalPages,  setTotalPages] = useState(1);
 
   useEffect(() => {
+    // Wait for auth to resolve before attempting the API call.
+    // Middleware already redirects unauthenticated users, but this
+    // prevents a spurious 401 if the client renders before the redirect.
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      router.replace(`/login?returnTo=/orders`);
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     getOrders(currentPage, 10)
@@ -188,7 +199,7 @@ export default function OrderHistoryPage() {
       })
       .catch(() => setError('Could not load orders. Please try again.'))
       .finally(() => setIsLoading(false));
-  }, [currentPage]);
+  }, [currentPage, isAuthenticated, authLoading, router]);
 
   const inTransit = orders.filter(o =>
     o.status === 'shipped' || o.status === 'processing'

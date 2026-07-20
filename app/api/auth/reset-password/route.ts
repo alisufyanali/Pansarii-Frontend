@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { laravelErrorMessage, laravelPost } from '@/lib/laravel-server';
+import { laravelErrorMessage, laravelPost, validateRequestOrigin } from '@/lib/laravel-server';
 
 interface ResetPasswordRequestBody {
   token?: string;
   email?: string;
   password?: string;
+  password_confirmation?: string;
 }
 
 interface ResetPasswordApiResponse {
@@ -13,16 +14,27 @@ interface ResetPasswordApiResponse {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<ResetPasswordApiResponse>> {
+  const csrfError = validateRequestOrigin(request);
+  if (csrfError) return csrfError as NextResponse<ResetPasswordApiResponse>;
+
   try {
     const body = (await request.json()) as ResetPasswordRequestBody;
-    const token = (body.token ?? '').trim();
-    const email = (body.email ?? '').trim();
-    const password = body.password ?? '';
+    const token                = (body.token ?? '').trim();
+    const email                = (body.email ?? '').trim();
+    const password             = body.password ?? '';
+    const password_confirmation = body.password_confirmation ?? '';
 
-    if (!token || !password) {
+    if (!token || !password || !password_confirmation) {
       return NextResponse.json(
-        { success: false, message: 'Token and password are required.' },
+        { success: false, message: 'Token, password, and password confirmation are required.' },
         { status: 400 },
+      );
+    }
+
+    if (password !== password_confirmation) {
+      return NextResponse.json(
+        { success: false, message: 'Passwords do not match.' },
+        { status: 422 },
       );
     }
 
@@ -30,7 +42,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ResetPass
       token,
       email,
       password,
-      password_confirmation: password,
+      password_confirmation,
     });
 
     if (!result.ok) {

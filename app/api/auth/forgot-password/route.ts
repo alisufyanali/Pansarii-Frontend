@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { laravelErrorMessage, laravelPost } from '@/lib/laravel-server';
+import { laravelErrorMessage, laravelPost, validateRequestOrigin } from '@/lib/laravel-server';
 
 interface ForgotPasswordRequestBody {
   email?: string;
@@ -11,6 +11,9 @@ interface ForgotPasswordApiResponse {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<ForgotPasswordApiResponse>> {
+  const csrfError = validateRequestOrigin(request);
+  if (csrfError) return csrfError as NextResponse<ForgotPasswordApiResponse>;
+
   try {
     const body = (await request.json()) as ForgotPasswordRequestBody;
     const email = (body.email ?? '').trim();

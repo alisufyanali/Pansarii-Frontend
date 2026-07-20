@@ -48,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${poppins.variable} light`} suppressHydrationWarning>
+    <html lang="en" className={`${poppins.variable} light`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#ffffff" />
@@ -57,7 +57,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         <link rel="dns-prefetch" href="https://va.vercel-scripts.com" />
       </head>
-      <body className={`${poppins.className} bg-white text-gray-900 antialiased`} suppressHydrationWarning>
+      <body className={`${poppins.className} bg-white text-gray-900 antialiased`}>
         <AuthProvider>
           <CartProvider>
             <CartAuthBridge />
