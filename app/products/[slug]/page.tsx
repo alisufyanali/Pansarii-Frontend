@@ -148,14 +148,12 @@ export default async function ProductPage({ params }: PageProps) {
       category: apiProduct.category?.name,
       sizes: apiProduct.variants?.length
         ? apiProduct.variants.map(v => v.name)
-        : ['15ml', '30ml', '60ml'],
+        : undefined,
       variants: apiProduct.variants,
-      features: [
-        { text: '100% Natural & Organic', hasCheck: true },
-        { text: 'No Chemical Preservatives', hasCheck: true },
-        { text: 'Cruelty Free', hasCheck: true },
-        { text: 'Ayurvedic Formulation', hasCheck: true },
-      ],
+      // Only expose features if the API product actually provides them.
+      // The API currently does not return a features field, so we leave this
+      // undefined — the ProductDetails component skips the section when empty.
+      features: undefined,
       points: Math.floor(price / 100) || 14,
       infoLines: [
         '100% Ayurvedic & Herbal Product',
@@ -166,14 +164,11 @@ export default async function ProductPage({ params }: PageProps) {
 
     const legacyProduct: LegacyProduct = {
       ...product,
-      features: (product.features ?? []).map(f =>
-        typeof f === 'string' ? f : f.hasCheck ? `✓ ${f.text}` : `○ ${f.text}`
-      ),
+      slug: apiProduct.slug,
+      features: undefined,
     };
 
-    const normalizedFeatures = (product.features ?? []).map(
-      (f): ProductFeature => (typeof f === 'string' ? { text: f, hasCheck: false } : f)
-    );
+    const normalizedFeatures: import('@/types/product').ProductFeature[] = [];
 
     return (
       <div className="bg-white">

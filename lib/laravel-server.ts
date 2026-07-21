@@ -43,12 +43,6 @@ export function validateRequestOrigin(request: NextRequest): NextResponse | null
   return null;
 }
 
-export interface LaravelProxyResult {
-  ok: boolean;
-  status: number;
-  data: { success?: boolean; message?: string; errors?: Record<string, string[]> };
-}
-
 export async function laravelPost(path: string, body: Record<string, unknown>): Promise<LaravelProxyResult> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',

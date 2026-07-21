@@ -16,7 +16,8 @@ import VideoProductsSection from "./ProductDetails/VideoProductsSection";
 import RecommendedProductsSection from "./ProductDetails/RecommendedProductsSection";
 import DirectionToUse from "../components/directiontouse";
 import type { LegacyProduct } from '@/types/product';
-import { getAuthToken, getStoredUser } from '@/lib/axios';
+import { api, getApiErrorMessage } from '@/lib/axios';
+import type { ApiResponse } from '@/types/api';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Review {
@@ -29,37 +30,34 @@ interface Review {
   helpful: number;
 }
 
+// Shape returned by GET /products/{slug}/reviews
+interface ApiReview {
+  id: number;
+  customer_name: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  verified?: boolean;
+}
+
 const REVIEWS_PER_PAGE = 4;
 
-function generateSeedReviews(): Review[] {
-  const authors  = ["Ahmad Raza","Fatima Khan","Usman Ali","Sana Malik","Bilal Ahmed","Zainab Hassan","Omar Farooq","Ayesha Siddiqui","Haris Mahmood","Nida Shah","Tariq Mehmood","Rabia Noor"];
-  const comments = [
-    "This product exceeded my expectations! The quality is outstanding and it works exactly as described.",
-    "Excellent Ayurvedic product. I appreciate that it's 100% natural. My skin feels rejuvenated and healthier.",
-    "The delivery was fast and packaging was secure. The product itself is pure and authentic.",
-    "I was skeptical at first but this product has proven to be worth every penny.",
-    "As someone with sensitive skin, I'm always cautious. This product didn't cause any irritation.",
-    "Traditional Ayurveda at its best! The herbal fragrance is pleasant and the results speak for themselves.",
-    "Quality is top-notch. You can tell it's made with care and attention to detail.",
-    "Sustainable packaging and pure ingredients. Love the company's commitment to quality.",
-    "Perfect for daily use. It has become an essential part of my skincare routine.",
-    "Worth the investment. The purity and effectiveness justify every rupee spent.",
-    "Absolutely love this product. Used it for two weeks and the difference is clear.",
-    "Great product, fast delivery. Will definitely recommend to friends and family.",
-  ];
-  const dates   = ["2 days ago","1 week ago","2 weeks ago","3 weeks ago","1 month ago","2 months ago","3 months ago","4 months ago","5 months ago","6 months ago","7 months ago","8 months ago"];
-  const ratings = [5,4.5,5,4,5,4.5,5,4,5,4.5,5,4];
-
-  return Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    author: authors[i],
-    rating: ratings[i],
-    date: dates[i],
-    comment: comments[i],
-    verified: i % 3 !== 0,
-    helpful: Math.floor(Math.random() * 50),
-  }));
+/** Convert API review to local Review shape */
+function apiReviewToReview(r: ApiReview): Review {
+  return {
+    id: r.id,
+    author: r.customer_name,
+    rating: r.rating,
+    date: new Date(r.created_at).toLocaleDateString('en-PK', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    }),
+    comment: r.comment,
+    verified: r.verified ?? true,
+    helpful: 0,
+  };
 }
+
+
 
 // ─── Stars ───────────────────────────────────────────────────────────────────
 function Stars({ rating, size = "sm", interactive = false, onRate }: {
@@ -103,9 +101,10 @@ function Skeleton() {
 }
 
 // ─── Review Form Modal ────────────────────────────────────────────────────────
-function ReviewFormModal({ onClose, onSubmit }: {
+function ReviewFormModal({ onClose, onSubmit, isSubmitting }: {
   onClose: () => void;
   onSubmit: (review: { author: string; rating: number; comment: string }) => void;
+  isSubmitting?: boolean;
 }) {
   const [name, setName]       = useState('');
   const [rating, setRating]   = useState(5);
@@ -151,13 +150,13 @@ function ReviewFormModal({ onClose, onSubmit }: {
               className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition" />
           </div>
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition">
+            <button type="button" onClick={onClose} disabled={isSubmitting}
+              className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition disabled:opacity-50">
               Cancel
             </button>
-            <button type="submit"
-              className="flex-1 py-2.5 bg-green-700 text-white rounded-lg text-sm font-semibold hover:bg-green-600 transition">
-              Submit Review
+            <button type="submit" disabled={isSubmitting}
+              className="flex-1 py-2.5 bg-green-700 text-white rounded-lg text-sm font-semibold hover:bg-green-600 transition disabled:opacity-60 flex items-center justify-center gap-2">
+              {isSubmitting ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : 'Submit Review'}
             </button>
           </div>
         </form>
@@ -168,20 +167,18 @@ function ReviewFormModal({ onClose, onSubmit }: {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function ProductDetailsSection({ product }: { product?: LegacyProduct }) {
-  const productDetailsBanner1 = "/images/productdetailsbanner1.png";
-  const productDetailsBanner2 = "/images/productdetailsbanner2.png";
-
   const [showBottomBar, setShowBottomBar] = useState(false);
-  const [selectedSize, setSelectedSize]   = useState(product?.sizes?.[0] || "15ml");
+  const [selectedSize, setSelectedSize]   = useState(product?.sizes?.[0] || '');
   const [quantity, setQuantity]           = useState(1);
   const [activeTab, setActiveTab]         = useState<"description"|"ingredients"|"reviews"|"howToUse">("description");
-  const [isLoggedIn, setIsLoggedIn]       = useState(false);
-  const [isLoading, setIsLoading]         = useState(true);
 
-  // Reviews state
-  const [allReviews, setAllReviews]       = useState<Review[]>([]);
-  const [currentPage, setCurrentPage]     = useState(1);
+  // Reviews state — driven by real API
+  const [allReviews, setAllReviews]         = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError]     = useState('');
+  const [currentPage, setCurrentPage]       = useState(1);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [helpfulClicked, setHelpfulClicked] = useState<Set<number>>(new Set());
 
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -192,18 +189,18 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
   const productId = product?.productId || product?.id;
   const isWishlisted = productId ? isInWishlist(productId) : false;
 
+  // ── Fetch reviews from API ─────────────────────────────────────────────────
+  const productSlug = (product as LegacyProduct & { slug?: string })?.slug;
+
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const token = getAuthToken();
-    const user = getStoredUser();
-    setIsLoggedIn(!!(token && user));
-    // Load reviews: start with seed + any saved
-    const saved = localStorage.getItem(`reviews-${productId}`);
-    const userReviews: Review[] = saved ? JSON.parse(saved) : [];
-    setAllReviews([...userReviews, ...generateSeedReviews()]);
-    const t = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(t);
-  }, [productId]);
+    if (!productSlug) return;
+    setReviewsLoading(true);
+    setReviewsError('');
+    api.get<ApiResponse<ApiReview[]>>(`/products/${productSlug}/reviews`)
+      .then(res => setAllReviews((res.data ?? []).map(apiReviewToReview)))
+      .catch(err => setReviewsError(getApiErrorMessage(err)))
+      .finally(() => setReviewsLoading(false));
+  }, [productSlug]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -215,11 +212,12 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (isLoading) return <Skeleton />;
-
-  const totalPages  = Math.ceil(allReviews.length / REVIEWS_PER_PAGE);
+  // Derived review calculations — safe when reviews array is empty
+  const totalPages  = Math.ceil(allReviews.length / REVIEWS_PER_PAGE) || 1;
   const pagedReviews = allReviews.slice((currentPage - 1) * REVIEWS_PER_PAGE, currentPage * REVIEWS_PER_PAGE);
-  const avgRating   = allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length;
+  const avgRating   = allReviews.length > 0
+    ? allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length
+    : 0;
   const dist: Record<number,number> = { 5:0,4:0,3:0,2:0,1:0 };
   allReviews.forEach(r => { const b = Math.round(r.rating); dist[b] = (dist[b]||0)+1; });
 
@@ -282,25 +280,29 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
     window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   };
 
-  const handleSubmitReview = ({ author, rating, comment }: { author: string; rating: number; comment: string }) => {
-    const newReview: Review = {
-      id: Date.now(),
-      author,
-      rating,
-      date: "Just now",
-      comment,
-      verified: false,
-      helpful: 0,
-    };
-    const updated = [newReview, ...allReviews];
-    setAllReviews(updated);
-    // Persist user reviews to localStorage (separate from seed)
-    const saved = JSON.parse(localStorage.getItem(`reviews-${productId}`) || '[]');
-    localStorage.setItem(`reviews-${productId}`, JSON.stringify([newReview, ...saved]));
-    setShowReviewForm(false);
-    setCurrentPage(1);
-    setActiveTab("reviews");
-    toast.success("Review submitted successfully! Thank you.");
+  const handleSubmitReview = async ({ author, rating, comment }: { author: string; rating: number; comment: string }) => {
+    if (!productSlug) {
+      toast.error('Cannot submit review — product identifier missing.');
+      return;
+    }
+    setIsSubmittingReview(true);
+    try {
+      const res = await api.post<ApiResponse<ApiReview>>(`/products/${productSlug}/reviews`, {
+        customer_name: author,
+        rating,
+        comment,
+      });
+      const submitted = apiReviewToReview(res.data);
+      setAllReviews(prev => [submitted, ...prev]);
+      setShowReviewForm(false);
+      setCurrentPage(1);
+      setActiveTab('reviews');
+      toast.success('Review submitted successfully! Thank you.');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const handleHelpful = (reviewId: number) => {
@@ -311,10 +313,10 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
 
   type TabId = "description" | "ingredients" | "reviews" | "howToUse";
   const tabs: { id: TabId; label: string }[] = [
-    { id: "description",  label: "Description"                   },
-    { id: "ingredients",  label: "Ingredients"                   },
-    { id: "reviews",      label: `Reviews (${allReviews.length})`},
-    { id: "howToUse",     label: "How to Use"                    },
+    { id: "description",  label: "Description"                        },
+    { id: "ingredients",  label: "Ingredients"                        },
+    { id: "reviews",      label: reviewsLoading ? "Reviews" : `Reviews (${allReviews.length})` },
+    { id: "howToUse",     label: "How to Use"                         },
   ];
 
   return (
@@ -324,6 +326,7 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
         <ReviewFormModal
           onClose={() => setShowReviewForm(false)}
           onSubmit={handleSubmitReview}
+          isSubmitting={isSubmittingReview}
         />
       )}
 
@@ -428,89 +431,136 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
                 </button>
               </div>
 
-              {/* Rating summary */}
-              <div className="bg-gradient-to-br from-green-50 to-white border border-green-100 rounded-2xl p-4 sm:p-5">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <div className="text-4xl font-black text-gray-900">{avgRating.toFixed(1)}</div>
-                    <Stars rating={Math.round(avgRating)} size="lg" />
-                    <p className="text-gray-400 text-xs mt-1.5">{allReviews.length} reviews</p>
-                  </div>
-                  <div className="sm:col-span-2 space-y-2">
-                    {[5,4,3,2,1].map(stars => {
-                      const count = dist[stars] || 0;
-                      const pct   = (count / allReviews.length) * 100;
-                      return (
-                        <div key={stars} className="flex items-center gap-3">
-                          <span className="text-[11px] text-gray-500 w-10 flex-shrink-0">{stars} stars</span>
-                          <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-green-600 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
-                          </div>
-                          <span className="text-[11px] text-gray-400 w-4 text-right flex-shrink-0">{count}</span>
+              {/* Reviews loading skeleton */}
+              {reviewsLoading && (
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-white border border-gray-200 rounded-xl p-4 animate-pulse">
+                      <div className="flex gap-3 mb-3">
+                        <div className="w-9 h-9 bg-gray-200 rounded-full flex-shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 w-28 bg-gray-200 rounded" />
+                          <div className="h-3 w-20 bg-gray-200 rounded" />
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                      <div className="h-3 w-full bg-gray-200 rounded mb-1.5" />
+                      <div className="h-3 w-3/4 bg-gray-200 rounded" />
+                    </div>
+                  ))}
                 </div>
-              </div>
+              )}
 
-              {/* Review cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {pagedReviews.map(review => (
-                  <div key={review.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition flex flex-col gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <FaUser className="w-4 h-4 text-green-700" />
+              {/* Reviews error */}
+              {!reviewsLoading && reviewsError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
+                  {reviewsError}
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!reviewsLoading && !reviewsError && allReviews.length === 0 && (
+                <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl">
+                  <div className="text-4xl mb-3">⭐</div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1">No reviews yet</h3>
+                  <p className="text-xs text-gray-400 mb-4">Be the first to review this product.</p>
+                  <button onClick={() => setShowReviewForm(true)}
+                    className="px-5 py-2 bg-green-700 text-white text-xs font-semibold rounded-lg hover:bg-green-600 transition">
+                    Write a Review
+                  </button>
+                </div>
+              )}
+
+              {/* Rating summary + review cards */}
+              {!reviewsLoading && !reviewsError && allReviews.length > 0 && (
+                <>
+                  {/* Rating summary */}
+                  <div className="bg-gradient-to-br from-green-50 to-white border border-green-100 rounded-2xl p-4 sm:p-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                      <div className="flex flex-col items-center justify-center text-center">
+                        <div className="text-4xl font-black text-gray-900">{avgRating.toFixed(1)}</div>
+                        <Stars rating={Math.round(avgRating)} size="lg" />
+                        <p className="text-gray-400 text-xs mt-1.5">{allReviews.length} reviews</p>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-gray-900 text-xs">{review.author}</span>
-                          {review.verified && (
-                            <span className="flex items-center gap-1 text-[10px] bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full">
-                              <FaCheckCircle className="w-2.5 h-2.5" /> Verified
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Stars rating={review.rating} />
-                          <span className="text-gray-400 text-[11px]">{review.date}</span>
-                        </div>
+                      <div className="sm:col-span-2 space-y-2">
+                        {[5,4,3,2,1].map(stars => {
+                          const count = dist[stars] || 0;
+                          const pct   = allReviews.length > 0 ? (count / allReviews.length) * 100 : 0;
+                          return (
+                            <div key={stars} className="flex items-center gap-3">
+                              <span className="text-[11px] text-gray-500 w-10 flex-shrink-0">{stars} stars</span>
+                              <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="h-full bg-green-600 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                              </div>
+                              <span className="text-[11px] text-gray-400 w-4 text-right flex-shrink-0">{count}</span>
+                            </div>
+                          );
+                        })}
                       </div>
-                    </div>
-                    <p className="text-gray-600 text-xs leading-relaxed flex-1">{review.comment}</p>
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-50">
-                      <button
-                        onClick={() => handleHelpful(review.id)}
-                        className={`flex items-center gap-1.5 text-[11px] transition ${helpfulClicked.has(review.id) ? 'text-green-700' : 'text-gray-400 hover:text-green-700'}`}>
-                        <FaThumbsUp className="w-3 h-3" />
-                        Helpful ({review.helpful})
-                      </button>
-                      <span className="text-[10px] text-gray-300">Report</span>
                     </div>
                   </div>
-                ))}
-              </div>
 
-              {/* Pagination */}
-              <div className="flex items-center justify-center gap-2">
-                <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1}
-                  className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition">
-                  <FaChevronLeft className="w-3 h-3 text-gray-500" />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i+1).map(p => (
-                  <button key={p} onClick={() => setCurrentPage(p)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium border transition ${
-                      p === currentPage ? 'bg-green-700 text-white border-green-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                    }`}>
-                    {p}
-                  </button>
-                ))}
-                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage === totalPages}
-                  className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition">
-                  <FaChevronRight className="w-3 h-3 text-gray-500" />
-                </button>
-              </div>
-              <p className="text-center text-[11px] text-gray-400">Page {currentPage} of {totalPages} · {allReviews.length} total reviews</p>
+                  {/* Review cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {pagedReviews.map(review => (
+                      <div key={review.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition flex flex-col gap-3">
+                        <div className="flex items-start gap-3">
+                          <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <FaUser className="w-4 h-4 text-green-700" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-gray-900 text-xs">{review.author}</span>
+                              {review.verified && (
+                                <span className="flex items-center gap-1 text-[10px] bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full">
+                                  <FaCheckCircle className="w-2.5 h-2.5" /> Verified
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Stars rating={review.rating} />
+                              <span className="text-gray-400 text-[11px]">{review.date}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-gray-600 text-xs leading-relaxed flex-1">{review.comment}</p>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                          <button
+                            onClick={() => handleHelpful(review.id)}
+                            className={`flex items-center gap-1.5 text-[11px] transition ${helpfulClicked.has(review.id) ? 'text-green-700' : 'text-gray-400 hover:text-green-700'}`}>
+                            <FaThumbsUp className="w-3 h-3" />
+                            Helpful ({review.helpful})
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2">
+                      <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1}
+                        className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition">
+                        <FaChevronLeft className="w-3 h-3 text-gray-500" />
+                      </button>
+                      {Array.from({ length: totalPages }, (_, i) => i+1).map(p => (
+                        <button key={p} onClick={() => setCurrentPage(p)}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium border transition ${
+                            p === currentPage ? 'bg-green-700 text-white border-green-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                          }`}>
+                          {p}
+                        </button>
+                      ))}
+                      <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage === totalPages}
+                        className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition">
+                        <FaChevronRight className="w-3 h-3 text-gray-500" />
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-center text-[11px] text-gray-400">
+                    Page {currentPage} of {totalPages} · {allReviews.length} total reviews
+                  </p>
+                </>
+              )}
             </div>
           )}
 
