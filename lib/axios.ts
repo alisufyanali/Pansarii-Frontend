@@ -50,7 +50,9 @@ export function setAuthData(token: string, user: unknown): void {
   // Write a companion cookie so middleware can detect auth state on the Edge.
   // SameSite=Lax prevents cross-site request forgery while allowing normal
   // navigation. The cookie is intentionally NOT HttpOnly so JS can clear it.
-  document.cookie = `${TOKEN_KEY}=1; path=/; SameSite=Lax`;
+  // Secure is added in production (HTTPS only) to prevent transmission over HTTP.
+  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${TOKEN_KEY}=1; path=/; SameSite=Lax${secure}`;
 }
 
 /** Wipe auth data (called on logout or 401). */
@@ -59,7 +61,8 @@ export function clearAuthData(): void {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
   // Clear the companion middleware cookie.
-  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Lax`;
+  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Lax${secure}`;
 }
 
 /** Read the stored user object, or null if not logged in. */

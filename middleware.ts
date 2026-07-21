@@ -15,6 +15,7 @@ const PROTECTED_PATHS = [
   '/profile',
   '/rewards',
   '/change-password',
+  '/cancel-order',
 ];
 
 // The token key must match the one used in lib/axios.ts
@@ -55,5 +56,6 @@ export const config = {
     '/profile/:path*',
     '/rewards/:path*',
     '/change-password/:path*',
+    '/cancel-order/:path*',
   ],
 };

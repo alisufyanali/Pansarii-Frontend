@@ -69,12 +69,17 @@ const earnWays = [
     desc: 'Place an order every month and earn streak bonus points.', icon: <FaBolt className="w-5 h-5" />, color: 'text-red-600', bg: 'bg-red-50' },
 ];
 
+// ─── Redemption note ──────────────────────────────────────────────────────────
+// Point redemption API is not yet available. All options are marked
+// available: false so they show "Coming Soon" and cannot be clicked.
+// When the backend redemption endpoint ships, set available: true and
+// wire the button to POST /rewards/redeem with { reward_id: opt.id }.
 const redeemOptions = [
-  { id: 'r1', title: '5% Discount', titleUr: '5% رعایت', cost: 100, value: '~PKR 150 off', desc: 'Apply as a discount on your next order.', icon: <FaPercent className="w-5 h-5" />, gradient: 'from-green-400 to-emerald-500', available: true },
-  { id: 'r2', title: 'Free Shipping', titleUr: 'مفت ترسیل', cost: 150, value: 'Save PKR 200+', desc: 'Free delivery on your next order, any size.', icon: <FaTruck className="w-5 h-5" />, gradient: 'from-blue-400 to-cyan-500', available: true },
-  { id: 'r3', title: '10% Discount', titleUr: '10% رعایت', cost: 200, value: '~PKR 300 off', desc: 'Bigger savings on orders over PKR 2,000.', icon: <FaTag className="w-5 h-5" />, gradient: 'from-amber-400 to-orange-500', available: true },
-  { id: 'r4', title: 'Free Product Sample', titleUr: 'مفت سیمپل', cost: 350, value: 'Worth PKR 500', desc: 'Choose a free sample added to your next order.', icon: <FaGift className="w-5 h-5" />, gradient: 'from-purple-400 to-pink-500', available: true },
-  { id: 'r5', title: '20% Discount', titleUr: '20% رعایت', cost: 500, value: '~PKR 600 off', desc: 'Premium discount on any order over PKR 3,000.', icon: <FaPercent className="w-5 h-5" />, gradient: 'from-rose-400 to-red-500', available: true },
+  { id: 'r1', title: '5% Discount', titleUr: '5% رعایت', cost: 100, value: '~PKR 150 off', desc: 'Apply as a discount on your next order.', icon: <FaPercent className="w-5 h-5" />, gradient: 'from-green-400 to-emerald-500', available: false },
+  { id: 'r2', title: 'Free Shipping', titleUr: 'مفت ترسیل', cost: 150, value: 'Save PKR 200+', desc: 'Free delivery on your next order, any size.', icon: <FaTruck className="w-5 h-5" />, gradient: 'from-blue-400 to-cyan-500', available: false },
+  { id: 'r3', title: '10% Discount', titleUr: '10% رعایت', cost: 200, value: '~PKR 300 off', desc: 'Bigger savings on orders over PKR 2,000.', icon: <FaTag className="w-5 h-5" />, gradient: 'from-amber-400 to-orange-500', available: false },
+  { id: 'r4', title: 'Free Product Sample', titleUr: 'مفت سیمپل', cost: 350, value: 'Worth PKR 500', desc: 'Choose a free sample added to your next order.', icon: <FaGift className="w-5 h-5" />, gradient: 'from-purple-400 to-pink-500', available: false },
+  { id: 'r5', title: '20% Discount', titleUr: '20% رعایت', cost: 500, value: '~PKR 600 off', desc: 'Premium discount on any order over PKR 3,000.', icon: <FaPercent className="w-5 h-5" />, gradient: 'from-rose-400 to-red-500', available: false },
   { id: 'r6', title: 'Luxury Hamper', titleUr: 'لگژری ہیمپر', cost: 5000, value: 'Worth PKR 8,000+', desc: 'Exclusive curated gift set — our premium collections.', icon: <FaTrophy className="w-5 h-5" />, gradient: 'from-yellow-400 to-amber-500', available: false },
 ];
 
@@ -146,7 +151,6 @@ export default function RewardsPage() {
   const [rewardsData, setRewardsData] = useState<RewardsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [redeemed, setRedeemed] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (authLoading) return;
@@ -378,16 +382,10 @@ export default function RewardsPage() {
                 <h2 className="text-2xl font-black text-gray-900 mb-1">Redeem Your Points</h2>
                 <p className="text-gray-500">You have <strong className="text-[#197B33]">{points.toLocaleString()} points</strong> available to redeem.</p>
               </div>
-              {redeemed.size > 0 && (
-                <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-xl text-sm font-semibold">
-                  <FaCheckCircle className="w-4 h-4" /> {redeemed.size} reward{redeemed.size > 1 ? 's' : ''} applied!
-                </div>
-              )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {redeemOptions.map((opt) => {
                 const canAfford = points >= opt.cost;
-                const isRedeemed = redeemed.has(opt.id);
                 return (
                   <div key={opt.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col ${!opt.available ? 'opacity-60' : ''}`}>
                     <div className={`h-1.5 bg-gradient-to-r ${opt.gradient}`} />
@@ -404,14 +402,9 @@ export default function RewardsPage() {
                       <p className="text-sm text-gray-600 flex-1 mb-1 leading-relaxed">{opt.desc}</p>
                       <p className="text-xs font-semibold text-emerald-600 mb-4">{opt.value}</p>
                       <button
-                        disabled={!canAfford || !opt.available || isRedeemed}
-                        onClick={() => setRedeemed(prev => new Set([...prev, opt.id]))}
-                        className={`w-full py-2.5 rounded-xl text-sm font-semibold transition ${
-                          isRedeemed ? 'bg-green-100 text-green-700' :
-                          canAfford && opt.available ? `bg-gradient-to-r ${opt.gradient} text-white hover:opacity-90` :
-                          'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        }`}>
-                        {isRedeemed ? '✓ Redeemed!' : !opt.available ? 'Coming Soon' : !canAfford ? `Need ${opt.cost - points} more pts` : 'Redeem Now'}
+                        disabled
+                        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed">
+                        Coming Soon
                       </button>
                     </div>
                   </div>
