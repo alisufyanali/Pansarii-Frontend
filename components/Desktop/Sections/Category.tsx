@@ -23,6 +23,7 @@ function CategorySkeleton() {
 
 export default function Category() {
   const router = useRouter();
+  const CategoryImage = '/images/category.png';
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,54 +65,59 @@ export default function Category() {
           {isLoading
             ? [...Array(6)].map((_, i) => <CategorySkeleton key={i} />)
             : categories.map((category, index) => {
-                const bgColor = FALLBACK_COLORS[index % FALLBACK_COLORS.length];
-                // Use the API image if present; no static PNG fallback
-                const imageSrc = (category as ApiCategory & { image?: string }).image;
+              const bgColor = FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+              // Use the API image if present; no static PNG fallback
+              const imageSrc = (category as ApiCategory & { image?: string }).image;
 
-                return (
-                  <div
-                    key={category.id}
-                    className="flex flex-col items-center w-full cursor-pointer hover:scale-105 transition-transform"
-                    onClick={() => handleCategoryClick(category.slug)}
-                  >
-                    {/* Image area */}
-                    <div
-                      className="w-full aspect-[191/201] mb-2 flex items-center justify-center rounded-t-[40%]"
-                      style={{ backgroundColor: bgColor }}
-                    >
-                      {imageSrc ? (
-                        <Image
-                          src={imageSrc}
-                          alt={category.name}
-                          width={170}
-                          height={120}
-                          className="object-contain w-[75%] h-auto drop-shadow-md mt-4"
-                          loading="lazy"
-                          quality={60}
-                        />
-                      ) : (
-                        /* No image from API — show a coloured placeholder circle */
-                        <div
-                          className="w-[60%] aspect-square rounded-full mt-4 opacity-30"
-                          style={{ backgroundColor: '#197B33' }}
-                        />
-                      )}
-                    </div>
+              return (
+                <div
+                  key={category.id}
+                  className="flex flex-col items-center w-full cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => handleCategoryClick(category.slug)}
+                >
+                  {/* Image area */}
+                 
+                    {imageSrc ? (
+                      <Image
+                        src={imageSrc}
+                        alt={category.name}
+                        width={170}
+                        height={120}
+                        className="object-contain w-[75%] h-auto drop-shadow-md mt-4"
+                        loading="lazy"
+                        quality={60}
+                      />
+                    ) : (
+                      /* No image from API — show a coloured placeholder circle */
+                      // <div
+                      //   className="w-[60%] aspect-square rounded-full mt-4 opacity-30"
+                      //   style={{ backgroundColor: '#197B33' }}
+                      // />
+                      <Image
+                        src={CategoryImage}
+                        alt={"category.name"}
+                        width={170}
+                        height={120}
+                        className="object-contain w-[75%] h-auto drop-shadow-md mt-4"
+                        loading="lazy"
+                        quality={60}
+                      />
+                    )}
 
-                    {/* Label */}
-                    <div className="w-full h-[50px] bg-white shadow-[0_4px_13.3px_0_rgba(0,0,0,0.24)] flex flex-col items-center justify-center rounded">
-                      <span className="text-[16px] font-medium leading-tight text-center px-1">
-                        {category.name}
+                  {/* Label */}
+                  <div className="w-full h-[50px] bg-white shadow-[0_4px_13.3px_0_rgba(0,0,0,0.24)] flex flex-col items-center justify-center rounded">
+                    <span className="text-[16px] font-medium leading-tight text-center px-1">
+                      {category.name}
+                    </span>
+                    {category.products_count !== undefined && (
+                      <span className="text-[12px] text-gray-500">
+                        {category.products_count} items
                       </span>
-                      {category.products_count !== undefined && (
-                        <span className="text-[12px] text-gray-500">
-                          {category.products_count} items
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
         </div>
 
       </div>
