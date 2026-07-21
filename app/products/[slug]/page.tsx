@@ -87,9 +87,13 @@ function buildProduct(foundProduct: CatalogProduct): Product {
     id: foundProduct.id,
     category: foundProduct.category,
     // Only expose features if the static product actually has them defined
-    features: foundProduct.features?.length ? foundProduct.features : [],
+    features: (foundProduct as unknown as { features?: string[] }).features?.length
+      ? (foundProduct as unknown as { features?: string[] }).features
+      : [],
     // Only expose sizes if the static product actually has them defined
-    sizes: foundProduct.sizes?.length ? foundProduct.sizes : [],
+    sizes: (foundProduct as unknown as { sizes?: string[] }).sizes?.length
+      ? (foundProduct as unknown as { sizes?: string[] }).sizes
+      : [],
     points: Math.floor(foundProduct.price / 100) || 14,
     benefits: getProductBenefits(foundProduct),
     infoLines: [
