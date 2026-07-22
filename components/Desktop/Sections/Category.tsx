@@ -105,7 +105,7 @@ export default function Category() {
                     )}
 
                   {/* Label */}
-                  <div className="w-full h-[50px] bg-white shadow-[0_4px_13.3px_0_rgba(0,0,0,0.24)] flex flex-col items-center justify-center rounded">
+                  <div className="w-full h-[50px] bg-white   flex flex-col items-center justify-center rounded">
                     <span className="text-[16px] font-medium leading-tight text-center px-1">
                       {category.name}
                     </span>

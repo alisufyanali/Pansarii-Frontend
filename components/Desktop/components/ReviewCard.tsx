@@ -3,13 +3,13 @@ import { useState } from 'react';
 import SafeImage from '@/components/SafeImage';
 
 interface Review {
-  title:       string;
-  text:        string;
-  name:        string;
+  title: string;
+  text: string;
+  name: string;
   designation: string;
-  img:         string;
-  rating?:     number;
-  images?:     string[];
+  img: string;
+  rating?: number;
+  images?: string[];
   productName?: string;
   productImage?: string;
 }
@@ -22,8 +22,8 @@ export default function ReviewCard({ review }: { review: Review }) {
 
   return (
     <>
-      <div className={`w-full rounded-2xl border border-gray-200 p-4 flex flex-col bg-white hover:shadow-md hover:border-green-200 transition-all duration-300 ${hasImages ? 'h-auto' : 'h-[clamp(200px,22vw,300px)]'}`}>
-
+      <div className={`h-full w-full rounded-2xl border border-gray-200 p-4 flex flex-col bg-white hover:shadow-md hover:border-green-200 transition-all duration-300 ${hasImages ? 'h-auto' : 'h-[clamp(200px,22vw,300px)]'
+          }`} >
         {/* Stars + rating */}
         <div className="flex items-center gap-0.5 flex-shrink-0 mb-2">
           {[...Array(5)].map((_, i) => (
