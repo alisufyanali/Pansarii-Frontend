@@ -16,7 +16,6 @@ import {
   FaChevronDown, FaTimes, FaChevronRight, FaSearch,
 } from 'react-icons/fa';
 
-import { allProducts } from '@/data/products';
 import { getCategoriesCached } from '@/lib/products';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -74,19 +73,7 @@ function NavbarContent() {
     name: string;
     slug: string;
     count?: number;
-  }>>(() => {
-    const set = new Set<string>();
-    allProducts.forEach(p => { if (p.category) set.add(p.category); });
-    return Array.from(set).sort().map((name, i) => {
-      const staticCount = allProducts.filter(p => p.category === name).length;
-      return {
-        id: i + 1,
-        name,
-        slug: CATEGORY_SLUG_MAP[name] || name.toLowerCase().replace(/\s+/g, '-'),
-        count: staticCount > 0 ? staticCount : undefined,
-      };
-    });
-  });
+  }>>([]);
 
   useEffect(() => {
     getCategoriesCached().then(cats => {
@@ -106,18 +93,9 @@ function NavbarContent() {
   const filteredCategories = categories.filter(c =>
     c.name.toLowerCase().includes(categorySearch.toLowerCase())
   );
-  const mockProducts = allProducts.map(p => ({
-    id:           p.id.toString(),
-    name:         p.nameEn,
-    slug:         p.nameEn.toLowerCase().replace(/\s+/g, '-'),
-    price:        p.price,
-    salePrice:    p.oldPrice || undefined,
-    image:        p.img,
-    category:     p.category,
-    rating:       p.rating,
-    isBestSeller: p.isBestSeller || false,
-    description:  p.description,
-  }));
+  // No static mockProducts — the SearchBar fetches from the real API
+  // using GET /api/products?search=query so slugs are always correct.
+  const mockProducts: never[] = [];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);

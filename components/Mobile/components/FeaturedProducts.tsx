@@ -80,7 +80,7 @@ export default function MobileFeaturedProducts() {
               key={product.id}
               className="feat-card flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
               style={{ width: '65vw' }}
-              onClick={() => router.push(`/products/${product.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
+              onClick={() => router.push(`/products/${product.slug ?? product.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
             >
               <div className="flex items-center p-3 gap-3">
 

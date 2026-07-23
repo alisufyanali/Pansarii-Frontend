@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { allProducts } from '@/data/products';
+import { getFeaturedProducts } from '@/lib/products';
+import type { Product } from '@/types/product';
 
 const cardGradients = [
   'from-green-100 to-yellow-100',
@@ -15,10 +16,13 @@ export default function MobileComboDeal() {
   const router    = useRouter();
   const sliderRef = useRef<HTMLDivElement>(null);
   const isTouch   = useRef(false);
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const products = allProducts
-    .filter(p => p.category === 'Supplements' || p.sale)
-    .slice(0, 8);
+  useEffect(() => {
+    getFeaturedProducts()
+      .then(data => setProducts(data.slice(0, 8)))
+      .catch(() => setProducts([]));
+  }, []);
 
   // Auto-slide every 3s
   useEffect(() => {
@@ -82,7 +86,7 @@ export default function MobileComboDeal() {
               key={product.id}
               className={`combo-card flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition-transform shadow-lg`}
               style={{ width: 'calc((100vw - 44px) / 2.3)' }}
-              onClick={() => router.push(`/products/${product.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
+              onClick={() => router.push(`/products/${product.slug ?? product.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
             >
               {/* Top — gradient image area */}
               <div className={`relative bg-gradient-to-br ${cardGradients[i % cardGradients.length]} pt-3 min-h-[180px]`}>

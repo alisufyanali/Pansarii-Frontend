@@ -17,8 +17,8 @@ export default function ProductDetailsModal({
   onClose: () => void;
 }) {
   const [selectedImage, setSelectedImage] = useState(product.img);
-  const availableSizes = product.sizes?.length ? product.sizes : ['15ml', '30ml', '60ml', '120ml', '150ml'];
-  const [selectedSize, setSelectedSize] = useState(availableSizes[0]);
+  const availableSizes = product.sizes?.length ? product.sizes : [];
+  const [selectedSize, setSelectedSize] = useState(availableSizes[0] ?? '');
   const [quantity, setQuantity]         = useState(1);
   const [isMobile, setIsMobile]         = useState(false);
   const { addToCart } = useCart();
@@ -162,7 +162,8 @@ export default function ProductDetailsModal({
                   )}
                 </div>
 
-                {/* Size selector */}
+                {/* Size selector — only shown when real variants exist */}
+                {availableSizes.length > 0 && (
                 <div>
                   <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Size</p>
                   <div className="flex flex-wrap gap-2">
@@ -181,6 +182,7 @@ export default function ProductDetailsModal({
                     ))}
                   </div>
                 </div>
+                )}
 
                 {/* Quantity */}
                 <div>
@@ -319,6 +321,8 @@ export default function ProductDetailsModal({
                   </div>
                 )}
 
+                {/* Size selector — only shown when real variants exist */}
+                {availableSizes.length > 0 && (
                 <div>
                   <p className="text-sm font-semibold text-gray-900 mb-2">Size</p>
                   <div className="flex flex-wrap gap-2">
@@ -337,6 +341,7 @@ export default function ProductDetailsModal({
                     ))}
                   </div>
                 </div>
+                )}
 
                 {product.features && product.features.length > 0 && (
                   <div>

@@ -86,21 +86,40 @@ export default function SearchBar({
       setIsLoading(true);
       try {
         if (mockProducts.length > 0) {
-          const filtered = mockProducts.filter(product => 
+          // Local filter over pre-loaded product list (used when caller provides it)
+          const filtered = mockProducts.filter(product =>
             product.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
             product.category?.toLowerCase().includes(debouncedQuery.toLowerCase())
           ).slice(0, 5);
-          
           setSuggestions(filtered);
           setIsOpen(true);
         } else {
-          const response = await fetch(
-            `/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}&limit=5`
-          );
-          
+          // Fetch directly from the Laravel API — slugs are always real
+          const params = new URLSearchParams({
+            search: debouncedQuery.trim(),
+            per_page: '5',
+          });
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://custom.pansariinn.pk/api';
+          const response = await fetch(`${baseUrl}/products?${params.toString()}`, {
+            headers: { Accept: 'application/json' },
+          });
+
           if (response.ok) {
             const data = await response.json();
-            setSuggestions(data.suggestions || []);
+            const products: ProductSuggestion[] = (data.data ?? []).map(
+              (p: { id: number; name: string; slug: string; price: number; sale_price?: number | null; thumbnail?: string | null; category?: { name?: string }; rating?: number; featured?: boolean }) => ({
+                id:          String(p.id),
+                name:        p.name,
+                slug:        p.slug,           // real slug from database — never derived
+                price:       p.price,
+                salePrice:   p.sale_price ?? undefined,
+                image:       p.thumbnail ?? undefined,
+                category:    p.category?.name,
+                rating:      p.rating,
+                isBestSeller: p.featured ?? false,
+              })
+            );
+            setSuggestions(products);
             setIsOpen(true);
           }
         }
@@ -165,8 +184,8 @@ export default function SearchBar({
   };
 
   const handleSuggestionClick = (product: ProductSuggestion) => {
-    setQuery(product.name);
-    handleSearch(product.name);
+    setIsOpen(false);
+    router.push(`/products/${product.slug}`);
   };
 
   const handleRecentSearchClick = (search: string) => {

@@ -40,12 +40,18 @@ export async function getProducts(params?: ProductsParams, options?: { signal?: 
     if (process.env.NODE_ENV === 'development') {
       console.warn('[products] API unavailable, using static fallback:', isAxiosError(err) ? err.message : err);
     }
-    // Fallback to static data
+    // Fallback to static data when the API is unreachable.
+    // Slugs are derived from product names (e.g. "Moringa Leaf Powder" → "moringa-leaf-powder").
+    // These derived slugs match the static-data fallback path in /products/[slug]/page.tsx
+    // (via findProductBySlug → toProductSlug), so product detail pages still render with
+    // static data when the API is down. They will NOT match real API slugs (e.g. "moringapowder")
+    // — that mismatch is acceptable offline degraded behaviour.
     const legacyProducts = allProducts as Product[];
     return {
       data: legacyProducts.map(p => ({
         id: Number(p.id),
         name: p.nameEn,
+        // Derived slug — only valid for the static fallback path, not the live API.
         slug: p.nameEn.toLowerCase().replace(/\s+/g, '-'),
         price: p.price,
         sale_price: p.oldPrice ?? null,
