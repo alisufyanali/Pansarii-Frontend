@@ -38,13 +38,19 @@ function LoginPageContent() {
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Redirect already-authenticated users away from the login page
+  // Redirect already-authenticated users away from the login page.
+  // searchParams is intentionally omitted from the dependency array —
+  // it returns a new object reference on every render in Next.js App Router,
+  // which would re-fire this effect on unrelated state changes (e.g. after a
+  // failed login sets apiError) and cause the Suspense boundary to remount,
+  // clearing the form. We only need to react to actual auth state changes.
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       const returnTo = searchParams.get('returnTo') ?? '/';
       router.replace(decodeURIComponent(returnTo));
     }
-  }, [isAuthenticated, authLoading, router, searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, authLoading]);
 
   const [formData, setFormData] = useState<LoginFields>({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
