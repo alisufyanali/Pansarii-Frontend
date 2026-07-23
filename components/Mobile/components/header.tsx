@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
-import { FiSearch, FiX } from 'react-icons/fi';
+import { useState, useRef, useEffect } from 'react';import { FiSearch, FiX } from 'react-icons/fi';
 import { RiUserLine, RiShoppingCartLine } from 'react-icons/ri';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -91,12 +90,24 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
   const { getCartCount } = useCart();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [mounted, setMounted] = useState(false);
+  const [currentPath, setCurrentPath] = useState('');
 
   useEffect(() => {
     setMounted(true);
+    setCurrentPath(window.location.pathname);
   }, []);
 
   const cartCount = mounted ? getCartCount() : 0;
+
+  // While auth is loading or not mounted, show a neutral grey icon.
+  // Once resolved: green icon → /profile if authenticated, grey → /login?returnTo=<path>
+  const profileHref = mounted && !authLoading && isAuthenticated
+    ? '/profile'
+    : `/login${currentPath && currentPath !== '/login' ? `?returnTo=${encodeURIComponent(currentPath)}` : ''}`;
+
+  const profileIconColor = mounted && !authLoading && isAuthenticated
+    ? 'text-green-700'
+    : 'text-gray-600';
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
@@ -133,9 +144,8 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
 
         {/* Icons — right */}
         <div className="flex items-center gap-0.5">
-          <Link href="/login" className="p-2 text-gray-600 hover:text-green-700 transition-colors" aria-label="Account">
-            {/* Show profile icon in green when authenticated, grey when not */}
-            <RiUserLine className={`w-5 h-5 ${(!authLoading && isAuthenticated) ? 'text-green-700' : 'text-gray-600'}`} />
+          <Link href={profileHref} className="p-2 text-gray-600 hover:text-green-700 transition-colors" aria-label="Account">
+            <RiUserLine className={`w-5 h-5 ${profileIconColor}`} />
           </Link>
           <Link href="/cart" className="relative p-2 text-gray-600 hover:text-green-700 transition-colors" aria-label="Cart">
             <RiShoppingCartLine className="w-5 h-5" />

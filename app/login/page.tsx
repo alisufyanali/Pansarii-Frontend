@@ -72,9 +72,11 @@ function LoginPageContent() {
     setIsLoading(true);
     try {
       await login({ email: formData.email, password: formData.password });
+      // Redirect is handled by the useEffect watching isAuthenticated.
+      // Do NOT call router.push here — setUser() is async state and the
+      // context value won't be updated yet, so the effect fires after
+      // React commits the new user state, which is the correct moment.
       toast.success('Login successful!');
-      const returnTo = searchParams.get('returnTo') ?? '/';
-      router.push(decodeURIComponent(returnTo));
     } catch (err) {
       // Map Laravel 422 field errors
       const fields = extractFieldErrors<LoginFields>(err);
