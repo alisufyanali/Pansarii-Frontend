@@ -5,7 +5,9 @@ const Banner          = dynamic(() => import("../../../components/Desktop/Sectio
 const SolutionBar     = dynamic(() => import("../../../components/Desktop/Sections/SolutionBar"));
 const FeaturedProducts = dynamic(() => import("../../../components/Desktop/Sections/FeaturedProducts"));
 const Category        = dynamic(() => import("../../../components/Desktop/Sections/Category"));
-const NewArrivals     = dynamic(() => import("../../../components/Desktop/Sections/NewArrivals"));
+const NewArrivals     = dynamic(() =>
+  import("../../../components/Desktop/Sections/NewArrivals").then(m => ({ default: m.NewArrivalsLoader }))
+);
 const BeautyCorner    = dynamic(() => import("../../../components/Desktop/Sections/BeautyCorner"));
 const PansariInn      = dynamic(() => import("../../../components/Desktop/Sections/Pureinnoils"));
 const ComboDeal       = dynamic(() => import("../../../components/Desktop/Sections/ComboDeal"));

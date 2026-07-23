@@ -15,9 +15,12 @@ export interface HomepageData {
   banners: ApiSlide[];
   categories: ApiCategory[];
   category_products: HomepageCategorySection[];
+  featured_products: ApiProduct[];
   video_products: ApiProduct[];
   reviews: HomepageReview[];
   blogs: ApiBlog[];
+  /** Undefined only before the homepage request resolves (initial EMPTY_HOMEPAGE). */
+  new_arrivals?: ApiProduct[];
 }
 
 /** Empty payload — lets every section fall back to its DEFAULT_* constants. */
@@ -25,19 +28,26 @@ export const EMPTY_HOMEPAGE: HomepageData = {
   banners: [],
   categories: [],
   category_products: [],
+  featured_products: [],
   video_products: [],
   reviews: [],
   blogs: [],
+  new_arrivals: undefined,
 };
 
 export async function getHomepageData(): Promise<HomepageData> {
   try {
     const res = await api.get<{ success: boolean; data: HomepageData }>('/homepage');
-    return res.data ?? EMPTY_HOMEPAGE;
+    const data = res.data ?? EMPTY_HOMEPAGE;
+    return {
+      ...EMPTY_HOMEPAGE,
+      ...data,
+      new_arrivals: data.new_arrivals ?? [],
+    };
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('[homepage] API unavailable, using static fallbacks:', err);
     }
-    return EMPTY_HOMEPAGE;
+    return { ...EMPTY_HOMEPAGE, new_arrivals: [] };
   }
 }

@@ -43,7 +43,7 @@ export default function DesktopHome() {
       </Suspense>
       <SolutionBar />
       <Category />
-      <NewArrivals />
+      <NewArrivals products={homepageData.new_arrivals} />
       <Suspense fallback={null}>
         <CategoryProductsSection data={homepageData.category_products} />
       </Suspense>
