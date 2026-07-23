@@ -47,8 +47,8 @@ export default function DesktopHome() {
       <Suspense fallback={null}>
         <CategoryProductsSection data={homepageData.category_products} />
       </Suspense>
-      <BeautyCorner />
-      <PansariInn />
+      {/* <BeautyCorner />
+      <PansariInn /> */}
       <ComboDeal />
       <Suspense fallback={null}>
         <VideoProducts products={homepageData.video_products} />
