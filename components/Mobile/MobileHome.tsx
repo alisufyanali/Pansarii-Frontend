@@ -43,11 +43,11 @@ export default function MobileHome() {
         <HeroBanner slides={homepageData.banners} />
       </Suspense>
       <SolutionBar />
+      <Categories />
       <Suspense fallback={null}>
         <CategoryProductsSection variant="mobile" data={homepageData.category_products} />
       </Suspense>
-      <Categories />
-      <ShopProducts />
+      {/* <ShopProducts /> */}
       <MobileComboDeal />
       <Suspense fallback={null}>
         <MobileVideoProducts products={homepageData.video_products} />
