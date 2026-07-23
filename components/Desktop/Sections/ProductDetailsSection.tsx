@@ -31,6 +31,7 @@ interface Review {
 }
 
 // Shape returned by GET /products/{slug}/reviews
+// Actual response: { success, data: { stats: ReviewStats, reviews: ApiReview[] }, meta: {...} }
 interface ApiReview {
   id: number;
   customer_name: string;
@@ -38,6 +39,17 @@ interface ApiReview {
   comment: string;
   created_at: string;
   verified?: boolean;
+}
+
+interface ReviewStats {
+  total: number;
+  average: number;
+  breakdown: Record<string, number>;
+}
+
+interface ApiReviewsResponse {
+  stats: ReviewStats;
+  reviews: ApiReview[];
 }
 
 const REVIEWS_PER_PAGE = 4;
@@ -196,8 +208,12 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
     if (!productSlug) return;
     setReviewsLoading(true);
     setReviewsError('');
-    api.get<ApiResponse<ApiReview[]>>(`/products/${productSlug}/reviews`)
-      .then(res => setAllReviews((res.data ?? []).map(apiReviewToReview)))
+    api.get<ApiResponse<ApiReviewsResponse>>(`/products/${productSlug}/reviews`)
+      .then(res => {
+        // res.data is { stats, reviews } — not a flat array
+        const reviews = res.data?.reviews;
+        setAllReviews(Array.isArray(reviews) ? reviews.map(apiReviewToReview) : []);
+      })
       .catch(err => setReviewsError(getApiErrorMessage(err)))
       .finally(() => setReviewsLoading(false));
   }, [productSlug]);
