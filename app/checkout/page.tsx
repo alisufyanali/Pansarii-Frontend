@@ -7,7 +7,7 @@ import Link from 'next/link';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import {
-  FaLock, FaCreditCard, FaCheckCircle, FaChevronDown,
+  FaLock, FaCreditCard, FaCheckCircle,
   FaShieldAlt, FaTruck, FaTag, FaMoneyBillWave, FaUniversity,
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -178,9 +178,8 @@ export default function CheckoutPage() {
       ? guestName.trim()
       : ((data.get('name') as string) || '');
     const address = (data.get('address') as string) || '';
-    const area    = (data.get('area')    as string) || '';
 
-    const fullAddress = [name, address, area, selectedCity].filter(Boolean).join(', ');
+    const fullAddress = [name, address, selectedCity].filter(Boolean).join(', ');
 
     const items = cartItems.map(item => ({
       product_id:         Number(item.id),
@@ -463,35 +462,28 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <h2 className="text-sm font-bold text-gray-900 mb-4">Shipping Address</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="sm:col-span-2">
+                  <div>
                     <label className={labelCls}>Street Address *</label>
                     <input name="address" type="text" required className={inputCls} placeholder="House/Flat no, Street name, Area" />
                   </div>
                   <div>
                     <label className={labelCls}>City *</label>
-                    <div className="relative">
-                      <select name="city" value={selectedCity} onChange={e => setSelectedCity(e.target.value)} required className={`${inputCls} appearance-none pr-8`}>
-                        <option value="">Select your city</option>
-                        {[
-                          { label: 'Punjab',             filter: (c: { province: string }) => c.province === 'Punjab'      },
-                          { label: 'Sindh',              filter: (c: { province: string }) => c.province === 'Sindh'       },
-                          { label: 'Khyber Pakhtunkhwa', filter: (c: { province: string }) => c.province === 'KPK'         },
-                          { label: 'Balochistan',        filter: (c: { province: string }) => c.province === 'Balochistan' },
-                          { label: 'Other',              filter: (c: { province: string }) => c.province === 'ICT' || c.province === 'AJK' },
-                        ].map(g => (
-                          <optgroup key={g.label} label={g.label}>
-                            {PAKISTANI_CITIES.filter(g.filter).map(c => (
-                              <option key={c.value} value={c.value}>{c.label}</option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </select>
-                      <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelCls}>Area / Sector</label>
-                    <input name="area" type="text" className={inputCls} placeholder="Gulshan, DHA, etc." />
+                    <input
+                      list="pk-cities"
+                      name="city"
+                      type="text"
+                      value={selectedCity}
+                      onChange={e => setSelectedCity(e.target.value)}
+                      required
+                      autoComplete="off"
+                      className={inputCls}
+                      placeholder="Search your city…"
+                    />
+                    <datalist id="pk-cities">
+                      {PAKISTANI_CITIES.map(c => (
+                        <option key={c.value} value={c.label}>{c.province}</option>
+                      ))}
+                    </datalist>
                   </div>
                   <div className="sm:col-span-2">
                     <label className={labelCls}>Order Note <span className="normal-case font-normal text-gray-400">(optional)</span></label>
