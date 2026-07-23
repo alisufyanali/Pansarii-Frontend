@@ -185,7 +185,7 @@ export default function SearchBar({
 
   const handleSuggestionClick = (product: ProductSuggestion) => {
     setIsOpen(false);
-    router.push(`/products/${product.slug}`);
+    router.push(`/${product.slug}`);
   };
 
   const handleRecentSearchClick = (search: string) => {

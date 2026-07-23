@@ -86,7 +86,7 @@ export default function MobileComboDeal() {
               key={product.id}
               className={`combo-card flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition-transform shadow-lg`}
               style={{ width: 'calc((100vw - 44px) / 2.3)' }}
-              onClick={() => router.push(`/products/${product.slug ?? product.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
+              onClick={() => router.push(`/${product.slug ?? product.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
             >
               {/* Top — gradient image area */}
               <div className={`relative bg-gradient-to-br ${cardGradients[i % cardGradients.length]} pt-3 min-h-[180px]`}>

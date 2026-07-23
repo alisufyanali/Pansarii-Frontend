@@ -100,7 +100,7 @@ export default function WishlistPage() {
     if (!item.variantId) {
       // No variant stored — send user to the product page to select one
       toast.info('Please select a size/variant on the product page first.');
-      router.push(item.slug ? `/products/${item.slug}` : '/shop');
+      router.push(item.slug ? `/${item.slug}` : '/shop');
       return;
     }
     try {
@@ -291,7 +291,7 @@ export default function WishlistPage() {
                 </button>
               ) : (
                 <Link
-                  href={item.slug ? `/products/${item.slug}` : '/shop'}
+                  href={item.slug ? `/${item.slug}` : '/shop'}
                   className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
                 >
                   Select Variant

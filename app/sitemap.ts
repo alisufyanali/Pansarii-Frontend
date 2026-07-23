@@ -6,7 +6,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://pansariinn.com';
 
 export default function sitemap() {
   const productUrls = allProducts.map(p => ({
-    url: `${SITE_URL}/products/${toProductSlug(p.nameEn)}`,
+    url: `${SITE_URL}/${toProductSlug(p.nameEn)}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,

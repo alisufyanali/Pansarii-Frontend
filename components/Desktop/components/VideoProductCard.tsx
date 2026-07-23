@@ -47,7 +47,7 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
     e.stopPropagation();
     // Navigate to product details page
     const slug = product.slug ?? product.nameEn.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/products/${slug}`);
+    router.push(`/${slug}`);
   };
 
   return (
