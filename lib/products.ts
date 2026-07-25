@@ -104,9 +104,7 @@ export async function getProductBySlug(slug: string): Promise<ApiProduct | null>
     const res = await api.get<ApiResponse<ApiProduct>>(`/products/${slug}`);
     return res.data;
   } catch (err) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`[products] Product "${slug}" API unavailable:`, isAxiosError(err) ? err.message : err);
-    }
+    console.error(`[products] Product "${slug}" API unavailable:`, isAxiosError(err) ? err.message : err);
     return null;
   }
 }
