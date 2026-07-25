@@ -39,6 +39,10 @@ export interface ApiProduct {
   rating?: number;
   reviews_count?: number;
   urdu_name?: string | null;
+  ingredients?: Array<{ label: string; value: string }>;
+  how_to_use?: { steps: string[]; notes: string[] };
+  benefits?: string[];
+  key_features?: Array<{ icon: string; title: string; sub: string; color: string }>;
 }
 
 // Helper: get display price from ApiProduct (cheapest variant or sale_price or price)
@@ -70,6 +74,10 @@ export function apiProductToLegacy(p: ApiProduct): Product {
     isBestSeller: p.featured,
     variants: p.variants,
     sizes: p.variants?.length ? p.variants.map(v => v.name) : undefined,
+    ingredients: p.ingredients,
+    how_to_use: p.how_to_use,
+    benefits: p.benefits,
+    key_features: p.key_features,
   };
 }
 
@@ -109,6 +117,9 @@ export interface Product {
   benefits?: string[];
   infoLines?: string[];
   productId?: string | number;
+  ingredients?: Array<{ label: string; value: string }>;
+  how_to_use?: { steps: string[]; notes: string[] };
+  key_features?: Array<{ icon: string; title: string; sub: string; color: string }>;
 }
 
 // Cart-specific product shape (extends Product with quantity)

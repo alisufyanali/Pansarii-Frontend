@@ -329,10 +329,10 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
 
   type TabId = "description" | "ingredients" | "reviews" | "howToUse";
   const tabs: { id: TabId; label: string }[] = [
-    { id: "description",  label: "Description"                        },
-    { id: "ingredients",  label: "Ingredients"                        },
+    { id: "description",  label: "Description" },
+    ...(product?.ingredients && product.ingredients.length > 0 ? [{ id: "ingredients" as TabId, label: "Ingredients" }] : []),
     { id: "reviews",      label: reviewsLoading ? "Reviews" : `Reviews (${allReviews.length})` },
-    { id: "howToUse",     label: "How to Use"                         },
+    ...(product?.how_to_use?.steps && product.how_to_use.steps.length > 0 ? [{ id: "howToUse" as TabId, label: "How to Use" }] : []),
   ];
 
   return (
@@ -374,37 +374,48 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
               <p className="text-gray-600 leading-relaxed text-sm">
                 {product?.description || "Experience the power of pure Ayurvedic wellness with our premium herbal product."}
               </p>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Key Benefits</h3>
-                <ul className="space-y-2">
-                  {(product?.benefits?.length ? product.benefits : [
-                    "100% Natural & Organic ingredients",
-                    "Clinically tested for safety and efficacy",
-                    "Free from harmful chemicals and preservatives",
-                  ]).map((b: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2.5">
-                      <FaCheckCircle className="w-3.5 h-3.5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-600 text-sm">{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { icon: <FaLeaf className="w-5 h-5 text-green-700" />,      title: "100% Natural", sub: "Organic ingredients", bg: "bg-green-50"  },
-                  { icon: <FaShieldAlt className="w-5 h-5 text-blue-700" />,  title: "Safe & Tested", sub: "Quality assured",    bg: "bg-blue-50"   },
-                  { icon: <FaCheckCircle className="w-5 h-5 text-amber-700" />, title: "Certified",  sub: "Ayurvedic formula",  bg: "bg-amber-50"  },
-                  { icon: <FaBolt className="w-5 h-5 text-purple-700" />,     title: "Fast Results", sub: "Visible in days",    bg: "bg-purple-50" },
-                ].map((card, i) => (
-                  <div key={i} className={`flex items-center gap-2 p-3 ${card.bg} rounded-xl`}>
-                    <div className="flex-shrink-0">{card.icon}</div>
-                    <div>
-                      <p className="font-semibold text-gray-900 text-xs">{card.title}</p>
-                      <p className="text-gray-500 text-[10px] mt-0.5">{card.sub}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {product?.benefits && product.benefits.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Key Benefits</h3>
+                  <ul className="space-y-2">
+                    {product.benefits.map((b: string, i: number) => (
+                      <li key={i} className="flex items-start gap-2.5">
+                        <FaCheckCircle className="w-3.5 h-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-600 text-sm">{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {product?.key_features && product.key_features.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {product.key_features.map((feat: any, i: number) => {
+                    const iconMap: Record<string, React.ReactNode> = {
+                      leaf: <FaLeaf className="w-5 h-5" />,
+                      shield: <FaShieldAlt className="w-5 h-5" />,
+                      check: <FaCheckCircle className="w-5 h-5" />,
+                      bolt: <FaBolt className="w-5 h-5" />,
+                    };
+                    const colorMap: Record<string, { bg: string, text: string }> = {
+                      green: { bg: "bg-green-50", text: "text-green-700" },
+                      blue: { bg: "bg-blue-50", text: "text-blue-700" },
+                      amber: { bg: "bg-amber-50", text: "text-amber-700" },
+                      purple: { bg: "bg-purple-50", text: "text-purple-700" },
+                    };
+                    const colorScheme = colorMap[feat.color] || colorMap.green;
+                    const iconNode = iconMap[feat.icon] || iconMap.leaf;
+                    return (
+                      <div key={i} className={`flex items-center gap-2 p-3 ${colorScheme.bg} rounded-xl`}>
+                        <div className={`flex-shrink-0 ${colorScheme.text}`}>{iconNode}</div>
+                        <div>
+                          <p className="font-semibold text-gray-900 text-xs">{feat.title}</p>
+                          <p className="text-gray-500 text-[10px] mt-0.5">{feat.sub}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -412,24 +423,20 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
           {activeTab === "ingredients" && (
             <div className="space-y-4">
               <h2 className="text-lg font-bold text-gray-900">Ingredients</h2>
-              <div className="bg-gray-50 rounded-xl p-4 sm:p-5">
-                <ul className="space-y-3 divide-y divide-gray-200">
-                  {[
-                    { label: "Main Extract",  value: "Pure herbal extract (100% organic)"    },
-                    { label: "Base Oil",      value: "Cold-pressed carrier oil"               },
-                    { label: "Preservative",  value: "Natural vitamin E (tocopherol)"         },
-                    { label: "Essential Oils",value: "Therapeutic grade aromatics"            },
-                  ].map((item, i) => (
-                    <li key={i} className="flex flex-col sm:flex-row sm:gap-4 pt-3 first:pt-0">
-                      <span className="font-semibold text-gray-900 text-xs sm:min-w-[140px]">{item.label}:</span>
-                      <span className="text-gray-500 text-xs">{item.value}</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-[11px] text-gray-400 mt-4 italic border-t border-gray-200 pt-3">
-                  * All ingredients are sourced from certified organic farms and processed using traditional Ayurvedic methods.
-                </p>
-              </div>
+              {product?.ingredients && product.ingredients.length > 0 ? (
+                <div className="bg-gray-50 rounded-xl p-4 sm:p-5">
+                  <ul className="space-y-3 divide-y divide-gray-200">
+                    {product.ingredients.map((item: any, i: number) => (
+                      <li key={i} className="flex flex-col sm:flex-row sm:gap-4 pt-3 first:pt-0">
+                        <span className="font-semibold text-gray-900 text-xs sm:min-w-[140px]">{item.label}:</span>
+                        <span className="text-gray-500 text-xs">{item.value}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-xs italic">No ingredient details available for this product.</p>
+              )}
             </div>
           )}
 
@@ -584,30 +591,33 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
           {activeTab === "howToUse" && (
             <div className="space-y-5">
               <h2 className="text-lg font-bold text-gray-900">How to Use</h2>
-              <ol className="space-y-3">
-                {[
-                  "Take 2–3 drops of the product on your palm.",
-                  "Gently massage into the affected area in circular motions.",
-                  "Leave it on for at least 30 minutes or overnight for best results.",
-                  "Rinse with lukewarm water (if applicable).",
-                ].map((step, i) => (
-                  <li key={i} className="flex gap-3 items-start">
-                    <span className="flex-shrink-0 w-6 h-6 bg-green-700 text-white rounded-full flex items-center justify-center text-xs font-bold">{i+1}</span>
-                    <span className="text-gray-600 text-sm pt-0.5">{step}</span>
-                  </li>
-                ))}
-              </ol>
-              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-                <p className="font-semibold text-amber-900 mb-2 text-xs flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
-                  Important Notes
-                </p>
-                <ul className="space-y-1 text-[11px] text-amber-700">
-                  {["For external use only","Do a patch test before first use","Avoid contact with eyes","Store in a cool, dry place","Keep out of reach of children"].map((n, i) => (
-                    <li key={i}>• {n}</li>
-                  ))}
-                </ul>
-              </div>
+              {product?.how_to_use?.steps && product.how_to_use.steps.length > 0 ? (
+                <>
+                  <ol className="space-y-3">
+                    {product.how_to_use.steps.map((step: string, i: number) => (
+                      <li key={i} className="flex gap-3 items-start">
+                        <span className="flex-shrink-0 w-6 h-6 bg-green-700 text-white rounded-full flex items-center justify-center text-xs font-bold">{i+1}</span>
+                        <span className="text-gray-600 text-sm pt-0.5">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  {product.how_to_use.notes && product.how_to_use.notes.length > 0 && (
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                      <p className="font-semibold text-amber-900 mb-2 text-xs flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
+                        Important Notes
+                      </p>
+                      <ul className="space-y-1 text-[11px] text-amber-700">
+                        {product.how_to_use.notes.map((n: string, i: number) => (
+                          <li key={i}>• {n}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-gray-500 text-xs italic">No directions available for this product.</p>
+              )}
               <DirectionToUse />
             </div>
           )}
