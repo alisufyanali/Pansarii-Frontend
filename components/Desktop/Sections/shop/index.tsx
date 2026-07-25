@@ -94,7 +94,7 @@ function ShopContent() {
 
   // API state
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
-  const [apiCategories, setApiCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
+  const [apiCategories, setApiCategories] = useState<{ id: number; name: string; slug: string; products_count?: number }[]>([]);
   const [apiMeta, setApiMeta] = useState<{ current_page: number; last_page: number; total: number; per_page?: number } | null>(null);
   const [isApiLoading, setIsApiLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(() => Number(searchParams.get('page')) || 1);
