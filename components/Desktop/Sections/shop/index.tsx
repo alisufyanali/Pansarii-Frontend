@@ -97,7 +97,7 @@ function ShopContent() {
   const [apiCategories, setApiCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
   const [apiMeta, setApiMeta] = useState<{ current_page: number; last_page: number; total: number; per_page?: number } | null>(null);
   const [isApiLoading, setIsApiLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => Number(searchParams.get('page')) || 1);
 
   // Responsive products per page
   const [productsPerPage, setProductsPerPage] = useState(20);
@@ -197,13 +197,14 @@ function ShopContent() {
       const params = new URLSearchParams();
       if (filters.searchQuery.trim()) params.set('search', filters.searchQuery.trim());
       if (filters.categories.length === 1) params.set('category', filters.categories[0]);
+      if (currentPage > 1) params.set('page', String(currentPage));
       const newUrl = params.toString() ? `/shop?${params.toString()}` : '/shop';
       if (newUrl !== window.location.pathname + window.location.search) {
         router.replace(newUrl, { scroll: false });
       }
     }, 300);
     return () => clearTimeout(t);
-  }, [filters.searchQuery, filters.categories, router]);
+  }, [filters.searchQuery, filters.categories, currentPage, router]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -211,8 +212,23 @@ function ShopContent() {
   }, []);
 
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
-    setFilters(newFilters);
-    setCurrentPage(1);
+    setFilters(prev => {
+      const filtersChanged =
+        prev.searchQuery !== newFilters.searchQuery ||
+        JSON.stringify(prev.categories) !== JSON.stringify(newFilters.categories) ||
+        prev.minPrice !== newFilters.minPrice ||
+        prev.maxPrice !== newFilters.maxPrice ||
+        prev.sortBy !== newFilters.sortBy ||
+        prev.showOnSale !== newFilters.showOnSale ||
+        prev.showInStock !== newFilters.showInStock ||
+        prev.showNewArrivals !== newFilters.showNewArrivals ||
+        prev.showBestSellers !== newFilters.showBestSellers;
+
+      if (filtersChanged) {
+        setCurrentPage(1);
+      }
+      return newFilters;
+    });
   }, []);
 
   const handleClearFilters = useCallback(() => {
@@ -237,8 +253,20 @@ function ShopContent() {
 
   // Categories for filter bar — use API categories if available
   const filterCategories = apiCategories.length > 0
-    ? apiCategories.map(c => c.name)
-    : getCategoriesFromProducts(apiProducts.length > 0 ? apiProducts : (allProducts as Product[]));
+    ? apiCategories.map(c => ({
+        name: c.name,
+        slug: c.slug,
+        products_count: c.products_count ?? 0,
+      }))
+    : getCategoriesFromProducts(apiProducts.length > 0 ? apiProducts : (allProducts as Product[])).map(name => {
+        const count = (apiProducts.length > 0 ? apiProducts : (allProducts as Product[]))
+          .filter(p => p.category === name).length;
+        return {
+          name,
+          slug: name.toLowerCase().replace(/\s+/g, '-'),
+          products_count: count,
+        };
+      });
 
   const priceRange = getPriceRangeFromProducts(apiProducts.length > 0 ? apiProducts : (allProducts as Product[]));
 

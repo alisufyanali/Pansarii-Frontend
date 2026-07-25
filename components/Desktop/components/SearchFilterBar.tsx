@@ -105,7 +105,8 @@ function SearchFilterBarContent({
   useEffect(() => {
     const urlCategory = searchParams.get('category');
     const urlCategories = searchParams.get('categories')?.split(',').filter(Boolean) || [];
-    const newCats = urlCategory ? [urlCategory] : urlCategories;
+    // Single category support only - take urlCategory first or the first item of urlCategories
+    const newCats = urlCategory ? [urlCategory] : (urlCategories.length > 0 ? [urlCategories[0]] : []);
     setFilters(prev => {
       if (JSON.stringify(prev.categories) === JSON.stringify(newCats)) return prev;
       return { ...prev, categories: newCats };
@@ -426,21 +427,14 @@ function SearchFilterBarContent({
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => {
-                                const already = filters.categories.includes(cat);
-                                const newCats = already
-                                  ? filters.categories.filter(c => c !== cat)
-                                  : [...filters.categories, cat];
+                                const newCats = isSelected ? [] : [cat];
                                 setFilters(prev => ({ ...prev, categories: newCats }));
                                 const params = new URLSearchParams(searchParams.toString());
+                                params.delete('categories');
                                 if (newCats.length === 1) {
                                   params.set('category', newCats[0]);
-                                  params.delete('categories');
-                                } else if (newCats.length > 1) {
-                                  params.set('categories', newCats.join(','));
-                                  params.delete('category');
                                 } else {
                                   params.delete('category');
-                                  params.delete('categories');
                                 }
                                 router.push(`${pathname}?${params.toString()}`, { scroll: false });
                               }}
@@ -633,10 +627,9 @@ function SearchFilterBarContent({
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => {
-                                const already = tempFilters.categories.includes(cat);
                                 setTempFilters(prev => ({
                                   ...prev,
-                                  categories: already ? prev.categories.filter(c => c !== cat) : [...prev.categories, cat],
+                                  categories: isSelected ? [] : [cat],
                                 }));
                               }}
                               className="h-4 w-4 rounded border-2 border-gray-300 accent-green-600 cursor-pointer flex-shrink-0"

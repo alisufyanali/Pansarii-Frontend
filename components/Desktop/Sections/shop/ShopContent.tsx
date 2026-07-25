@@ -58,7 +58,7 @@ function ShopContentLoading() {
 }
 
 interface ShopContentProps {
-  categories: string[];
+  categories: Array<{ name: string; slug: string; products_count: number }>;
   filters: FilterOptions;
   setFilters: (filters: FilterOptions) => void;
   filteredProducts: Product[];
@@ -150,13 +150,10 @@ function ShopContent({
     } catch { /* error already toasted by context */ }
   };
 
-  // NOTE: Per-category counts here are scoped to the current page's items only
-  // (not the full 554 total) since a separate category-counts API endpoint
-  // would be needed to get accurate totals per category. Acceptable for now.
-  const categoryData = (categories || []).map(category => ({
-    name: category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-    count: (allProducts || []).filter(p => p?.category?.toLowerCase() === category.toLowerCase()).length,
-    slug: category,
+  const categoryData = (categories || []).map(cat => ({
+    name: cat.name,
+    count: cat.products_count,
+    slug: cat.slug,
   }));
 
   const getSortLabel = () => {
@@ -181,7 +178,7 @@ function ShopContent({
       <SearchFilterBar
         onFilterChange={setFilters}
         productCount={totalProductCount}
-        categories={categories}
+        categories={categories.map(c => c.name)}
         onViewModeChange={setViewMode}
         initialSearchQuery={initialSearchQuery}
       />
