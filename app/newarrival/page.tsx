@@ -10,6 +10,7 @@ import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import { newArrivalProducts, NewArrivalProduct } from '@/data/newproducts';
 import { api, getApiErrorMessage } from '@/lib/axios';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
+import { isValidEmail } from '@/lib/validation';
 
 // Categories for filter
 const categories = [
@@ -37,6 +38,7 @@ export default function NewArrivalsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filteredProducts, setFilteredProducts] = useState<NewArrivalProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isNewsletterSubmitting, setIsNewsletterSubmitting] = useState(false);
 
   // Filter and sort products based on selections
   useEffect(() => {
@@ -112,13 +114,26 @@ export default function NewArrivalsPage() {
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    const email = formData.get('email') as string;
+    const email = (formData.get('email') as string || '').trim();
+
+    if (!email) {
+      toast.error('Email is required.');
+      return;
+    }
+    if (!isValidEmail(email)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    setIsNewsletterSubmitting(true);
     try {
-      await api.post('/newsletter/subscribe', { email });
-      toast.success('Thank you for subscribing to our newsletter!');
+      const res = await api.post<{ success: boolean; message: string }>('/newsletter/subscribe', { email });
+      toast.success(res.message || 'Thank you for subscribing to our newsletter!');
       (e.target as HTMLFormElement).reset();
     } catch (err) {
       toast.error(getApiErrorMessage(err) || 'Subscription failed. Please try again.');
+    } finally {
+      setIsNewsletterSubmitting(false);
     }
   };
 
@@ -415,13 +430,23 @@ export default function NewArrivalsPage() {
               name="email"
               placeholder="Enter your email"
               required
-              className="flex-1 px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              disabled={isNewsletterSubmitting}
+              className="flex-1 px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-75"
             />
             <button 
               type="submit"
-              className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-green-800 font-semibold rounded-lg hover:bg-gray-100 transition shadow whitespace-nowrap"
+              disabled={isNewsletterSubmitting}
+              className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-green-800 font-semibold rounded-lg hover:bg-gray-100 transition shadow whitespace-nowrap disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Subscribe
+              {isNewsletterSubmitting ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-green-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Subscribing...
+                </>
+              ) : 'Subscribe'}
             </button>
           </form>
           <p className="text-green-200 text-xs sm:text-sm mt-3 sm:mt-4">

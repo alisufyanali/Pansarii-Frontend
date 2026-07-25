@@ -7,6 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PageBanner from '@/components/PageBanner';
 import { api, getApiErrorMessage } from '@/lib/axios';
+import { isValidEmail } from '@/lib/validation';
 
 const data = {
   journey: [
@@ -46,17 +47,30 @@ const data = {
 export default function OurStoryPage() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterError, setNewsletterError] = useState('');
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsletterEmail.trim()) return;
+    setNewsletterError('');
+    const email = newsletterEmail.trim();
+    if (!email) {
+      setNewsletterError('Email is required.');
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setNewsletterError('Please enter a valid email address.');
+      return;
+    }
+
     setNewsletterLoading(true);
     try {
-      await api.post('/newsletter/subscribe', { email: newsletterEmail });
-      toast.success('Successfully subscribed!');
+      const res = await api.post<{ success: boolean; message: string }>('/newsletter/subscribe', { email });
+      toast.success(res.message || 'Successfully subscribed!');
       setNewsletterEmail('');
     } catch (err) {
-      toast.error(getApiErrorMessage(err) || 'Subscription failed. Try again.');
+      const msg = getApiErrorMessage(err) || 'Subscription failed. Try again.';
+      setNewsletterError(msg);
+      toast.error(msg);
     } finally {
       setNewsletterLoading(false);
     }
@@ -187,9 +201,11 @@ export default function OurStoryPage() {
               type="email"
               required
               value={newsletterEmail}
-              onChange={e => setNewsletterEmail(e.target.value)}
+              onChange={e => { setNewsletterEmail(e.target.value); setNewsletterError(''); }}
               placeholder="Enter your email"
-              className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              disabled={newsletterLoading}
+              className={`flex-1 px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500
+                ${newsletterError ? 'border-red-400' : 'border-gray-300'}`}
             />
             <button
               type="submit"
@@ -199,6 +215,7 @@ export default function OurStoryPage() {
               {newsletterLoading ? 'Subscribing…' : 'Subscribe'}
             </button>
           </form>
+          {newsletterError && <p className="text-red-500 text-xs mt-2 max-w-sm mx-auto text-left px-1">{newsletterError}</p>}
         </div>
       </section>
 

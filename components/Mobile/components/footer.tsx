@@ -9,6 +9,9 @@ import {
   FaChevronDown, FaChevronUp, FaArrowRight, FaCheckCircle,
 } from 'react-icons/fa';
 import { SOCIAL_LINKS } from '@/lib/social-links';
+import { api, getApiErrorMessage } from '@/lib/axios';
+import { isValidEmail } from '@/lib/validation';
+import { toast } from 'react-toastify';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -99,20 +102,25 @@ export default function MobileFooter() {
   const [subscribed, setSubscribed] = useState(false);
   const [error, setError] = useState('');
 
-  const validate = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim()) return setError('Email is required');
-    if (!validate(email)) return setError('Please enter a valid email');
+    if (!email.trim())        return setError('Email is required');
+    if (!isValidEmail(email)) return setError('Please enter a valid email');
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      const res = await api.post<{ success: boolean; message: string }>('/newsletter/subscribe', { email });
       setSubscribed(true);
+      toast.success(res.message || 'Successfully subscribed!');
       setEmail('');
-      setSubmitting(false);
       setTimeout(() => setSubscribed(false), 5000);
-    }, 1000);
+    } catch (err) {
+      const msg = getApiErrorMessage(err) || 'Subscription failed. Please try again.';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const currentYear = new Date().getFullYear();
