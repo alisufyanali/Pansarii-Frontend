@@ -30,6 +30,7 @@ export interface ApiProduct {
   unit?: string;
   featured?: boolean;
   thumbnail: string | null;
+  hover_image?: string | null;
   description?: string;
   category: ApiCategory;
   variants: ProductVariant[];
@@ -37,6 +38,7 @@ export interface ApiProduct {
   video?: string | null;
   rating?: number;
   reviews_count?: number;
+  urdu_name?: string | null;
 }
 
 // Helper: get display price from ApiProduct (cheapest variant or sale_price or price)
@@ -54,8 +56,9 @@ export function apiProductToLegacy(p: ApiProduct): Product {
     id: p.id,
     slug: p.slug,
     img: p.thumbnail || '/images/product.png',
+    hoverImg: p.hover_image || undefined,
     nameEn: p.name,
-    nameUr: p.name,
+    nameUr: p.urdu_name || p.name,
     description: p.description || '',
     rating: p.rating || 4.5,
     reviews: p.reviews_count || 0,
