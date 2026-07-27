@@ -93,12 +93,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Rehydrate from localStorage on mount
   useEffect(() => {
-    const token = getAuthToken();
-    const stored = getStoredUser<AuthUser>();
-    if (token && stored) {
-      setUser(stored);
-    }
-    setIsLoading(false);
+    const frame = requestAnimationFrame(() => {
+      const token = getAuthToken();
+      const stored = getStoredUser<AuthUser>();
+      if (token && stored) setUser(stored);
+      setIsLoading(false);
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   // ── login ──────────────────────────────────────────────────────────────────

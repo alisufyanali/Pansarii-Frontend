@@ -208,7 +208,7 @@ function ShopContent({
               </h2>
               {filters.searchQuery && (
                 <p className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
-                  Results for "<span className="font-medium">{filters.searchQuery}</span>"
+                  Results for &quot;<span className="font-medium">{filters.searchQuery}</span>&quot;
                 </p>
               )}
               {(filters.categories.length > 0 || filters.showOnSale || filters.minPrice > 0 || filters.maxPrice < 5000) && (

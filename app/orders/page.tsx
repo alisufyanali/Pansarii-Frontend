@@ -190,8 +190,10 @@ export default function OrderHistoryPage() {
       return;
     }
 
-    setIsLoading(true);
-    setError('');
+    const frame = requestAnimationFrame(() => {
+      setIsLoading(true);
+      setError('');
+    });
     getOrders(currentPage, 10)
       .then(res => {
         setOrders(res.data || []);
@@ -199,6 +201,7 @@ export default function OrderHistoryPage() {
       })
       .catch(() => setError('Could not load orders. Please try again.'))
       .finally(() => setIsLoading(false));
+    return () => cancelAnimationFrame(frame);
   }, [currentPage, isAuthenticated, authLoading, router]);
 
   const inTransit = orders.filter(o =>

@@ -96,12 +96,16 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   }, [isOpen]);
 
   useEffect(() => {
-    const token = getAuthToken();
-    const user = getStoredUser();
-    setIsLoggedIn(!!(token && user));
+    const frame = requestAnimationFrame(() => {
+      const token = getAuthToken();
+      const user = getStoredUser();
+      setIsLoggedIn(!!(token && user));
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
+    const frame = requestAnimationFrame(() => {
     if (cartItems.length > 0) {
       const cartCategories = Array.from(new Set(cartItems.map(item => item.category)));
       const suggestions = allProducts
@@ -137,6 +141,8 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         }));
       setSuggestedProducts(popularSuggestions);
     }
+    });
+    return () => cancelAnimationFrame(frame);
   }, [cartItems]);
 
   useEffect(() => {
@@ -314,7 +320,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       <FaShoppingBag className="w-9 h-9 text-green-300" />
                     </div>
                     <h3 className="text-lg font-bold text-gray-900 mb-1">Your cart is empty</h3>
-                    <p className="text-gray-500 text-sm mb-6 max-w-48">Looks like you haven't added anything yet.</p>
+                    <p className="text-gray-500 text-sm mb-6 max-w-48">Looks like you haven&apos;t added anything yet.</p>
                     <button
                       onClick={handleContinueShopping}
                       className="px-6 py-2.5 bg-green-700 text-white rounded-full hover:bg-green-600 transition text-sm font-semibold shadow"

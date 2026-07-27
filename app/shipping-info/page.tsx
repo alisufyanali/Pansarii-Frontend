@@ -1,6 +1,7 @@
 'use client';
 
 import { FaTruck, FaClock, FaBoxOpen, FaShieldAlt, FaLeaf, FaLock, FaThermometerHalf } from 'react-icons/fa';
+import Link from 'next/link';
 import PageBanner from '@/components/PageBanner';
 
 const deliveryZones = [
@@ -175,9 +176,9 @@ export default function ShippingInfoPage() {
         <div className="max-w-xl mx-auto px-[4%]">
           <h2 className="text-lg font-bold mb-2">Still Have Questions?</h2>
           <p className="text-sm text-green-100 mb-4">Our customer support team is here to help you with any shipping concerns.</p>
-          <a href="/contact" className="inline-block px-6 py-2.5 bg-white text-green-700 rounded-lg hover:bg-gray-100 transition font-semibold text-sm">
+          <Link href="/contact" className="inline-block px-6 py-2.5 bg-white text-green-700 rounded-lg hover:bg-gray-100 transition font-semibold text-sm">
             Contact Support
-          </a>
+          </Link>
         </div>
       </section>
 

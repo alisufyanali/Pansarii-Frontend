@@ -697,7 +697,7 @@ function SearchFilterBarContent({
           {filters.searchQuery && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-xs font-medium">
               <FiSearch className="w-3 h-3" />
-              "{filters.searchQuery}"
+              &quot;{filters.searchQuery}&quot;
               <button onClick={() => setFilters(prev => ({ ...prev, searchQuery: '' }))} className="hover:bg-green-200 rounded-full p-0.5 ml-0.5"><FiX className="w-2.5 h-2.5" /></button>
             </span>
           )}

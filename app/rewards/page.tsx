@@ -155,8 +155,8 @@ export default function RewardsPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated) {
-      setIsLoading(false);
-      return;
+      const frame = requestAnimationFrame(() => setIsLoading(false));
+      return () => cancelAnimationFrame(frame);
     }
     api.get<RewardsApiResponse>('/rewards')
       .then((res) => setRewardsData(res.data))
@@ -182,9 +182,9 @@ export default function RewardsPage() {
           <div className="text-5xl mb-4">🌿</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Sign in to view your rewards</h2>
           <p className="text-gray-500 text-sm mb-6">Earn points on every purchase and unlock exclusive benefits.</p>
-          <a href="/login?returnTo=/rewards" className="inline-block px-8 py-3 bg-[#197B33] text-white font-semibold rounded-full hover:bg-[#156529] transition text-sm">
+          <Link href="/login?returnTo=/rewards" className="inline-block px-8 py-3 bg-[#197B33] text-white font-semibold rounded-full hover:bg-[#156529] transition text-sm">
             Sign In
-          </a>
+          </Link>
         </div>
       </div>
     );

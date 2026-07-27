@@ -317,7 +317,7 @@ export default function OffersPage() {
           <div className="flex items-center justify-between gap-4 mb-3">
             <div>
               <h1 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-gray-900">Special Offers & Deals</h1>
-              <p className="text-sm text-gray-500">Exclusive savings on Pansari Inn's finest herbal products</p>
+              <p className="text-sm text-gray-500">Exclusive savings on Pansari Inn&apos;s finest herbal products</p>
             </div>
             <div className="hidden sm:flex items-center gap-2">
               <div className="bg-red-50 px-3 py-1.5 rounded-lg text-center">

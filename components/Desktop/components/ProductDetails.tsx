@@ -141,15 +141,22 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   }, []);
 
   useEffect(() => {
-    const token = getAuthToken();
-    const user = getStoredUser();
-    setIsLoggedIn(!!(token && user));
+    const frame = requestAnimationFrame(() => {
+      const token = getAuthToken();
+      const user = getStoredUser();
+      setIsLoggedIn(!!(token && user));
+    });
     const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
-    if (productId && isLoggedIn) setIsWishlisted(isInWishlist(productId));
+    if (!productId || !isLoggedIn) return;
+    const frame = requestAnimationFrame(() => setIsWishlisted(isInWishlist(productId)));
+    return () => cancelAnimationFrame(frame);
   }, [productId, isInWishlist, isLoggedIn]);
 
   if (isLoading) return <ProductDetailsSkeleton />;
@@ -266,7 +273,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   };
 
  
-  const DesktopView = () => (
+  const renderDesktopView = () => (
     <div className="flex flex-row gap-5 p-4 max-w-7xl mx-auto" >
 
       {/* ── LEFT: image column ── */}
@@ -445,7 +452,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   /* ─────────────────────────────────────────────
      MOBILE VIEW — unchanged logic, same as before
   ───────────────────────────────────────────── */
-  const MobileView = () => (
+  const renderMobileView = () => (
     <div className="space-y-3 p-3">
       {/* Images */}
       <div className="relative">
@@ -593,7 +600,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   return (
     <div className="bg-white">
-      {isMobile ? <MobileView /> : <DesktopView />}
+      {isMobile ? renderMobileView() : renderDesktopView()}
 
       <style jsx global>{`
         @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }

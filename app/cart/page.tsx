@@ -11,7 +11,10 @@ function CartContent() {
   const { cartItems, updateQuantity, removeFromCart, getCartTotal, getCartCount, isCartLoading } = useCart();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const shipping = getCartTotal() > 5000 ? 0 : 200;
   const total = getCartTotal() + shipping;
@@ -97,7 +100,7 @@ function CartContent() {
           <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center max-w-lg mx-auto">
             <FaShoppingCart className="w-16 h-16 mx-auto text-gray-200 mb-5" />
             <h2 className="text-lg font-bold text-gray-900 mb-2">Your cart is empty</h2>
-            <p className="text-sm text-gray-500 mb-6">Looks like you haven't added anything yet.</p>
+            <p className="text-sm text-gray-500 mb-6">Looks like you haven&apos;t added anything yet.</p>
             <Link href="/shop"
               className="inline-block bg-green-700 text-white px-8 py-2.5 rounded-full text-sm font-semibold hover:bg-green-600 transition">
               Browse Products
@@ -132,7 +135,7 @@ function CartContent() {
               {getCartTotal() >= 5000 && (
                 <div className="bg-green-50 border border-green-100 rounded-xl px-5 py-3 flex items-center gap-2">
                   <FaTruck className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
-                <span className="text-xs font-medium text-green-700">You've unlocked free shipping!</span>
+                <span className="text-xs font-medium text-green-700">You&apos;ve unlocked free shipping!</span>
                 </div>
               )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import SafeImage from '@/components/SafeImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -51,7 +51,6 @@ function SkeletonCard() {
 export default function WishlistPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [suggested, setSuggested] = useState<SuggestedProduct[]>([]);
 
   const { addToCart } = useCart();
   const {
@@ -67,12 +66,12 @@ export default function WishlistPage() {
   const count = getWishlistCount();
 
   useEffect(() => {
-    setMounted(true);
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
-  // Build suggestions whenever wishlist changes
-  useEffect(() => {
-    if (!mounted) return;
+  const suggested = useMemo<SuggestedProduct[]>(() => {
+    if (!mounted) return [];
     const cats = Array.from(new Set(wishlistItems.map((i) => i.category)));
     const pool =
       wishlistItems.length > 0
@@ -83,8 +82,7 @@ export default function WishlistPage() {
           )
         : allProducts.filter((p) => p.isBestSeller);
 
-    setSuggested(
-      pool.slice(0, 4).map((p) => ({
+    return pool.slice(0, 4).map((p) => ({
         id: p.id,
         nameEn: p.nameEn,
         img: p.img,
@@ -92,8 +90,7 @@ export default function WishlistPage() {
         oldPrice: p.oldPrice,
         rating: p.rating,
         category: p.category,
-      }))
-    );
+      }));
   }, [wishlistItems, mounted]);
 
   const handleAddToCart = async (item: WishlistItem) => {

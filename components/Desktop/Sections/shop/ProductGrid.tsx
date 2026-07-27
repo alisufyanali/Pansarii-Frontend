@@ -18,7 +18,10 @@ function ProductGrid({ products, viewMode = 'grid', onAddToCart, isMobile = fals
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => { setIsClient(true); }, []);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setIsClient(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const handleQuickView = (product: Product) => {
     setSelectedProduct(product);

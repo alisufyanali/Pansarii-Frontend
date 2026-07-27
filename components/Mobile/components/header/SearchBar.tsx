@@ -322,7 +322,7 @@ export default function SearchBar({
                   onClick={() => handleSearch(query)}
                   className="flex items-center justify-center gap-2 w-full py-2 text-center text-xs font-semibold text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition"
                 >
-                  View all results for "{query}"
+                  View all results for &quot;{query}&quot;
                   <FiChevronRight className="w-3 h-3" />
                 </button>
               </div>

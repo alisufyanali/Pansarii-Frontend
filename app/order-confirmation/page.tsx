@@ -145,7 +145,13 @@ function OrderConfirmationContent() {
     if (!orderIdRaw) { router.push('/'); return; }
 
     const orderId = Number(orderIdRaw);
-    if (isNaN(orderId)) { setFetchError('Invalid order ID.'); setLoading(false); return; }
+    if (isNaN(orderId)) {
+      const frame = requestAnimationFrame(() => {
+        setFetchError('Invalid order ID.');
+        setLoading(false);
+      });
+      return () => cancelAnimationFrame(frame);
+    }
 
     // Guest orders: use data stored at checkout (no auth token for API fetch)
     try {

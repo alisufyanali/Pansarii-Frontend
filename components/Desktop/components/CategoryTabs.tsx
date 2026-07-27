@@ -27,12 +27,7 @@ export default function CategoryTabs({ categories, activeCategory, onCategoryCha
     ...categories
   ];
 
-  useEffect(() => {
-    // Set active tab from props
-    if (activeCategory) {
-      setActiveTab(activeCategory);
-    }
-  }, [activeCategory]);
+  const selectedTab = activeCategory ?? activeTab;
 
   // Check for scroll arrows
   useEffect(() => {
@@ -122,7 +117,7 @@ export default function CategoryTabs({ categories, activeCategory, onCategoryCha
             onClick={() => handleTabClick(tab.slug)}
             className={`
               flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all
-              ${activeTab === tab.slug
+              ${selectedTab === tab.slug
                 ? 'bg-green-700 text-white shadow-md'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }
@@ -131,7 +126,7 @@ export default function CategoryTabs({ categories, activeCategory, onCategoryCha
             <span className="text-sm font-medium">{tab.name}</span>
             <span className={`
               text-xs px-2 py-0.5 rounded-full
-              ${activeTab === tab.slug
+              ${selectedTab === tab.slug
                 ? 'bg-green-600 text-white'
                 : 'bg-gray-300 text-gray-700'
               }

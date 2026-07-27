@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { FaChevronDown, FaSearch, FaQuestionCircle, FaShoppingCart, FaTruck, FaUndo, FaLeaf, FaUser, FaEllipsisH } from 'react-icons/fa';
 
 import PageBanner from '@/components/PageBanner';
@@ -285,7 +286,7 @@ export default function FAQsPage() {
             {searchQuery && (
               <div className="mb-6">
                 <p className="text-gray-600">
-                  Found {filteredFaqs.length} result{filteredFaqs.length !== 1 ? 's' : ''} for "{searchQuery}"
+                  Found {filteredFaqs.length} result{filteredFaqs.length !== 1 ? 's' : ''} for &quot;{searchQuery}&quot;
                 </p>
               </div>
             )}
@@ -354,9 +355,9 @@ export default function FAQsPage() {
           <h2 className="text-xl font-bold text-gray-900 mb-2">Still have questions?</h2>
           <p className="text-sm text-gray-600 mb-5">{faqData.hero.description}</p>
           <div className="flex flex-wrap justify-center gap-3">
-            <a href="/contact" className="px-6 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 transition font-semibold text-sm">
+            <Link href="/contact" className="px-6 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 transition font-semibold text-sm">
               Contact Support
-            </a>
+            </Link>
           </div>
         </div>
       </section>

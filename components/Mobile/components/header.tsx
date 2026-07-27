@@ -93,8 +93,11 @@ export default function Header({ isMenuOpen, setIsMenuOpen }: HeaderProps) {
   const [currentPath, setCurrentPath] = useState('');
 
   useEffect(() => {
-    setMounted(true);
-    setCurrentPath(window.location.pathname);
+    const frame = requestAnimationFrame(() => {
+      setMounted(true);
+      setCurrentPath(window.location.pathname);
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const cartCount = mounted ? getCartCount() : 0;

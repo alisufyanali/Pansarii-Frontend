@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { SOCIAL_LINKS } from '@/lib/social-links';
@@ -317,12 +318,12 @@ export default function ContactPage() {
             ))}
           </div>
           <div className="text-center mt-8">
-            <a
+            <Link
               href="/faqs"
               className="inline-block px-8 py-3 bg-green-700 text-white rounded-lg hover:bg-green-600 transition font-semibold"
             >
               View All FAQs
-            </a>
+            </Link>
           </div>
         </div>
       </section>

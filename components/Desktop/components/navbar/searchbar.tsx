@@ -387,7 +387,7 @@ export default function SearchBar({
                   className="flex items-center justify-center gap-2 w-full py-2.5 text-center text-sm font-semibold text-green-700 hover:text-green-800 hover:bg-green-50 rounded-lg transition"
                   onClick={() => setIsOpen(false)}
                 >
-                  View all results for "{query}"
+                  View all results for &quot;{query}&quot;
                   <FiChevronRight className="w-4 h-4" />
                 </Link>
               </div>

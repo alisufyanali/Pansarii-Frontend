@@ -82,11 +82,16 @@ export function useDeviceDetection(): DeviceDetectionResult {
     };
 
     // Run after mount — safe to access window/navigator here
-    checkDevice();
-    setHasMounted(true);
+    const frame = requestAnimationFrame(() => {
+      checkDevice();
+      setHasMounted(true);
+    });
 
     window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', checkDevice);
+    };
   }, []);
 
   // Before mount, report desktop so SSR and first client render match
