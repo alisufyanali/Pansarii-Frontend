@@ -20,7 +20,7 @@ const CategoryProductsSection = dynamic(
 );
 
 const Categories = dynamic(() => import('./components/categories'), { ssr: false });
-const ShopProducts = dynamic(() => import('./components/ShopProducts'), { ssr: false });
+
 const MobileVideoProducts = dynamic(() => import('./components/VideoProducts'), { ssr: false });
 const MobileComboDeal = dynamic(() => import('./components/ComboDeal'), { ssr: false });
 const MobileReviews = dynamic(() => import('./components/Reviews'), { ssr: false });

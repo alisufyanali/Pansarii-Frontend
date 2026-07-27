@@ -1,6 +1,6 @@
 'use client';
 
-import { FaUndo, FaClock, FaCheckCircle, FaTimesCircle, FaPhone, FaEnvelope, FaWhatsapp, FaBoxOpen, FaSearch, FaShippingFast, FaMoneyBillWave } from 'react-icons/fa';
+import { FaUndo, FaClock, FaCheckCircle, FaTimesCircle, FaPhone, FaEnvelope, FaWhatsapp, FaBoxOpen, FaSearch, FaMoneyBillWave } from 'react-icons/fa';
 import PageBanner from '@/components/PageBanner';
 
 const stepIcons = [FaPhone, FaCheckCircle, FaBoxOpen, FaSearch, FaMoneyBillWave];

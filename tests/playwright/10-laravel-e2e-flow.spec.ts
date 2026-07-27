@@ -125,7 +125,7 @@ async function registerNewUser(page: Page, request: APIRequestContext) {
   }
 
   // Best-effort: some backends return token under different keys.
-  const json = (await registerRes.json().catch(() => null)) as any;
+  const json = (await registerRes.json().catch(() => null)) as Record<string, any>;
   const token: string | null =
     json?.data?.token ??
     json?.token ??
@@ -298,7 +298,7 @@ test.describe('Laravel-connected E2E flow', () => {
       headers: { Authorization: `Bearer ${token}` },
     });
     expect(apiCart.ok()).toBeTruthy();
-    const cartJson = (await apiCart.json()) as { success: boolean; data: unknown[] };
+    
     await expect
       .poll(async () => {
         const res = await request.get(`${API_BASE}/cart`, {

@@ -4,6 +4,7 @@ import ProductCard from "../../components/ProductCard";
 import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import ProductDetailsModal from "../../components/ProductDetailsModal";
 import { memo, useState, useEffect } from 'react';
+import Image from 'next/image';
 import { FaStar, FaCheckCircle, FaEye } from 'react-icons/fa';
 
 interface ProductGridProps {
@@ -13,7 +14,7 @@ interface ProductGridProps {
   isMobile?: boolean;
 }
 
-function ProductGrid({ products, viewMode = 'grid', onAddToCart, isMobile = false }: ProductGridProps) {
+function ProductGrid({ products, viewMode = 'grid', isMobile = false, onAddToCart: _onAddToCart }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isClient, setIsClient] = useState(false);
@@ -46,11 +47,12 @@ function ProductGrid({ products, viewMode = 'grid', onAddToCart, isMobile = fals
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                 {/* Image */}
                 <div className="w-full sm:w-36 lg:w-48 h-48 sm:h-36 lg:h-48 flex-shrink-0 relative">
-                  <img
+                  <Image
                     src={product.img}
                     alt={product.nameEn}
-                    className="w-full h-full object-cover rounded-lg"
-                    loading="lazy"
+                    fill
+                    className="object-cover rounded-lg"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/images/product.png'; }}
                   />
                   {product.sale && (

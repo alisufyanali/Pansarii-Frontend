@@ -8,7 +8,7 @@ import {
   FaStar, FaGift, FaFire, FaTrophy, FaLeaf, FaCrown,
   FaShoppingBag, FaShare, FaUserFriends, FaCheckCircle,
   FaLock, FaChevronRight, FaPercent, FaTruck, FaTag,
-  FaBolt, FaHistory
+  FaBolt
 } from 'react-icons/fa';
 
 // ─── API Types ─────────────────────────────────────────────────────────────────

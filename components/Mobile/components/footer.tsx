@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+
 import {
   FaTruck, FaMapMarkerAlt, FaShieldAlt, FaClock, FaLeaf,
   FaFacebook, FaTwitter, FaYoutube, FaInstagram,

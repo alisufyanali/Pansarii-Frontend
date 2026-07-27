@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { allProducts } from "@/data/products";
+import Image from 'next/image';
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Herb':          'herb',
@@ -113,14 +114,15 @@ export default function Categories() {
 
               {/* Product image — overlaps bottom of arch */}
               <div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[85%]"
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[85%] h-[90px]"
                 style={{ zIndex: 10 }}
               >
-                <img
+                <Image
                   src={cat.img}
                   alt={cat.name}
-                  className="w-full h-auto object-contain drop-shadow-lg"
-                  style={{ maxHeight: '90px' }}
+                  fill
+                  className="object-contain drop-shadow-lg"
+                  sizes="(max-width: 768px) 30vw, 15vw"
                 />
               </div>
 

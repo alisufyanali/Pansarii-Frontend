@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getBlogs, type ApiBlog, type ApiBlogCategory } from "@/lib/blog";
+import { getBlogs, type ApiBlog } from "@/lib/blog";
 import { blogPosts } from "@/data/blogposts";
-import { FaSearch, FaCalendar, FaArrowRight, FaTag, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaSearch, FaCalendar, FaArrowRight, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import PageBanner from "@/components/PageBanner";
 
 const POSTS_PER_PAGE = 9;

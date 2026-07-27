@@ -204,7 +204,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       setWishlistItems(local);
       log('✅ Guest wishlist loaded from localStorage:', local.length, 'items');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Guest: persist to localStorage ─────────────────────────────────────────
@@ -213,7 +212,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     if (!isLoggedIn()) {
       writeLocalWishlist(wishlistItems);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [wishlistItems]);
 
   // ── syncFromApi ─────────────────────────────────────────────────────────────
@@ -333,7 +332,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     } else {
       setWishlistItems(prev => prev.filter(w => String(w.id) !== String(id)));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [wishlistItems]);
 
   // ── toggleWishlist ──────────────────────────────────────────────────────────
@@ -344,7 +343,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     } else {
       await addToWishlist(item);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [wishlistItems, addToWishlist, removeFromWishlist]);
 
   // ── clearWishlist ───────────────────────────────────────────────────────────

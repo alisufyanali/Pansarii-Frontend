@@ -193,7 +193,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setCartItems(local);
       log('✅ Guest cart loaded from localStorage:', local.length, 'items');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Guest: persist to localStorage whenever items change ───────────────────
@@ -202,7 +201,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!isLoggedIn()) {
       writeLocalCart(cartItems);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems]);
 
   // ── syncFromApi — re-fetch API cart (called after login) ───────────────────

@@ -90,11 +90,13 @@ export default function SolutionBar() {
             style={{ width: 'calc((100vw - 32px - 24px) / 3.4)' }}
           >
             {/* Circle image — no border, shadow instead */}
-            <div className="w-14 h-14 rounded-full overflow-hidden mb-2 shadow-sm">
-              <img
+            <div className="w-14 h-14 rounded-full overflow-hidden mb-2 shadow-sm relative">
+              <SafeImage
                 src={cat.img}
                 alt={cat.name}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="56px"
               />
             </div>
             <span className="text-[11px] font-semibold text-gray-800 text-center leading-tight line-clamp-2">

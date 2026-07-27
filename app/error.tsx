@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { FaExclamationTriangle, FaRedo, FaHome, FaStore } from 'react-icons/fa';
+import { FaExclamationTriangle, FaRedo, FaHome } from 'react-icons/fa';
 
 interface ErrorProps {
   error: Error & { digest?: string };

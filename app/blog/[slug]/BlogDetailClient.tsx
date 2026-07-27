@@ -18,10 +18,7 @@ interface SocialShare {
   href: string;
 }
 
-interface BlogDetailClientProps {
-  title: string;
-  socialShares: SocialShare[];
-}
+
 
 /**
  * Thin client wrapper for the two interactive elements on the blog detail page:

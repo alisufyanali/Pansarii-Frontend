@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getFeaturedProducts } from '@/lib/products';
 import type { Product } from '@/types/product';
+import Image from 'next/image';
 
 const cardGradients = [
   'from-green-100 to-yellow-100',
@@ -101,11 +102,13 @@ export default function MobileComboDeal() {
                 </div>
 
                 {/* Product image — large, centered */}
-                <div className="flex items-end justify-center h-40 px-4">
-                  <img
+                <div className="flex items-end justify-center h-40 px-4 relative">
+                  <Image
                     src={product.img}
                     alt={product.nameEn}
-                    className="w-full h-full object-contain drop-shadow-xl"
+                    fill
+                    className="object-contain drop-shadow-xl"
+                    sizes="(max-width: 768px) 40vw, 20vw"
                   />
                 </div>
               </div>

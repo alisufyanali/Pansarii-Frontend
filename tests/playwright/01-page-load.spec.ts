@@ -194,7 +194,7 @@ test.describe('1.3 — Internal navigation links route correctly', () => {
 
       // Verify the page did NOT render a 404 — the not-found page contains "404"
       // as a large heading; a successful page should not have that.
-      const pageText = await page.locator('body').innerText();
+      
       // Only flag as 404 if the page explicitly shows the 404 heading AND
       // we are not intentionally on a 404 test.
       const has404Heading = await page.locator('h1:has-text("404")').count();

@@ -1,6 +1,6 @@
 'use client';
 
-import { FaTruck, FaClock, FaBoxOpen, FaShieldAlt, FaLeaf, FaLock, FaThermometerHalf } from 'react-icons/fa';
+import { FaTruck, FaClock, FaBoxOpen, FaLeaf, FaLock, FaThermometerHalf } from 'react-icons/fa';
 import Link from 'next/link';
 import PageBanner from '@/components/PageBanner';
 

@@ -381,7 +381,6 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
       setCategoryProducts(fallback);
       setFilteredProducts(fallback);
     }).finally(() => setIsLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId, categoryName]);
 
   const applyFilters = (newFilters: FilterOptions) => {

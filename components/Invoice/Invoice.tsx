@@ -64,7 +64,7 @@ export interface InvoiceData {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const BRAND_GREEN = '#1a6b3a';
-const BRAND_GREEN_LIGHT = '#e8f5ee';
+
 
 const STATUS_STYLES: Record<PaymentStatus, { bg: string; color: string; label: string }> = {
   paid:    { bg: '#dcfce7', color: '#166534', label: 'PAID'    },

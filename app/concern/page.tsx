@@ -69,22 +69,7 @@ const concerns: Concern[] = [
     tags: ['respiratory', 'eucalyptus', 'mint'], tips: ['Steam with eucalyptus oil', 'Honey & ginger for cough', 'Avoid cold drinks when ill'] },
 ];
 
-function GridSkeleton() {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
-      {[...Array(10)].map((_, i) => (
-        <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
-          <div className="aspect-square bg-gray-200 rounded-t-lg" />
-          <div className="p-3 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-3 bg-gray-200 rounded w-1/2" />
-            <div className="h-8 bg-gray-200 rounded" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+
 
 export default function ByConcernPage() {
   const [selected, setSelected] = useState<Concern | null>(null);

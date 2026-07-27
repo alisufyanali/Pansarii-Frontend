@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { 
@@ -54,7 +53,7 @@ export default function SearchBar({
   mockProducts = []
 }: SearchBarProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<ProductSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);

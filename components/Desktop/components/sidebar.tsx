@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
+
 import SafeImage from '@/components/SafeImage';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
@@ -17,11 +17,10 @@ import {
   FaTrash,
   FaCreditCard,
   FaArrowRight,
-  FaStar,
-  FaHeart,
-  FaUser,
-  FaSignInAlt,
-  FaExchangeAlt,
+  FaHeart, 
+  FaUser, 
+  FaSignInAlt, 
+  FaExchangeAlt, 
   FaShoppingBag
 } from 'react-icons/fa';
 
@@ -146,8 +145,9 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   }, [cartItems]);
 
   useEffect(() => {
+    const current = updateTimeoutRef.current;
     return () => {
-      Object.values(updateTimeoutRef.current).forEach(timeout => clearTimeout(timeout));
+      Object.values(current).forEach(timeout => clearTimeout(timeout));
     };
   }, []);
 

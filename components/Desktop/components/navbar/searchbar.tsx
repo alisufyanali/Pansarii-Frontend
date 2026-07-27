@@ -54,7 +54,7 @@ function useDebounce<T>(value: T, delay: number): T {
 export default function SearchBar({ 
   placeholder = "Search for products, categories, brands...", 
   className = "",
-  variant = 'desktop',
+  variant: _variant = 'desktop',
   onSearch,
   mockProducts = [],
   initialQuery = ''
@@ -176,7 +176,7 @@ export default function SearchBar({
 
     router.push(`/shop?search=${encodeURIComponent(searchQuery)}`);
     setIsOpen(false);
-  }, [recentSearches, onSearch]);
+  }, [recentSearches, onSearch, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,7 +232,7 @@ export default function SearchBar({
           className="w-full px-5 py-2.5 pr-12 border-0 outline-none ring-0 focus:ring-0 rounded-full text-sm bg-gray-100 focus:bg-gray-50 transition-all duration-200 text-gray-900 placeholder-gray-400"
           style={{ boxShadow: 'none' }}
           aria-label="Search products"
-          aria-expanded={isOpen}
+
           aria-controls="search-suggestions"
         />
         
