@@ -7,7 +7,7 @@ import { api, getApiErrorMessage } from '@/lib/axios';
 import {
   FaStar, FaGift, FaFire, FaTrophy, FaLeaf, FaCrown,
   FaShoppingBag, FaShare, FaUserFriends, FaCheckCircle,
-  FaLock, FaChevronRight, FaPercent, FaTruck, FaTag,
+  FaLock, FaChevronRight, FaPercent, FaTruck, FaTag, FaHistory,
   FaBolt
 } from 'react-icons/fa';
 
@@ -36,37 +36,57 @@ interface RewardsApiResponse {
 // ─── Static tier / earn / redeem config ───────────────────────────────────────
 
 const tiers = [
-  { id: 'seedling', name: 'Seedling', nameUr: 'پودا', minPoints: 0, color: 'text-gray-600',
+  {
+    id: 'seedling', name: 'Seedling', nameUr: 'پودا', minPoints: 0, color: 'text-gray-600',
     gradient: 'from-gray-400 to-gray-500', bgLight: 'bg-gray-50', borderColor: 'border-gray-200',
     icon: <FaLeaf className="w-5 h-5" />,
-    perks: ['1 point per PKR 10 spent', 'Birthday bonus points', 'Early sale access'] },
-  { id: 'bloom', name: 'Bloom', nameUr: 'کھلنا', minPoints: 500, color: 'text-emerald-600',
+    perks: ['1 point per PKR 10 spent', 'Birthday bonus points', 'Early sale access']
+  },
+  {
+    id: 'bloom', name: 'Bloom', nameUr: 'کھلنا', minPoints: 500, color: 'text-emerald-600',
     gradient: 'from-emerald-400 to-teal-500', bgLight: 'bg-emerald-50', borderColor: 'border-emerald-200',
     icon: <FaStar className="w-5 h-5" />,
-    perks: ['1.5× points multiplier', 'Free shipping on all orders', 'Exclusive member discounts'] },
-  { id: 'herb', name: 'Herb Master', nameUr: 'ہربل ماسٹر', minPoints: 1500, color: 'text-amber-600',
+    perks: ['1.5× points multiplier', 'Free shipping on all orders', 'Exclusive member discounts']
+  },
+  {
+    id: 'herb', name: 'Herb Master', nameUr: 'ہربل ماسٹر', minPoints: 1500, color: 'text-amber-600',
     gradient: 'from-amber-400 to-orange-500', bgLight: 'bg-amber-50', borderColor: 'border-amber-200',
     icon: <FaFire className="w-5 h-5" />,
-    perks: ['2× points multiplier', 'Free gift on every order', 'Priority customer support', 'Quarterly mystery box'] },
-  { id: 'royal', name: 'Royal Healer', nameUr: 'شاہی شفا', minPoints: 5000, color: 'text-purple-600',
+    perks: ['2× points multiplier', 'Free gift on every order', 'Priority customer support', 'Quarterly mystery box']
+  },
+  {
+    id: 'royal', name: 'Royal Healer', nameUr: 'شاہی شفا', minPoints: 5000, color: 'text-purple-600',
     gradient: 'from-purple-500 to-pink-500', bgLight: 'bg-purple-50', borderColor: 'border-purple-200',
     icon: <FaCrown className="w-5 h-5" />,
-    perks: ['3× points multiplier', 'Dedicated account manager', 'Free same-day delivery', 'Exclusive product launches', 'Annual luxury hamper'] },
+    perks: ['3× points multiplier', 'Dedicated account manager', 'Free same-day delivery', 'Exclusive product launches', 'Annual luxury hamper']
+  },
 ];
 
 const earnWays = [
-  { id: 'purchase', title: 'Make a Purchase', titleUr: 'خریداری کریں', pointsLabel: '+1 pt / PKR 10',
-    desc: 'Earn 1 point for every PKR 10 you spend on any order.', icon: <FaShoppingBag className="w-5 h-5" />, color: 'text-green-600', bg: 'bg-green-50', cta: 'Shop Now', ctaLink: '/shop' },
-  { id: 'review', title: 'Write a Review', titleUr: 'جائزہ لکھیں', pointsLabel: '+50 pts',
-    desc: 'Share your experience with a verified product review.', icon: <FaStar className="w-5 h-5" />, color: 'text-amber-600', bg: 'bg-amber-50', cta: 'Browse Products', ctaLink: '/shop' },
-  { id: 'refer', title: 'Refer a Friend', titleUr: 'دوست کو بتائیں', pointsLabel: '+200 pts',
-    desc: 'When your friend places their first order using your referral code.', icon: <FaUserFriends className="w-5 h-5" />, color: 'text-blue-600', bg: 'bg-blue-50' },
-  { id: 'share', title: 'Share on Social', titleUr: 'سوشل میڈیا پر شیئر', pointsLabel: '+25 pts',
-    desc: 'Share a product or your order on Instagram or Facebook.', icon: <FaShare className="w-5 h-5" />, color: 'text-pink-600', bg: 'bg-pink-50' },
-  { id: 'birthday', title: 'Birthday Bonus', titleUr: 'سالگرہ بونس', pointsLabel: '+100 pts/year',
-    desc: 'Receive bonus points on your birthday every year automatically.', icon: <FaGift className="w-5 h-5" />, color: 'text-purple-600', bg: 'bg-purple-50' },
-  { id: 'streak', title: 'Monthly Streak', titleUr: 'ماہانہ آرڈر', pointsLabel: '+150 pts',
-    desc: 'Place an order every month and earn streak bonus points.', icon: <FaBolt className="w-5 h-5" />, color: 'text-red-600', bg: 'bg-red-50' },
+  {
+    id: 'purchase', title: 'Make a Purchase', titleUr: 'خریداری کریں', pointsLabel: '+1 pt / PKR 10',
+    desc: 'Earn 1 point for every PKR 10 you spend on any order.', icon: <FaShoppingBag className="w-5 h-5" />, color: 'text-green-600', bg: 'bg-green-50', cta: 'Shop Now', ctaLink: '/shop'
+  },
+  {
+    id: 'review', title: 'Write a Review', titleUr: 'جائزہ لکھیں', pointsLabel: '+50 pts',
+    desc: 'Share your experience with a verified product review.', icon: <FaStar className="w-5 h-5" />, color: 'text-amber-600', bg: 'bg-amber-50', cta: 'Browse Products', ctaLink: '/shop'
+  },
+  {
+    id: 'refer', title: 'Refer a Friend', titleUr: 'دوست کو بتائیں', pointsLabel: '+200 pts',
+    desc: 'When your friend places their first order using your referral code.', icon: <FaUserFriends className="w-5 h-5" />, color: 'text-blue-600', bg: 'bg-blue-50'
+  },
+  {
+    id: 'share', title: 'Share on Social', titleUr: 'سوشل میڈیا پر شیئر', pointsLabel: '+25 pts',
+    desc: 'Share a product or your order on Instagram or Facebook.', icon: <FaShare className="w-5 h-5" />, color: 'text-pink-600', bg: 'bg-pink-50'
+  },
+  {
+    id: 'birthday', title: 'Birthday Bonus', titleUr: 'سالگرہ بونس', pointsLabel: '+100 pts/year',
+    desc: 'Receive bonus points on your birthday every year automatically.', icon: <FaGift className="w-5 h-5" />, color: 'text-purple-600', bg: 'bg-purple-50'
+  },
+  {
+    id: 'streak', title: 'Monthly Streak', titleUr: 'ماہانہ آرڈر', pointsLabel: '+150 pts',
+    desc: 'Place an order every month and earn streak bonus points.', icon: <FaBolt className="w-5 h-5" />, color: 'text-red-600', bg: 'bg-red-50'
+  },
 ];
 
 // ─── Redemption note ──────────────────────────────────────────────────────────
@@ -114,10 +134,9 @@ function PointsBar({ current }: { current: number }) {
 function TierCard({ tier, isCurrent, userPoints }: { tier: typeof tiers[0]; isCurrent: boolean; userPoints: number }) {
   const isUnlocked = userPoints >= tier.minPoints;
   return (
-    <div className={`relative rounded-2xl border-2 p-5 transition-all ${
-      isCurrent ? `${tier.bgLight} border-transparent ring-2 ring-offset-2 ring-emerald-400 shadow-lg` :
-      isUnlocked ? 'bg-white border-gray-100 shadow-sm' : 'bg-gray-50 border-gray-100 opacity-60'
-    }`}>
+    <div className={`relative rounded-2xl border-2 p-5 transition-all ${isCurrent ? `${tier.bgLight} border-transparent ring-2 ring-offset-2 ring-emerald-400 shadow-lg` :
+        isUnlocked ? 'bg-white border-gray-100 shadow-sm' : 'bg-gray-50 border-gray-100 opacity-60'
+      }`}>
       {isCurrent && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-semibold whitespace-nowrap shadow">
           Your Tier ✓
@@ -257,9 +276,8 @@ export default function RewardsPage() {
               { id: 'tiers', label: 'Tiers' },
             ] as const).map((tab) => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex-shrink-0 px-5 py-3.5 text-sm font-semibold transition border-b-2 ${
-                  activeTab === tab.id ? 'border-[#197B33] text-[#197B33]' : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}>
+                className={`flex-shrink-0 px-5 py-3.5 text-sm font-semibold transition border-b-2 ${activeTab === tab.id ? 'border-[#197B33] text-[#197B33]' : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}>
                 {tab.label}
               </button>
             ))}

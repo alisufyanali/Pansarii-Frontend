@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getBlogs, type ApiBlog } from "@/lib/blog";
 import { blogPosts } from "@/data/blogposts";
-import { FaSearch, FaCalendar, FaArrowRight, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaSearch, FaCalendar, FaArrowRight, FaTag, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import PageBanner from "@/components/PageBanner";
 
 const POSTS_PER_PAGE = 9;
@@ -21,39 +21,39 @@ function fmt(dateStr: string) {
 
 // Normalise static post to share shape with API post
 interface NormPost {
-  id:        number | string;
-  title:     string;
-  slug:      string;
-  excerpt:   string;
+  id: number | string;
+  title: string;
+  slug: string;
+  excerpt: string;
   thumbnail: string | null;
-  category:  { id: number; name: string; slug: string };
-  tags:      string[];
-  date:      string;
+  category: { id: number; name: string; slug: string };
+  tags: string[];
+  date: string;
 }
 
 function normApi(p: ApiBlog): NormPost {
   return {
-    id:        p.id,
-    title:     p.title,
-    slug:      p.slug,
-    excerpt:   p.excerpt,
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    excerpt: p.excerpt,
     thumbnail: p.thumbnail,
-    category:  p.category,
-    tags:      p.tags.map(t => t.name),
-    date:      p.created_at,
+    category: p.category,
+    tags: p.tags.map(t => t.name),
+    date: p.created_at,
   };
 }
 
 function normStatic(p: typeof blogPosts[0]): NormPost {
   return {
-    id:        p.id,
-    title:     p.title,
-    slug:      p.slug,
-    excerpt:   p.excerpt,
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    excerpt: p.excerpt,
     thumbnail: p.image,
-    category:  { id: 0, name: p.category, slug: p.category.toLowerCase().replace(/\s+/g, '-') },
-    tags:      p.tags,
-    date:      p.date,
+    category: { id: 0, name: p.category, slug: p.category.toLowerCase().replace(/\s+/g, '-') },
+    tags: p.tags,
+    date: p.date,
   };
 }
 
@@ -127,9 +127,8 @@ function Pagination({ current, total, onChange }: { current: number; total: numb
       </button>
       {Array.from({ length: total }, (_, i) => i + 1).map(p => (
         <button key={p} onClick={() => onChange(p)}
-          className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium border transition ${
-            p === current ? 'bg-green-700 text-white border-green-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-          }`}>
+          className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium border transition ${p === current ? 'bg-green-700 text-white border-green-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}>
           {p}
         </button>
       ))}
@@ -144,15 +143,15 @@ function Pagination({ current, total, onChange }: { current: number; total: numb
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function BlogPage() {
-  const [posts,          setPosts]          = useState<NormPost[]>([]);
-  const [categories,     setCategories]     = useState<{ id: string | number; name: string; count: number }[]>([]);
-  const [popularTags,    setPopularTags]    = useState<string[]>([]);
-  const [isLoading,      setIsLoading]      = useState(true);
+  const [posts, setPosts] = useState<NormPost[]>([]);
+  const [categories, setCategories] = useState<{ id: string | number; name: string; count: number }[]>([]);
+  const [popularTags, setPopularTags] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<number | 'all'>('all');
-  const [searchQuery,    setSearchQuery]    = useState('');
-  const [currentPage,    setCurrentPage]    = useState(1);
-  const [totalPages,     setTotalPages]     = useState(1);
-  const [totalCount,     setTotalCount]     = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // ── Fetch ────────────────────────────────────────────────────────────────────
   const fetchPosts = useCallback(async (page: number, catId: number | 'all', search: string, signal?: AbortSignal) => {
@@ -160,7 +159,7 @@ export default function BlogPage() {
     try {
       const res = await getBlogs({
         page,
-        per_page:    POSTS_PER_PAGE,
+        per_page: POSTS_PER_PAGE,
         ...(catId !== 'all' ? { category_id: catId } : {}),
         ...(search ? { search } : {}),
       }, { signal });
@@ -183,14 +182,14 @@ export default function BlogPage() {
         // Popular tags
         const tagMap = new Map<string, number>();
         res.data.forEach(p => p.tags.forEach(t => tagMap.set(t.name, (tagMap.get(t.name) ?? 0) + 1)));
-        setPopularTags(Array.from(tagMap.entries()).sort((a,b) => b[1]-a[1]).slice(0,10).map(([t]) => t));
+        setPopularTags(Array.from(tagMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([t]) => t));
       }
     } catch (err) {
       if (signal?.aborted) return;
       // Fallback to static data
       const norm = blogPosts.map(normStatic);
       const filtered = norm.filter(p => {
-        const matchCat  = catId === 'all' || p.category.id === catId;
+        const matchCat = catId === 'all' || p.category.id === catId;
         const matchSrch = !search || p.title.toLowerCase().includes(search.toLowerCase());
         return matchCat && matchSrch;
       });
@@ -208,12 +207,12 @@ export default function BlogPage() {
         ]);
         const tagMap = new Map<string, number>();
         blogPosts.forEach(p => p.tags.forEach(t => tagMap.set(t, (tagMap.get(t) ?? 0) + 1)));
-        setPopularTags(Array.from(tagMap.entries()).sort((a,b) => b[1]-a[1]).slice(0,10).map(([t]) => t));
+        setPopularTags(Array.from(tagMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([t]) => t));
       }
     } finally {
       setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -223,8 +222,8 @@ export default function BlogPage() {
   }, [currentPage, activeCategory, searchQuery, fetchPosts]);
 
   const handleCategoryChange = (id: number | 'all') => { setActiveCategory(id); setCurrentPage(1); };
-  const handleSearch         = (q: string)           => { setSearchQuery(q);    setCurrentPage(1); };
-  const handleTagSearch      = (tag: string)          => { handleSearch(tag); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const handleSearch = (q: string) => { setSearchQuery(q); setCurrentPage(1); };
+  const handleTagSearch = (tag: string) => { handleSearch(tag); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
   const [hero, ...sidePosts] = posts;
 
@@ -255,9 +254,8 @@ export default function BlogPage() {
               <button
                 key={cat.id}
                 onClick={() => handleCategoryChange(cat.id as number | 'all')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all ${
-                  activeCategory === cat.id ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all ${activeCategory === cat.id ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
               >
                 {cat.name} <span className="opacity-70">({cat.count})</span>
               </button>

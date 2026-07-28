@@ -7,69 +7,106 @@ import ProductCard from '@/components/Desktop/components/ProductCard';
 import { FaLeaf, FaHeart, FaMoon, FaBolt, FaEye, FaShieldAlt, FaSmile, FaWind, FaBrain, FaFire, FaArrowRight, FaCheckCircle, FaSearch } from 'react-icons/fa';
 
 interface Concern {
-  id: string; 
-  title: string; 
-  titleUr: string; 
+  id: string;
+  title: string;
+  titleUr: string;
   description: string;
   icon: React.ReactNode; // Changed from JSX.Element to React.ReactNode
-  gradient: string; 
-  bgLight: string; 
+  gradient: string;
+  bgLight: string;
   borderColor: string;
-  tags: string[]; 
+  tags: string[];
   tips: string[];
 }
 const concerns: Concern[] = [
-  { id: 'hair', title: 'Hair Care', titleUr: 'بالوں کی دیکھ بھال',
+  {
+    id: 'hair', title: 'Hair Care', titleUr: 'بالوں کی دیکھ بھال',
     description: 'Fight hair fall, promote growth, and restore your natural shine with herbal oils and treatments.',
     icon: <FaLeaf className="w-6 h-6" />, gradient: 'from-emerald-500 to-teal-500', bgLight: 'bg-emerald-50', borderColor: 'border-emerald-200',
-    tags: ['hair', 'Hair Care', 'oil'], tips: ['Apply warm oil 2x a week', 'Avoid sulfate shampoos', 'Massage scalp daily for 5 mins'] },
-  { id: 'skin', title: 'Skin Care', titleUr: 'جلد کی دیکھ بھال',
+    tags: ['hair', 'Hair Care', 'oil'], tips: ['Apply warm oil 2x a week', 'Avoid sulfate shampoos', 'Massage scalp daily for 5 mins']
+  },
+  {
+    id: 'skin', title: 'Skin Care', titleUr: 'جلد کی دیکھ بھال',
     description: 'Achieve radiant, healthy skin with plant-based serums, oils, and herbal extracts.',
     icon: <FaSmile className="w-6 h-6" />, gradient: 'from-pink-500 to-rose-500', bgLight: 'bg-pink-50', borderColor: 'border-pink-200',
-    tags: ['skin', 'Skin Care', 'moisturizer', 'serum'], tips: ['Cleanse twice daily', 'Always use SPF outdoors', 'Hydrate with herbal toner'] },
-  { id: 'sleep', title: 'Better Sleep', titleUr: 'بہتر نیند',
+    tags: ['skin', 'Skin Care', 'moisturizer', 'serum'], tips: ['Cleanse twice daily', 'Always use SPF outdoors', 'Hydrate with herbal toner']
+  },
+  {
+    id: 'sleep', title: 'Better Sleep', titleUr: 'بہتر نیند',
     description: 'Calm your mind and body with natural herbs known to promote restful, deep sleep.',
     icon: <FaMoon className="w-6 h-6" />, gradient: 'from-indigo-500 to-violet-500', bgLight: 'bg-indigo-50', borderColor: 'border-indigo-200',
-    tags: ['sleep', 'chamomile', 'lavender', 'tea'], tips: ['Drink chamomile tea before bed', 'Diffuse lavender oil', 'Avoid screens 1hr before sleep'] },
-  { id: 'energy', title: 'Energy & Vitality', titleUr: 'توانائی اور قوت',
+    tags: ['sleep', 'chamomile', 'lavender', 'tea'], tips: ['Drink chamomile tea before bed', 'Diffuse lavender oil', 'Avoid screens 1hr before sleep']
+  },
+  {
+    id: 'energy', title: 'Energy & Vitality', titleUr: 'توانائی اور قوت',
     description: 'Restore energy levels and fight fatigue with adaptogenic herbs and natural supplements.',
     icon: <FaBolt className="w-6 h-6" />, gradient: 'from-amber-500 to-orange-500', bgLight: 'bg-amber-50', borderColor: 'border-amber-200',
-    tags: ['energy', 'ginger', 'honey', 'green tea'], tips: ['Start day with herbal tea', 'Take adaptogens consistently', 'Pair with light exercise'] },
-  { id: 'immunity', title: 'Immunity Boost', titleUr: 'قوت مدافعت',
+    tags: ['energy', 'ginger', 'honey', 'green tea'], tips: ['Start day with herbal tea', 'Take adaptogens consistently', 'Pair with light exercise']
+  },
+  {
+    id: 'immunity', title: 'Immunity Boost', titleUr: 'قوت مدافعت',
     description: 'Strengthen your immune system with powerful antioxidant-rich herbs and superfoods.',
     icon: <FaShieldAlt className="w-6 h-6" />, gradient: 'from-green-500 to-emerald-500', bgLight: 'bg-green-50', borderColor: 'border-green-200',
-    tags: ['immunity', 'honey', 'black seed', 'ginger'], tips: ['Add black seed to daily diet', 'Take raw honey every morning', 'Use turmeric in cooking'] },
-  { id: 'digestion', title: 'Digestion', titleUr: 'ہاضمہ',
+    tags: ['immunity', 'honey', 'black seed', 'ginger'], tips: ['Add black seed to daily diet', 'Take raw honey every morning', 'Use turmeric in cooking']
+  },
+  {
+    id: 'digestion', title: 'Digestion', titleUr: 'ہاضمہ',
     description: 'Support healthy gut function and relieve digestive discomfort with herbal remedies.',
     icon: <FaHeart className="w-6 h-6" />, gradient: 'from-orange-500 to-red-500', bgLight: 'bg-orange-50', borderColor: 'border-orange-200',
-    tags: ['digestion', 'fennel', 'ginger', 'peppermint'], tips: ['Sip peppermint tea after meals', 'Chew fennel seeds', 'Stay hydrated throughout the day'] },
-  { id: 'stress', title: 'Stress Relief', titleUr: 'ذہنی سکون',
+    tags: ['digestion', 'fennel', 'ginger', 'peppermint'], tips: ['Sip peppermint tea after meals', 'Chew fennel seeds', 'Stay hydrated throughout the day']
+  },
+  {
+    id: 'stress', title: 'Stress Relief', titleUr: 'ذہنی سکون',
     description: 'Natural herbs and aromatherapy solutions to calm anxiety and melt away daily stress.',
     icon: <FaBrain className="w-6 h-6" />, gradient: 'from-purple-500 to-indigo-500', bgLight: 'bg-purple-50', borderColor: 'border-purple-200',
-    tags: ['stress', 'lavender', 'ashwagandha'], tips: ['Practice deep breathing', 'Use lavender in your bath', 'Try ashwagandha supplements'] },
-  { id: 'joints', title: 'Joint & Muscle Pain', titleUr: 'جوڑوں کا درد',
+    tags: ['stress', 'lavender', 'ashwagandha'], tips: ['Practice deep breathing', 'Use lavender in your bath', 'Try ashwagandha supplements']
+  },
+  {
+    id: 'joints', title: 'Joint & Muscle Pain', titleUr: 'جوڑوں کا درد',
     description: 'Natural anti-inflammatory herbs and warming oils to soothe aches and restore mobility.',
     icon: <FaWind className="w-6 h-6" />, gradient: 'from-cyan-500 to-blue-500', bgLight: 'bg-cyan-50', borderColor: 'border-cyan-200',
-    tags: ['pain', 'turmeric', 'oil'], tips: ['Massage with warm oil nightly', 'Add turmeric to your diet', 'Apply hot compress before bed'] },
-  { id: 'hydration', title: 'Hydration & Detox', titleUr: 'ہائیڈریشن',
+    tags: ['pain', 'turmeric', 'oil'], tips: ['Massage with warm oil nightly', 'Add turmeric to your diet', 'Apply hot compress before bed']
+  },
+  {
+    id: 'hydration', title: 'Hydration & Detox', titleUr: 'ہائیڈریشن',
     description: 'Cleanse your body from within and boost hydration with herbal infusions and tonics.',
-    icon: <FaWind className="w-6 h-6" />,gradient: 'from-sky-500 to-cyan-500', bgLight: 'bg-sky-50', borderColor: 'border-sky-200',
-    tags: ['detox', 'green tea', 'hibiscus'], tips: ['Drink hibiscus water daily', 'Try a 3-day green tea cleanse', 'Replace sodas with herbal teas'] },
-  { id: 'weight', title: 'Weight Management', titleUr: 'وزن کا انتظام',
+    icon: <FaWind className="w-6 h-6" />, gradient: 'from-sky-500 to-cyan-500', bgLight: 'bg-sky-50', borderColor: 'border-sky-200',
+    tags: ['detox', 'green tea', 'hibiscus'], tips: ['Drink hibiscus water daily', 'Try a 3-day green tea cleanse', 'Replace sodas with herbal teas']
+  },
+  {
+    id: 'weight', title: 'Weight Management', titleUr: 'وزن کا انتظام',
     description: 'Support healthy metabolism and manage weight naturally with herbal solutions.',
     icon: <FaFire className="w-6 h-6" />, gradient: 'from-red-500 to-rose-500', bgLight: 'bg-red-50', borderColor: 'border-red-200',
-    tags: ['weight', 'green tea', 'metabolism'], tips: ['Green tea 3x daily', 'Add cinnamon to your drinks', 'Walk 30 min after meals'] },
-  { id: 'eye', title: 'Eye Care', titleUr: 'آنکھوں کی دیکھ بھال',
+    tags: ['weight', 'green tea', 'metabolism'], tips: ['Green tea 3x daily', 'Add cinnamon to your drinks', 'Walk 30 min after meals']
+  },
+  {
+    id: 'eye', title: 'Eye Care', titleUr: 'آنکھوں کی دیکھ بھال',
     description: 'Protect and nourish your eyes with vitamin-rich herbs and natural eye care solutions.',
     icon: <FaEye className="w-6 h-6" />, gradient: 'from-lime-500 to-green-500', bgLight: 'bg-lime-50', borderColor: 'border-lime-200',
-    tags: ['eye', 'vision', 'kasni'], tips: ['Cold compress for tired eyes', 'Rose water eyedrops', 'Reduce screen time gradually'] },
-  { id: 'respiratory', title: 'Respiratory Health', titleUr: 'سانس کی صحت',
+    tags: ['eye', 'vision', 'kasni'], tips: ['Cold compress for tired eyes', 'Rose water eyedrops', 'Reduce screen time gradually']
+  },
+  {
+    id: 'respiratory', title: 'Respiratory Health', titleUr: 'سانس کی صحت',
     description: 'Open airways and breathe freely with herbal steam blends and respiratory tonics.',
     icon: <FaWind className="w-6 h-6" />, gradient: 'from-teal-500 to-cyan-500', bgLight: 'bg-teal-50', borderColor: 'border-teal-200',
-    tags: ['respiratory', 'eucalyptus', 'mint'], tips: ['Steam with eucalyptus oil', 'Honey & ginger for cough', 'Avoid cold drinks when ill'] },
+    tags: ['respiratory', 'eucalyptus', 'mint'], tips: ['Steam with eucalyptus oil', 'Honey & ginger for cough', 'Avoid cold drinks when ill']
+  },
 ];
 
-
+// Grid skeleton component – placeholder cards while loading
+const GridSkeleton = () => {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="animate-pulse bg-white rounded-xl p-4 border border-gray-100">
+          <div className="w-full aspect-square bg-gray-200 rounded-lg mb-3"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export default function ByConcernPage() {
   const [selected, setSelected] = useState<Concern | null>(null);
@@ -166,9 +203,8 @@ export default function ByConcernPage() {
               const isSelected = selected?.id === concern.id;
               return (
                 <button key={concern.id} onClick={() => handleSelect(concern)}
-                  className={`w-full text-left rounded-2xl border-2 p-4 sm:p-5 transition-all duration-300 ${
-                    isSelected ? `${concern.bgLight} ${concern.borderColor} shadow-md scale-[1.02]` : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
-                  }`}>
+                  className={`w-full text-left rounded-2xl border-2 p-4 sm:p-5 transition-all duration-300 ${isSelected ? `${concern.bgLight} ${concern.borderColor} shadow-md scale-[1.02]` : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
+                    }`}>
                   <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${concern.gradient} flex items-center justify-center text-white mb-3`}>
                     {concern.icon}
                   </div>
@@ -246,10 +282,10 @@ export default function ByConcernPage() {
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               {[
-                { Icon: FaLeaf,        label: '100% Natural'  },
-                { Icon: FaCheckCircle, label: 'Lab Tested'    },
-                { Icon: FaShieldAlt,   label: 'Handcrafted'   },
-                { Icon: FaCheckCircle, label: 'Certified Pure'},
+                { Icon: FaLeaf, label: '100% Natural' },
+                { Icon: FaCheckCircle, label: 'Lab Tested' },
+                { Icon: FaShieldAlt, label: 'Handcrafted' },
+                { Icon: FaCheckCircle, label: 'Certified Pure' },
               ].map(({ Icon, label }) => (
                 <div key={label} className="bg-white/10 rounded-xl py-3 px-2 text-center">
                   <Icon className="w-4 h-4 mx-auto mb-1 text-white/80" />

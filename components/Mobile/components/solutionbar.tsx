@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FiChevronRight } from "react-icons/fi";
 import { allProducts } from "@/data/products";
+import SafeImage from '@/components/SafeImage';
 
 const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Herb':          'herb',
