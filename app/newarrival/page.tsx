@@ -11,6 +11,14 @@ import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 import { isValidEmail } from '@/lib/validation';
 import { getProducts, getCategoriesCached } from '@/lib/products';
 import { apiProductToLegacy, type ApiCategory, type Product } from '@/types/product';
+import {
+  FaTruck,
+  FaMapMarkerAlt,
+  FaLeaf,
+  FaStar,
+  FaRocket,
+  FaFlask
+} from "react-icons/fa";
 
 const PRODUCTS_PER_PAGE = 20;
 
@@ -182,14 +190,19 @@ export default function NewArrivalsPage() {
               Discover our latest collection of 100% Ayurvedic & Herbal products
             </p>
             <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-              <span className="px-3 sm:px-4 py-1.5 bg-white/20 rounded-full text-xs sm:text-sm font-medium">
-                🚀 Just Launched
+              <span className="px-3 sm:px-4 py-1.5 bg-white/20 rounded-full text-xs sm:text-sm font-medium flex items-center gap-2">
+                <FaRocket className="text-sm" />
+                Just Launched
               </span>
-              <span className="px-3 sm:px-4 py-1.5 bg-white/20 rounded-full text-xs sm:text-sm font-medium">
-                ⭐ Premium Quality
+
+              <span className="px-3 sm:px-4 py-1.5 bg-white/20 rounded-full text-xs sm:text-sm font-medium flex items-center gap-2">
+                <FaStar className="text-sm" />
+                Premium Quality
               </span>
-              <span className="px-3 sm:px-4 py-1.5 bg-white/20 rounded-full text-xs sm:text-sm font-medium">
-                📦 Free Shipping
+
+              <span className="px-3 sm:px-4 py-1.5 bg-white/20 rounded-full text-xs sm:text-sm font-medium flex items-center gap-2">
+                <FaTruck className="text-sm" />
+                Free Shipping
               </span>
             </div>
           </div>
@@ -235,11 +248,10 @@ export default function NewArrivalsPage() {
               <button
                 key={category.name}
                 onClick={() => handleCategoryFilter(category.name)}
-                className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap flex-shrink-0 ${
-                  selectedCategory === category.name
-                    ? 'bg-green-700 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-200'
-                }`}
+                className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap flex-shrink-0 ${selectedCategory === category.name
+                  ? 'bg-green-700 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-200'
+                  }`}
               >
                 {category.name} ({category.count})
               </button>
@@ -268,11 +280,10 @@ export default function NewArrivalsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => toggleViewMode('list')}
-                        className={`p-2.5 rounded-lg ${
-                          viewMode === 'list'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                        className={`p-2.5 rounded-lg ${viewMode === 'list'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -280,11 +291,10 @@ export default function NewArrivalsPage() {
                       </button>
                       <button
                         onClick={() => toggleViewMode('grid')}
-                        className={`p-2.5 rounded-lg ${
-                          viewMode === 'grid'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                        className={`p-2.5 rounded-lg ${viewMode === 'grid'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 01-2 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -315,7 +325,7 @@ export default function NewArrivalsPage() {
                 </div>
               )}
             </section>
- 
+
 
           </>
         ) : (
@@ -334,39 +344,55 @@ export default function NewArrivalsPage() {
           <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">
             Why Choose Our New Arrivals?
           </h3>
+
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {[
               {
-                title: '100% Pure & Natural',
-                description: 'No chemicals, no preservatives',
-                icon: '🌿',
-                color: 'text-green-700'
+                title: "100% Pure & Natural",
+                description: "No chemicals, no preservatives",
+                icon: FaLeaf,
+                color: "text-green-700",
               },
               {
-                title: 'Lab Tested',
-                description: 'Quality certified products',
-                icon: '🔬',
-                color: 'text-blue-700'
+                title: "Lab Tested",
+                description: "Quality certified products",
+                icon: FaFlask,
+                color: "text-blue-700",
               },
               {
-                title: 'Made in Pakistan',
-                description: 'Supporting local farmers',
-                icon: '🇵🇰',
-                color: 'text-purple-700'
+                title: "Made in Pakistan",
+                description: "Supporting local farmers",
+                icon: FaMapMarkerAlt,
+                color: "text-purple-700",
               },
               {
-                title: 'Fast Delivery',
-                description: 'Free shipping over PKR 2000',
-                icon: '🚚',
-                color: 'text-emerald-700'
-              }
-            ].map((benefit, index) => (
-              <div key={index} className="bg-white p-3 sm:p-4 md:p-5 rounded-lg border border-gray-200 shadow-sm text-center">
-                <div className={`text-2xl sm:text-3xl mb-2 sm:mb-3 ${benefit.color}`}>{benefit.icon}</div>
-                <h4 className="font-bold text-gray-900 mb-1 sm:mb-2 text-xs sm:text-sm md:text-base">{benefit.title}</h4>
-                <p className="text-gray-700 text-xs sm:text-sm">{benefit.description}</p>
-              </div>
-            ))}
+                title: "Fast Delivery",
+                description: "Free shipping over PKR 5,000",
+                icon: FaTruck,
+                color: "text-emerald-700",
+              },
+            ].map((benefit, index) => {
+              const Icon = benefit.icon;
+
+              return (
+                <div
+                  key={index}
+                  className="bg-white p-3 sm:p-4 md:p-5 rounded-lg border border-gray-200 shadow-sm text-center"
+                >
+                  <div className="flex justify-center mb-3">
+                    <Icon className={`text-3xl ${benefit.color}`} />
+                  </div>
+
+                  <h4 className="font-bold text-gray-900 mb-1 sm:mb-2 text-xs sm:text-sm md:text-base">
+                    {benefit.title}
+                  </h4>
+
+                  <p className="text-gray-700 text-xs sm:text-sm">
+                    {benefit.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </section>
 

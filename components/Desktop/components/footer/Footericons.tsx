@@ -1,7 +1,7 @@
 import { FaTruck, FaMapMarkerAlt, FaShieldAlt, FaClock, FaLeaf } from 'react-icons/fa';
 
 const iconData = [
-  { icon: FaTruck,        title: 'Free Shipping',   description: 'On orders above PKR 999' },
+  { icon: FaTruck,        title: 'Free Shipping',   description: 'On orders above PKR 5,000' },
   { icon: FaMapMarkerAlt, title: 'Nationwide',       description: 'Delivery Across Pakistan' },
   { icon: FaShieldAlt,    title: '100% Authentic',  description: 'Certified Products'       },
   { icon: FaClock,        title: 'Quick Delivery',  description: '2–4 Business Days'        },

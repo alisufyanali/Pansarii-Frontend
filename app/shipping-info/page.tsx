@@ -52,7 +52,7 @@ export default function ShippingInfoPage() {
 
       {/* Free Shipping Banner */}
       <div className="bg-green-600 text-white py-2.5 text-center text-sm font-medium">
-        Free shipping on all orders above PKR 2,000
+        Free shipping on all orders above PKR 5,000
       </div>
 
       {/* Delivery Zones */}

@@ -23,7 +23,7 @@ const FAQ_ITEMS = [
   {
     question: 'Shipping & Delivery',
     answer:
-      'We deliver across Pakistan. Standard delivery takes 2–4 business days for major cities and 4–7 days for other areas. Free shipping on orders above PKR 2,000.',
+      'We deliver across Pakistan. Standard delivery takes 2–4 business days for major cities and 4–7 days for other areas. Free shipping on orders above PKR 5,000.',
   },
   {
     question: 'Returns & Refunds',

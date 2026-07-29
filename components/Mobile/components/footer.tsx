@@ -223,7 +223,7 @@ export default function MobileFooter() {
       {/* ── Copyright ── */}
       <div className="px-4 py-4 border-t border-gray-100 text-center">
         <p className="text-xs text-gray-400 leading-relaxed">
-          © {currentYear} | Pansari Inn | All Rights Reserved 
+          © 2016 | Pansari Inn | All Rights Reserved 
         </p>
       </div>
 

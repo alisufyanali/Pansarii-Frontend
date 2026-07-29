@@ -76,7 +76,7 @@ const faqData: {
         },
         {
           question: "Do you offer free shipping?",
-          answer: "Yes! We offer free shipping on all orders above PKR 2,000."
+          answer: "Yes! We offer free shipping on all orders above PKR 5,000."
         },
         {
           question: "How can I track my order?",

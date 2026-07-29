@@ -74,7 +74,7 @@ const pageData = {
       "Surprise gifts / coupons for the regular customers",
       "Track your Order status & history",
       "Cash on Delivery Available",
-      "Free Shipping On Order Above 5000"
+      "Free Shipping On Order Above 5,000"
     ]
   },
   blogPosts: [
