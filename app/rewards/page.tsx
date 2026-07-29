@@ -8,7 +8,7 @@ import {
   FaStar, FaGift, FaFire, FaTrophy, FaLeaf, FaCrown,
   FaShoppingBag, FaShare, FaUserFriends, FaCheckCircle,
   FaLock, FaChevronRight, FaPercent, FaTruck, FaTag, FaHistory,
-  FaBolt
+  FaBolt, FaHandPaper
 } from 'react-icons/fa';
 
 // ─── API Types ─────────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ function PointsBar({ current }: { current: number }) {
     <div className="mt-4">
       <div className="flex justify-between text-xs text-white/60 mb-1.5">
         <span>{currentTier.name} ({current.toLocaleString()} pts)</span>
-        <span>{nextTier ? `${nextTier.name} (${nextTier.minPoints.toLocaleString()} pts)` : '🎉 Max tier!'}</span>
+        <span className="flex items-center gap-1">{nextTier ? `${nextTier.name} (${nextTier.minPoints.toLocaleString()} pts)` : <><FaTrophy className="w-3 h-3" /> Max tier!</>}</span>
       </div>
       <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden">
         <div className={`h-full bg-gradient-to-r ${currentTier.gradient} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />
@@ -198,7 +198,7 @@ export default function RewardsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <div className="text-5xl mb-4">🌿</div>
+          <div className="flex justify-center mb-4 text-green-600"><FaLeaf className="w-12 h-12" /></div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Sign in to view your rewards</h2>
           <p className="text-gray-500 text-sm mb-6">Earn points on every purchase and unlock exclusive benefits.</p>
           <Link href="/login?returnTo=/rewards" className="inline-block px-8 py-3 bg-[#197B33] text-white font-semibold rounded-full hover:bg-[#156529] transition text-sm">
@@ -241,7 +241,7 @@ export default function RewardsPage() {
                 <FaStar className="w-3 h-3 text-yellow-300" /> Pansari Inn Rewards Program
               </div>
               <h1 className="text-3xl sm:text-4xl 2xl:text-5xl font-black mb-2">
-                Welcome back, {firstName}! 👋
+                Welcome back, {firstName}! <FaHandPaper className="inline w-7 h-7 ml-1 align-middle" />
               </h1>
               <p className="text-white/70 text-sm sm:text-base mb-1">
                 You&apos;re a <span className="font-bold text-white">{currentTier.name}</span> member.
@@ -458,16 +458,18 @@ export default function RewardsPage() {
                 <tbody>
                   {[
                     ['Points Multiplier', '1×', '1.5×', '2×', '3×'],
-                    ['Free Shipping', '—', '✅', '✅', '✅'],
-                    ['Priority Support', '—', '—', '✅', '✅'],
-                    ['Gift with Order', '—', '—', '✅', '✅'],
-                    ['Personal Manager', '—', '—', '—', '✅'],
-                    ['Luxury Hamper', '—', '—', '—', '✅'],
+                    ['Free Shipping', '—', 'CHECK', 'CHECK', 'CHECK'],
+                    ['Priority Support', '—', '—', 'CHECK', 'CHECK'],
+                    ['Gift with Order', '—', '—', 'CHECK', 'CHECK'],
+                    ['Personal Manager', '—', '—', '—', 'CHECK'],
+                    ['Luxury Hamper', '—', '—', '—', 'CHECK'],
                   ].map(([label, ...vals], i) => (
                     <tr key={i} className="border-b border-gray-50">
                       <td className="py-3 pr-4 text-gray-600">{label}</td>
                       {vals.map((v, j) => (
-                        <td key={j} className={`text-center py-3 px-3 font-medium ${j === tiers.findIndex((t) => t.id === currentTier.id) ? 'text-emerald-600 font-bold' : 'text-gray-600'}`}>{v}</td>
+                        <td key={j} className={`text-center py-3 px-3 font-medium ${j === tiers.findIndex((t) => t.id === currentTier.id) ? 'text-emerald-600 font-bold' : 'text-gray-600'}`}>
+                          {v === 'CHECK' ? <FaCheckCircle className="w-4 h-4 text-emerald-500 mx-auto" /> : v}
+                        </td>
                       ))}
                     </tr>
                   ))}
