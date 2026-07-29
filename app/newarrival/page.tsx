@@ -1,29 +1,19 @@
-// app/new-arrivals/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import Link from 'next/link';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DesktopProductCard from '@/components/Desktop/components/ProductCard';
 import MobileProductCard from '@/components/Mobile/components/ProductCard';
-import { newArrivalProducts, NewArrivalProduct } from '@/data/newproducts';
 import { api, getApiErrorMessage } from '@/lib/axios';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 import { isValidEmail } from '@/lib/validation';
+import { getProducts, getCategoriesCached } from '@/lib/products';
+import { apiProductToLegacy, type ApiCategory, type Product } from '@/types/product';
 
-// Categories for filter
-const categories = [
-  'All Products',
-  'Oils & Ghee',
-  'Herbs & Spices',
-  'Beauty & Skincare',
-  'Honey & Sweeteners',
-  'Tea & Beverages',
-  'Supplements'
-];
+const PRODUCTS_PER_PAGE = 20;
 
-// Sort options
 const sortOptions = [
   { value: 'newest', label: 'Newest First' },
   { value: 'price-low-high', label: 'Price: Low to High' },
@@ -31,90 +21,133 @@ const sortOptions = [
   { value: 'popular', label: 'Most Popular' }
 ];
 
+function ProductGridSkeleton({ isMobile }: { isMobile: boolean }) {
+  return (
+    <div className={`grid gap-4 sm:gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
+      {Array.from({ length: 8 }).map((_, index) => (
+        <div key={index} className="animate-pulse rounded-xl border border-gray-200 bg-white p-3">
+          <div className="h-36 rounded-lg bg-gray-200" />
+          <div className="mt-3 space-y-2">
+            <div className="h-4 w-3/4 rounded bg-gray-200" />
+            <div className="h-3 w-1/2 rounded bg-gray-100" />
+            <div className="h-3 w-full rounded bg-gray-100" />
+            <div className="h-8 rounded-full bg-gray-200" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function NewArrivalsPage() {
   const { isMobile } = useDeviceDetection();
-  const [selectedCategory, setSelectedCategory] = useState<string>('All Products');
-  const [sortBy, setSortBy] = useState<string>('newest');
+  const [selectedCategory, setSelectedCategory] = useState('All Products');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
+  const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filteredProducts, setFilteredProducts] = useState<NewArrivalProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [isNewsletterSubmitting, setIsNewsletterSubmitting] = useState(false);
 
-  // Filter and sort products based on selections
   useEffect(() => {
-    setIsLoading(true);
-    
-    let products = [...newArrivalProducts];
-    
-    // Filter by category
-    if (selectedCategory !== 'All Products') {
-      products = products.filter(product => 
-        product.category === selectedCategory
-      );
-    }
-    
-    // Sort products
-    switch (sortBy) {
-      case 'price-low-high':
-        products.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high-low':
-        products.sort((a, b) => b.price - a.price);
-        break;
-      case 'popular':
-        products.sort((a, b) => b.reviews - a.reviews);
-        break;
-      case 'newest':
-      default:
-        products.sort((a, b) => parseInt(b.id) - parseInt(a.id));
-        break;
-    }
-    
-    const newProducts = products.filter(product => product.isNew);
-    setFilteredProducts(newProducts);
-    
-    setIsLoading(false);
-  }, [selectedCategory, sortBy]);
+    getCategoriesCached()
+      .then((cats) => setApiCategories(cats))
+      .catch(() => setApiCategories([]));
+  }, []);
 
-  const bestSellingProducts = newArrivalProducts
-    .filter(product => product.isBestSeller && product.isNew)
-    .sort((a, b) => b.rating - a.rating);
+  const fetchProducts = useCallback(async (nextPage: number, signal?: AbortSignal) => {
+    if (nextPage === 1) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+
+    const sortMap: Record<string, { sort_by?: string; sort_order?: 'asc' | 'desc' }> = {
+      newest: { sort_by: 'created_at', sort_order: 'desc' },
+      'price-low-high': { sort_by: 'price', sort_order: 'asc' },
+      'price-high-low': { sort_by: 'price', sort_order: 'desc' },
+      popular: { sort_by: 'rating', sort_order: 'desc' },
+    };
+
+    try {
+      const res = await getProducts({
+        category_id: selectedCategoryId,
+        per_page: PRODUCTS_PER_PAGE,
+        page: nextPage,
+        ...(sortMap[sortBy] || sortMap.newest),
+      }, { signal });
+
+      const mappedProducts = res.data.map(apiProductToLegacy);
+      setProducts((prev) => (nextPage === 1 ? mappedProducts : [...prev, ...mappedProducts]));
+      setTotalProducts(res.meta.total);
+      setHasMore(res.meta.current_page < res.meta.last_page);
+    } catch {
+      if (nextPage === 1) {
+        setProducts([]);
+      }
+      setTotalProducts(0);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, [selectedCategoryId, sortBy]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetchProducts(page, controller.signal);
+    return () => controller.abort();
+  }, [fetchProducts, page]);
+
+  const bestSellingProducts = products.filter((product) => product.isBestSeller).slice(0, 6);
 
   const handleCategoryFilter = (category: string) => {
     setSelectedCategory(category);
+    if (category === 'All Products') {
+      setSelectedCategoryId(undefined);
+    } else {
+      const match = apiCategories.find((item) => item.name === category);
+      setSelectedCategoryId(match?.id);
+    }
+    setPage(1);
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSortBy(e.target.value);
+    setPage(1);
   };
 
   const toggleViewMode = (mode: 'grid' | 'list') => {
     setViewMode(mode);
   };
 
-  const getProductCountByCategory = (category: string) => {
-    if (category === 'All Products') {
-      return newArrivalProducts.filter(p => p.isNew).length;
-    }
-    return newArrivalProducts.filter(p => p.isNew && p.category === category).length;
-  };
+  const categoryButtons = [
+    { name: 'All Products', count: totalProducts || apiCategories.reduce((sum, item) => sum + (item.products_count || 0), 0), categoryId: undefined },
+    ...apiCategories.map((category) => ({
+      name: category.name,
+      count: category.products_count || 0,
+      categoryId: category.id,
+    })),
+  ];
 
   const stats = {
-    totalNewProducts: newArrivalProducts.filter(p => p.isNew).length,
-    bestSellersCount: newArrivalProducts.filter(p => p.isBestSeller && p.isNew).length,
-    averageRating: Math.round(
-      newArrivalProducts
-        .filter(p => p.isNew)
-        .reduce((acc, p) => acc + p.rating, 0) / 
-      newArrivalProducts.filter(p => p.isNew).length * 10
-    ) / 10,
-    onSaleCount: newArrivalProducts.filter(p => p.isNew && p.sale).length
+    totalNewProducts: totalProducts || products.length,
+    bestSellersCount: products.filter((product) => product.isBestSeller).length,
+    averageRating: products.length > 0
+      ? Number((products.reduce((acc, product) => acc + (product.rating || 0), 0) / products.length).toFixed(1))
+      : 0,
+    onSaleCount: products.filter((product) => Boolean(product.sale)).length,
   };
 
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    const email = (formData.get('email') as string || '').trim();
+    const email = ((formData.get('email') as string) || '').trim();
 
     if (!email) {
       toast.error('Email is required.');
@@ -139,7 +172,6 @@ export default function NewArrivalsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section - Responsive */}
       <section className="relative bg-gradient-to-r from-green-800 to-emerald-800 text-white">
         <div className="relative mx-[4%] py-8 sm:py-12 md:py-16">
           <div className="text-center max-w-3xl mx-auto px-4">
@@ -164,9 +196,7 @@ export default function NewArrivalsPage() {
         </div>
       </section>
 
-      {/* Main Content */}
       <main className="mx-[4%] py-6 sm:py-8 md:py-12">
-        {/* Filter Section - Responsive */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 sm:mb-6">
             <div>
@@ -177,20 +207,16 @@ export default function NewArrivalsPage() {
                 Freshly added to our herbal collection
               </p>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="relative flex-1 sm:flex-none">
-                <select 
+                <select
                   value={sortBy}
                   onChange={handleSortChange}
                   className="appearance-none bg-white border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 pr-8 sm:pr-10 text-gray-800 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 w-full"
                 >
-                  {sortOptions.map(option => (
-                    <option 
-                      key={option.value} 
-                      value={option.value}
-                      className="text-gray-800"
-                    >
+                  {sortOptions.map((option) => (
+                    <option key={option.value} value={option.value} className="text-gray-800">
                       {isMobile ? option.label : `Sort by: ${option.label}`}
                     </option>
                   ))}
@@ -204,33 +230,27 @@ export default function NewArrivalsPage() {
             </div>
           </div>
 
-          {/* Category Filter - Responsive horizontal scroll on mobile */}
           <div className="flex gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2 scrollbar-hide">
-            {categories.map((category) => (
+            {categoryButtons.map((category) => (
               <button
-                key={category}
-                onClick={() => handleCategoryFilter(category)}
+                key={category.name}
+                onClick={() => handleCategoryFilter(category.name)}
                 className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap flex-shrink-0 ${
-                  selectedCategory === category
+                  selectedCategory === category.name
                     ? 'bg-green-700 text-white shadow-sm'
                     : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-200'
                 }`}
               >
-                {category} ({getProductCountByCategory(category)})
+                {category.name} ({category.count})
               </button>
             ))}
           </div>
         </div>
 
-        {/* Loading State */}
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-sm sm:text-base text-gray-600">Loading products...</p>
-          </div>
-        ) : (
+          <ProductGridSkeleton isMobile={isMobile} />
+        ) : products.length > 0 ? (
           <>
-            {/* Product Grid - Responsive */}
             <section className="mb-8 sm:mb-12">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                 <div>
@@ -238,16 +258,15 @@ export default function NewArrivalsPage() {
                     {selectedCategory === 'All Products' ? 'All New Arrivals' : selectedCategory}
                   </h3>
                   <p className="text-gray-600 text-xs sm:text-sm mt-1">
-                    Showing {filteredProducts.length} products
+                    Showing {products.length} of {totalProducts} products
                   </p>
                 </div>
-                
-                {/* View Toggle - Hide on mobile */}
+
                 {!isMobile && (
                   <div className="flex items-center gap-4">
                     <span className="text-gray-700 text-sm font-medium">View:</span>
                     <div className="flex gap-2">
-                      <button 
+                      <button
                         onClick={() => toggleViewMode('list')}
                         className={`p-2.5 rounded-lg ${
                           viewMode === 'list'
@@ -259,7 +278,7 @@ export default function NewArrivalsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                       </button>
-                      <button 
+                      <button
                         onClick={() => toggleViewMode('grid')}
                         className={`p-2.5 rounded-lg ${
                           viewMode === 'grid'
@@ -268,44 +287,35 @@ export default function NewArrivalsPage() {
                         }`}
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 01-2 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                         </svg>
                       </button>
                     </div>
                   </div>
                 )}
               </div>
-              
-              {filteredProducts.length > 0 ? (
-                <div className={`grid gap-4 sm:gap-6 ${
-                  viewMode === 'grid' 
-                    ? 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                    : 'grid-cols-1'
-                }`}>
-                  {filteredProducts.map((product) => (
-                    <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                      {isMobile ? (
-                        <MobileProductCard product={product} />
-                      ) : (
-                        <DesktopProductCard product={product} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+
+              <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                {products.map((product) => (
+                  <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    {isMobile ? <MobileProductCard product={product} /> : <DesktopProductCard product={product} />}
                   </div>
-                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No products found</h4>
-                  <p className="text-sm sm:text-base text-gray-600">Try selecting a different category</p>
+                ))}
+              </div>
+
+              {hasMore && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setPage((currentPage) => currentPage + 1)}
+                    disabled={isLoadingMore}
+                    className="rounded-full bg-green-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {isLoadingMore ? 'Loading...' : 'Load More'}
+                  </button>
                 </div>
               )}
             </section>
 
-            {/* Special Offer Banner - Responsive */}
             <section className="mb-8 sm:mb-12 bg-gradient-to-r from-green-700 to-emerald-700 rounded-xl p-4 sm:p-6 md:p-8">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
                 <div className="text-center md:text-left">
@@ -317,7 +327,7 @@ export default function NewArrivalsPage() {
                   <p className="text-sm sm:text-base text-green-100 mb-4">
                     Get 20% OFF on all new arrivals + Free Shipping on orders above PKR 1500
                   </p>
-                  <Link 
+                  <Link
                     href="/shop"
                     className="inline-block px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-white text-green-800 font-semibold rounded-lg hover:bg-gray-100 transition shadow-md"
                   >
@@ -332,7 +342,6 @@ export default function NewArrivalsPage() {
               </div>
             </section>
 
-            {/* Best Selling New Products - Responsive */}
             <section className="mb-8 sm:mb-12">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                 <div>
@@ -347,16 +356,12 @@ export default function NewArrivalsPage() {
                   View All →
                 </button>
               </div>
-              
+
               {bestSellingProducts.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {bestSellingProducts.slice(0, 6).map((product) => (
+                  {bestSellingProducts.map((product) => (
                     <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                      {isMobile ? (
-                        <MobileProductCard product={product} />
-                      ) : (
-                        <DesktopProductCard product={product} />
-                      )}
+                      {isMobile ? <MobileProductCard product={product} /> : <DesktopProductCard product={product} />}
                     </div>
                   ))}
                 </div>
@@ -373,9 +378,18 @@ export default function NewArrivalsPage() {
               )}
             </section>
           </>
+        ) : (
+          <div className="text-center py-16">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No new arrivals right now</h4>
+            <p className="text-sm sm:text-base text-gray-600">Try selecting a different category or check back soon.</p>
+          </div>
         )}
 
-        {/* Benefits Section - Responsive */}
         <section className="mb-8 sm:mb-12 bg-gray-50 rounded-xl p-4 sm:p-6 md:p-8 border border-gray-200">
           <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">
             Why Choose Our New Arrivals?
@@ -398,7 +412,7 @@ export default function NewArrivalsPage() {
                 title: 'Made in Pakistan',
                 description: 'Supporting local farmers',
                 icon: '🇵🇰',
-                color: 'text-amber-700'
+                color: 'text-purple-700'
               },
               {
                 title: 'Fast Delivery',
@@ -416,7 +430,6 @@ export default function NewArrivalsPage() {
           </div>
         </section>
 
-        {/* Newsletter Section - Responsive */}
         <section className="bg-gradient-to-r from-green-800 to-emerald-800 rounded-xl p-6 sm:p-8 text-center">
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">
             Get Notified About New Arrivals
@@ -433,7 +446,7 @@ export default function NewArrivalsPage() {
               disabled={isNewsletterSubmitting}
               className="flex-1 px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-75"
             />
-            <button 
+            <button
               type="submit"
               disabled={isNewsletterSubmitting}
               className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-white text-green-800 font-semibold rounded-lg hover:bg-gray-100 transition shadow whitespace-nowrap disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -454,7 +467,6 @@ export default function NewArrivalsPage() {
           </p>
         </section>
 
-        {/* Quick Stats - Responsive */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
           <div className="bg-green-50 p-3 sm:p-4 rounded-lg text-center">
             <div className="text-xl sm:text-2xl font-bold text-green-800">{stats.totalNewProducts}</div>
