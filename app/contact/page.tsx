@@ -41,8 +41,8 @@ const contactData = {
     {
       icon: "location",
       title: "Address",
-      value: "Shop #123, Saddar, Karachi",
-      link: "https://maps.google.com",
+      value: "Saddar, Karachi",
+      link: "https://maps.app.goo.gl/MMQREQQ2XZKzS3gA9",
       description: "Visit our office"
     }
   ],
@@ -50,8 +50,6 @@ const contactData = {
     { name: "General Inquiry", email: "info@pansariin.pk" },
     { name: "Customer Support", email: "support@pansariin.pk" },
     { name: "Sales & Orders", email: "sales@pansariin.pk" },
-    { name: "Wholesale", email: "wholesale@pansariin.pk" },
-    { name: "Marketing & PR", email: "marketing@pansariin.pk" },
   ],
   businessHours: {
     weekdays: "Monday - Saturday: 9:00 AM - 6:00 PM",
@@ -328,26 +326,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Map */}
-      <section className="py-12 bg-gray-100">
-        <div className="max-w-6xl mx-auto px-[4%]">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Visit Our Office
-          </h2>
-          <div className="bg-white rounded-xl overflow-hidden border border-gray-200">
-            <iframe
-              src={process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_URL || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3619.456!2d67.01!3d24.86!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDUxJzM3LjYiTiA2N8KwMDAnMzYuMCJF!5e0!3m2!1sen!2s!4v1234567890"}
-              width="100%"
-              height="450"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            ></iframe>
-          </div>
-        </div>
-      </section>
-
+  
     </div>
   );
 }
