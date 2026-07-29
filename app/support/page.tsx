@@ -107,7 +107,7 @@ function SupportForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/support', {
+      await api.post('/contact', {
         subject: form.subject,
         message: `Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`,
       });
