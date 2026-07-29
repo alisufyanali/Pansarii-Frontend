@@ -315,68 +315,8 @@ export default function NewArrivalsPage() {
                 </div>
               )}
             </section>
+ 
 
-            <section className="mb-8 sm:mb-12 bg-gradient-to-r from-green-700 to-emerald-700 rounded-xl p-4 sm:p-6 md:p-8">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
-                <div className="text-center md:text-left">
-                  <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 mb-3">
-                    <span className="px-2 sm:px-3 py-1 bg-white/20 rounded-full text-xs sm:text-sm font-medium">🚀 LAUNCH OFFER</span>
-                    <span className="px-2 sm:px-3 py-1 bg-amber-500 text-white rounded-full text-xs sm:text-sm font-medium">LIMITED TIME</span>
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Launch Special!</h3>
-                  <p className="text-sm sm:text-base text-green-100 mb-4">
-                    Get 20% OFF on all new arrivals + Free Shipping on orders above PKR 1500
-                  </p>
-                  <Link
-                    href="/shop"
-                    className="inline-block px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-white text-green-800 font-semibold rounded-lg hover:bg-gray-100 transition shadow-md"
-                  >
-                    Shop Now & Save
-                  </Link>
-                </div>
-                <div className="text-center bg-white/10 p-4 sm:p-6 rounded-xl">
-                  <div className="text-4xl sm:text-5xl font-bold text-white">20%</div>
-                  <div className="text-base sm:text-lg text-green-100 font-medium">OFF</div>
-                  <p className="text-green-200 text-xs sm:text-sm mt-2">New Arrivals</p>
-                </div>
-              </div>
-            </section>
-
-            <section className="mb-8 sm:mb-12">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                    Best Selling New Products
-                  </h3>
-                  <p className="text-gray-600 text-xs sm:text-sm mt-1">
-                    Most popular among our customers
-                  </p>
-                </div>
-                <button className="text-green-700 font-medium text-xs sm:text-sm hover:text-green-800 text-left sm:text-right">
-                  View All →
-                </button>
-              </div>
-
-              {bestSellingProducts.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {bestSellingProducts.map((product) => (
-                    <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                      {isMobile ? <MobileProductCard product={product} /> : <DesktopProductCard product={product} />}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                    </svg>
-                  </div>
-                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No Best Sellers Yet</h4>
-                  <p className="text-sm sm:text-base text-gray-600">These products are new. Be the first to review!</p>
-                </div>
-              )}
-            </section>
           </>
         ) : (
           <div className="text-center py-16">
