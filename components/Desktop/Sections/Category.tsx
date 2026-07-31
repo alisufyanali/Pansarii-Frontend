@@ -94,7 +94,7 @@ export default function Category() {
                       //   style={{ backgroundColor: '#197B33' }}
                       // />
                       <Image
-                        src={CategoryImage}
+                        src={CategoryImage + "-" + (index + 1) }
                         alt={"category.name"}
                         width={170}
                         height={120}

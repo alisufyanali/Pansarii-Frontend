@@ -70,7 +70,7 @@ export default function Banner({ slides }: { slides?: ApiSlide[] }) {
       </div>
 
       {/* Subtle left-side gradient so text is readable */}
-      <div className="absolute inset-0 z-[1] bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
+      <div className="absolute inset-0 z-[1] " />
 
       {/* Content */}
       <div className="relative z-10 h-full flex items-center px-[4%]">
