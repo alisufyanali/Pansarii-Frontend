@@ -39,7 +39,7 @@ const navLinks = [
   { name: 'Offers',     href: '/offers'   },
   { name: 'Rewards',    href: '/rewards'  },
   { name: 'Blog',       href: '/blog'     },
-  { name: 'Reviews',       href: '/review'     },
+  { name: 'Reviews',       href: '/reviews'     },
 ];
 
 // Shared container — full width, max 1920px, responsive horizontal padding
