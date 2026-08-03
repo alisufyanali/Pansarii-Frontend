@@ -21,6 +21,7 @@ export interface ProductsResponse {
 export interface ProductsParams {
   search?: string;
   category_id?: number;
+  health_concern_id?: number;
   featured?: boolean;
   min_price?: number;
   max_price?: number;
@@ -106,6 +107,29 @@ export async function getProductBySlug(slug: string): Promise<ApiProduct | null>
   } catch (err) {
     console.error(`[products] Product "${slug}" API unavailable:`, isAxiosError(err) ? err.message : err);
     return null;
+  }
+}
+
+// ─── Health concerns ──────────────────────────────────────────────────────────
+
+export interface ApiHealthConcern {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  icon?: string;
+  products_count?: number;
+}
+
+export async function getHealthConcerns(): Promise<ApiHealthConcern[]> {
+  try {
+    const res = await api.get<{ success: boolean; data: ApiHealthConcern[] }>('/health-concerns');
+    return res.data;
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[products] Health concerns API unavailable:', isAxiosError(err) ? err.message : err);
+    }
+    return [];
   }
 }
 
