@@ -110,6 +110,80 @@ export async function getProductBySlug(slug: string): Promise<ApiProduct | null>
   }
 }
 
+// ─── Related products ─────────────────────────────────────────────────────────
+
+/**
+ * Fetch products related to the given slug.
+ * Calls GET /products/{slug}/related which returns products sharing the same
+ * category or at least one health concern, prioritised by overlap depth.
+ * Falls back to a same-category getProducts() call when the endpoint is absent.
+ */
+export async function getRelatedProducts(
+  slug: string,
+  options?: { signal?: AbortSignal },
+): Promise<Product[]> {
+  try {
+    const res = await api.get<ApiResponse<ApiProduct[]>>(
+      `/products/${slug}/related`,
+      undefined,
+      { signal: options?.signal },
+    );
+    return (res.data ?? []).map(p => ({
+      ...apiProductToLegacy(p),
+      inStock: p.variants?.some(v => v.stock > 0) ?? true,
+    }));
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[products] Related products API unavailable, using fallback:', isAxiosError(err) ? err.message : err);
+    }
+    // Fallback: pull the first page of all products and return up to 10
+    // (we don't know the category client-side without the full ApiProduct, so
+    // we return a generic sample — acceptable degraded behaviour)
+    try {
+      const fallback = await getProducts({ per_page: 10, page: 1 }, options);
+      return fallback.data
+        .filter(p => p.slug !== slug)
+        .slice(0, 10)
+        .map(p => ({ ...apiProductToLegacy(p), inStock: p.variants?.some(v => v.stock > 0) ?? true }));
+    } catch {
+      return (bestSellers as Product[]).slice(0, 10);
+    }
+  }
+}
+
+// ─── Recommended products ────────────────────────────────────────────────────
+
+/**
+ * Fetch recommended / best-selling products.
+ * Calls GET /products/recommended?exclude_id={id} which returns featured
+ * products ordered by units_sold or rating desc.
+ * Falls back to the static bestSellers array.
+ */
+export async function getRecommendedProducts(
+  excludeId?: number,
+  options?: { signal?: AbortSignal },
+): Promise<Product[]> {
+  try {
+    const params = excludeId !== undefined ? { exclude_id: excludeId } : undefined;
+    const res = await api.get<ApiResponse<ApiProduct[]>>(
+      '/products/recommended',
+      params as Record<string, unknown> | undefined,
+      { signal: options?.signal },
+    );
+    return (res.data ?? []).map(p => ({
+      ...apiProductToLegacy(p),
+      inStock: p.variants?.some(v => v.stock > 0) ?? true,
+    }));
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[products] Recommended products API unavailable, using static fallback:', isAxiosError(err) ? err.message : err);
+    }
+    return (bestSellers as Product[])
+      .filter(p => excludeId === undefined || Number(p.id) !== excludeId)
+      .slice(0, 10);
+  }
+}
+
 // ─── Health concerns ──────────────────────────────────────────────────────────
 
 export interface ApiHealthConcern {

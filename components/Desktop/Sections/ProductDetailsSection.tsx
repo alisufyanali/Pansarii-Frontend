@@ -178,7 +178,18 @@ function ReviewFormModal({ onClose, onSubmit, isSubmitting }: {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function ProductDetailsSection({ product }: { product?: LegacyProduct }) {
+export default function ProductDetailsSection({
+  product,
+}: {
+  product?: LegacyProduct;
+}) {
+  // Derive slug and numeric id from the product prop so we can pass them
+  // to the related/recommended child sections without a separate prop-drilling chain.
+  const productSlug = (product as LegacyProduct & { slug?: string })?.slug;
+  const productId   = product?.productId !== undefined ? Number(product.productId)
+    : product?.id !== undefined ? Number(product.id)
+    : undefined;
+
   const [showBottomBar, setShowBottomBar] = useState(false);
   const [selectedSize, setSelectedSize]   = useState(product?.sizes?.[0] || '');
   const [quantity, setQuantity]           = useState(1);
@@ -198,11 +209,7 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
   const router = useRouter();
 
-  const productId = product?.productId || product?.id;
-  const isWishlisted = productId ? isInWishlist(productId) : false;
-
-  // ── Fetch reviews from API ─────────────────────────────────────────────────
-  const productSlug = (product as LegacyProduct & { slug?: string })?.slug;
+  const isWishlisted = productId !== undefined ? isInWishlist(productId) : false;
 
   useEffect(() => {
     if (!productSlug) return;
@@ -623,9 +630,9 @@ export default function ProductDetailsSection({ product }: { product?: LegacyPro
           )}
         </div>
 
-        <VideoProductsSection />
-        
-        <RecommendedProductsSection />
+        <VideoProductsSection productSlug={productSlug} />
+
+        <RecommendedProductsSection productId={productId} />
 
         {/* ── Sticky Bottom Bar ── */}
         {showBottomBar && product && (
