@@ -119,7 +119,15 @@ function MobileAvatar({ name, src }: { name: string; src?: string | null }) {
 
 function MobileProfileView() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700" />
+      </div>
+    );
+  }
 
   if (!user) return null;
 
@@ -214,7 +222,15 @@ function MobileProfileView() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function DesktopProfileView() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700" />
+      </div>
+    );
+  }
 
   if (!user) return null;
 

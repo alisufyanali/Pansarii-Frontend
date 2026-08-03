@@ -1,7 +1,7 @@
 // app/login/page.tsx
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
@@ -38,19 +38,23 @@ function LoginPageContent() {
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Redirect already-authenticated users away from the login page.
-  // searchParams is intentionally omitted from the dependency array —
-  // it returns a new object reference on every render in Next.js App Router,
-  // which would re-fire this effect on unrelated state changes (e.g. after a
-  // failed login sets apiError) and cause the Suspense boundary to remount,
-  // clearing the form. We only need to react to actual auth state changes.
+  // Keep a ref always pointing at the latest searchParams object.
+  // useSearchParams() returns a new reference on every render in the App Router,
+  // so reading directly inside the redirect effect risks a stale closure when
+  // intermediate re-renders (e.g. setIsLoading toggling) occur between mount and
+  // the moment isAuthenticated flips to true.  Reading via the ref guarantees we
+  // always see the current returnTo value at the moment the redirect fires.
+  const searchParamsRef = useRef(searchParams);
+  useEffect(() => {
+    searchParamsRef.current = searchParams;
+  }, [searchParams]);
+
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      const returnTo = searchParams.get('returnTo') ?? '/';
+      const returnTo = searchParamsRef.current.get('returnTo') ?? '/';
       router.replace(decodeURIComponent(returnTo));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, authLoading]);
+  }, [isAuthenticated, authLoading, router]);
 
   const [formData, setFormData] = useState<LoginFields>({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
