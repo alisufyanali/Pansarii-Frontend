@@ -20,45 +20,26 @@ import type { Product, ProductFeature, LegacyProduct } from '@/types/product';
 
 type CatalogProduct = (typeof allProducts)[number];
 
-// Product data comes from a separately deployed API. Keep this route eligible
-// for ISR so a transient API failure cannot leave a cached 404 in place until
-// the next deployment. This TTL applies to both successful pages and 404s;
-// Next.js does not offer separate per-status revalidation values for one route.
+// Product data comes from a separately deployed API.
+// ISR revalidation: 60s for successfully rendered pages.
+// Transient API errors throw instead of calling notFound(), so they reach
+// error.tsx (not cached as a 404).
 export const revalidate = 60;
 export const dynamicParams = true;
-
-const PRODUCT_RETRY_DELAY_MS = 500;
-
-async function getProductWithRetry(slug: string) {
-  const firstAttempt = await fetchApiProduct(slug);
-  if (firstAttempt) return firstAttempt;
-
-  const renderPhase = process.env.NEXT_PHASE === 'phase-production-build'
-    ? 'static generation'
-    : 'request rendering';
-
-  console.error(
-    `[product-page] Product lookup failed for slug "${slug}" during ${renderPhase}; retrying once in ${PRODUCT_RETRY_DELAY_MS}ms.`,
-  );
-
-  await new Promise<void>((resolve) => setTimeout(resolve, PRODUCT_RETRY_DELAY_MS));
-
-  const retryAttempt = await fetchApiProduct(slug);
-  if (!retryAttempt) {
-    console.error(
-      `[product-page] Product lookup failed for slug "${slug}" after retry during ${renderPhase}.`,
-    );
-  }
-
-  return retryAttempt;
-}
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
-  const apiProduct = await getProductWithRetry(slug);
+  let apiProduct = null;
+  try {
+    apiProduct = await fetchApiProduct(slug);
+  } catch {
+    // Transient error — return a minimal title; the page render will handle it
+    return { title: 'Loading… | Pansari Inn' };
+  }
+
   if (apiProduct) {
     return {
       title: `${apiProduct.name} | Pansari Inn`,
@@ -178,7 +159,16 @@ export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
 
   // ── API product ────────────────────────────────────────────────────────────
-  const apiProduct = await getProductWithRetry(slug);
+  // fetchApiProduct throws on transient errors (network/timeout/5xx) and
+  // returns null only on confirmed 404. We let throws propagate to error.tsx
+  // so Next.js does NOT cache the failure as a 404 in ISR.
+  let apiProduct = null;
+  try {
+    apiProduct = await fetchApiProduct(slug);
+  } catch (err) {
+    // Re-throw — Next.js will render error.tsx (not cached by ISR)
+    throw err;
+  }
 
   if (apiProduct) {
     const price = apiProduct.variants?.length

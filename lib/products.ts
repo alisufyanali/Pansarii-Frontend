@@ -101,13 +101,51 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<ApiProduct | null> {
-  try {
-    const res = await api.get<ApiResponse<ApiProduct>>(`/products/${slug}`);
-    return res.data;
-  } catch (err) {
-    console.error(`[products] Product "${slug}" API unavailable:`, isAxiosError(err) ? err.message : err);
-    return null;
+  const maxAttempts = 3;
+  let lastErr: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await api.get<ApiResponse<ApiProduct>>(`/products/${slug}`);
+      return res.data;
+    } catch (err) {
+      lastErr = err;
+      const status = isAxiosError(err) ? err.response?.status : undefined;
+
+      // 404 from the API means the product genuinely doesn't exist — stop immediately.
+      if (status === 404) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`[products] Product "${slug}" not found in API (404).`);
+        }
+        return null;
+      }
+
+      // Any other error (network timeout, 5xx, ECONNRESET) — log and retry
+      // unless this was the final attempt.
+      const isLastAttempt = attempt === maxAttempts;
+      console.error(
+        `[products] Product "${slug}" fetch failed (attempt ${attempt}/${maxAttempts}):`,
+        isAxiosError(err) ? `${err.code ?? ''} ${err.message}` : err,
+        isLastAttempt ? '— giving up.' : '— will retry.',
+      );
+
+      if (!isLastAttempt) {
+        // Exponential back-off: 300ms, 600ms between attempts.
+        // Using a Promise-based delay rather than a global setTimeout keeps
+        // this isolated to the fetch retry loop and doesn't block the event loop.
+        await new Promise<void>((resolve) => {
+          const handle = setTimeout(resolve, 300 * attempt);
+          // Attach the handle to the Promise so it can be GC'd promptly.
+          void handle;
+        });
+      }
+    }
   }
+
+  // All attempts exhausted — throw so the caller can distinguish a transient
+  // network failure from a confirmed 404. The page component catches this and
+  // either shows an error boundary or re-throws to trigger Next.js's error.tsx.
+  throw lastErr;
 }
 
 // ─── Related products ─────────────────────────────────────────────────────────
