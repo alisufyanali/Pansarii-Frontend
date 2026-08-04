@@ -13,6 +13,7 @@ import {
   type SiteReview,
   type ReviewSortOption,
 } from '@/lib/reviews';
+import { isAxiosError } from '@/lib/axios';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -224,6 +225,7 @@ function Pagination({
 interface ReviewFormData {
   name: string;
   email: string;
+  order_number: string;
   rating: number;
   comment: string;
   image: File | null;
@@ -232,6 +234,7 @@ interface ReviewFormData {
 interface FormErrors {
   name?: string;
   email?: string;
+  order_number?: string;
   rating?: string;
   comment?: string;
 }
@@ -244,7 +247,7 @@ function ReviewFormModal({
   onSuccess: () => void;
 }) {
   const [form, setForm] = useState<ReviewFormData>({
-    name: '', email: '', rating: 0, comment: '', image: null,
+    name: '', email: '', order_number: '', rating: 0, comment: '', image: null,
   });
   const [errors, setErrors]         = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -253,12 +256,13 @@ function ReviewFormModal({
 
   const validate = (): boolean => {
     const e: FormErrors = {};
-    if (!form.name.trim())                              e.name    = 'Name is required.';
-    if (!form.email.trim())                             e.email   = 'Email is required.';
-    else if (!/\S+@\S+\.\S+/.test(form.email))         e.email   = 'Enter a valid email address.';
-    if (form.rating === 0)                              e.rating  = 'Please select a star rating.';
-    if (!form.comment.trim())                           e.comment = 'Review text is required.';
-    else if (form.comment.trim().length < 10)           e.comment = 'Review must be at least 10 characters.';
+    if (!form.name.trim())                              e.name         = 'Name is required.';
+    if (!form.email.trim())                             e.email        = 'Email is required.';
+    else if (!/\S+@\S+\.\S+/.test(form.email))         e.email        = 'Enter a valid email address.';
+    if (!form.order_number.trim())                      e.order_number = 'Order number is required.';
+    if (form.rating === 0)                              e.rating       = 'Please select a star rating.';
+    if (!form.comment.trim())                           e.comment      = 'Review text is required.';
+    else if (form.comment.trim().length < 10)           e.comment      = 'Review must be at least 10 characters.';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -288,6 +292,7 @@ function ReviewFormModal({
       await submitSiteReview({
         customer_name: form.name.trim(),
         email:         form.email.trim(),
+        order_number:  form.order_number.trim(),
         rating:        form.rating,
         comment:       form.comment.trim(),
         image:         form.image,
@@ -295,7 +300,53 @@ function ReviewFormModal({
       toast.success('Thank you! Your review has been submitted.');
       onSuccess();
       onClose();
-    } catch {
+    } catch (err) {
+      // Map Laravel 422 field-level errors to inline form errors
+      if (
+        isAxiosError(err) &&
+        err.response?.status === 422 &&
+        (err.response.data as { errors?: Record<string, string[]> })?.errors
+      ) {
+        const apiErrors = (err.response.data as { errors: Record<string, string[]> }).errors;
+        const fieldMap: FormErrors = {};
+
+        // order_number-related backend error messages
+        if (apiErrors.order_number) {
+          const msg = apiErrors.order_number[0];
+          // Normalise known messages to user-friendly strings
+          if (/not found|doesn.t exist|no order/i.test(msg)) {
+            fieldMap.order_number = "We couldn't find an order with this number. Please check and try again.";
+          } else if (/already.*review|review.*already|duplicate/i.test(msg)) {
+            fieldMap.order_number = 'A review has already been submitted for this order.';
+          } else {
+            fieldMap.order_number = msg;
+          }
+        }
+
+        // email-related backend error (order email mismatch)
+        if (apiErrors.email) {
+          const msg = apiErrors.email[0];
+          if (/match|order|associated/i.test(msg)) {
+            fieldMap.email = "The email doesn't match this order. Please use the email associated with this order.";
+          } else {
+            fieldMap.email = msg;
+          }
+        }
+
+        // Any other field errors (name, rating, comment)
+        (Object.keys(apiErrors) as Array<keyof FormErrors>).forEach(key => {
+          if (key !== 'order_number' && key !== 'email' && apiErrors[key]?.[0]) {
+            (fieldMap as Record<string, string>)[key] = apiErrors[key][0];
+          }
+        });
+
+        if (Object.keys(fieldMap).length > 0) {
+          setErrors(prev => ({ ...prev, ...fieldMap }));
+          return; // Don't show generic toast — inline errors are sufficient
+        }
+      }
+
+      // Fallback for unexpected errors
       toast.error('Failed to submit review. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -364,6 +415,25 @@ function ReviewFormModal({
               }`}
             />
             {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+          </div>
+
+          {/* Order Number */}
+          <div>
+            <label htmlFor="order_number" className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">
+              Order Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              {...field('order_number')}
+              placeholder="e.g. ORD-12345"
+              className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition ${
+                errors.order_number ? 'border-red-400' : 'border-gray-200'
+              }`}
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              Enter the order number from your purchase confirmation.
+            </p>
+            {errors.order_number && <p className="mt-0.5 text-xs text-red-500">{errors.order_number}</p>}
           </div>
 
           {/* Rating */}

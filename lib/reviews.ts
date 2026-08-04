@@ -112,6 +112,7 @@ export interface SiteReviewsResponse {
 export interface ReviewSubmitPayload {
   customer_name: string;
   email: string;
+  order_number: string;
   rating: number;
   comment: string;
   image?: File | null;
@@ -155,6 +156,7 @@ export async function submitSiteReview(payload: ReviewSubmitPayload): Promise<vo
     const form = new FormData();
     form.append('customer_name', payload.customer_name);
     form.append('email',         payload.email);
+    form.append('order_number',  payload.order_number);
     form.append('rating',        String(payload.rating));
     form.append('comment',       payload.comment);
     form.append('image',         payload.image);
@@ -163,6 +165,7 @@ export async function submitSiteReview(payload: ReviewSubmitPayload): Promise<vo
     await api.post<unknown>('/reviews', {
       customer_name: payload.customer_name,
       email:         payload.email,
+      order_number:  payload.order_number,
       rating:        payload.rating,
       comment:       payload.comment,
     });
