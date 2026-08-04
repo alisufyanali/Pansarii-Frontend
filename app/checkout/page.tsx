@@ -15,34 +15,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth, extractFieldErrors } from '@/context/AuthContext';
 import { createOrder, createGuestOrder } from '@/lib/orders';
 import { validateCoupon, type CouponResult } from '@/lib/coupons';
-
-// ── Pakistani cities ──────────────────────────────────────────────────────────
-const PAKISTANI_CITIES = [
-  { value: 'lahore',       label: 'Lahore',       province: 'Punjab'      },
-  { value: 'faisalabad',   label: 'Faisalabad',   province: 'Punjab'      },
-  { value: 'rawalpindi',   label: 'Rawalpindi',   province: 'Punjab'      },
-  { value: 'multan',       label: 'Multan',       province: 'Punjab'      },
-  { value: 'gujranwala',   label: 'Gujranwala',   province: 'Punjab'      },
-  { value: 'sialkot',      label: 'Sialkot',      province: 'Punjab'      },
-  { value: 'bahawalpur',   label: 'Bahawalpur',   province: 'Punjab'      },
-  { value: 'sargodha',     label: 'Sargodha',     province: 'Punjab'      },
-  { value: 'karachi',      label: 'Karachi',      province: 'Sindh'       },
-  { value: 'hyderabad',    label: 'Hyderabad',    province: 'Sindh'       },
-  { value: 'sukkur',       label: 'Sukkur',       province: 'Sindh'       },
-  { value: 'larkana',      label: 'Larkana',      province: 'Sindh'       },
-  { value: 'navabshah',    label: 'Nawabshah',    province: 'Sindh'       },
-  { value: 'peshawar',     label: 'Peshawar',     province: 'KPK'         },
-  { value: 'mardan',       label: 'Mardan',       province: 'KPK'         },
-  { value: 'abbottabad',   label: 'Abbottabad',   province: 'KPK'         },
-  { value: 'swat',         label: 'Swat',         province: 'KPK'         },
-  { value: 'nowshera',     label: 'Nowshera',     province: 'KPK'         },
-  { value: 'quetta',       label: 'Quetta',       province: 'Balochistan' },
-  { value: 'gwadar',       label: 'Gwadar',       province: 'Balochistan' },
-  { value: 'turbat',       label: 'Turbat',       province: 'Balochistan' },
-  { value: 'islamabad',    label: 'Islamabad',    province: 'ICT'         },
-  { value: 'muzaffarabad', label: 'Muzaffarabad', province: 'AJK'         },
-  { value: 'mirpur',       label: 'Mirpur',       province: 'AJK'         },
-] as const;
+import { getCities, DEFAULT_SHIPPING, type City } from '@/lib/cities';
 
 type CheckoutMode = 'pending' | 'guest' | 'auth';
 
@@ -69,10 +42,22 @@ export default function CheckoutPage() {
 
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [phoneValue,    setPhoneValue]    = useState<string>('');
-  const [selectedCity,  setSelectedCity]  = useState('');
+  const [selectedCityId,   setSelectedCityId]   = useState<number | null>(null);
+  const [selectedCityName, setSelectedCityName] = useState('');
+  const [cityShipping,     setCityShipping]     = useState<number | null>(null);
+  const [cities,           setCities]           = useState<City[]>([]);
+  const [citiesLoading,    setCitiesLoading]    = useState(true);
   const [orderNote,     setOrderNote]     = useState('');
   const [isSubmitting,  setIsSubmitting]  = useState(false);
   const [submitError,   setSubmitError]   = useState('');
+
+  // Load cities on mount
+  useEffect(() => {
+    getCities()
+      .then(c => setCities(c))
+      .catch(() => setCities([]))
+      .finally(() => setCitiesLoading(false));
+  }, []);
 
   // Coupon state
   const [promoCode,      setPromoCode]      = useState('');
@@ -83,9 +68,11 @@ export default function CheckoutPage() {
   const [promoLoading,   setPromoLoading]   = useState(false);
 
   const subtotal = getCartTotal();
-  const baseShipping = subtotal > 5000 ? 0 : 200;
+  // cityShipping is null until user picks a city; fall back to DEFAULT_SHIPPING
+  // for the order total. Free shipping still applies above PKR 5000.
+  const rawShipping = subtotal > 5000 ? 0 : (cityShipping ?? DEFAULT_SHIPPING);
   const shippingFree = appliedCoupon?.discount_type === 'freeship';
-  const calculatedShipping = shippingFree ? 0 : baseShipping;
+  const calculatedShipping = shippingFree ? 0 : rawShipping;
   const total = subtotal + calculatedShipping - discount;
 
   // ── Set checkout mode on auth resolve ─────────────────────────────────────
@@ -179,7 +166,7 @@ export default function CheckoutPage() {
       : ((data.get('name') as string) || '');
     const address = (data.get('address') as string) || '';
 
-    const fullAddress = [name, address, selectedCity].filter(Boolean).join(', ');
+    const fullAddress = [name, address, selectedCityName].filter(Boolean).join(', ');
 
     const items = cartItems.map(item => ({
       product_id:         Number(item.id),
@@ -196,6 +183,7 @@ export default function CheckoutPage() {
           email:            guestEmail.trim(),
           phone:            guestPhone,
           shipping_address: fullAddress,
+          city_id:          selectedCityId ?? undefined,
           payment_method:   paymentMethod,
           order_note:       orderNote || undefined,
           shipping_charges: calculatedShipping,
@@ -217,6 +205,7 @@ export default function CheckoutPage() {
         const order = await createOrder({
           phone:             phoneValue || undefined,
           shipping_address:  fullAddress,
+          city_id:           selectedCityId ?? undefined,
           payment_method:    paymentMethod,
           order_note:        orderNote || undefined,
           shipping_charges:  calculatedShipping,
@@ -468,22 +457,34 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className={labelCls}>City *</label>
-                    <input
-                      list="pk-cities"
+                    <select
                       name="city"
-                      type="text"
-                      value={selectedCity}
-                      onChange={e => setSelectedCity(e.target.value)}
                       required
-                      autoComplete="off"
-                      className={inputCls}
-                      placeholder="Search your city…"
-                    />
-                    <datalist id="pk-cities">
-                      {PAKISTANI_CITIES.map(c => (
-                        <option key={c.value} value={c.label}>{c.province}</option>
+                      value={selectedCityId ?? ''}
+                      onChange={e => {
+                        const id = Number(e.target.value);
+                        const city = cities.find(c => c.id === id) ?? null;
+                        setSelectedCityId(city?.id ?? null);
+                        setSelectedCityName(city?.name ?? '');
+                        setCityShipping(city?.shipping_charge ?? null);
+                      }}
+                      className={`${inputCls} ${!selectedCityId ? 'text-gray-400' : ''}`}
+                      disabled={citiesLoading}
+                    >
+                      <option value="" disabled>
+                        {citiesLoading ? 'Loading cities…' : 'Select your city'}
+                      </option>
+                      {cities.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} — PKR {c.shipping_charge} shipping
+                        </option>
                       ))}
-                    </datalist>
+                    </select>
+                    {!selectedCityId && !citiesLoading && (
+                      <p className="mt-1 text-[11px] text-amber-600">
+                        Select city to calculate shipping charges
+                      </p>
+                    )}
                   </div>
                   <div className="sm:col-span-2">
                     <label className={labelCls}>Order Note <span className="normal-case font-normal text-gray-400">(optional)</span></label>
@@ -596,9 +597,13 @@ export default function CheckoutPage() {
                   )}
                   <div className="flex justify-between text-gray-500">
                     <span className="flex items-center gap-1"><FaTruck className="w-3 h-3" /> Shipping</span>
-                    <span className={`font-medium ${calculatedShipping === 0 ? 'text-green-600' : 'text-gray-900'}`}>
-                      {calculatedShipping === 0 ? 'FREE' : `PKR ${calculatedShipping}`}
-                    </span>
+                    {selectedCityId === null && !shippingFree ? (
+                      <span className="text-xs text-amber-600 font-medium">Select city to calculate</span>
+                    ) : (
+                      <span className={`font-medium ${calculatedShipping === 0 ? 'text-green-600' : 'text-gray-900'}`}>
+                        {calculatedShipping === 0 ? 'FREE' : `PKR ${calculatedShipping}`}
+                      </span>
+                    )}
                   </div>
                 </div>
 

@@ -230,13 +230,21 @@ function CartContent() {
                     <span className="font-medium text-gray-900">PKR {getCartTotal().toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
-                    <span className={`font-medium ${shipping === 0 ? 'text-green-600' : 'text-gray-900'}`}>
-                      {shipping === 0 ? 'FREE' : `PKR ${shipping}`}
+                    <span className="flex items-center gap-1.5">
+                      <FaTruck className="w-3 h-3 text-gray-400" />
+                      Shipping
                     </span>
+                    {getCartTotal() >= 5000 ? (
+                      <span className="font-medium text-green-600">FREE</span>
+                    ) : (
+                      <span className="text-right">
+                        <span className="font-medium text-gray-900">PKR {shipping}</span>
+                        <span className="block text-[11px] text-gray-400 leading-tight">est. · final at checkout</span>
+                      </span>
+                    )}
                   </div>
                   <div className="border-t border-gray-100 pt-3 flex justify-between">
-                    <span className="font-bold text-gray-900">Total</span>
+                    <span className="font-bold text-gray-900">Estimated Total</span>
                     <span className="font-bold text-gray-900 text-base">PKR {total.toLocaleString()}</span>
                   </div>
                 </div>
