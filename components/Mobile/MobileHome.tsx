@@ -48,7 +48,7 @@ export default function MobileHome() {
         <CategoryProductsSection variant="mobile" data={homepageData.category_products} />
       </Suspense>
       {/* <ShopProducts /> */}
-      <MobileComboDeal />
+      {/* <MobileComboDeal /> */}
       <Suspense fallback={null}>
         <MobileVideoProducts products={homepageData.video_products} />
       </Suspense>

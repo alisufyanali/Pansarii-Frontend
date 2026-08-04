@@ -49,7 +49,7 @@ export default function DesktopHome() {
       </Suspense>
       {/* <BeautyCorner />
       <PansariInn /> */}
-      <ComboDeal />
+      {/* <ComboDeal /> */}
       <Suspense fallback={null}>
         <VideoProducts products={homepageData.video_products} />
       </Suspense>

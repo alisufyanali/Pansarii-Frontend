@@ -62,7 +62,7 @@ export default function CategoryProductRow({
     return (
       <section className="py-4">
         <div className="px-4 mb-3 flex items-center justify-between">
-          <h2 className="text-base font-bold text-gray-900">{category.name}</h2>
+          <h2 className="text-base font-bold text-gray-900">Shop By <span className="me-color-y">{category.name}</span></h2>
           <button
             type="button"
             onClick={() => router.push(viewAllHref)}
