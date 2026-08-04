@@ -1,136 +1,114 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { allProducts } from "@/data/products";
-import Image from 'next/image';
+import { useEffect, useState } from "react";
+import { getCategoriesCached } from "@/lib/products";
+import type { ApiCategory } from "@/types/product";
 
-const CATEGORY_SLUG_MAP: Record<string, string> = {
-  'Herb':          'herb',
-  'Oils':          'oils',
-  'Supplements':   'supplements',
-  'Beauty Corner': 'beauty-corner',
-  'Dawakhana':     'dawakhana',
-  'Remedies':      'remedies',
-  'Murrabajat':    'murrabajat',
-  'Arqiyaat':      'arqiyaat',
-};
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// Matches desktop CategorySkeleton exactly
 
-// Pastel colors matching design reference
-const BG_COLORS = [
-  '#C8B8E8', // purple
-  '#F5D08A', // amber
-  '#A8D8A8', // green
-  '#A8C8E8', // blue
-  '#E8A8A8', // pink
-  '#E8E0A0', // yellow
-  '#A8E0D8', // teal
-  '#D8A8E8', // lavender
-];
+function CategorySkeleton() {
+  return (
+    <div className="flex flex-col items-center w-full animate-pulse">
+      <div className="w-[75%] h-[80px] bg-gray-200 rounded mt-4" />
+      <div className="w-full h-[50px] bg-gray-100 rounded mt-2" />
+    </div>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Categories() {
-  const router    = useRouter();
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const isTouch   = useRef(false);
+  const router = useRouter();
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const categories = Array.from(new Set(allProducts.map(p => p.category)))
-    .filter(Boolean)
-    .map((category, i) => ({
-      name:    category,
-      slug:    CATEGORY_SLUG_MAP[category] || category.toLowerCase().replace(/\s+/g, '-'),
-      bgColor: BG_COLORS[i % BG_COLORS.length],
-      img:     '/images/category.png',
-    }));
-
-  // Auto-slide — horizontal only, no page scroll
   useEffect(() => {
-    const t = setInterval(() => {
-      if (isTouch.current) return;
-      const el = sliderRef.current;
-      if (!el) return;
-      const card = el.querySelector('.cat-card') as HTMLElement;
-      const step = card ? card.offsetWidth + 12 : 130;
-      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
-      el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + step, behavior: 'smooth' });
-    }, 2500);
-    return () => clearInterval(t);
+    getCategoriesCached()
+      .then((cats) => setCategories(cats.slice(0, 6)))
+      .catch(() => setCategories([]))
+      .finally(() => setIsLoading(false));
   }, []);
 
+  const handleCategoryClick = (slug: string) => {
+    router.push(`/category?cat=${slug}`);
+  };
+
   return (
-    <section className="py-4">
-
-      {/* Heading */}
-      <div className="px-4 mb-4 text-center">
-        <h2 className="text-lg font-bold text-gray-900">
-          Shop by <span className="me-color-y">Category</span>
+    <section className="py-4 px-[4%]">
+      {/* Header — matches desktop exactly */}
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">
+          Shop By <span className="me-color-y">Category</span>
         </h2>
+        <div
+          className="flex items-center gap-3 cursor-pointer group"
+          onClick={() => router.push("/category")}
+        >
+          <span className="text-black font-semibold group-hover:text-[#197B33] transition-colors text-sm">
+            View All
+          </span>
+          <div className="w-9 h-9 flex items-center justify-center rounded-full bg-[#1A1A1A1A] group-hover:bg-[#197B33] group-hover:text-white transition-all">
+            <span className="text-base font-bold">{">"}</span>
+          </div>
+        </div>
       </div>
 
-      {/* Horizontal slider */}
-      <div
-        ref={sliderRef}
-        className="flex gap-3 overflow-x-auto no-scrollbar px-4"
-        onTouchStart={() => { isTouch.current = true; }}
-        onTouchEnd={() => { setTimeout(() => { isTouch.current = false; }, 2000); }}
-      >
-        {categories.map(cat => (
-          <button
-            key={cat.name}
-            className="cat-card flex-shrink-0 active:scale-95 transition-transform focus:outline-none"
-            style={{ width: 'calc((100vw - 44px) / 3)' }}
-            onClick={() => router.push(`/${cat.slug}`)}
-          >
-            {/*
-              Arch card layout:
-              - Top half: arch shape (large border-radius on top corners)
-              - Category name: bold uppercase, top area
-              - Product image: bottom, overflows the card
-            */}
-            <div className="relative flex flex-col items-center">
+      {/* Cards grid — 3 cols mobile, 6 cols md+ (matches desktop) */}
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3 lg:gap-6">
+        {isLoading
+          ? [...Array(6)].map((_, i) => <CategorySkeleton key={i} />)
+          : categories.map((category, index) => {
+              const imageSrc = (
+                category as ApiCategory & { image?: string }
+              ).image;
 
-              {/* Arch shape — tall rectangle with very rounded top */}
-              <div
-                className="relative w-full overflow-visible"
-                style={{
-                  backgroundColor: cat.bgColor,
-                  borderRadius: '999px 999px 16px 16px',
-                  paddingTop: '16px',
-                  paddingBottom: '40px',
-                  minHeight: '140px',
-                }}
-              >
-                {/* Category name — top center, bold uppercase */}
-                <div className="px-2 text-center">
-                  <p
-                    className="font-black uppercase leading-tight tracking-wide"
-                    style={{ fontSize: '11px', color: '#1a1a1a' }}
-                  >
-                    {cat.name.split(' ').map((word, i) => (
-                      <span key={i} className="block">{word}</span>
-                    ))}
-                  </p>
+              return (
+                <div
+                  key={category.id}
+                  className="flex flex-col items-center w-full cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => handleCategoryClick(category.slug)}
+                >
+                  {/* Image area */}
+                  {imageSrc ? (
+                    <Image
+                      src={imageSrc}
+                      alt={category.name}
+                      width={120}
+                      height={80}
+                      className="object-contain w-[75%] h-auto drop-shadow-md mt-4"
+                      loading="lazy"
+                      quality={60}
+                    />
+                  ) : (
+                    <Image
+                      src={`/images/category-${index + 1}.png`}
+                      alt={category.name}
+                      width={120}
+                      height={80}
+                      className="object-contain w-[75%] h-auto drop-shadow-md mt-4"
+                      loading="lazy"
+                      quality={60}
+                    />
+                  )}
+
+                  {/* Label — matches desktop */}
+                  <div className="w-full h-[50px] bg-white flex flex-col items-center justify-center rounded">
+                    <span className="text-[13px] font-medium leading-tight text-center px-1">
+                      {category.name}
+                    </span>
+                    {category.products_count !== undefined && (
+                      <span className="text-[11px] text-gray-500">
+                        {category.products_count} items
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              {/* Product image — overlaps bottom of arch */}
-              <div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[85%] h-[90px]"
-                style={{ zIndex: 10 }}
-              >
-                <Image
-                  src={cat.img}
-                  alt={cat.name}
-                  fill
-                  className="object-contain drop-shadow-lg"
-                  sizes="(max-width: 768px) 30vw, 15vw"
-                />
-              </div>
-
-            </div>
-          </button>
-        ))}
+              );
+            })}
       </div>
-
     </section>
   );
 }
