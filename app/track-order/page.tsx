@@ -513,11 +513,11 @@ export default function TrackOrderPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-xs sm:text-sm">Call Support</p>
-                        <p className="text-xs text-green-200 break-all">+92 21 1234 5678</p>
+                        <p className="text-xs text-green-200 break-all">+92 304 5779900</p>
                       </div>
                     </a>
                     <a
-                      href="mailto:support@pansariinn.com"
+                      href="mailto:chat@pansariinn.com"
                       className="flex items-center gap-2 sm:gap-3 bg-white/10 hover:bg-white/20 text-white p-2 sm:p-3 rounded-lg transition group"
                     >
                       <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -525,7 +525,7 @@ export default function TrackOrderPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-xs sm:text-sm">Email Us</p>
-                        <p className="text-xs text-green-200 break-all">support@pansariinn.com</p>
+                        <p className="text-xs text-green-200 break-all">chat@pansariinn.com</p>
                       </div>
                     </a>
                   </div>

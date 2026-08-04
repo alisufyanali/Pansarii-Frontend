@@ -193,7 +193,7 @@ export default function Invoice({ data }: { data: InvoiceData }) {
     billingAddress, shippingAddress,
     companyName    = 'Pansari Inn',
     companyTagline = 'Premium Quality Products',
-    companyEmail   = 'support@pansariinn.com',
+    companyEmail   = 'chat@pansariinn.com',
     logoUrl,
   } = data;
 

@@ -27,15 +27,15 @@ const contactData = {
     {
       icon: "whatsapp",
       title: "WhatsApp",
-      value: "++92 304 5779900",
+      value: "+92 304 5779900",
       link: `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`,
       description: "Chat with us instantly"
     },
     {
       icon: "email",
       title: "Email",
-      value: "support@pansariin.pk",
-      link: "mailto:support@pansariin.pk",
+      value: "chat@pansariin.pk",
+      link: "mailto:chat@pansariin.pk",
       description: "We'll reply within 24 hours"
     },
     {
@@ -48,7 +48,7 @@ const contactData = {
   ],
   departments: [
     { name: "General Inquiry", email: "info@pansariin.pk" },
-    { name: "Customer Support", email: "support@pansariin.pk" },
+    { name: "Customer Support", email: "chat@pansariin.pk" },
     { name: "Sales & Orders", email: "sales@pansariin.pk" },
   ],
   businessHours: {

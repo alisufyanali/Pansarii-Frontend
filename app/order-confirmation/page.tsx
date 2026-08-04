@@ -62,7 +62,7 @@ function toInvoiceData(order: ApiOrder): InvoiceData {
     shippingAddress: address,
     companyName:     'Pansari Inn',
     companyTagline:  'Premium Quality Products',
-    companyEmail:    'support@pansariinn.com',
+    companyEmail:    'chat@pansariinn.com',
   };
 }
 
