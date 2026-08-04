@@ -34,7 +34,7 @@ const faqData: {
 } = {
   hero: {
     title: "Frequently Asked Questions",
-    subtitle: "Find answers to common questions about Pansariin.pk",
+    subtitle: "Find answers to common questions about Pansariinn.pk",
     description: "Can't find what you're looking for? Contact our support team."
   },
   categories: [
@@ -188,11 +188,11 @@ const faqData: {
         },
         {
           question: "Do you offer wholesale prices?",
-          answer: "Yes, we offer wholesale rates for bulk purchases. Contact us at wholesale@pansariin.pk for more information."
+          answer: "Yes, we offer wholesale rates for bulk purchases. Contact us at wholesale@pansariinn.pk for more information."
         },
         {
           question: "How can I become an affiliate?",
-          answer: "Join our affiliate program to earn commissions on sales. Visit our Affiliate page or contact affiliate@pansariin.pk."
+          answer: "Join our affiliate program to earn commissions on sales. Visit our Affiliate page or contact affiliate@pansariinn.pk."
         },
         {
           question: "Do you have a mobile app?",

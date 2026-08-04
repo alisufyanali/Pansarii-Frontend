@@ -165,7 +165,7 @@ export default function ReturnPolicyPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
             {[
               { Icon: FaPhone,    label: 'Phone',     value: '+92 304 5779900' },
-              { Icon: FaEnvelope, label: 'Email',     value: 'returns@pansariin.pk' },
+              { Icon: FaEnvelope, label: 'Email',     value: 'returns@pansariinn.pk' },
               { Icon: FaWhatsapp, label: 'WhatsApp',  value: '+92 304 5779900' },
               { Icon: FaClock,    label: 'Hours',     value: 'Mon–Sat: 9AM–6PM' },
             ].map(({ Icon, label, value }) => (

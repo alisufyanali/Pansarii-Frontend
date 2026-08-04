@@ -173,9 +173,9 @@ function NavbarContent() {
             <div className={`${GRID} py-2.5`}>
 
               {/* Logo */}
-              <Link href="/" className="flex-shrink-0" aria-label="Pansariin.pk Home">
+              <Link href="/" className="flex-shrink-0" aria-label="pansariinn.pk Home">
                 <div className="relative w-36 h-9">
-                  <Image src="/images/logo.png" alt="Pansariin.pk Logo" fill
+                  <Image src="/images/logo.png" alt="pansariinn.pk Logo" fill
                     className="object-contain object-left" priority sizes="144px" fetchPriority="high" />
                 </div>
               </Link>

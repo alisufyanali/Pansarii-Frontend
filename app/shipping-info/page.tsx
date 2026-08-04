@@ -28,7 +28,7 @@ const packagingFeatures = [
 const policies = [
   { title: 'Order Processing Time',  content: 'Orders are processed Monday to Saturday (9 AM – 6 PM). Orders placed after 6 PM or on Sunday will be processed the next business day.' },
   { title: 'Delivery Attempts',      content: 'Our courier partners make up to 3 delivery attempts. If unsuccessful, the package will be returned to our warehouse.' },
-  { title: 'Delivery Issues',        content: 'If you face any delivery issues, contact our customer support immediately at +92 304 5779900 or chat@pansariin.pk' },
+  { title: 'Delivery Issues',        content: 'If you face any delivery issues, contact our customer support immediately at +92 304 5779900 or chat@pansariinn.pk' },
   { title: 'Address Changes',        content: 'Address cannot be changed once the order is dispatched. Please ensure your delivery address is correct before placing an order.' },
 ];
 

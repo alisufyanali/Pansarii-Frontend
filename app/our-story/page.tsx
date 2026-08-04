@@ -11,7 +11,7 @@ import { isValidEmail } from '@/lib/validation';
 
 const data = {
   journey: [
-    "Founded in 2020, Pansariin.pk started with a simple mission: to make authentic, high-quality herbal products accessible to every Pakistani household. What began as a small family business in Karachi has grown into Pakistan's leading online platform for ayurvedic and herbal remedies.",
+    "Founded in 2020, pansariinn.pk started with a simple mission: to make authentic, high-quality herbal products accessible to every Pakistani household. What began as a small family business in Karachi has grown into Pakistan's leading online platform for ayurvedic and herbal remedies.",
     "Our founders, inspired by centuries-old traditional medicine practices, recognized the growing disconnect between modern consumers and natural healing solutions. They set out to bridge this gap by creating a trusted marketplace where quality, authenticity, and customer education come first.",
     "Today, we serve thousands of customers across Pakistan, offering over 500 carefully curated products from trusted suppliers and manufacturers. Every product in our catalog is tested for purity and authenticity.",
   ],
@@ -29,7 +29,7 @@ const data = {
     { Icon: FaHandshake,   title: 'Trust & Transparency', desc: 'We build long-term relationships through honest communication and reliable service.' },
   ],
   milestones: [
-    { year: '2020', title: 'Foundation',  desc: 'Pansariin.pk was founded in Karachi with 50 products' },
+    { year: '2020', title: 'Foundation',  desc: 'pansariinn.pk was founded in Karachi with 50 products' },
     { year: '2021', title: 'Expansion',   desc: 'Reached 10,000+ customers and expanded to 200+ products' },
     { year: '2022', title: 'Recognition', desc: "Won 'Best Herbal E-commerce Platform' award" },
     { year: '2023', title: 'Growth',      desc: 'Launched mobile app and reached 50,000+ customers' },
@@ -83,7 +83,7 @@ export default function OurStoryPage() {
         icon={<FaLeaf className="w-8 h-8" />}
         title="Our Story"
         subtitle="Bringing Ancient Wisdom to Modern Life"
-        description="Discover how Pansariin.pk became Pakistan's trusted source for authentic herbal and ayurvedic products."
+        description="Discover how pansariinn.pk became Pakistan's trusted source for authentic herbal and ayurvedic products."
       />
 
       {/* Journey */}
@@ -163,7 +163,7 @@ export default function OurStoryPage() {
         <div className="max-w-4xl mx-auto px-[4%]">
           <div className="text-center mb-6">
             <h2 className="text-xl font-bold mb-1 text-gray-900">Our Leadership</h2>
-            <p className="text-sm text-gray-500">Meet the passionate team behind Pansariin.pk</p>
+            <p className="text-sm text-gray-500">Meet the passionate team behind pansariinn.pk</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {data.team.map((m, i) => (

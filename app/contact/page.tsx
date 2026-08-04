@@ -34,8 +34,8 @@ const contactData = {
     {
       icon: "email",
       title: "Email",
-      value: "chat@pansariin.pk",
-      link: "mailto:chat@pansariin.pk",
+      value: "chat@pansariinn.pk",
+      link: "mailto:chat@pansariinn.pk",
       description: "We'll reply within 24 hours"
     },
     {
@@ -47,9 +47,9 @@ const contactData = {
     }
   ],
   departments: [
-    { name: "General Inquiry", email: "info@pansariin.pk" },
-    { name: "Customer Support", email: "chat@pansariin.pk" },
-    { name: "Sales & Orders", email: "sales@pansariin.pk" },
+    { name: "General Inquiry", email: "info@pansariinn.pk" },
+    { name: "Customer Support", email: "chat@pansariinn.pk" },
+    { name: "Sales & Orders", email: "sales@pansariinn.pk" },
   ],
   businessHours: {
     weekdays: "Monday - Saturday: 9:00 AM - 6:00 PM",
