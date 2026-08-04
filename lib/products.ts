@@ -100,8 +100,15 @@ export async function getFeaturedProducts(): Promise<Product[]> {
   }
 }
 
+// ─── Build-time sleep helper ──────────────────────────────────────────────────
+// Used only in server-side fetch retry loops (never in client components).
+// Resolves after `ms` milliseconds using a Promise-wrapped timer.
+function sleep(ms: number): Promise<void> {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
 export async function getProductBySlug(slug: string): Promise<ApiProduct | null> {
-  const maxAttempts = 3;
+  const maxAttempts = 5;
   let lastErr: unknown;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -112,7 +119,7 @@ export async function getProductBySlug(slug: string): Promise<ApiProduct | null>
       lastErr = err;
       const status = isAxiosError(err) ? err.response?.status : undefined;
 
-      // 404 from the API means the product genuinely doesn't exist — stop immediately.
+      // 404 — product genuinely doesn't exist, stop immediately.
       if (status === 404) {
         if (process.env.NODE_ENV === 'development') {
           console.warn(`[products] Product "${slug}" not found in API (404).`);
@@ -120,31 +127,38 @@ export async function getProductBySlug(slug: string): Promise<ApiProduct | null>
         return null;
       }
 
-      // Any other error (network timeout, 5xx, ECONNRESET) — log and retry
-      // unless this was the final attempt.
       const isLastAttempt = attempt === maxAttempts;
-      console.error(
-        `[products] Product "${slug}" fetch failed (attempt ${attempt}/${maxAttempts}):`,
-        isAxiosError(err) ? `${err.code ?? ''} ${err.message}` : err,
-        isLastAttempt ? '— giving up.' : '— will retry.',
-      );
+      let delayMs: number;
+
+      if (status === 429) {
+        // Rate-limited — respect the Retry-After header if present; otherwise
+        // wait 60s as a safe default (the backend's 60-req/min window resets).
+        const retryAfter = isAxiosError(err)
+          ? Number(err.response?.headers?.['retry-after'] ?? 0)
+          : 0;
+        delayMs = retryAfter > 0 ? retryAfter * 1000 : 60_000;
+        console.warn(
+          `[products] Product "${slug}" rate-limited (429), attempt ${attempt}/${maxAttempts}.`,
+          `Waiting ${Math.round(delayMs / 1000)}s before retry.`,
+        );
+      } else {
+        // Network error, timeout, or 5xx — exponential back-off: 2s, 4s, 8s, 16s
+        delayMs = Math.min(2_000 * 2 ** (attempt - 1), 16_000);
+        console.error(
+          `[products] Product "${slug}" fetch failed (status=${status ?? 'network'}, attempt ${attempt}/${maxAttempts}).`,
+          isAxiosError(err) ? `${err.code ?? ''} ${err.message}` : err,
+          isLastAttempt ? '— giving up.' : `— waiting ${delayMs / 1000}s.`,
+        );
+      }
 
       if (!isLastAttempt) {
-        // Exponential back-off: 300ms, 600ms between attempts.
-        // Using a Promise-based delay rather than a global setTimeout keeps
-        // this isolated to the fetch retry loop and doesn't block the event loop.
-        await new Promise<void>((resolve) => {
-          const handle = setTimeout(resolve, 300 * attempt);
-          // Attach the handle to the Promise so it can be GC'd promptly.
-          void handle;
-        });
+        await sleep(delayMs);
       }
     }
   }
 
   // All attempts exhausted — throw so the caller can distinguish a transient
-  // network failure from a confirmed 404. The page component catches this and
-  // either shows an error boundary or re-throws to trigger Next.js's error.tsx.
+  // failure from a confirmed 404.
   throw lastErr;
 }
 

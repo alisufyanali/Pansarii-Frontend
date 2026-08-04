@@ -83,16 +83,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 // ─── Static params (build-time pre-rendering) ─────────────────────────────────
+// We intentionally pre-generate only the top 50 API products (plus the small
+// set of static fallback slugs). The remaining 500+ products are served via
+// ISR on first request — dynamicParams = true guarantees this.
+//
+// Generating all slugs at build time causes 500+ simultaneous API requests,
+// which triggers the backend's 60-req/min rate limit (429 storm) and fails
+// the build. Limiting to 50 keeps build-time API traffic well under the limit.
 
 export async function generateStaticParams() {
   const staticSlugs = allProducts.map((p) => toProductSlug(p.nameEn));
 
   let apiSlugs: string[] = [];
   try {
-    const res = await fetchApiProducts({ per_page: 500, page: 1 });
+    // Fetch only the first page of results (top 50 by default sort).
+    // This keeps build-time API calls to a single paginated request.
+    const res = await fetchApiProducts({ per_page: 50, page: 1 });
     apiSlugs = res.data.map((p) => p.slug).filter(Boolean);
   } catch {
     // API unavailable at build time — fall back to static slugs only.
+    console.warn('[generateStaticParams] API unavailable — using static slugs only.');
   }
 
   const merged = Array.from(new Set([...apiSlugs, ...staticSlugs]));
