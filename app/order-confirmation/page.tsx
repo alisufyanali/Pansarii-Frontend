@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FaCheckCircle, FaBox, FaTruck, FaDownload, FaHome, FaStore } from 'react-icons/fa';
+import { FaCheckCircle, FaBox, FaTruck, FaDownload, FaHome, FaStore, FaWhatsapp } from 'react-icons/fa';
 import { FiPackage } from 'react-icons/fi';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -240,6 +240,16 @@ function OrderConfirmationContent() {
                 className="w-full py-2.5 bg-green-700 hover:bg-green-600 text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors">
                 <FaDownload className="w-3.5 h-3.5" /> Download Invoice
               </button>
+              <a
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                  `Hi! I'd like to confirm my order.\n\nOrder Number: ${order.order_number}\n\nPlease confirm this order. Thank you!`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 bg-[#25D366] hover:bg-[#1da851] text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+              >
+                <FaWhatsapp className="w-4 h-4" /> Confirm via WhatsApp
+              </a>
               <Link href="/orders"
                 className="w-full py-2.5 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors">
                 View My Orders
