@@ -190,6 +190,12 @@ export default function ProductDetailsSection({
     : product?.id !== undefined ? Number(product.id)
     : undefined;
 
+  // Derive displayed price from the selected variant.
+  // Falls back to product.price when no variants exist.
+  const _variants = (product as unknown as { variants?: Array<{ name: string; price: number }> })?.variants;
+  const displayedPrice =
+    _variants?.find(v => v.name === selectedSize)?.price ?? product?.price ?? 0;
+
   const [showBottomBar, setShowBottomBar] = useState(false);
   const [selectedSize, setSelectedSize]   = useState(product?.sizes?.[0] || '');
   const [quantity, setQuantity]           = useState(1);
@@ -298,8 +304,8 @@ export default function ProductDetailsSection({
   };
 
   const handleWhatsAppOrder = () => {
-    const total = (product?.price || 0) * quantity;
-    const msg = `🌟 *New Order Request* 🌟\n\n*Product:* ${product?.nameEn}\n*Price:* PKR ${(product?.price||0).toLocaleString()}\n*Size:* ${selectedSize}\n*Quantity:* ${quantity}\n*Total:* PKR ${total.toLocaleString()}\n\nPlease provide Full Name, Address & Phone.\n_Placed via Pansari Inn website_`;
+    const total = displayedPrice * quantity;
+    const msg = `🌟 *New Order Request* 🌟\n\n*Product:* ${product?.nameEn}\n*Price:* PKR ${displayedPrice.toLocaleString()}\n*Size:* ${selectedSize}\n*Quantity:* ${quantity}\n*Total:* PKR ${total.toLocaleString()}\n\nPlease provide Full Name, Address & Phone.\n_Placed via Pansari Inn website_`;
     window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   };
 
@@ -654,7 +660,7 @@ export default function ProductDetailsSection({
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-gray-900 truncate">{product.nameEn}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-sm font-bold text-green-700">PKR {((product.price||0)*quantity).toLocaleString()}</span>
+                      <span className="text-sm font-bold text-green-700">PKR {(displayedPrice * quantity).toLocaleString()}</span>
                       
                       {product.sizes?.slice(0,3).map((s: string) => (
                         <button key={s} onClick={() => setSelectedSize(s)}
@@ -707,7 +713,7 @@ export default function ProductDetailsSection({
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-900 text-sm truncate">{product.nameEn}</h3>
                     <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                      <span className="text-base font-bold text-green-700">PKR {(product.price||0).toLocaleString()}</span>
+                      <span className="text-base font-bold text-green-700">PKR {displayedPrice.toLocaleString()}</span>
                       {product.oldPrice && <span className="text-xs text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>}
                       <div className="flex items-center gap-1">
                         <FaStar className="w-3 h-3 text-yellow-400" />

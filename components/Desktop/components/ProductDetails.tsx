@@ -133,6 +133,13 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const additionalImages = product.additionalImages || [];
   const productId = product.productId;
 
+  // Derive displayed price from the selected variant whenever selectedSize changes.
+  // Falls back to product.price when no variants exist (static/legacy products).
+  const variants = (product as unknown as { variants?: Array<{ name: string; price: number }> }).variants;
+  const selectedVariantPrice =
+    variants?.find(v => v.name === selectedSize)?.price ?? product.price;
+  const displayedPrice = selectedVariantPrice;
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
@@ -268,7 +275,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   };
 
   const handleWhatsAppOrder = () => {
-    const message = `🌟 *New Order Request* 🌟\n\n*Product:* ${product.nameEn}\n*Price:* PKR ${product.price.toLocaleString()}\n*Size:* ${selectedSize}\n*Quantity:* ${quantity}\n*Total:* PKR ${(product.price * quantity).toLocaleString()}\n\n_This order was placed via Pansari Inn website_`;
+    const message = `🌟 *New Order Request* 🌟\n\n*Product:* ${product.nameEn}\n*Price:* PKR ${displayedPrice.toLocaleString()}\n*Size:* ${selectedSize}\n*Quantity:* ${quantity}\n*Total:* PKR ${(displayedPrice * quantity).toLocaleString()}\n\n_This order was placed via Pansari Inn website_`;
     window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
@@ -307,7 +314,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               {/* % off badge — only on image */}
               {product.oldPrice && (
                 <div className="absolute bottom-2 left-2 bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow">
-                  {Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}% OFF
+                  {Math.round(((product.oldPrice - displayedPrice) / product.oldPrice) * 100)}% OFF
                 </div>
               )}
               {isZoomed && (
@@ -353,7 +360,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
         {/* Price */}
         <div className="flex items-baseline gap-2 mt-1.5 flex-wrap">
-          <span className="text-xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
+          <span className="text-xl font-bold text-gray-900">PKR {displayedPrice.toLocaleString()}</span>
           {product.oldPrice && (
             <span className="text-xs text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>
           )}
@@ -421,7 +428,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         {/* Total */}
         <div className="mt-2">
           <p className="text-[10px] font-semibold text-gray-500 mb-0.5 uppercase tracking-widest">Total</p>
-          <span className="text-lg font-bold text-gray-900">PKR {(product.price * quantity).toLocaleString()}</span>
+          <span className="text-lg font-bold text-gray-900">PKR {(displayedPrice * quantity).toLocaleString()}</span>
         </div>
 
         {/* Action buttons */}
@@ -493,11 +500,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
       {/* Price */}
       <div className="flex items-baseline gap-2 flex-wrap">
-        <span className="text-2xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
+        <span className="text-2xl font-bold text-gray-900">PKR {displayedPrice.toLocaleString()}</span>
         {product.oldPrice && (
           <>
             <span className="text-sm text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>
-            <span className="text-xs text-red-500 font-semibold">Save {Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}%</span>
+            <span className="text-xs text-red-500 font-semibold">Save {Math.round(((product.oldPrice - displayedPrice) / product.oldPrice) * 100)}%</span>
           </>
         )}
       </div>
@@ -528,7 +535,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
           <div className="text-right">
             <div className="text-xs text-gray-500">Subtotal:</div>
-            <div className="text-lg font-bold text-green-700">PKR {(product.price * quantity).toLocaleString()}</div>
+            <div className="text-lg font-bold text-green-700">PKR {(displayedPrice * quantity).toLocaleString()}</div>
           </div>
         </div>
       </div>
