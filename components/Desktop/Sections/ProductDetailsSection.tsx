@@ -190,12 +190,6 @@ export default function ProductDetailsSection({
     : product?.id !== undefined ? Number(product.id)
     : undefined;
 
-  // Derive displayed price from the selected variant.
-  // Falls back to product.price when no variants exist.
-  const _variants = (product as unknown as { variants?: Array<{ name: string; price: number }> })?.variants;
-  const displayedPrice =
-    _variants?.find(v => v.name === selectedSize)?.price ?? product?.price ?? 0;
-
   const [showBottomBar, setShowBottomBar] = useState(false);
   const [selectedSize, setSelectedSize]   = useState(product?.sizes?.[0] || '');
   const [quantity, setQuantity]           = useState(1);
@@ -216,6 +210,13 @@ export default function ProductDetailsSection({
   const router = useRouter();
 
   const isWishlisted = productId !== undefined ? isInWishlist(productId) : false;
+
+  // Derive displayed price from the selected variant.
+  // Must be declared AFTER selectedSize useState so there is no TDZ reference.
+  // Falls back to product.price when no variants exist.
+  const _variants = (product as unknown as { variants?: Array<{ name: string; price: number }> })?.variants;
+  const displayedPrice =
+    _variants?.find(v => v.name === selectedSize)?.price ?? product?.price ?? 0;
 
   useEffect(() => {
     if (!productSlug) return;
