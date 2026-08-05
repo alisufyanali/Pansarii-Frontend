@@ -135,10 +135,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   // Derive displayed price from the selected variant whenever selectedSize changes.
   // Falls back to product.price when no variants exist (static/legacy products).
-  const variants = (product as unknown as { variants?: Array<{ name: string; price: number }> }).variants;
-  const selectedVariantPrice =
-    variants?.find(v => v.name === selectedSize)?.price ?? product.price;
-  const displayedPrice = selectedVariantPrice;
+  const productVariants = (product as unknown as { variants?: Array<{ name: string; price: number }> }).variants;
+  const displayedPrice =
+    productVariants?.find(v => v.name === selectedSize)?.price ?? product.price;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
