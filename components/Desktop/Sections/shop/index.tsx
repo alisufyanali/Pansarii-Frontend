@@ -213,19 +213,14 @@ function ShopContent() {
 
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     setFilters(prev => {
-      // SearchFilterBar manages search/price/sort/sale/stock flags but never
-      // categories — those are owned by CategoryTabs. If the incoming emission
-      // has an empty categories array it means SearchFilterBar didn't touch
-      // categories, so preserve the current selection to avoid wiping it on
-      // every sort/search change (BUG 1 + BUG 2 fix).
-      const mergedCategories =
-        newFilters.categories.length > 0 ? newFilters.categories : prev.categories;
-
-      const merged: FilterOptions = { ...newFilters, categories: mergedCategories };
+      // SearchFilterBar owns: search, price, sort, sale, stock flags.
+      // Categories are owned exclusively by CategoryTabs via handleCategoryChange.
+      // Always discard whatever categories SearchFilterBar emits and keep prev.categories,
+      // so a sort/search/price change never clobbers the active category tab.
+      const merged: FilterOptions = { ...newFilters, categories: prev.categories };
 
       const filtersChanged =
         prev.searchQuery !== merged.searchQuery ||
-        JSON.stringify(prev.categories) !== JSON.stringify(merged.categories) ||
         prev.minPrice !== merged.minPrice ||
         prev.maxPrice !== merged.maxPrice ||
         prev.sortBy !== merged.sortBy ||
@@ -234,9 +229,7 @@ function ShopContent() {
         prev.showNewArrivals !== merged.showNewArrivals ||
         prev.showBestSellers !== merged.showBestSellers;
 
-      if (filtersChanged) {
-        setCurrentPage(1);
-      }
+      if (filtersChanged) setCurrentPage(1);
       return merged;
     });
   }, []);
