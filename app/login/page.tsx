@@ -58,23 +58,22 @@ function LoginPageContent() {
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
   // Keep a ref always pointing at the latest searchParams object.
-  // useSearchParams() returns a new reference on every render in the App Router,
-  // so reading directly inside the redirect effect risks a stale closure when
-  // intermediate re-renders (e.g. setIsLoading toggling) occur between mount and
-  // the moment isAuthenticated flips to true.  Reading via the ref guarantees we
-  // always see the current returnTo value at the moment the redirect fires.
   const searchParamsRef = useRef(searchParams);
   useEffect(() => {
     searchParamsRef.current = searchParams;
   }, [searchParams]);
 
-  // Guard: redirect away from /login if user is ALREADY authenticated on mount
-  // (e.g. user navigates to /login manually while already logged in).
-  // This is intentionally separate from the post-login redirect, which lives
-  // in handleSubmit to avoid the race condition described below.
+  // Tracks whether handleSubmit already triggered navigation after a fresh login.
+  // When true, the mount-guard effect below must not fire a competing redirect.
+  const hasNavigatedRef = useRef(false);
+
+  // Guard: redirect away from /login ONLY if the user was already authenticated
+  // before this render (e.g. manually navigated to /login while logged in).
+  // Does NOT run after a fresh login — handleSubmit owns that redirect to
+  // avoid a double-navigation race condition.
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      const raw     = searchParamsRef.current.get('returnTo') ?? '/';
+    if (!authLoading && isAuthenticated && !hasNavigatedRef.current) {
+      const raw      = searchParamsRef.current.get('returnTo') ?? '/';
       const returnTo = safeReturnTo(raw);
       router.replace(returnTo);
     }
@@ -107,15 +106,14 @@ function LoginPageContent() {
     try {
       await login({ email: formData.email, password: formData.password });
 
-      // Navigate FIRST — before any state updates (toast, setIsLoading) that
-      // would trigger re-renders and could race with the navigation.
-      // safeReturnTo validates the param to prevent open-redirect attacks.
+      // Mark as navigated BEFORE calling router.replace so the mount-guard
+      // useEffect cannot fire a competing redirect when isAuthenticated commits.
+      hasNavigatedRef.current = true;
+
       const raw      = searchParamsRef.current.get('returnTo') ?? '/';
       const returnTo = safeReturnTo(raw);
       router.replace(returnTo);
 
-      // Toast fires after navigation is queued. It will display briefly on the
-      // destination page (or on /login if navigation is somehow cancelled).
       toast.success('Login successful!');
     } catch (err) {
       // Map Laravel 422 field errors

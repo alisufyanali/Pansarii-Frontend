@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { allProducts } from '@/data/products';
 import { getCategoriesCached } from '@/lib/products';
+import { useAuth } from '@/context/AuthContext';
 import {
   FaTimes, FaUser, FaChevronRight, FaLeaf,
   FaShoppingBag, FaStar, FaHeart, FaBook,
@@ -37,6 +38,7 @@ interface MenuModalProps {
 }
 
 export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
+  const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
   const [categories, setCategories] = useState<Array<{ name: string; slug: string; count?: number }>>(() =>
     Array.from(new Set(allProducts.map(p => p.category)))
       .filter(Boolean)
@@ -101,22 +103,53 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
 
-          {/* Login CTA */}
+          {/* Login CTA — auth-aware: shows logged-in state or Sign In prompt */}
           <div className="px-5 py-4 border-b border-gray-50">
-            <Link
-              href="/login"
-              onClick={onClose}
-              className="flex items-center gap-3 py-3 px-4 bg-green-50 rounded-xl active:bg-green-100 transition-colors"
-            >
-              <div className="w-10 h-10 bg-green-700 rounded-full flex items-center justify-center">
-                <FaUser className="w-4 h-4 text-white" />
+            {!authLoading && isAuthenticated ? (
+              /* ── Logged in ── */
+              <div className="flex items-center gap-3 py-3 px-4 bg-green-50 rounded-xl">
+                <div className="w-10 h-10 bg-green-700 rounded-full flex items-center justify-center flex-shrink-0">
+                  <FaUser className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {user?.name ?? 'My Account'}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Link
+                    href="/profile"
+                    onClick={onClose}
+                    className="text-xs text-green-700 font-semibold hover:underline"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => { onClose(); logout(); }}
+                    className="text-xs text-red-500 font-medium hover:underline text-left"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-gray-900">Sign In</p>
-                <p className="text-xs text-gray-500">Access your account</p>
-              </div>
-              <FaChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            </Link>
+            ) : (
+              /* ── Logged out ── */
+              <Link
+                href="/login"
+                onClick={onClose}
+                className="flex items-center gap-3 py-3 px-4 bg-green-50 rounded-xl active:bg-green-100 transition-colors"
+              >
+                <div className="w-10 h-10 bg-green-700 rounded-full flex items-center justify-center">
+                  <FaUser className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-900">Sign In</p>
+                  <p className="text-xs text-gray-500">Access your account</p>
+                </div>
+                <FaChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              </Link>
+            )}
           </div>
 
           {/* Main Links */}
