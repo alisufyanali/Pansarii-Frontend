@@ -191,9 +191,48 @@ export default function ProductDetailsSection({
     : undefined;
 
   const [showBottomBar, setShowBottomBar] = useState(false);
-  const [selectedSize, setSelectedSize]   = useState(product?.sizes?.[0] || '');
   const [quantity, setQuantity]           = useState(1);
   const [activeTab, setActiveTab]         = useState<"description"|"ingredients"|"reviews"|"howToUse">("description");
+
+  // ── Two-level variant selection ─────────────────────────────────────────────
+  const richVariants = ((product as unknown as { variants?: Array<{
+    id: number; name: string; price: number; is_default?: boolean;
+    attributes?: Record<string, string>; unit?: string; final_price?: number;
+  }> })?.variants ?? []);
+
+  const weightOptions = Array.from(
+    new Set(richVariants.map(v => v.attributes?.Weight).filter(Boolean) as string[])
+  ).sort((a, b) => Number(a) - Number(b));
+
+  const formOptions = Array.from(
+    new Set(richVariants.map(v => v.attributes?.Form).filter(Boolean) as string[])
+  );
+
+  const variantUnit = richVariants[0]?.unit ?? '';
+  const hasRichVariants = weightOptions.length > 0;
+
+  const [selectedWeight, setSelectedWeight] = useState<string>(weightOptions[0] ?? '');
+  const [selectedForm,   setSelectedForm]   = useState<string>(formOptions[0]   ?? '');
+  const [selectedSize,   setSelectedSize]   = useState(product?.sizes?.[0] || '');
+
+  // Matched variant for price and variantId
+  const matchedVariant = hasRichVariants
+    ? richVariants.find(v =>
+        v.attributes?.Weight === selectedWeight &&
+        (formOptions.length === 0 || v.attributes?.Form === selectedForm)
+      )
+    : richVariants.find(v => v.name === selectedSize);
+
+  // final_price is authoritative — includes any additional charge from admin.
+  const displayedPrice: number =
+    matchedVariant?.final_price ??
+    matchedVariant?.price ??
+    product?.price ?? 0;
+
+  // Display label for cart/WhatsApp
+  const selectedLabel = hasRichVariants
+    ? [selectedWeight ? `${selectedWeight}${variantUnit ? ' ' + variantUnit : ''}` : '', selectedForm].filter(Boolean).join(' / ')
+    : selectedSize;
 
   // Reviews state — driven by real API
   const [allReviews, setAllReviews]         = useState<Review[]>([]);
@@ -210,13 +249,6 @@ export default function ProductDetailsSection({
   const router = useRouter();
 
   const isWishlisted = productId !== undefined ? isInWishlist(productId) : false;
-
-  // Derive displayed price from the selected variant.
-  // Must be declared AFTER selectedSize useState so there is no TDZ reference.
-  // Falls back to product.price when no variants exist.
-  const _variants = (product as unknown as { variants?: Array<{ name: string; price: number }> })?.variants;
-  const displayedPrice =
-    _variants?.find(v => v.name === selectedSize)?.price ?? product?.price ?? 0;
 
   useEffect(() => {
     if (!productSlug) return;
@@ -262,8 +294,8 @@ export default function ProductDetailsSection({
     img: product?.img || "/images/placeholder.jpg",
     nameEn: product?.nameEn || "Product",
     nameUr: product?.nameUr || "",
-    price: product?.price || 0,
-    size: selectedSize,
+    price: displayedPrice,
+    size: selectedLabel,
     category: product?.category || "Herbal Oils",
   });
 

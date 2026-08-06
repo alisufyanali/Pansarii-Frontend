@@ -215,6 +215,8 @@ export default async function ProductPage({ params }: PageProps) {
         'Free Delivery On All Orders Above PKR 5000',
         'GST Included in Price',
       ],
+      scientific_name:  apiProduct.scientific_name  ?? undefined,
+      long_description: apiProduct.long_description ?? undefined,
     };
 
     const legacyProduct: LegacyProduct = {

@@ -70,6 +70,7 @@ interface ProductDetailsProps {
     benefits?: string[];
     infoLines?: string[];
     productId?: string | number;
+    id?: string | number;  // fallback
     category?: string;
     variants?: ProductVariant[];
   };
@@ -114,9 +115,50 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
   const router = useRouter();
 
-  const [selectedImage, setSelectedImage] = useState(product.img);
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "15ml");
-  const [quantity, setQuantity] = useState(1);
+  // ── fallback: if productId is not provided, use id ──
+  const productId = product.productId ?? product.id;
+
+  const [selectedImage, setSelectedImage] = useState(product.img || '/images/placeholder.png');
+
+  // ── Two-level variant selection ─────────────────────────────────────────────
+  const richVariants = (product.variants ?? []) as Array<
+    import('@/types/product').ProductVariant & {
+      attributes?: Record<string, string>;
+      unit?: string;
+      final_price?: number;
+    }
+  >;
+
+  const weightOptions = Array.from(
+    new Set(richVariants.map(v => v.attributes?.Weight).filter(Boolean) as string[])
+  ).sort((a, b) => Number(a) - Number(b));
+
+  const formOptions = Array.from(
+    new Set(richVariants.map(v => v.attributes?.Form).filter(Boolean) as string[])
+  );
+
+  const variantUnit = richVariants[0]?.unit ?? '';
+
+  const [selectedWeight, setSelectedWeight] = useState<string>(weightOptions[0] ?? '');
+  const [selectedForm,   setSelectedForm]   = useState<string>(formOptions[0]   ?? '');
+  const [selectedSize,   setSelectedSize]   = useState(product.sizes?.[0] ?? '');
+  const [quantity,       setQuantity]       = useState(1);  // ✅ FIXED: added quantity state
+
+  const hasRichVariants = weightOptions.length > 0;
+
+  // Matched variant
+  const matchedVariant = hasRichVariants
+    ? richVariants.find(v =>
+        v.attributes?.Weight === selectedWeight &&
+        (formOptions.length === 0 || v.attributes?.Form === selectedForm)
+      )
+    : richVariants.find(v => v.name === selectedSize);
+
+  const displayedPrice: number =
+    matchedVariant?.final_price ??
+    matchedVariant?.price ??
+    product.price;
+
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,13 +173,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const imageRef = useRef<HTMLDivElement>(null);
 
   const additionalImages = product.additionalImages || [];
-  const productId = product.productId;
-
-  // Derive displayed price from the selected variant whenever selectedSize changes.
-  // Falls back to product.price when no variants exist (static/legacy products).
-  const productVariants = (product as unknown as { variants?: Array<{ name: string; price: number }> }).variants;
-  const displayedPrice =
-    productVariants?.find(v => v.name === selectedSize)?.price ?? product.price;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -182,14 +217,15 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   };
 
   const resolveVariantId = (): number | undefined => {
+    if (matchedVariant) return matchedVariant.id;
     const variants = product.variants;
     if (!variants?.length) return undefined;
-    return (
-      variants.find(v => v.name === selectedSize)?.id
-      ?? variants.find(v => v.is_default)?.id
-      ?? variants[0]?.id
-    );
+    return variants.find(v => v.is_default)?.id ?? variants[0]?.id;
   };
+
+  const selectedLabel = hasRichVariants
+    ? [selectedWeight ? `${selectedWeight}${variantUnit ? ' ' + variantUnit : ''}` : '', selectedForm].filter(Boolean).join(' / ')
+    : selectedSize;
 
   const buildCartPayload = (variantId?: number) => ({
     id: productId!,
@@ -197,8 +233,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     img: selectedImage,
     nameEn: product.nameEn,
     nameUr: product.nameUr,
-    price: product.price,
-    size: selectedSize,
+    price: displayedPrice,
+    size: selectedLabel,
     category: product.category || "Herbal Oils",
   });
 
@@ -218,7 +254,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       for (let i = 0; i < quantity; i++) {
         await addToCart(buildCartPayload(variantId));
       }
-      toast.success(`Added ${quantity} × ${product.nameEn} (${selectedSize}) to cart!`);
+      toast.success(`Added ${quantity} × ${product.nameEn} (${selectedLabel}) to cart!`);
     } catch {
       // error already toasted by CartContext
     }
@@ -274,17 +310,15 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   };
 
   const handleWhatsAppOrder = () => {
-    const message = `🌟 *New Order Request* 🌟\n\n*Product:* ${product.nameEn}\n*Price:* PKR ${displayedPrice.toLocaleString()}\n*Size:* ${selectedSize}\n*Quantity:* ${quantity}\n*Total:* PKR ${(displayedPrice * quantity).toLocaleString()}\n\n_This order was placed via Pansari Inn website_`;
+    const message = `🌟 *New Order Request* 🌟\n\n*Product:* ${product.nameEn}\n*Price:* PKR ${displayedPrice.toLocaleString()}\n*Size:* ${selectedLabel}\n*Quantity:* ${quantity}\n*Total:* PKR ${(displayedPrice * quantity).toLocaleString()}\n\n_This order was placed via Pansari Inn website_`;
     window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
- 
   const renderDesktopView = () => (
-    <div className="flex flex-row gap-5 p-4 max-w-7xl mx-auto" >
+    <div className="flex flex-row gap-5 p-4 max-w-7xl mx-auto">
 
       {/* ── LEFT: image column ── */}
       <div className="w-[38%] flex flex-col gap-2 min-h-0">
-        {/* Wishlist + Zoom buttons */}
         <div className="relative flex-shrink-0">
           <button onClick={handleWishlistToggle}
             className={`absolute top-2 left-2 z-20 p-2 rounded-full shadow-md transition-all hover:scale-110 ${isWishlisted ? "bg-red-50 border border-red-200" : "bg-white/90 border border-gray-200"}`}>
@@ -295,7 +329,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             {isZoomed ? <FaSearchMinus className="w-3.5 h-3.5 text-gray-700" /> : <FaSearchPlus className="w-3.5 h-3.5 text-gray-700" />}
           </button>
 
-          {/* Main image */}
           <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 shadow-md"
             style={{ maxHeight: '55vh' }}>
             <div ref={imageRef} className="relative w-full h-full"
@@ -310,7 +343,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 style={{ transform: isZoomed ? "scale(1.5)" : "scale(1)", transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%` }}
                 sizes="(max-width: 1024px) 100vw, 40vw"
               />
-              {/* % off badge — only on image */}
               {product.oldPrice && (
                 <div className="absolute bottom-2 left-2 bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow">
                   {Math.round(((product.oldPrice - displayedPrice) / product.oldPrice) * 100)}% OFF
@@ -323,7 +355,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         </div>
 
-        {/* Thumbnails — hidden scrollbar, horizontal scroll */}
         {additionalImages.length > 0 && (
           <div className="flex gap-2 overflow-x-auto flex-shrink-0" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {[product.img, ...additionalImages].map((img, i) => (
@@ -334,17 +365,18 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             ))}
           </div>
         )}
-
       </div>
 
-      {/* ── RIGHT: info column — scrollable internally ── */}
+      {/* ── RIGHT: info column ── */}
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pr-1" style={{ maxHeight: '90vh', scrollbarWidth: "none", msOverflowStyle: "none" }}>
-
-        {/* Product names */}
         <h1 className="text-lg font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
         <p className="text-xs text-gray-500 mt-0.5">{product.nameUr}</p>
+        {(product as unknown as { scientific_name?: string }).scientific_name && (
+          <p className="text-[11px] text-gray-400 italic mt-0.5">
+            {(product as unknown as { scientific_name?: string }).scientific_name}
+          </p>
+        )}
 
-        {/* Rating & reviews */}
         <div className="flex items-center gap-2 mt-1 text-xs text-gray-600 flex-wrap">
           <FaStar className="w-3 h-3 text-yellow-400" />
           <span className="font-semibold text-gray-800">{product.rating}</span>
@@ -357,7 +389,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </>}
         </div>
 
-        {/* Price */}
         <div className="flex items-baseline gap-2 mt-1.5 flex-wrap">
           <span className="text-xl font-bold text-gray-900">PKR {displayedPrice.toLocaleString()}</span>
           {product.oldPrice && (
@@ -365,7 +396,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           )}
         </div>
 
-        {/* Info chips */}
         {(product.benefits?.length || product.infoLines?.length) ? (
           <div className="flex gap-1.5 overflow-x-auto mt-2 flex-shrink-0 pb-0.5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {[...(product.benefits || []), ...(product.infoLines || [])].map((item, i) => (
@@ -376,7 +406,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         ) : null}
 
-        {/* Key features */}
         {product.features && product.features.length > 0 && (
           <div className="mt-2">
             <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-widest">Key Features</p>
@@ -397,8 +426,64 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         )}
 
-        {/* Size */}
-        {product.sizes && product.sizes.length > 0 && (
+        {hasRichVariants ? (
+          <div className="mt-2 space-y-2">
+            <div>
+              <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-widest">
+                Weight{variantUnit ? ` (${variantUnit})` : ''}
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {weightOptions.map(w => (
+                  <button key={w}
+                    onClick={() => {
+                      setSelectedWeight(w);
+                      const available = richVariants
+                        .filter(v => v.attributes?.Weight === w)
+                        .map(v => v.attributes?.Form)
+                        .filter(Boolean) as string[];
+                      if (formOptions.length > 0 && !available.includes(selectedForm)) {
+                        setSelectedForm(available[0] ?? formOptions[0]);
+                      }
+                    }}
+                    className={`px-3 py-1 rounded-lg border text-xs font-medium transition-all ${
+                      selectedWeight === w
+                        ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                        : 'border-gray-300 text-gray-700 hover:border-green-500'
+                    }`}>
+                    {w}{variantUnit ? ` ${variantUnit}` : ''}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {formOptions.length > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-widest">Form</p>
+                <div className="flex flex-wrap gap-1">
+                  {formOptions.map(f => {
+                    const available = richVariants
+                      .filter(v => v.attributes?.Weight === selectedWeight)
+                      .map(v => v.attributes?.Form) as string[];
+                    const disabled = !available.includes(f);
+                    return (
+                      <button key={f}
+                        onClick={() => !disabled && setSelectedForm(f)}
+                        disabled={disabled}
+                        className={`px-3 py-1 rounded-lg border text-xs font-medium transition-all ${
+                          selectedForm === f
+                            ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                            : disabled
+                            ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                            : 'border-gray-300 text-gray-700 hover:border-green-500'
+                        }`}>
+                        {f}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : product.sizes && product.sizes.length > 0 ? (
           <div className="mt-2">
             <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-widest">Size</p>
             <div className="flex flex-wrap gap-1">
@@ -410,9 +495,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               ))}
             </div>
           </div>
-        )}
+        ) : null}
 
-        {/* Quantity */}
         <div className="mt-2">
           <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-widest">Quantity</p>
           <div className="flex items-center border border-gray-300 rounded-lg w-fit">
@@ -424,13 +508,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         </div>
 
-        {/* Total */}
         <div className="mt-2">
           <p className="text-[10px] font-semibold text-gray-500 mb-0.5 uppercase tracking-widest">Total</p>
           <span className="text-lg font-bold text-gray-900">PKR {(displayedPrice * quantity).toLocaleString()}</span>
         </div>
 
-        {/* Action buttons */}
         <div className="mt-3 space-y-1.5">
           <div className="flex gap-2">
             <button onClick={handleAddToCart}
@@ -455,12 +537,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     </div>
   );
 
-  /* ─────────────────────────────────────────────
-     MOBILE VIEW — unchanged logic, same as before
-  ───────────────────────────────────────────── */
   const renderMobileView = () => (
     <div className="space-y-3 p-3">
-      {/* Images */}
       <div className="relative">
         <button onClick={handleWishlistToggle}
           className={`absolute top-2 left-2 z-20 p-2 rounded-full shadow-md ${isWishlisted ? "bg-red-50 border border-red-200" : "bg-white/90 border border-gray-200"}`}>
@@ -481,13 +559,16 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
       )}
 
-      {/* Names */}
       <div>
         <h1 className="text-xl font-bold text-gray-900">{product.nameEn}</h1>
         <p className="text-sm text-gray-500 mt-0.5">{product.nameUr}</p>
+        {(product as unknown as { scientific_name?: string }).scientific_name && (
+          <p className="text-xs text-gray-400 italic mt-0.5">
+            {(product as unknown as { scientific_name?: string }).scientific_name}
+          </p>
+        )}
       </div>
 
-      {/* Rating row */}
       <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
         <FaStar className="w-3.5 h-3.5 text-yellow-400" />
         <span className="font-semibold text-gray-800">{product.rating}</span>
@@ -497,7 +578,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         {product.sale && <><span className="text-gray-300">|</span><span className="text-red-500 font-semibold">{product.sale}</span></>}
       </div>
 
-      {/* Price */}
       <div className="flex items-baseline gap-2 flex-wrap">
         <span className="text-2xl font-bold text-gray-900">PKR {displayedPrice.toLocaleString()}</span>
         {product.oldPrice && (
@@ -508,8 +588,59 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         )}
       </div>
 
-      {/* Size */}
-      {product.sizes && product.sizes.length > 0 && (
+      {hasRichVariants ? (
+        <div className="space-y-2">
+          <div>
+            <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">
+              Weight{variantUnit ? ` (${variantUnit})` : ''}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {weightOptions.map(w => (
+                <button key={w}
+                  onClick={() => {
+                    setSelectedWeight(w);
+                    const available = richVariants
+                      .filter(v => v.attributes?.Weight === w)
+                      .map(v => v.attributes?.Form).filter(Boolean) as string[];
+                    if (formOptions.length > 0 && !available.includes(selectedForm)) {
+                      setSelectedForm(available[0] ?? formOptions[0]);
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                    selectedWeight === w ? 'bg-green-600 text-white border-green-600' : 'border-gray-300 text-gray-700'
+                  }`}>
+                  {w}{variantUnit ? ` ${variantUnit}` : ''}
+                </button>
+              ))}
+            </div>
+          </div>
+          {formOptions.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Form</p>
+              <div className="flex flex-wrap gap-1.5">
+                {formOptions.map(f => {
+                  const available = richVariants
+                    .filter(v => v.attributes?.Weight === selectedWeight)
+                    .map(v => v.attributes?.Form) as string[];
+                  const disabled = !available.includes(f);
+                  return (
+                    <button key={f}
+                      onClick={() => !disabled && setSelectedForm(f)}
+                      disabled={disabled}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                        selectedForm === f ? 'bg-green-600 text-white border-green-600'
+                        : disabled ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                        : 'border-gray-300 text-gray-700'
+                      }`}>
+                      {f}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : product.sizes && product.sizes.length > 0 ? (
         <div>
           <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Size</p>
           <div className="flex flex-wrap gap-1.5">
@@ -521,9 +652,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             ))}
           </div>
         </div>
-      )}
+      ) : null}
 
-      {/* Quantity */}
       <div>
         <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">Quantity</p>
         <div className="flex items-center justify-between">
@@ -539,7 +669,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
       </div>
 
-      {/* Buttons */}
       <div className="space-y-2 pt-1">
         <div className="flex gap-2">
           <button onClick={handleAddToCart} className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-3 rounded-lg hover:bg-green-800 transition-all text-sm">
@@ -554,7 +683,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </button>
       </div>
 
-      {/* Collapsible sections */}
       <div className="bg-white rounded-xl border border-gray-200 mt-2">
         {product.features && product.features.length > 0 && (
           <CollapsibleSection title="Key Features" icon={<FaLeaf className="w-4 h-4 text-green-600" />} isOpen={showFeatures} onToggle={() => setShowFeatures(!showFeatures)}>

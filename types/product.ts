@@ -10,6 +10,15 @@ export interface ProductVariant {
   price: number;
   stock: number;
   is_default: boolean;
+  /** Structured attribute map, e.g. { Weight: "50", Form: "Powder" } */
+  attributes?: Record<string, string>;
+  /** Unit label for the Weight attribute, e.g. "g", "ml", "kg" */
+  unit?: string;
+  /**
+   * Final customer-facing price — already includes any additional charge.
+   * Always use this for display. Never compute price + additional on the frontend.
+   */
+  final_price?: number;
 }
 
 export interface ApiCategory {
@@ -32,6 +41,10 @@ export interface ApiProduct {
   thumbnail: string | null;
   hover_image?: string | null;
   description?: string;
+  /** Extended description for the Description tab */
+  long_description?: string | null;
+  /** Latin/scientific name shown as a subtitle under the product name */
+  scientific_name?: string | null;
   category: ApiCategory;
   variants: ProductVariant[];
   gallery?: string[];
@@ -78,6 +91,8 @@ export function apiProductToLegacy(p: ApiProduct): Product {
     how_to_use: p.how_to_use,
     benefits: p.benefits,
     key_features: p.key_features,
+    scientific_name: p.scientific_name,
+    long_description: p.long_description,
   };
 }
 
@@ -120,6 +135,10 @@ export interface Product {
   ingredients?: Array<{ label: string; value: string }>;
   how_to_use?: { steps: string[]; notes: string[] };
   key_features?: Array<{ icon: string; title: string; sub: string; color: string }>;
+  /** Latin/scientific name shown as italic subtitle under product name */
+  scientific_name?: string | null;
+  /** Full extended description for the Description tab */
+  long_description?: string | null;
 }
 
 // Cart-specific product shape (extends Product with quantity)
