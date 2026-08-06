@@ -213,21 +213,31 @@ function ShopContent() {
 
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     setFilters(prev => {
+      // SearchFilterBar manages search/price/sort/sale/stock flags but never
+      // categories — those are owned by CategoryTabs. If the incoming emission
+      // has an empty categories array it means SearchFilterBar didn't touch
+      // categories, so preserve the current selection to avoid wiping it on
+      // every sort/search change (BUG 1 + BUG 2 fix).
+      const mergedCategories =
+        newFilters.categories.length > 0 ? newFilters.categories : prev.categories;
+
+      const merged: FilterOptions = { ...newFilters, categories: mergedCategories };
+
       const filtersChanged =
-        prev.searchQuery !== newFilters.searchQuery ||
-        JSON.stringify(prev.categories) !== JSON.stringify(newFilters.categories) ||
-        prev.minPrice !== newFilters.minPrice ||
-        prev.maxPrice !== newFilters.maxPrice ||
-        prev.sortBy !== newFilters.sortBy ||
-        prev.showOnSale !== newFilters.showOnSale ||
-        prev.showInStock !== newFilters.showInStock ||
-        prev.showNewArrivals !== newFilters.showNewArrivals ||
-        prev.showBestSellers !== newFilters.showBestSellers;
+        prev.searchQuery !== merged.searchQuery ||
+        JSON.stringify(prev.categories) !== JSON.stringify(merged.categories) ||
+        prev.minPrice !== merged.minPrice ||
+        prev.maxPrice !== merged.maxPrice ||
+        prev.sortBy !== merged.sortBy ||
+        prev.showOnSale !== merged.showOnSale ||
+        prev.showInStock !== merged.showInStock ||
+        prev.showNewArrivals !== merged.showNewArrivals ||
+        prev.showBestSellers !== merged.showBestSellers;
 
       if (filtersChanged) {
         setCurrentPage(1);
       }
-      return newFilters;
+      return merged;
     });
   }, []);
 
