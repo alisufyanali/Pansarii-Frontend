@@ -24,6 +24,11 @@ export default function ProductDetailsModal({
   const { addToCart } = useCart();
   const router = useRouter();
 
+  // Derive displayed price from the selected variant — same pattern as ProductDetails.tsx.
+  // Falls back to product.price when no variants exist (static/legacy products).
+  const _modalVariants = (product as unknown as { variants?: Array<{ name: string; price: number }> }).variants;
+  const displayedPrice = _modalVariants?.find(v => v.name === selectedSize)?.price ?? product.price;
+
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -55,7 +60,7 @@ export default function ProductDetailsModal({
     img:       product.img,
     nameEn:    product.nameEn,
     nameUr:    product.nameUr,
-    price:     product.price,
+    price:     displayedPrice,
     size:      selectedSize,
   });
 
@@ -156,7 +161,7 @@ export default function ProductDetailsModal({
 
                 {/* Price */}
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
+                  <span className="text-xl font-bold text-gray-900">PKR {displayedPrice.toLocaleString()}</span>
                   {product.oldPrice && (
                     <span className="text-sm text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>
                   )}
@@ -207,7 +212,7 @@ export default function ProductDetailsModal({
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Total</p>
-                      <p className="text-base font-bold text-gray-900">PKR {(product.price * quantity).toLocaleString()}</p>
+                      <p className="text-base font-bold text-gray-900">PKR {(displayedPrice * quantity).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
@@ -307,7 +312,7 @@ export default function ProductDetailsModal({
                 </div>
 
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
+                  <span className="text-2xl font-bold text-gray-900">PKR {displayedPrice.toLocaleString()}</span>
                   {product.oldPrice && (
                     <span className="text-gray-400 line-through text-sm">PKR {product.oldPrice.toLocaleString()}</span>
                   )}
@@ -374,7 +379,7 @@ export default function ProductDetailsModal({
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Total</p>
-                      <p className="text-xl font-bold text-gray-900">PKR {(product.price * quantity).toLocaleString()}</p>
+                      <p className="text-xl font-bold text-gray-900">PKR {(displayedPrice * quantity).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
