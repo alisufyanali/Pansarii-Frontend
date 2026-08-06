@@ -25,6 +25,25 @@ export default function LoginPage() {
   );
 }
 
+// ─── Open-redirect protection ─────────────────────────────────────────────────
+// Only allow relative internal paths. Reject anything that starts with '//'
+// (protocol-relative URL) or contains a protocol (http://, https://).
+function safeReturnTo(raw: string): string {
+  try {
+    const decoded = decodeURIComponent(raw);
+    if (
+      decoded.startsWith('/') &&
+      !decoded.startsWith('//') &&
+      !/^[a-z][a-z0-9+\-.]*:/i.test(decoded)
+    ) {
+      return decoded;
+    }
+  } catch {
+    // malformed URI component — fall through to default
+  }
+  return '/';
+}
+
 // ─── Field error shape ────────────────────────────────────────────────────────
 interface LoginFields {
   email: string;
@@ -49,10 +68,15 @@ function LoginPageContent() {
     searchParamsRef.current = searchParams;
   }, [searchParams]);
 
+  // Guard: redirect away from /login if user is ALREADY authenticated on mount
+  // (e.g. user navigates to /login manually while already logged in).
+  // This is intentionally separate from the post-login redirect, which lives
+  // in handleSubmit to avoid the race condition described below.
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      const returnTo = searchParamsRef.current.get('returnTo') ?? '/';
-      router.replace(decodeURIComponent(returnTo));
+      const raw     = searchParamsRef.current.get('returnTo') ?? '/';
+      const returnTo = safeReturnTo(raw);
+      router.replace(returnTo);
     }
   }, [isAuthenticated, authLoading, router]);
 
@@ -82,10 +106,16 @@ function LoginPageContent() {
     setIsLoading(true);
     try {
       await login({ email: formData.email, password: formData.password });
-      // Redirect is handled by the useEffect watching isAuthenticated.
-      // Do NOT call router.push here — setUser() is async state and the
-      // context value won't be updated yet, so the effect fires after
-      // React commits the new user state, which is the correct moment.
+
+      // Navigate FIRST — before any state updates (toast, setIsLoading) that
+      // would trigger re-renders and could race with the navigation.
+      // safeReturnTo validates the param to prevent open-redirect attacks.
+      const raw      = searchParamsRef.current.get('returnTo') ?? '/';
+      const returnTo = safeReturnTo(raw);
+      router.replace(returnTo);
+
+      // Toast fires after navigation is queued. It will display briefly on the
+      // destination page (or on /login if navigation is somehow cancelled).
       toast.success('Login successful!');
     } catch (err) {
       // Map Laravel 422 field errors
