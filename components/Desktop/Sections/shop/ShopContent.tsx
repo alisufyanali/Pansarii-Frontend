@@ -123,9 +123,7 @@ function ShopContent({
   };
 
   const handleCategoryChange = (category: string) => {
-    // Use functional updater to avoid stale closure overwriting concurrent
-    // filter changes (e.g. a SearchFilterBar debounce firing at the same time).
-    setFilters(prev => ({ ...prev, categories: (category && category !== 'all') ? [category] : [] }));
+    setFilters({ ...filters, categories: (category && category !== 'all') ? [category] : [] });
   };
 
   const handleAddToCart = async (product: Product) => {

@@ -16,6 +16,7 @@ const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Remedies':      'remedies',
   'Murrabajat':    'murrabajat',
   'Arqiyaat':      'arqiyaat',
+  'Spices':        'spices',
 };
 
 export default function SolutionBar() {

@@ -16,6 +16,7 @@ const CATEGORY_SLUG_MAP: Record<string, string> = {
   'Remedies':      'remedies',
   'Murrabajat':    'murrabajat',
   'Arqiyaat':      'arqiyaat',
+  'Spices':        'spices',
 };
 
 const CATEGORY_COLORS: Record<string, { bg: string; activeBg: string }> = {
@@ -27,6 +28,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; activeBg: string }> = {
   'Remedies':      { bg: 'bg-lime-50',   activeBg: 'bg-lime-100'   },
   'Murrabajat':    { bg: 'bg-orange-50', activeBg: 'bg-orange-100' },
   'Arqiyaat':      { bg: 'bg-cyan-50',   activeBg: 'bg-cyan-100'   },
+  'Spices':        { bg: 'bg-red-50',    activeBg: 'bg-red-100'    },
 };
 
 export default function SolutionBar() {
