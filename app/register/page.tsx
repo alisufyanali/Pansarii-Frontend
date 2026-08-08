@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiPhone } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiPhone, FiCheck } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useAuth, extractFieldErrors } from '@/context/AuthContext';
 import { getApiErrorMessage } from '@/lib/axios';
@@ -18,10 +18,43 @@ interface RegisterFields {
   password_confirmation: string;
 }
 
+// ─── Password requirement rules ───────────────────────────────────────────────
+const PASSWORD_RULES = [
+  { id: 'length',    label: 'At least 8 characters',     test: (p: string) => p.length >= 8           },
+  { id: 'uppercase', label: 'One uppercase letter (A–Z)', test: (p: string) => /[A-Z]/.test(p)        },
+  { id: 'number',    label: 'One number (0–9)',           test: (p: string) => /[0-9]/.test(p)        },
+  { id: 'symbol',    label: 'One symbol (!@#$…)',         test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+] as const;
+
+// All four rules are rendered simultaneously as soon as the field has been focused.
+// Each rule's indicator toggles independently as the user types.
+function PasswordChecklist({ password, visible }: { password: string; visible: boolean }) {
+  if (!visible) return null;
+  return (
+    <ul className="mt-2 space-y-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+      {PASSWORD_RULES.map(rule => {
+        const met = rule.test(password);
+        return (
+          <li key={rule.id} className="flex items-center gap-2 text-xs">
+            <span className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center transition-colors ${
+              met ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
+            }`}>
+              {met && <FiCheck className="w-2.5 h-2.5" />}
+            </span>
+            <span className={met ? 'text-green-700 font-medium' : 'text-gray-500'}>
+              {rule.label}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function RegisterPage() {
-  const router      = useRouter();
+  const router       = useRouter();
   const { register } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -32,24 +65,42 @@ export default function RegisterPage() {
   const [isLoading,           setIsLoading]           = useState(false);
   const [fieldErrors,         setFieldErrors]         = useState<Partial<RegisterFields & { confirmPassword: string }>>({});
   const [apiError,            setApiError]            = useState('');
+  // Show checklist once the password field has been focused at least once
+  const [passwordFocused,     setPasswordFocused]     = useState(false);
+  // Controlled state — completely decoupled from form submission
+  const [termsAccepted,       setTermsAccepted]       = useState(false);
 
   // ── Client validation ───────────────────────────────────────────────────────
   const validate = (): boolean => {
     const errs: typeof fieldErrors = {};
-    if (!formData.name || formData.name.length < 2) errs.name = 'Name must be at least 2 characters';
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) errs.email = 'Valid email is required';
-    if (!formData.phone || !/^[0-9]{10,15}$/.test(formData.phone.replace(/[-()\s+]/g, ''))) errs.phone = 'Valid phone number is required';
-    if (!formData.password || formData.password.length < 6) errs.password = 'Password must be at least 6 characters';
-    if (formData.password !== formData.confirmPassword) errs.confirmPassword = 'Passwords do not match';
+    if (!formData.name || formData.name.length < 2)
+      errs.name = 'Name must be at least 2 characters';
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email))
+      errs.email = 'Valid email is required';
+    if (!formData.phone || !/^[0-9]{10,15}$/.test(formData.phone.replace(/[-()\s+]/g, '')))
+      errs.phone = 'Valid phone number is required';
+    if (!formData.password || formData.password.length < 8)
+      errs.password = 'Password must be at least 8 characters';
+    if (formData.password !== formData.confirmPassword)
+      errs.confirmPassword = 'Passwords do not match';
     setFieldErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
   // ── Submit ──────────────────────────────────────────────────────────────────
+  // Order: (1) terms check → early return with toast
+  //        (2) validate()  → early return with field errors
+  //        (3) API call    → register()
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError('');
-    if (!validate()) return;
+
+    if (!termsAccepted) {
+      toast.error('Please accept the Terms of Service and Privacy Policy to continue.');
+      return; // stops here — no API call
+    }
+
+    if (!validate()) return; // stops here — no API call
 
     setIsLoading(true);
     try {
@@ -63,10 +114,8 @@ export default function RegisterPage() {
       toast.success('Registration successful! Welcome to Pansari Inn 🎉');
       router.push('/');
     } catch (err) {
-      // Map Laravel 422 field-level errors
       const fields = extractFieldErrors<RegisterFields>(err);
       if (Object.keys(fields).length) {
-        // Map password_confirmation → confirmPassword for the UI field
         const { password_confirmation, ...rest } = fields;
         setFieldErrors({ ...rest, confirmPassword: password_confirmation });
       } else {
@@ -82,7 +131,8 @@ export default function RegisterPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if ((fieldErrors as Record<string, unknown>)[name]) setFieldErrors(prev => ({ ...prev, [name]: undefined }));
+    if ((fieldErrors as Record<string, unknown>)[name])
+      setFieldErrors(prev => ({ ...prev, [name]: undefined }));
     if (apiError) setApiError('');
   };
 
@@ -108,7 +158,9 @@ export default function RegisterPage() {
 
             {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
+              </label>
               <div className="relative">
                 <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -123,7 +175,9 @@ export default function RegisterPage() {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -138,7 +192,9 @@ export default function RegisterPage() {
 
             {/* Phone */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
+              </label>
               <div className="relative">
                 <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -153,14 +209,18 @@ export default function RegisterPage() {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="password" name="password" type={showPassword ? 'text' : 'password'}
+                  id="password" name="password"
+                  type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   value={formData.password} onChange={handleChange} disabled={isLoading}
-                  placeholder="Create a password"
+                  placeholder="Create a strong password"
+                  onFocus={() => setPasswordFocused(true)}
                   className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${fieldErrors.password ? 'border-red-500' : 'border-gray-300'}`}
                 />
                 <button type="button" onClick={() => setShowPassword(p => !p)}
@@ -169,16 +229,21 @@ export default function RegisterPage() {
                   {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
                 </button>
               </div>
+              {/* All 4 rules render at once; each toggles its own indicator independently */}
+              <PasswordChecklist password={formData.password} visible={passwordFocused} />
               {fieldErrors.password && <p className="mt-1 text-sm text-red-500">{fieldErrors.password}</p>}
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'}
+                  id="confirmPassword" name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   value={formData.confirmPassword} onChange={handleChange} disabled={isLoading}
                   placeholder="Confirm your password"
@@ -193,16 +258,41 @@ export default function RegisterPage() {
               {fieldErrors.confirmPassword && <p className="mt-1 text-sm text-red-500">{fieldErrors.confirmPassword}</p>}
             </div>
 
-            {/* Terms */}
-            <div className="flex items-start">
-              <input type="checkbox" id="terms" required
-                className="w-4 h-4 mt-1 text-green-600 border-gray-300 rounded focus:ring-green-500" />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+            {/* Terms — controlled checkbox; links are in a plain <span>, not a <label>,
+                so clicking them never bubbles to the checkbox or triggers submission.
+                target="_blank" opens in a new tab — the current registration tab is
+                completely unaffected (React state, form values, all preserved). */}
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={termsAccepted}
+                onChange={e => setTermsAccepted(e.target.checked)}
+                disabled={isLoading}
+                className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+              />
+              <span className="text-sm text-gray-600 leading-snug">
                 I agree to the{' '}
-                <Link href="/terms" className="text-green-600 hover:text-green-700 font-medium">Terms of Service</Link>
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-600 hover:text-green-700 font-medium underline-offset-2 hover:underline"
+                  onClick={e => e.stopPropagation()}
+                >
+                  Terms of Service
+                </Link>
                 {' '}and{' '}
-                <Link href="/privacy" className="text-green-600 hover:text-green-700 font-medium">Privacy Policy</Link>
-              </label>
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-600 hover:text-green-700 font-medium underline-offset-2 hover:underline"
+                  onClick={e => e.stopPropagation()}
+                >
+                  Privacy Policy
+                </Link>
+              </span>
             </div>
 
             {/* Submit */}
@@ -230,7 +320,9 @@ export default function RegisterPage() {
 
           <p className="text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/login" className="text-green-600 hover:text-green-700 font-semibold">Sign in</Link>
+            <Link href="/login" className="text-green-600 hover:text-green-700 font-semibold">
+              Sign in
+            </Link>
           </p>
         </div>
       </div>
