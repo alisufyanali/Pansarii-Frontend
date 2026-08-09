@@ -157,6 +157,15 @@ export default function CheckoutPage() {
 
     if (checkoutMode === 'guest' && !validateGuestFields()) return;
 
+    // City is required — show inline error if not selected
+    if (!selectedCityId) {
+      setSubmitError('Please select a city to calculate shipping charges before placing your order.');
+      // Scroll the city select into view
+      const cityEl = document.querySelector('[name="city"]') as HTMLElement | null;
+      cityEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     setIsSubmitting(true);
 
     const form    = e.target as HTMLFormElement;

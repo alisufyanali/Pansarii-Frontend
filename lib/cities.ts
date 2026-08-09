@@ -49,7 +49,7 @@ const STATIC_CITIES: City[] = [
 ];
 
 // Default shipping charge used when no city is selected
-export const DEFAULT_SHIPPING = 200;
+export const DEFAULT_SHIPPING = 250;
 
 let _cache: City[] | null = null;
 
