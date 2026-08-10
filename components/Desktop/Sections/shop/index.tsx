@@ -191,7 +191,8 @@ function ShopContent() {
     return () => controller.abort();
   }, [filters, currentPage, productsPerPage, selectedCategoryId]);
 
-  // URL sync
+  // URL sync — push (not replace) so each page/filter state is a distinct history entry
+  // and the browser Back button restores the exact URL the user left from.
   useEffect(() => {
     const t = setTimeout(() => {
       const params = new URLSearchParams();
@@ -200,11 +201,19 @@ function ShopContent() {
       if (currentPage > 1) params.set('page', String(currentPage));
       const newUrl = params.toString() ? `/shop?${params.toString()}` : '/shop';
       if (newUrl !== window.location.pathname + window.location.search) {
-        router.replace(newUrl, { scroll: false });
+        router.push(newUrl, { scroll: false });
       }
     }, 300);
     return () => clearTimeout(t);
   }, [filters.searchQuery, filters.categories, currentPage, router]);
+
+  // Re-sync currentPage from URL when searchParams change (Back/Forward navigation).
+  // useState lazy initializer only runs once; this effect keeps state in sync with
+  // the URL after history navigation restores a different ?page= value.
+  useEffect(() => {
+    const pageFromUrl = Number(searchParams.get('page')) || 1;
+    setCurrentPage(prev => prev !== pageFromUrl ? pageFromUrl : prev);
+  }, [searchParams]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);

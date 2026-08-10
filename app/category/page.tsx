@@ -76,7 +76,7 @@ function CategoryBrowseContent() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => Number(searchParams.get('page')) || 1);
   const [totalPages, setTotalPages] = useState(1);
   const [productsPerPage, setProductsPerPage] = useState(20);
 
@@ -125,6 +125,27 @@ function CategoryBrowseContent() {
       setCurrentPage(totalPages);
     }
   }, [totalPages, currentPage]);
+
+  // Write page to URL so Back button can restore it, and push (not replace)
+  // so each page is a separate history entry.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (categoryParam) params.set('cat', categoryParam);
+      if (currentPage > 1) params.set('page', String(currentPage));
+      const newUrl = params.toString() ? `/category?${params.toString()}` : '/category';
+      if (newUrl !== window.location.pathname + window.location.search) {
+        router.push(newUrl, { scroll: false });
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [currentPage, categoryParam, router]);
+
+  // Re-sync currentPage from URL on Back/Forward navigation.
+  useEffect(() => {
+    const pageFromUrl = Number(searchParams.get('page')) || 1;
+    setCurrentPage(prev => prev !== pageFromUrl ? pageFromUrl : prev);
+  }, [searchParams]);
 
   const fetchProducts = useCallback(async (signal?: AbortSignal) => {
     setIsLoading(true);
