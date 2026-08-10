@@ -10,7 +10,6 @@ import CartAuthBridge from "@/components/CartAuthBridge";
 import WishlistAuthBridge from "@/components/WishlistAuthBridge";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700'],
@@ -55,7 +54,6 @@ export default function RootLayout({
         <link rel="preload" as="image" href="/images/Banner.png" fetchPriority="high" imageSizes="(max-width: 768px) 92vw, 100vw" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-        <link rel="dns-prefetch" href="https://va.vercel-scripts.com" />
       </head>
       <body className={`${poppins.className} bg-white text-gray-900 antialiased`}>
         <AuthProvider>
@@ -79,7 +77,6 @@ export default function RootLayout({
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
-        <SpeedInsights />
       </body>
     </html>
   );
