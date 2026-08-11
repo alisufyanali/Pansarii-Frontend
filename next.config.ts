@@ -50,10 +50,12 @@ const nextConfig: NextConfig = {
           {
             key: 'Content-Security-Policy',
             value: isDev
-              // Dev: keep unsafe-inline/unsafe-eval for HMR and dev tooling convenience
+              // Dev: unsafe-inline/eval kept for HMR and dev tooling.
               ? "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ws: wss: http://localhost:8000 http://127.0.0.1:8000 https://custom.pansariinn.pk;"
-              // Production: no unsafe-inline, no unsafe-eval, no vercel-scripts.com
-              : "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://custom.pansariinn.pk;",
+              // Production: unsafe-inline required for Next.js hydration scripts.
+              // unsafe-eval is NOT needed and intentionally excluded.
+              // Vercel-scripts.com removed — project is hosted on cPanel.
+              : "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://custom.pansariinn.pk;",
           },
         ],
       },
