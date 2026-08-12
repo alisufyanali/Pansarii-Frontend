@@ -223,7 +223,7 @@ function ShopContent() {
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     setFilters(prev => {
       // SearchFilterBar owns: search, price, sort, sale, stock flags.
-      // Categories are owned exclusively by CategoryTabs via handleCategoryChange.
+      // Categories are owned exclusively by handleCategorySelect below.
       // Always discard whatever categories SearchFilterBar emits and keep prev.categories,
       // so a sort/search/price change never clobbers the active category tab.
       const merged: FilterOptions = { ...newFilters, categories: prev.categories };
@@ -241,6 +241,17 @@ function ShopContent() {
       if (filtersChanged) setCurrentPage(1);
       return merged;
     });
+  }, []);
+
+  // Dedicated category setter — writes categories directly to state, bypassing
+  // handleFilterChange (which preserves prev.categories to prevent SearchFilterBar
+  // from resetting tab selection on sort/search changes).
+  const handleCategorySelect = useCallback((category: string) => {
+    setFilters(prev => ({
+      ...prev,
+      categories: (category && category !== 'all') ? [category] : [],
+    }));
+    setCurrentPage(1);
   }, []);
 
   const handleClearFilters = useCallback(() => {
@@ -292,6 +303,7 @@ function ShopContent() {
           categories={filterCategories}
           filters={filters}
           setFilters={handleFilterChange}
+          onCategorySelect={handleCategorySelect}
           filteredProducts={apiProducts}
           currentProducts={apiProducts}
           totalProductCount={apiMeta?.total ?? 0}

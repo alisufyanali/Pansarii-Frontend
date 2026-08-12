@@ -61,6 +61,9 @@ interface ShopContentProps {
   categories: Array<{ name: string; slug: string; products_count: number }>;
   filters: FilterOptions;
   setFilters: (filters: FilterOptions) => void;
+  /** Dedicated handler for category tab clicks — separate from setFilters so it
+   *  bypasses handleFilterChange (which preserves prev.categories for SearchFilterBar). */
+  onCategorySelect: (category: string) => void;
   filteredProducts: Product[];
   currentProducts: Product[];
   totalProductCount?: number;
@@ -79,6 +82,7 @@ function ShopContent({
   categories = [],
   filters,
   setFilters,
+  onCategorySelect,
   filteredProducts = [],
   currentProducts = [],
   totalProductCount = 0,
@@ -123,7 +127,12 @@ function ShopContent({
   };
 
   const handleCategoryChange = (category: string) => {
-    setFilters({ ...filters, categories: (category && category !== 'all') ? [category] : [] });
+    // Route through the dedicated category setter (onCategorySelect) which writes
+    // directly to the parent's filter state, bypassing handleFilterChange.
+    // handleFilterChange unconditionally preserves prev.categories (to stop
+    // SearchFilterBar from resetting tabs on sort/search), so category changes
+    // MUST use this separate path.
+    onCategorySelect(category);
   };
 
   const handleAddToCart = async (product: Product) => {
