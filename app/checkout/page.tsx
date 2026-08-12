@@ -639,21 +639,42 @@ export default function CheckoutPage() {
                 <h2 className="text-sm font-bold text-gray-900 mb-4">Order Summary</h2>
 
                 {/* Items */}
-                <div className="flex flex-col gap-3 pb-4 border-b border-gray-100">
-                  {cartItems.map(item => (
-                    <div key={`${item.id}-${item.size}`} className="flex gap-3">
-                      <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
-                        <Image src={item.img} alt={item.nameEn} fill className="object-cover" sizes="48px" />
+                <div className="relative mb-4">
+                  {/* Scrollable items list — capped on mobile so the coupon/total
+                      sections below remain reachable without the list overflowing */}
+                  <div
+                    className={`flex flex-col gap-3 overflow-y-auto pb-1 ${
+                      cartItems.length > 4 ? 'max-h-[272px] lg:max-h-none' : ''
+                    }`}
+                  >
+                    {cartItems.map(item => (
+                      <div key={`${item.id}-${item.size}`} className="flex gap-3">
+                        <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
+                          <Image src={item.img} alt={item.nameEn} fill className="object-cover" sizes="48px" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-gray-900 truncate">{item.nameEn}</p>
+                          <p className="text-[11px] text-gray-400">{item.size} · Qty {item.quantity}</p>
+                        </div>
+                        <p className="text-xs font-bold text-gray-900 flex-shrink-0">
+                          PKR {(item.price * item.quantity).toLocaleString()}
+                        </p>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-gray-900 truncate">{item.nameEn}</p>
-                        <p className="text-[11px] text-gray-400">{item.size} · Qty {item.quantity}</p>
-                      </div>
-                      <p className="text-xs font-bold text-gray-900 flex-shrink-0">
-                        PKR {(item.price * item.quantity).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  {/* Bottom-fade scroll cue — only rendered when list is long enough
+                      to be capped (> 4 items) and only visible on mobile (lg hides it) */}
+                  {cartItems.length > 4 && (
+                    <div
+                      className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 lg:hidden"
+                      style={{
+                        background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.95))',
+                      }}
+                      aria-hidden
+                    />
+                  )}
+                  {/* Divider sits outside the scrollable area so it's always visible */}
+                  <div className="mt-1 border-b border-gray-100" />
                 </div>
 
                 {/* Coupon */}
