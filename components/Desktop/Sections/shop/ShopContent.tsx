@@ -113,6 +113,9 @@ function ShopContent({
   // Only the product grid area conditionally shows a skeleton.
 
   const clearAllFilters = () => {
+    // Reset all non-category filters via setFilters, then clear the category
+    // via onCategorySelect — this bypasses handleFilterChange's category-preservation
+    // logic so the tab actually resets to "All Products".
     setFilters({
       searchQuery: '',
       minPrice: 0,
@@ -124,6 +127,7 @@ function ShopContent({
       showNewArrivals: false,
       showBestSellers: false,
     });
+    onCategorySelect('all');
   };
 
   const handleCategoryChange = (category: string) => {
