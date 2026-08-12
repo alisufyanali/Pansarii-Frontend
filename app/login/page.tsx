@@ -71,13 +71,22 @@ function LoginPageContent() {
   // before this render (e.g. manually navigated to /login while logged in).
   // Does NOT run after a fresh login — handleSubmit owns that redirect to
   // avoid a double-navigation race condition.
+  //
+  // NOTE: `router` is intentionally excluded from the dependency array.
+  // The Next.js App Router returns a new router object reference on every
+  // render, so including it would cause this effect to re-run after every
+  // state update (e.g. setApiError, setIsLoading) — which can trigger a
+  // spurious router.replace when a stale localStorage token makes
+  // isAuthenticated briefly true, producing the "auto-refresh on bad
+  // credentials" symptom.
   useEffect(() => {
     if (!authLoading && isAuthenticated && !hasNavigatedRef.current) {
       const raw      = searchParamsRef.current.get('returnTo') ?? '/';
       const returnTo = safeReturnTo(raw);
       router.replace(returnTo);
     }
-  }, [isAuthenticated, authLoading, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, authLoading]);
 
   const [formData, setFormData] = useState<LoginFields>({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -106,15 +115,22 @@ function LoginPageContent() {
     try {
       await login({ email: formData.email, password: formData.password });
 
-      // Mark as navigated BEFORE calling router.replace so the mount-guard
-      // useEffect cannot fire a competing redirect when isAuthenticated commits.
+      // Mark as navigated BEFORE redirecting so the mount-guard useEffect
+      // cannot fire a competing redirect when isAuthenticated commits.
       hasNavigatedRef.current = true;
 
       const raw      = searchParamsRef.current.get('returnTo') ?? '/';
       const returnTo = safeReturnTo(raw);
-      router.replace(returnTo);
 
+      // Toast first — router.replace unmounts this component before the toast
+      // library can schedule its render if called after navigation.
       toast.success('Login successful!');
+
+      // Use window.location.href instead of router.replace so navigation
+      // always fires even when returnTo resolves to the current route.
+      // router.replace('/') is a no-op when the user is already at '/',
+      // which causes the "toast shows but no redirect" symptom.
+      window.location.href = returnTo;
     } catch (err) {
       // Map Laravel 422 field errors
       const fields = extractFieldErrors<LoginFields>(err);
