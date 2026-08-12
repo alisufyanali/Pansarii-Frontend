@@ -19,6 +19,115 @@ import { getCities, DEFAULT_SHIPPING, type City } from '@/lib/cities';
 
 type CheckoutMode = 'pending' | 'guest' | 'auth';
 
+// ── City searchable combobox ───────────────────────────────────────────────────
+
+interface CityComboboxProps {
+  cities: City[];
+  citiesLoading: boolean;
+  selectedCityId: number | null;
+  onSelect: (city: City | null) => void;
+  inputCls: string;
+}
+
+function CityCombobox({ cities, citiesLoading, selectedCityId, onSelect, inputCls }: CityComboboxProps) {
+  const selectedCity = cities.find(c => c.id === selectedCityId) ?? null;
+
+  const [query,    setQuery]    = useState('');
+  const [isOpen,   setIsOpen]   = useState(false);
+  const [focused,  setFocused]  = useState(false);
+
+  // Display value: when dropdown is open show the typed query; when closed show
+  // the selected city name (or empty for placeholder).
+  const displayValue = isOpen ? query : (selectedCity?.name ?? '');
+
+  const filtered = query.trim() === ''
+    ? cities
+    : cities.filter(c => c.name.toLowerCase().includes(query.toLowerCase().trim()));
+
+  const handleSelect = (city: City) => {
+    onSelect(city);
+    setQuery('');
+    setIsOpen(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setIsOpen(true);
+    if (e.target.value === '') onSelect(null);
+  };
+
+  const handleBlur = () => {
+    // Delay so click on option registers before blur closes the dropdown
+    setTimeout(() => {
+      setIsOpen(false);
+      setFocused(false);
+      // If user blurred without selecting and there's a partial query, reset
+      setQuery('');
+    }, 150);
+  };
+
+  return (
+    <div className="relative">
+      {/* Hidden native input so form name="city" is still present for validation */}
+      <input type="hidden" name="city" value={selectedCityId ?? ''} />
+
+      <div className="relative">
+        <input
+          type="text"
+          autoComplete="off"
+          placeholder={citiesLoading ? 'Loading cities…' : 'Search city…'}
+          disabled={citiesLoading}
+          value={displayValue}
+          onChange={handleInputChange}
+          onFocus={() => { setFocused(true); setIsOpen(true); }}
+          onBlur={handleBlur}
+          className={`${inputCls} pr-8 ${!selectedCity && !focused ? 'text-gray-400' : ''}`}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          aria-autocomplete="list"
+        />
+        {/* Chevron */}
+        <svg
+          className={`pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+
+      {isOpen && !citiesLoading && (
+        <ul
+          role="listbox"
+          className="absolute z-30 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto text-sm"
+        >
+          {filtered.length === 0 ? (
+            <li className="px-3 py-2.5 text-gray-400 text-xs">No cities match &quot;{query}&quot;</li>
+          ) : (
+            filtered.map(city => (
+              <li
+                key={city.id}
+                role="option"
+                aria-selected={city.id === selectedCityId}
+                onMouseDown={() => handleSelect(city)}
+                className={`flex justify-between items-center px-3 py-2.5 cursor-pointer transition-colors ${
+                  city.id === selectedCityId
+                    ? 'bg-green-50 text-green-800 font-semibold'
+                    : 'hover:bg-gray-50 text-gray-800'
+                }`}
+              >
+                <span>{city.name}</span>
+                <span className="text-[11px] text-gray-400 ml-2 flex-shrink-0">
+                  PKR {city.shipping_charge} shipping
+                </span>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 interface GuestFields {
   name: string;
   email: string;
@@ -466,29 +575,17 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className={labelCls}>City *</label>
-                    <select
-                      name="city"
-                      required
-                      value={selectedCityId ?? ''}
-                      onChange={e => {
-                        const id = Number(e.target.value);
-                        const city = cities.find(c => c.id === id) ?? null;
+                    <CityCombobox
+                      cities={cities}
+                      citiesLoading={citiesLoading}
+                      selectedCityId={selectedCityId}
+                      onSelect={(city) => {
                         setSelectedCityId(city?.id ?? null);
                         setSelectedCityName(city?.name ?? '');
                         setCityShipping(city?.shipping_charge ?? null);
                       }}
-                      className={`${inputCls} ${!selectedCityId ? 'text-gray-400' : ''}`}
-                      disabled={citiesLoading}
-                    >
-                      <option value="" disabled>
-                        {citiesLoading ? 'Loading cities…' : 'Select your city'}
-                      </option>
-                      {cities.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} — PKR {c.shipping_charge} shipping
-                        </option>
-                      ))}
-                    </select>
+                      inputCls={inputCls}
+                    />
                     {!selectedCityId && !citiesLoading && (
                       <p className="mt-1 text-[11px] text-amber-600">
                         Select city to calculate shipping charges
