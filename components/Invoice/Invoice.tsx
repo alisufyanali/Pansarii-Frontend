@@ -210,9 +210,11 @@ export default function Invoice({ data }: { data: InvoiceData }) {
           color: #1f2937;
           background: #ffffff;
           max-width: 800px;
+          width: 100%;
           margin: 0 auto;
           padding: 36px 36px 44px;
           box-sizing: border-box;
+          overflow-x: hidden;
         }
 
         /* ── Table alternating rows ── */
@@ -221,6 +223,80 @@ export default function Invoice({ data }: { data: InvoiceData }) {
         }
         .inv-tbody tr:nth-child(even) td {
           background: #ffffff;
+        }
+
+        /* ── Responsive: mobile (≤ 480px) ── */
+        @media screen and (max-width: 480px) {
+          .inv-root {
+            padding: 16px 14px 28px;
+            font-size: 12px;
+          }
+
+          /* Header: stack logo/meta vertically */
+          .inv-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px !important;
+            max-height: none !important;
+          }
+          .inv-header-right {
+            text-align: left !important;
+          }
+
+          /* Addresses: stack single column */
+          .inv-addresses {
+            grid-template-columns: 1fr !important;
+          }
+          .inv-addresses-ship {
+            border-left: none !important;
+            border-top: 1px solid #e5e7eb;
+          }
+
+          /* Table: contained horizontal scroll */
+          .inv-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+          }
+          .inv-table-wrap table {
+            border: none !important;
+            border-radius: 0 !important;
+            min-width: 420px;
+          }
+
+          /* Totals: full width instead of fixed 280px */
+          .inv-totals-inner {
+            width: 100% !important;
+          }
+
+          /* Footer: stack vertically */
+          .inv-footer {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 6px !important;
+          }
+        }
+
+        /* ── Responsive: small tablets (481–639px) ── */
+        @media screen and (min-width: 481px) and (max-width: 639px) {
+          .inv-root {
+            padding: 24px 20px 36px;
+          }
+          .inv-addresses {
+            grid-template-columns: 1fr !important;
+          }
+          .inv-addresses-ship {
+            border-left: none !important;
+            border-top: 1px solid #e5e7eb;
+          }
+          .inv-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+          .inv-totals-inner {
+            width: 240px !important;
+          }
         }
 
         /* ── Print overrides ── */
@@ -274,7 +350,7 @@ export default function Invoice({ data }: { data: InvoiceData }) {
         {/* ══════════════════════════════════════════════════════════
             HEADER — flex row, max 90px, logo+brand left / meta right
         ══════════════════════════════════════════════════════════ */}
-        <div className="inv-page-anchor" style={{
+        <div className="inv-page-anchor inv-header" style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -298,7 +374,7 @@ export default function Invoice({ data }: { data: InvoiceData }) {
           </div>
 
           {/* Right: INVOICE title + order # + date + badge */}
-          <div style={{ textAlign: 'right' }}>
+          <div className="inv-header-right" style={{ textAlign: 'right' }}>
             <p style={{ fontSize: 22, fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-0.8px' }}>
               INVOICE
             </p>
@@ -332,7 +408,7 @@ export default function Invoice({ data }: { data: InvoiceData }) {
           </div>
 
           {/* Ship To — always rendered, shows note when same */}
-          <div style={{
+          <div className="inv-addresses-ship" style={{
             padding: '14px 18px',
             borderLeft: '1px solid #e5e7eb',
           }}>
@@ -370,6 +446,7 @@ export default function Invoice({ data }: { data: InvoiceData }) {
         {/* ══════════════════════════════════════════════════════════
             PRODUCTS TABLE — dark header, alternating rows, 8px 12px
         ══════════════════════════════════════════════════════════ */}
+        <div className="inv-table-wrap">
         <table style={{
           width: '100%',
           borderCollapse: 'collapse',
@@ -432,6 +509,7 @@ export default function Invoice({ data }: { data: InvoiceData }) {
             ))}
           </tbody>
         </table>
+        </div>{/* end inv-table-wrap */}
 
         {/* ══════════════════════════════════════════════════════════
             TOTALS — right-aligned 280px block, payment badge below
@@ -443,7 +521,7 @@ export default function Invoice({ data }: { data: InvoiceData }) {
           borderTop: '1px solid #e5e7eb',
           marginTop: 0,
         }}>
-          <div style={{ width: 280 }}>
+          <div className="inv-totals-inner" style={{ width: 280 }}>
 
             {/* Subtotal */}
             <div style={totalsRow}>
@@ -496,7 +574,7 @@ export default function Invoice({ data }: { data: InvoiceData }) {
         {/* ══════════════════════════════════════════════════════════
             FOOTER — tight single row, thank-you left / email right
         ══════════════════════════════════════════════════════════ */}
-        <div style={{
+        <div className="inv-footer" style={{
           marginTop: 28,
           paddingTop: 12,
           borderTop: '1px solid #e5e7eb',
