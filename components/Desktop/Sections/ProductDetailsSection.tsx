@@ -115,20 +115,23 @@ function Skeleton() {
 // ─── Review Form Modal ────────────────────────────────────────────────────────
 function ReviewFormModal({ onClose, onSubmit, isSubmitting }: {
   onClose: () => void;
-  onSubmit: (review: { author: string; rating: number; comment: string }) => void;
+  onSubmit: (review: { author: string; email: string; rating: number; comment: string }) => void;
   isSubmitting?: boolean;
 }) {
-  const [name, setName]       = useState('');
-  const [rating, setRating]   = useState(5);
+  const [name,    setName]    = useState('');
+  const [email,   setEmail]   = useState('');
+  const [rating,  setRating]  = useState(5);
   const [comment, setComment] = useState('');
-  const [error, setError]     = useState('');
+  const [error,   setError]   = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim())    return setError('Please enter your name.');
+    if (!email.trim())   return setError('Please enter your email.');
+    if (!/\S+@\S+\.\S+/.test(email)) return setError('Please enter a valid email address.');
     if (!comment.trim()) return setError('Please write a review comment.');
     if (rating < 1)      return setError('Please select a star rating.');
-    onSubmit({ author: name.trim(), rating, comment: comment.trim() });
+    onSubmit({ author: name.trim(), email: email.trim(), rating, comment: comment.trim() });
   };
 
   return (
@@ -146,6 +149,12 @@ function ReviewFormModal({ onClose, onSubmit, isSubmitting }: {
             <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Your Name *</label>
             <input value={name} onChange={e => { setName(e.target.value); setError(''); }}
               placeholder="Ahmed Khan"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Your Email *</label>
+            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }}
+              placeholder="ahmed@example.com"
               className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition" />
           </div>
           <div>
@@ -342,7 +351,7 @@ export default function ProductDetailsSection({
     window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   };
 
-  const handleSubmitReview = async ({ author, rating, comment }: { author: string; rating: number; comment: string }) => {
+  const handleSubmitReview = async ({ author, email, rating, comment }: { author: string; email: string; rating: number; comment: string }) => {
     if (!productSlug) {
       toast.error('Cannot submit review — product identifier missing.');
       return;
@@ -350,7 +359,8 @@ export default function ProductDetailsSection({
     setIsSubmittingReview(true);
     try {
       const res = await api.post<ApiResponse<ApiReview>>(`/products/${productSlug}/reviews`, {
-        customer_name: author,
+        name: author,
+        email,
         rating,
         comment,
       });

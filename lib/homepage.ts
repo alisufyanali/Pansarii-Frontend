@@ -45,9 +45,10 @@ export async function getHomepageData(): Promise<HomepageData> {
       new_arrivals: data.new_arrivals ?? [],
     };
   } catch (err) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[homepage] API unavailable, using static fallbacks:', err);
-    }
+    // Use console.error so homepage data failures are always visible,
+    // not just in development. Silent warn makes it impossible to debug
+    // why reviews/banners/etc aren't loading in production.
+    console.error('[homepage] getHomepageData failed, falling back to empty:', err);
     return { ...EMPTY_HOMEPAGE, new_arrivals: [] };
   }
 }

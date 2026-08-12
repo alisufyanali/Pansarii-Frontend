@@ -290,12 +290,12 @@ function ReviewFormModal({
     setIsSubmitting(true);
     try {
       await submitSiteReview({
-        customer_name: form.name.trim(),
-        email:         form.email.trim(),
-        order_number:  form.order_number.trim(),
-        rating:        form.rating,
-        comment:       form.comment.trim(),
-        image:         form.image,
+        reviewer_name:  form.name.trim(),
+        reviewer_email: form.email.trim(),
+        order_number:   form.order_number.trim(),
+        rating:         form.rating,
+        comment:        form.comment.trim(),
+        image:          form.image,
       });
       toast.success('Thank you! Your review has been submitted.');
       onSuccess();

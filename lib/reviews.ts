@@ -110,8 +110,8 @@ export interface SiteReviewsResponse {
 }
 
 export interface ReviewSubmitPayload {
-  customer_name: string;
-  email: string;
+  reviewer_name: string;
+  reviewer_email: string;
   order_number: string;
   rating: number;
   comment: string;
@@ -137,9 +137,8 @@ export async function getSiteReviews(
   } catch (err) {
     // Re-throw aborts so the caller's AbortController cleanup works correctly
     if (options?.signal?.aborted) throw err;
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[reviews] API unavailable, using empty fallback:', isAxiosError(err) ? err.message : err);
-    }
+    // Log with console.error so this is visible in all environments, not just dev
+    console.error('[reviews] getSiteReviews failed:', isAxiosError(err) ? `${err.response?.status} ${err.message}` : err);
     return {
       data: [],
       meta: { current_page: 1, last_page: 1, total: 0, per_page: 10, from: 0, to: 0 },
@@ -154,20 +153,20 @@ export async function getSiteReviews(
 export async function submitSiteReview(payload: ReviewSubmitPayload): Promise<void> {
   if (payload.image) {
     const form = new FormData();
-    form.append('customer_name', payload.customer_name);
-    form.append('email',         payload.email);
-    form.append('order_number',  payload.order_number);
-    form.append('rating',        String(payload.rating));
-    form.append('comment',       payload.comment);
-    form.append('image',         payload.image);
+    form.append('reviewer_name',  payload.reviewer_name);
+    form.append('reviewer_email', payload.reviewer_email);
+    form.append('order_number',   payload.order_number);
+    form.append('rating',         String(payload.rating));
+    form.append('comment',        payload.comment);
+    form.append('image',          payload.image);
     await api.upload<unknown>('/reviews', form);
   } else {
     await api.post<unknown>('/reviews', {
-      customer_name: payload.customer_name,
-      email:         payload.email,
-      order_number:  payload.order_number,
-      rating:        payload.rating,
-      comment:       payload.comment,
+      reviewer_name:  payload.reviewer_name,
+      reviewer_email: payload.reviewer_email,
+      order_number:   payload.order_number,
+      rating:         payload.rating,
+      comment:        payload.comment,
     });
   }
 }
