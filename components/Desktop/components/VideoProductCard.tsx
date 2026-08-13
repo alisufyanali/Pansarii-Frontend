@@ -45,9 +45,11 @@ export default function VideoProductCard({ product }: VideoProductCardProps) {
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    // Navigate to product details page
-    const slug = product.slug ?? product.nameEn.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/${slug}`);
+    // Always use the API slug directly — never derive from name.
+    // A name-derived slug (e.g. "grape-vinegar") will not match the API slug
+    // (e.g. "grapevinegar"), causing a 404.
+    if (!product.slug) return;
+    router.push(`/${product.slug}`);
   };
 
   return (

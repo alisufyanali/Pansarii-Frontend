@@ -53,7 +53,7 @@ export default function MobileVideoProducts({ products }: { products?: ApiProduc
           <VideoCard
             key={p.id}
             product={p}
-            onPress={() => router.push(`/${p.slug ?? p.nameEn.toLowerCase().replace(/\s+/g, '-')}`)}
+            onPress={() => { if (p.slug) router.push(`/${p.slug}`); }}
           />
         ))}
       </div>

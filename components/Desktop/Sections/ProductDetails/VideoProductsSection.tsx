@@ -47,7 +47,9 @@ function productToVideoCard(p: Product): VideoProductCardData {
     oldPrice:     p.oldPrice ?? undefined,
     sale:         p.sale ?? undefined,
     views:        p.reviews ? String(p.reviews) : undefined,
-    slug:         p.slug ?? p.nameEn.toLowerCase().replace(/\s+/g, '-'),
+    // Use the API slug directly — never derive from name to avoid mismatches
+    // (e.g. "grape-vinegar" from name vs "grapevinegar" from API).
+    slug: p.slug ?? undefined,
   };
 }
 

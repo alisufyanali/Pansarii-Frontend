@@ -42,18 +42,17 @@ export async function getProducts(params?: ProductsParams, options?: { signal?: 
       console.warn('[products] API unavailable, using static fallback:', isAxiosError(err) ? err.message : err);
     }
     // Fallback to static data when the API is unreachable.
-    // Slugs are derived from product names (e.g. "Moringa Leaf Powder" → "moringa-leaf-powder").
-    // These derived slugs match the static-data fallback path in /products/[slug]/page.tsx
-    // (via findProductBySlug → toProductSlug), so product detail pages still render with
-    // static data when the API is down. They will NOT match real API slugs (e.g. "moringapowder")
-    // — that mismatch is acceptable offline degraded behaviour.
+    // We do NOT derive a slug from the product name here — name-derived slugs
+    // (e.g. "moringa-leaf-powder") differ from real API slugs (e.g. "moringapowder")
+    // and would generate broken navigation links on every ProductCard.
+    // Leaving slug undefined causes the navigation guard (if (!product.slug) return)
+    // to safely no-op rather than routing to a guaranteed 404.
     const legacyProducts = allProducts as Product[];
     return {
       data: legacyProducts.map(p => ({
         id: Number(p.id),
         name: p.nameEn,
-        // Derived slug — only valid for the static fallback path, not the live API.
-        slug: p.nameEn.toLowerCase().replace(/\s+/g, '-'),
+        slug: '',   // no real slug available offline — navigation guards treat '' as missing
         price: p.price,
         sale_price: p.oldPrice ?? null,
         thumbnail: p.img,
@@ -324,7 +323,7 @@ export const DEFAULT_VIDEO_PRODUCTS: VideoProductCardData[] = (allProducts as Pr
     oldPrice: p.oldPrice ?? undefined,
     sale: p.sale ?? undefined,
     views: '860',
-    slug: p.slug ?? p.nameEn.toLowerCase().replace(/\s+/g, '-'),
+    slug: p.slug ?? undefined,
   }));
 
 export function mapApiProductToVideoCard(p: ApiProduct): VideoProductCardData {
