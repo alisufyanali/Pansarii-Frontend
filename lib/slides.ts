@@ -17,6 +17,9 @@ export interface ApiSlide {
   primary_btn_href?: string | null;
   secondary_btn_label?: string | null;
   secondary_btn_href?: string | null;
+  /** Device target — 'desktop' or 'mobile'. Filter by this in each device-specific
+   *  banner component; the shared fetch layer always returns the full unfiltered array. */
+  type?: 'desktop' | 'mobile';
 }
 
 export interface BannerSlide {

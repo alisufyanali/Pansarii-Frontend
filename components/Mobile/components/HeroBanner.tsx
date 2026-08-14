@@ -19,9 +19,16 @@ export default function HeroBanner({ slides }: { slides?: ApiSlide[] }) {
   const [current, setCurrent] = useState(0);
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
-  const banners = (slides && slides.length > 0
-    ? slides.filter(s => s.image || s.video).map(mapApiSlideToBanner)
-    : DEFAULT_MOBILE_SLIDES);
+  const banners = (() => {
+    if (slides && slides.length > 0) {
+      // Filter to mobile-type banners only
+      const mobileSl = slides.filter(s => (s.image || s.video) && s.type === 'mobile').map(mapApiSlideToBanner);
+      // Edge case: API returned slides but none were tagged type='mobile' —
+      // fall back to the default array rather than showing an empty banner section.
+      return mobileSl.length > 0 ? mobileSl : DEFAULT_MOBILE_SLIDES;
+    }
+    return DEFAULT_MOBILE_SLIDES;
+  })();
 
   useEffect(() => {
     if (banners.length <= 1) return;

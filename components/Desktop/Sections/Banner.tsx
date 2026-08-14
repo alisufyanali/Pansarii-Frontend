@@ -47,19 +47,23 @@ export default function Banner({ slides }: { slides?: ApiSlide[] }) {
   const [current, setCurrent] = useState(0);
 
   const displaySlides = (slides && slides.length > 0
-    ? slides.filter(s => s.image || s.video).map(mapApiSlideToBanner)
+    ? slides.filter(s => (s.image || s.video) && s.type === 'desktop').map(mapApiSlideToBanner)
     : DEFAULT_SLIDES);
 
-  const handleNext = () => setCurrent(c => (c + 1) % displaySlides.length);
-  const handlePrev = () => setCurrent(c => (c - 1 + displaySlides.length) % displaySlides.length);
+  // Edge case: API returned slides but none were tagged type='desktop'.
+  // Fall back to the default array rather than rendering an empty banner section.
+  const resolvedSlides = displaySlides.length > 0 ? displaySlides : DEFAULT_SLIDES;
+
+  const handleNext = () => setCurrent(c => (c + 1) % resolvedSlides.length);
+  const handlePrev = () => setCurrent(c => (c - 1 + resolvedSlides.length) % resolvedSlides.length);
 
   useEffect(() => {
-    if (displaySlides.length <= 1) return;
-    const t = setInterval(() => setCurrent(c => (c + 1) % displaySlides.length), 5000);
+    if (resolvedSlides.length <= 1) return;
+    const t = setInterval(() => setCurrent(c => (c + 1) % resolvedSlides.length), 5000);
     return () => clearInterval(t);
-  }, [displaySlides.length]);
+  }, [resolvedSlides.length]);
 
-  const slide = displaySlides[Math.min(current, displaySlides.length - 1)];
+  const slide = resolvedSlides[Math.min(current, resolvedSlides.length - 1)];
 
   return (
     <section className="relative w-full overflow-hidden h-[70vh] min-h-[460px] max-h-[680px]">
@@ -127,23 +131,23 @@ export default function Banner({ slides }: { slides?: ApiSlide[] }) {
       </div>
 
       {/* Prev arrow */}
-      {displaySlides.length > 1 && (
+      {resolvedSlides.length > 1 && (
         <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20">
           <BackwardArrow onClick={handlePrev} disabled={false} />
         </div>
       )}
 
       {/* Next arrow */}
-      {displaySlides.length > 1 && (
+      {resolvedSlides.length > 1 && (
         <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20">
           <ForwardArrow onClick={handleNext} disabled={false} />
         </div>
       )}
 
       {/* Dot indicators */}
-      {displaySlides.length > 1 && (
+      {resolvedSlides.length > 1 && (
         <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2" role="group" aria-label="Banner slides">
-          {displaySlides.map((_, i) => (
+          {resolvedSlides.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrent(i)}
