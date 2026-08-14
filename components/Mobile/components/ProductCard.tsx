@@ -56,9 +56,12 @@ export default function MobileProductCard({ product, priority = false }: { produ
             <h3 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-snug mb-1">
               {product.nameEn}
             </h3>
-            <p className="text-[12px] text-gray-400 line-clamp-1 mb-1 overflow-hidden max-w-full">
-              {product.nameUr}
-            </p>
+            {product.nameUr && product.nameUr !== product.nameEn && (
+              <p className="text-[12px] text-gray-400 line-clamp-1 mb-1 overflow-hidden max-w-full"
+                style={{ fontFamily: '"Noto Nastaliq Urdu", "Traditional Arabic", system-ui, sans-serif' }}>
+                {product.nameUr}
+              </p>
+            )}
             
             <div className="flex items-center gap-1 mb-1">
               <FaStar className="w-2.5 h-2.5 text-yellow-400 flex-shrink-0" />

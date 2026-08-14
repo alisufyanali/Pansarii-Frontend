@@ -688,9 +688,11 @@ export default function ProductDetailsSection({
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
             <div className="max-w-[1600px] mx-auto px-[4%]">
 
-              {/* Mobile */}
+              {/* ── Mobile bottom bar ── */}
               <div className="flex md:hidden flex-col py-2 gap-2">
                 <div className="flex items-center gap-2">
+
+                  {/* Thumbnail */}
                   <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
                     <Image
                       src={product.img || "/images/placeholder.jpg"}
@@ -700,27 +702,107 @@ export default function ProductDetailsSection({
                       sizes="40px"
                     />
                   </div>
+
+                  {/* ── Name + price + variant selectors ── */}
                   <div className="flex-1 min-w-0">
+                    {/* Issue 4: English name always shown; Urdu name only when real and distinct */}
                     <p className="text-xs font-bold text-gray-900 truncate">{product.nameEn}</p>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-sm font-bold text-green-700">PKR {(displayedPrice * quantity).toLocaleString()}</span>
-                      
-                      {product.sizes?.slice(0,3).map((s: string) => (
-                        <button key={s} onClick={() => setSelectedSize(s)}
-                          className={`px-3 py-1.5 text-xs font-semibold rounded-lg border-2 transition ${selectedSize===s ? "bg-green-700 text-white border-green-700" : "text-gray-700 border-gray-300 hover:border-green-600"}`}>
-                          {s}
-                        </button>
-                      ))}
+                    {product.nameUr && product.nameUr !== product.nameEn && (
+                      <p
+                        className="text-[10px] text-gray-400 truncate leading-tight"
+                        style={{ fontFamily: '"Noto Nastaliq Urdu", "Traditional Arabic", system-ui, sans-serif' }}
+                      >
+                        {product.nameUr}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                      {/* Price — always reflects displayedPrice which is driven by selected variant */}
+                      <span className="text-sm font-bold text-green-700">
+                        PKR {(displayedPrice * quantity).toLocaleString()}
+                      </span>
+
+                      {/* Issue 3 + 5: variant selector — rich variants (weight/form) vs simple sizes */}
+                      {hasRichVariants ? (
+                        // Rich-variant path: weight buttons with unit label
+                        weightOptions.slice(0, 3).map(w => (
+                          <button
+                            key={w}
+                            onClick={() => {
+                              setSelectedWeight(w);
+                              // Auto-correct form if the new weight doesn't support current form
+                              const available = richVariants
+                                .filter(v => v.attributes?.Weight === w)
+                                .map(v => v.attributes?.Form)
+                                .filter(Boolean) as string[];
+                              if (formOptions.length > 0 && !available.includes(selectedForm)) {
+                                setSelectedForm(available[0] ?? formOptions[0]);
+                              }
+                            }}
+                            className={`px-2.5 py-1 text-xs font-semibold rounded-lg border-2 transition ${
+                              selectedWeight === w
+                                ? 'bg-green-700 text-white border-green-700'
+                                : 'text-gray-700 border-gray-300 hover:border-green-600'
+                            }`}
+                          >
+                            {/* Issue 5: include unit alongside weight value */}
+                            {w}{variantUnit ? ` ${variantUnit}` : ''}
+                          </button>
+                        ))
+                      ) : (
+                        // Simple-size path — unchanged behaviour
+                        product.sizes?.slice(0, 3).map((s: string) => (
+                          <button
+                            key={s}
+                            onClick={() => setSelectedSize(s)}
+                            className={`px-2.5 py-1 text-xs font-semibold rounded-lg border-2 transition ${
+                              selectedSize === s
+                                ? 'bg-green-700 text-white border-green-700'
+                                : 'text-gray-700 border-gray-300 hover:border-green-600'
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        ))
+                      )}
+
+                      {/* Form selector row (rich variants only) — shown inline when ≤ 2 forms */}
+                      {hasRichVariants && formOptions.length > 0 && formOptions.map(f => {
+                        const available = richVariants
+                          .filter(v => v.attributes?.Weight === selectedWeight)
+                          .map(v => v.attributes?.Form) as string[];
+                        const disabled = !available.includes(f);
+                        return (
+                          <button
+                            key={f}
+                            onClick={() => !disabled && setSelectedForm(f)}
+                            disabled={disabled}
+                            className={`px-2.5 py-1 text-xs font-semibold rounded-lg border-2 transition ${
+                              selectedForm === f
+                                ? 'bg-green-700 text-white border-green-700'
+                                : disabled
+                                ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                : 'text-gray-700 border-gray-300 hover:border-green-600'
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
+
+                  {/* Quantity stepper */}
                   <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden flex-shrink-0">
-                    <button onClick={() => setQuantity(q => Math.max(1,q-1))} disabled={quantity===1}
+                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity === 1}
                       className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 text-sm disabled:opacity-40">−</button>
                     <span className="w-7 text-center text-xs font-bold">{quantity}</span>
-                    <button onClick={() => setQuantity(q => q+1)}
+                    <button onClick={() => setQuantity(q => q + 1)}
                       className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 text-sm">+</button>
                   </div>
                 </div>
+
+                {/* Action buttons row */}
                 <div className="grid grid-cols-4 gap-1.5">
                   <button onClick={toggleWishlist}
                     className="flex items-center justify-center h-10 border border-gray-300 rounded-lg hover:bg-red-50 transition">
@@ -741,8 +823,10 @@ export default function ProductDetailsSection({
                 </div>
               </div>
 
-              {/* Desktop */}
+              {/* ── Desktop bottom bar ── */}
               <div className="hidden md:flex items-center justify-between gap-4 py-3">
+
+                {/* Left: thumbnail + name + price */}
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
                     <Image
@@ -754,35 +838,119 @@ export default function ProductDetailsSection({
                     />
                   </div>
                   <div className="flex-1 min-w-0">
+                    {/* Issue 4: English name always; Urdu only when real and distinct */}
                     <h3 className="font-bold text-gray-900 text-sm truncate">{product.nameEn}</h3>
+                    {product.nameUr && product.nameUr !== product.nameEn && (
+                      <p
+                        className="text-[11px] text-gray-400 truncate leading-tight"
+                        style={{ fontFamily: '"Noto Nastaliq Urdu", "Traditional Arabic", system-ui, sans-serif' }}
+                      >
+                        {product.nameUr}
+                      </p>
+                    )}
                     <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                      <span className="text-base font-bold text-green-700">PKR {displayedPrice.toLocaleString()}</span>
-                      {product.oldPrice && <span className="text-xs text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>}
+                      {/* Price reflects selected variant via displayedPrice */}
+                      <span className="text-base font-bold text-green-700">
+                        PKR {displayedPrice.toLocaleString()}
+                      </span>
+                      {product.oldPrice && (
+                        <span className="text-xs text-gray-400 line-through">
+                          PKR {product.oldPrice.toLocaleString()}
+                        </span>
+                      )}
                       <div className="flex items-center gap-1">
                         <FaStar className="w-3 h-3 text-yellow-400" />
-                        <span className="text-[11px] text-gray-500">{product.rating||4.8}</span>
+                        <span className="text-[11px] text-gray-500">{product.rating || 4.8}</span>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Right: variant selectors + qty + action buttons */}
                 <div className="flex items-center gap-2.5">
-                  {(product.sizes?.length ?? 0) > 0 && (
-                    <div className="flex gap-2">
-                      {product.sizes?.slice(0,3).map((s: string) => (
-                        <button key={s} onClick={() => setSelectedSize(s)}
-                          className={`px-4 py-2 text-sm font-semibold rounded-lg border-2 transition ${selectedSize===s ? "bg-green-700 text-white border-green-700" : "text-gray-700 border-gray-300 hover:border-green-600"}`}>
-                          {s}
+
+                  {/* Issue 3 + 5: variant selector — rich variants (weight/form) vs simple sizes */}
+                  {hasRichVariants ? (
+                    <div className="flex items-center gap-1.5">
+                      {/* Weight buttons with unit (Issue 5) */}
+                      {weightOptions.slice(0, 3).map(w => (
+                        <button
+                          key={w}
+                          onClick={() => {
+                            setSelectedWeight(w);
+                            const available = richVariants
+                              .filter(v => v.attributes?.Weight === w)
+                              .map(v => v.attributes?.Form)
+                              .filter(Boolean) as string[];
+                            if (formOptions.length > 0 && !available.includes(selectedForm)) {
+                              setSelectedForm(available[0] ?? formOptions[0]);
+                            }
+                          }}
+                          className={`px-3 py-2 text-sm font-semibold rounded-lg border-2 transition ${
+                            selectedWeight === w
+                              ? 'bg-green-700 text-white border-green-700'
+                              : 'text-gray-700 border-gray-300 hover:border-green-600'
+                          }`}
+                        >
+                          {w}{variantUnit ? ` ${variantUnit}` : ''}
                         </button>
                       ))}
+                      {/* Form buttons (when multiple forms exist) */}
+                      {formOptions.map(f => {
+                        const available = richVariants
+                          .filter(v => v.attributes?.Weight === selectedWeight)
+                          .map(v => v.attributes?.Form) as string[];
+                        const disabled = !available.includes(f);
+                        return (
+                          <button
+                            key={f}
+                            onClick={() => !disabled && setSelectedForm(f)}
+                            disabled={disabled}
+                            className={`px-3 py-2 text-sm font-semibold rounded-lg border-2 transition ${
+                              selectedForm === f
+                                ? 'bg-green-700 text-white border-green-700'
+                                : disabled
+                                ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                : 'text-gray-700 border-gray-300 hover:border-green-600'
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        );
+                      })}
                     </div>
+                  ) : (
+                    // Simple-size path — unchanged
+                    (product.sizes?.length ?? 0) > 0 && (
+                      <div className="flex gap-2">
+                        {product.sizes?.slice(0, 3).map((s: string) => (
+                          <button
+                            key={s}
+                            onClick={() => setSelectedSize(s)}
+                            className={`px-4 py-2 text-sm font-semibold rounded-lg border-2 transition ${
+                              selectedSize === s
+                                ? 'bg-green-700 text-white border-green-700'
+                                : 'text-gray-700 border-gray-300 hover:border-green-600'
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    )
                   )}
+
+                  {/* Quantity stepper */}
                   <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                    <button onClick={() => setQuantity(q => Math.max(1,q-1))} disabled={quantity===1}
+                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity === 1}
                       className="px-3 py-2 hover:bg-gray-100 text-sm disabled:opacity-40">−</button>
                     <span className="px-4 py-2 border-x border-gray-300 font-semibold text-sm min-w-[40px] text-center">{quantity}</span>
-                    <button onClick={() => setQuantity(q => q+1)} className="px-3 py-2 hover:bg-gray-100 text-sm">+</button>
+                    <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 hover:bg-gray-100 text-sm">+</button>
                   </div>
-                  <button onClick={toggleWishlist} className="p-2.5 border border-gray-300 rounded-lg hover:bg-red-50 hover:border-red-300 transition">
+
+                  {/* Action buttons */}
+                  <button onClick={toggleWishlist}
+                    className="p-2.5 border border-gray-300 rounded-lg hover:bg-red-50 hover:border-red-300 transition">
                     {isWishlisted ? <FaHeart className="w-4 h-4 text-red-500" /> : <FaRegHeart className="w-4 h-4 text-gray-500" />}
                   </button>
                   <button onClick={handleAddToCart}
@@ -799,6 +967,7 @@ export default function ProductDetailsSection({
                   </button>
                 </div>
               </div>
+
             </div>
           </div>
         )}

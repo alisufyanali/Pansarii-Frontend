@@ -69,13 +69,17 @@ export function getDisplayPrice(product: ApiProduct): number {
 // Helper: convert ApiProduct to legacy Product shape for existing components
 export function apiProductToLegacy(p: ApiProduct): Product {
   const price = getDisplayPrice(p);
+  // Only use urdu_name when it's a real non-empty string — never fall back to
+  // the English name. Showing the English name in the Urdu field looks doubled
+  // and is visually confusing. Components guard with `nameUr && nameUr !== nameEn`.
+  const nameUr = (p.urdu_name && p.urdu_name.trim()) ? p.urdu_name.trim() : '';
   return {
     id: p.id,
     slug: p.slug,
     img: p.thumbnail || '/images/product.png',
     hoverImg: p.hover_image || undefined,
     nameEn: p.name,
-    nameUr: p.urdu_name || p.name,
+    nameUr,
     description: p.description || '',
     rating: p.rating || 4.5,
     reviews: p.reviews_count || 0,

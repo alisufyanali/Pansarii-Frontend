@@ -370,7 +370,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       {/* ── RIGHT: info column ── */}
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pr-1" style={{ maxHeight: '90vh', scrollbarWidth: "none", msOverflowStyle: "none" }}>
         <h1 className="text-lg font-bold text-gray-900 leading-tight">{product.nameEn}</h1>
-        <p className="text-xs text-gray-500 mt-0.5">{product.nameUr}</p>
+        {product.nameUr && product.nameUr !== product.nameEn && (
+          <p className="text-xs text-gray-500 mt-0.5"
+            style={{ fontFamily: '"Noto Nastaliq Urdu", "Traditional Arabic", system-ui, sans-serif' }}>
+            {product.nameUr}
+          </p>
+        )}
         {(product as unknown as { scientific_name?: string }).scientific_name && (
           <p className="text-[11px] text-gray-400 italic mt-0.5">
             {(product as unknown as { scientific_name?: string }).scientific_name}
@@ -561,7 +566,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
       <div>
         <h1 className="text-xl font-bold text-gray-900">{product.nameEn}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{product.nameUr}</p>
+        {product.nameUr && product.nameUr !== product.nameEn && (
+          <p className="text-sm text-gray-500 mt-0.5"
+            style={{ fontFamily: '"Noto Nastaliq Urdu", "Traditional Arabic", system-ui, sans-serif' }}>
+            {product.nameUr}
+          </p>
+        )}
         {(product as unknown as { scientific_name?: string }).scientific_name && (
           <p className="text-xs text-gray-400 italic mt-0.5">
             {(product as unknown as { scientific_name?: string }).scientific_name}

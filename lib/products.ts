@@ -45,14 +45,16 @@ export async function getProducts(params?: ProductsParams, options?: { signal?: 
     // We do NOT derive a slug from the product name here — name-derived slugs
     // (e.g. "moringa-leaf-powder") differ from real API slugs (e.g. "moringapowder")
     // and would generate broken navigation links on every ProductCard.
-    // Leaving slug undefined causes the navigation guard (if (!product.slug) return)
-    // to safely no-op rather than routing to a guaranteed 404.
+    // slug is intentionally omitted (undefined via spread) so the navigation guard
+    // (if (!product.slug) return) safely prevents routing to a guaranteed 404.
     const legacyProducts = allProducts as Product[];
     return {
       data: legacyProducts.map(p => ({
         id: Number(p.id),
         name: p.nameEn,
-        slug: '',   // no real slug available offline — navigation guards treat '' as missing
+        // No slug — offline cards are non-navigable rather than broken.
+        // ProductCard's guard: `if (!product.slug) return` catches this cleanly.
+        slug: undefined as unknown as string,
         price: p.price,
         sale_price: p.oldPrice ?? null,
         thumbnail: p.img,

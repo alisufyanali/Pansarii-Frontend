@@ -62,12 +62,14 @@ export default function ProductCard({ product, priority = false }: { product: Pr
           {/* Text block — fixed height via line-clamp */}
           <div className="flex-1 text-center space-y-1">
             <p className="text-sm font-semibold text-gray-900 line-clamp-1">{product.nameEn}</p>
-            <p
-              className="text-sm font-medium text-gray-700 line-clamp-1"
-              style={{ fontFamily: '"Noto Nastaliq Urdu", "Traditional Arabic", system-ui, sans-serif' }}
-            >
-              {product.nameUr}
-            </p>
+            {product.nameUr && product.nameUr !== product.nameEn && (
+              <p
+                className="text-sm font-medium text-gray-700 line-clamp-1"
+                style={{ fontFamily: '"Noto Nastaliq Urdu", "Traditional Arabic", system-ui, sans-serif' }}
+              >
+                {product.nameUr}
+              </p>
+            )}
             <p className="text-xs text-green-700 line-clamp-1">{product.description}</p>
 
             <div className="flex items-center justify-center gap-2 text-xs font-medium pt-0.5">
