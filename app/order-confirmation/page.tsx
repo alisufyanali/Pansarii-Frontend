@@ -75,24 +75,51 @@ const STEPS = [
   { icon: FaBox,         label: 'Delivered',        sub: ''                             },
 ];
 
-function Timeline({ orderDate, estDelivery }: { orderDate: string; estDelivery: string }) {
+const STATUS_STEP_INDEX: Record<string, number> = {
+  pending:    0,
+  processing: 1,
+  shipped:    2,
+  delivered:  3,
+  cancelled:  0,  // show first step for cancelled (nothing progressed)
+};
+
+function Timeline({ orderDate, estDelivery, status }: { orderDate: string; estDelivery: string; status: string }) {
+  // Derive which step is active from the live order.status field.
+  // Previously this always hardcoded index 0, ignoring the actual status.
+  const activeIndex = STATUS_STEP_INDEX[status?.toLowerCase()] ?? 0;
+  const isCancelled = status?.toLowerCase() === 'cancelled';
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 print:hidden">
       <h2 className="text-sm font-bold text-gray-900 mb-5">Order Status</h2>
+      {isCancelled && (
+        <div className="mb-4 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-medium">
+          This order has been cancelled.
+        </div>
+      )}
       {STEPS.map(({ icon: Icon, label, sub }, i) => {
-        const active = i === 0;
-        const isLast = i === STEPS.length - 1;
+        const isActive  = i === activeIndex && !isCancelled;
+        const isDone    = i < activeIndex && !isCancelled;
+        const isLast    = i === STEPS.length - 1;
         return (
           <div key={label} className="flex gap-3">
             <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${active ? 'bg-green-100' : 'bg-gray-100'}`}>
-                <Icon className={`w-3.5 h-3.5 ${active ? 'text-green-600' : 'text-gray-400'}`} />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                isDone   ? 'bg-green-600' :
+                isActive ? 'bg-green-100' :
+                           'bg-gray-100'
+              }`}>
+                <Icon className={`w-3.5 h-3.5 ${
+                  isDone   ? 'text-white'  :
+                  isActive ? 'text-green-600' :
+                             'text-gray-400'
+                }`} />
               </div>
-              {!isLast && <div className="w-px flex-1 bg-gray-200 my-1" />}
+              {!isLast && <div className={`w-px flex-1 my-1 ${isDone ? 'bg-green-300' : 'bg-gray-200'}`} />}
             </div>
             <div className={`${isLast ? 'pb-0' : 'pb-5'}`}>
-              <p className={`text-xs font-semibold ${active ? 'text-gray-900' : 'text-gray-400'}`}>{label}</p>
-              <p className={`text-xs mt-0.5 ${active ? 'text-gray-500' : 'text-gray-400'}`}>
+              <p className={`text-xs font-semibold ${isActive || isDone ? 'text-gray-900' : 'text-gray-400'}`}>{label}</p>
+              <p className={`text-xs mt-0.5 ${isActive || isDone ? 'text-gray-500' : 'text-gray-400'}`}>
                 {i === 0 ? orderDate : i === 3 ? `Expected: ${estDelivery}` : sub}
               </p>
             </div>
@@ -263,7 +290,7 @@ function OrderConfirmationContent() {
                 <FaHome className="w-3.5 h-3.5" /> Back to Home
               </Link>
             </div>
-            <Timeline orderDate={orderDate} estDelivery={estDelivery} />
+            <Timeline orderDate={orderDate} estDelivery={estDelivery} status={order.status} />
           </div>
         </div>
       </div>
