@@ -96,6 +96,9 @@ function ShopContent() {
   const categoryFromUrl = searchParams.get('category') || '';
   const pageFromUrl     = Number(searchParams.get('page')) || 1;
   const searchFromUrl   = searchParams.get('search') || '';
+  // featured=true in the URL means "show only featured/curated products"
+  // Wired by the "Featured Products" footer link (/shop?featured=true)
+  const featuredFromUrl = searchParams.get('featured') === 'true';
 
   // API state
   const [apiProducts, setApiProducts]   = useState<Product[]>([]);
@@ -186,6 +189,7 @@ function ShopContent() {
         getProducts({
           search:      filters.searchQuery || undefined,
           category_id: selectedCategoryId,
+          featured:    featuredFromUrl || undefined,
           min_price:   minPriceParam,
           max_price:   maxPriceParam,
           per_page:    productsPerPage,
@@ -245,10 +249,10 @@ function ShopContent() {
         setIsApiLoading(false);
       }
     };
-  }, [filters, currentPage, productsPerPage, selectedCategoryId]);
+  }, [filters, currentPage, productsPerPage, selectedCategoryId, featuredFromUrl]);
 
   // URL sync — write search/category/page back to URL so deep links and
-  // Back/Forward work. Category comes from categoryFromUrl (already in URL);
+  // Back/Forward work. Category and featured come from the URL already;
   // we only need to sync search and page.
   useEffect(() => {
     const t = setTimeout(() => {
@@ -257,6 +261,8 @@ function ShopContent() {
       // Preserve whatever category is already in the URL — don't re-derive it
       // from filters.categories to avoid the circular update loop.
       if (categoryFromUrl) params.set('category', categoryFromUrl);
+      // Preserve featured param so it isn't lost when page/search changes
+      if (featuredFromUrl) params.set('featured', 'true');
       if (currentPage > 1) params.set('page', String(currentPage));
       const newUrl = params.toString() ? `/shop?${params.toString()}` : '/shop';
       if (newUrl !== window.location.pathname + window.location.search) {
@@ -264,7 +270,7 @@ function ShopContent() {
       }
     }, 300);
     return () => clearTimeout(t);
-  }, [filters.searchQuery, categoryFromUrl, currentPage, router]);
+  }, [filters.searchQuery, categoryFromUrl, featuredFromUrl, currentPage, router]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -272,6 +278,7 @@ function ShopContent() {
     const params = new URLSearchParams(searchParams.toString());
     if (page > 1) params.set('page', String(page));
     else params.delete('page');
+    // featured param is already in searchParams, so it's preserved via spread above
     router.push(`/shop?${params.toString()}`, { scroll: false });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [router, searchParams]);

@@ -12,11 +12,11 @@ const linkGroups = [
   {
     title: 'Shop',
     links: [
-      { name: 'Skincare',     url: '/beauty-corner'             },
-      { name: 'Haircare',     url: '/shop?category=Herb'        },
-      { name: 'Oils',         url: '/oils'                      },
-      { name: 'Supplements',  url: '/shop?category=Supplements' },
-      { name: 'Best Sellers', url: '/shop'                      },
+      { name: 'Skincare',          url: '/beauty-corner'          },
+      { name: 'Haircare',          url: '/oils'                    },
+      { name: 'Oils',              url: '/oils'                    },
+      { name: 'Supplements',       url: '/shop?category=Supplements' },
+      { name: 'Featured Products', url: '/shop?featured=true'      },
     ],
   },
   {
