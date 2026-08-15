@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   FaFacebook,
-  FaTwitter,
   FaLinkedin,
   FaWhatsapp,
   FaArrowLeft,
   FaShare,
 } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 
 interface SocialShare {
   icon: React.ComponentType<{ className?: string }>;
@@ -54,9 +54,9 @@ export function MobileShareButton({ title }: { title: string }) {
       href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
     },
     {
-      icon: FaTwitter,
-      label: "Twitter",
-      color: "bg-sky-500",
+      icon: FaXTwitter,
+      label: "X",
+      color: "bg-black",
       href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
     },
     {
@@ -118,9 +118,9 @@ export function DesktopShareBar({ title }: { title: string }) {
       href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
     },
     {
-      icon: FaTwitter,
-      label: "Twitter",
-      color: "bg-sky-500",
+      icon: FaXTwitter,
+      label: "X",
+      color: "bg-black",
       href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
     },
     {

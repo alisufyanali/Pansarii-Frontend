@@ -11,10 +11,11 @@ import { useAuth } from '@/context/AuthContext';
 import { SOCIAL_LINKS } from '@/lib/social-links';
 
 import {
-  FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaWhatsapp,
+  FaFacebookF, FaInstagram, FaYoutube, FaWhatsapp,
   FaShoppingCart, FaUser, FaTruck, FaBars, FaLeaf, FaGift,
   FaChevronDown, FaTimes, FaChevronRight, FaSearch,
 } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 
 import { getCategoriesCached } from '@/lib/products';
 
@@ -140,7 +141,7 @@ function NavbarContent() {
                 {[
                   { href: SOCIAL_LINKS.facebook,  Icon: FaFacebookF, label: 'Facebook'  },
                   { href: SOCIAL_LINKS.instagram, Icon: FaInstagram, label: 'Instagram' },
-                  { href: SOCIAL_LINKS.twitter,   Icon: FaTwitter,   label: 'Twitter'   },
+                  { href: SOCIAL_LINKS.twitter,   Icon: FaXTwitter,  label: 'X'         },
                   { href: SOCIAL_LINKS.youtube,   Icon: FaYoutube,   label: 'YouTube'   },
                 ].map(({ href, Icon, label }) => (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer"

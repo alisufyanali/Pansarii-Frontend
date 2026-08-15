@@ -1,10 +1,11 @@
 import Image from 'next/image';
-import { FaFacebook, FaTwitter, FaYoutube, FaInstagram } from 'react-icons/fa';
+import { FaFacebook, FaYoutube, FaInstagram } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 import { SOCIAL_LINKS } from '@/lib/social-links';
 
 const socialLinks = [
   { name: 'Facebook',  Icon: FaFacebook,  url: SOCIAL_LINKS.facebook  },
-  { name: 'Twitter',   Icon: FaTwitter,   url: SOCIAL_LINKS.twitter   },
+  { name: 'X',         Icon: FaXTwitter,  url: SOCIAL_LINKS.twitter   },
   { name: 'YouTube',   Icon: FaYoutube,   url: SOCIAL_LINKS.youtube   },
   { name: 'Instagram', Icon: FaInstagram, url: SOCIAL_LINKS.instagram },
 ];

@@ -5,9 +5,10 @@ import Link from 'next/link';
 
 import {
   FaTruck, FaMapMarkerAlt, FaShieldAlt, FaClock, FaLeaf,
-  FaFacebook, FaTwitter, FaYoutube, FaInstagram,
+  FaFacebook, FaYoutube, FaInstagram,
   FaChevronDown, FaChevronUp, FaArrowRight, FaCheckCircle,
 } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 import { SOCIAL_LINKS } from '@/lib/social-links';
 import { api, getApiErrorMessage } from '@/lib/axios';
 import { isValidEmail } from '@/lib/validation';
@@ -19,15 +20,13 @@ const iconData = [
   { icon: FaTruck, label: 'Free Shipping' },
   { icon: FaMapMarkerAlt, label: 'Nationwide' },
   { icon: FaShieldAlt, label: '100% Authentic' },
-  { icon: FaClock, label: 'Quick Delivery' },
-  { icon: FaLeaf, label: 'Eco-Friendly' },
 ];
 
 const socialLinks = [
   { name: 'Facebook', Icon: FaFacebook, url: SOCIAL_LINKS.facebook },
-  { name: 'Twitter', Icon: FaTwitter, url: SOCIAL_LINKS.twitter },
-  { name: 'YouTube', Icon: FaYoutube, url: SOCIAL_LINKS.youtube },
-  { name: 'Instagram', Icon: FaInstagram, url: SOCIAL_LINKS.instagram },
+  { name: 'X',        Icon: FaXTwitter, url: SOCIAL_LINKS.twitter  },
+  { name: 'YouTube',  Icon: FaYoutube,  url: SOCIAL_LINKS.youtube  },
+  { name: 'Instagram',Icon: FaInstagram,url: SOCIAL_LINKS.instagram},
 ];
 
 const linkGroups = [

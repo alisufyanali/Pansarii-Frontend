@@ -3,7 +3,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaFacebookF, FaInstagram } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 import { toast } from 'react-toastify';
 import { SOCIAL_LINKS } from '@/lib/social-links';
 import { submitContact } from '@/lib/contact';
@@ -59,7 +60,7 @@ const contactData = {
   social: [
     { platform: "Facebook", url: SOCIAL_LINKS.facebook, icon: "facebook" },
     { platform: "Instagram", url: SOCIAL_LINKS.instagram, icon: "instagram" },
-    { platform: "Twitter", url: SOCIAL_LINKS.twitter, icon: "twitter" }
+    { platform: "X", url: SOCIAL_LINKS.twitter, icon: "x" }
   ],
   faq: {
     title: "Quick Answers",
@@ -137,8 +138,8 @@ export default function ContactPage() {
         return <FaFacebookF className="w-5 h-5" />;
       case 'instagram':
         return <FaInstagram className="w-5 h-5" />;
-      case 'twitter':
-        return <FaTwitter className="w-5 h-5" />;
+      case 'x':
+        return <FaXTwitter className="w-5 h-5" />;
       default:
         return null;
     }
