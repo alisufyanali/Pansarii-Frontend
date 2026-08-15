@@ -117,7 +117,7 @@ function NavbarContent() {
 
   const handleCategorySelect = (slug: string) => {
     if (slug === 'all') {
-      router.push('/categories');
+      router.push('/category');
     } else {
       const urlSlug = CATEGORY_SLUG_MAP[slug] || slug.toLowerCase().replace(/\s+/g, '-');
       router.push(`/${urlSlug}`);

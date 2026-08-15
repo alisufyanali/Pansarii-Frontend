@@ -89,15 +89,20 @@ function ShopContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const initialSearchQuery = searchParams.get('search') || '';
-  const initialCategory = searchParams.get('category') || '';
+  // ── URL is the single source of truth for category and page ────────────────
+  // Reading directly from searchParams (not from filters state) eliminates
+  // the circular re-triggering between SearchFilterBar's internal category
+  // state and this component's filter state.
+  const categoryFromUrl = searchParams.get('category') || '';
+  const pageFromUrl     = Number(searchParams.get('page')) || 1;
+  const searchFromUrl   = searchParams.get('search') || '';
 
   // API state
-  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const [apiProducts, setApiProducts]   = useState<Product[]>([]);
   const [apiCategories, setApiCategories] = useState<{ id: number; name: string; slug: string; products_count?: number }[]>([]);
-  const [apiMeta, setApiMeta] = useState<{ current_page: number; last_page: number; total: number; per_page?: number } | null>(null);
+  const [apiMeta, setApiMeta]           = useState<{ current_page: number; last_page: number; total: number; per_page?: number } | null>(null);
   const [isApiLoading, setIsApiLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(() => Number(searchParams.get('page')) || 1);
+  const [currentPage, setCurrentPage]   = useState(pageFromUrl);
 
   // Responsive products per page
   const [productsPerPage, setProductsPerPage] = useState(20);
@@ -114,11 +119,13 @@ function ShopContent() {
     return () => window.removeEventListener('resize', update);
   }, []);
 
+  // Non-category filters live in local state — SearchFilterBar owns these.
+  // Category is NOT stored here; it comes from the URL (categoryFromUrl above).
   const [filters, setFilters] = useState<FilterOptions>(() => ({
-    searchQuery: initialSearchQuery,
+    searchQuery: searchFromUrl,
     minPrice: 0,
     maxPrice: 5000,
-    categories: initialCategory ? [initialCategory] : [],
+    categories: categoryFromUrl ? [categoryFromUrl] : [],
     sortBy: 'default',
     showOnSale: false,
     showInStock: true,
@@ -126,22 +133,29 @@ function ShopContent() {
     showBestSellers: false,
   }));
 
-  // Fetch categories once
+  // Fetch categories once on mount
   useEffect(() => {
     import('@/lib/products').then(({ getCategoriesCached }) => {
       getCategoriesCached().then(cats => setApiCategories(cats));
     });
   }, []);
 
-  // Stable resolved category ID — only changes when the selected category name/slug actually changes
+  // Resolve category ID from URL — single source of truth.
+  // Matches by slug first (URL uses slugs), then by name.
   const selectedCategoryId = useMemo(() => {
-    if (filters.categories.length !== 1) return undefined;
+    if (!categoryFromUrl) return undefined;
     return apiCategories.find(
-      c => c.name === filters.categories[0] || c.slug === filters.categories[0],
+      c => c.slug === categoryFromUrl || c.name === categoryFromUrl,
     )?.id;
-  }, [filters.categories, apiCategories]);
+  }, [categoryFromUrl, apiCategories]);
 
-  // Fetch products when filters/page change
+  // Re-sync currentPage from URL on Back/Forward navigation
+  useEffect(() => {
+    setCurrentPage(prev => prev !== pageFromUrl ? pageFromUrl : prev);
+  }, [pageFromUrl]);
+
+  // Fetch products — fully wrapped in try/catch/finally so isApiLoading
+  // is ALWAYS reset regardless of success, abort, or dynamic import failure
   useEffect(() => {
     setIsApiLoading(true);
     const controller = new AbortController();
@@ -154,20 +168,38 @@ function ShopContent() {
     };
     const sortParams = sortMap[filters.sortBy] || {};
 
-    import('@/lib/products').then(({ getProducts }) => {
-      getProducts({
-        search:      filters.searchQuery || undefined,
-        category_id: selectedCategoryId,
-        min_price:   filters.minPrice > 0 ? filters.minPrice : undefined,
-        max_price:   filters.maxPrice < 5000 ? filters.maxPrice : undefined,
-        per_page:    productsPerPage,
-        page:        currentPage,
-        ...sortParams,
-      }, { signal: controller.signal }).then(res => {
+    // Issue 5 fix: always send both bounds when either is non-default.
+    // Previously, max_price was skipped when maxPrice === 5000, which meant
+    // the "Above 2000" preset (min=2000, max=5000) sent only min_price and no
+    // upper cap — causing the API to return products above 5000 too.
+    // Now: send both params whenever the range differs from the absolute default
+    // (minPrice>0 OR maxPrice<5000), keeping them undefined only when neither
+    // slider has been moved at all.
+    const priceActive = filters.minPrice > 0 || filters.maxPrice < 5000;
+    const minPriceParam = priceActive ? filters.minPrice : undefined;
+    const maxPriceParam = priceActive ? filters.maxPrice : undefined;
+
+    let settled = false;
+
+    import('@/lib/products')
+      .then(({ getProducts }) =>
+        getProducts({
+          search:      filters.searchQuery || undefined,
+          category_id: selectedCategoryId,
+          min_price:   minPriceParam,
+          max_price:   maxPriceParam,
+          per_page:    productsPerPage,
+          page:        currentPage,
+          ...sortParams,
+        }, { signal: controller.signal }),
+      )
+      .then(res => {
+        if (controller.signal.aborted) return;
         setApiProducts(res.data.map(p => {
           const price = p.variants?.length ? Math.min(...p.variants.map(v => v.price)) : (p.sale_price ?? p.price);
           return {
             id: p.id,
+            slug: p.slug,
             img: p.thumbnail || '/images/product.png',
             nameEn: p.name,
             nameUr: p.name,
@@ -185,19 +217,46 @@ function ShopContent() {
           };
         }));
         setApiMeta(res.meta);
-      }).finally(() => setIsApiLoading(false));
-    });
+      })
+      .catch(err => {
+        // Swallow AbortError silently — it's an intentional cleanup, not a failure.
+        // All other errors (network, 4xx/5xx, import failure) clear the product list
+        // so the UI shows "no results" rather than stale data.
+        if (controller.signal.aborted) return;
+        console.error('[shop] fetch failed:', err);
+        setApiProducts([]);
+        setApiMeta(null);
+      })
+      .finally(() => {
+        // Always reset loading — this runs even if the dynamic import itself
+        // throws (e.g. chunk load error), fixing the "stuck spinner" bug.
+        if (!settled) {
+          settled = true;
+          setIsApiLoading(false);
+        }
+      });
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      // If the promise chain hasn't settled yet (e.g. still awaiting import),
+      // ensure loading is cleared so unmounting doesn't leave a stuck state.
+      if (!settled) {
+        settled = true;
+        setIsApiLoading(false);
+      }
+    };
   }, [filters, currentPage, productsPerPage, selectedCategoryId]);
 
-  // URL sync — push (not replace) so each page/filter state is a distinct history entry
-  // and the browser Back button restores the exact URL the user left from.
+  // URL sync — write search/category/page back to URL so deep links and
+  // Back/Forward work. Category comes from categoryFromUrl (already in URL);
+  // we only need to sync search and page.
   useEffect(() => {
     const t = setTimeout(() => {
       const params = new URLSearchParams();
       if (filters.searchQuery.trim()) params.set('search', filters.searchQuery.trim());
-      if (filters.categories.length === 1) params.set('category', filters.categories[0]);
+      // Preserve whatever category is already in the URL — don't re-derive it
+      // from filters.categories to avoid the circular update loop.
+      if (categoryFromUrl) params.set('category', categoryFromUrl);
       if (currentPage > 1) params.set('page', String(currentPage));
       const newUrl = params.toString() ? `/shop?${params.toString()}` : '/shop';
       if (newUrl !== window.location.pathname + window.location.search) {
@@ -205,54 +264,56 @@ function ShopContent() {
       }
     }, 300);
     return () => clearTimeout(t);
-  }, [filters.searchQuery, filters.categories, currentPage, router]);
-
-  // Re-sync currentPage from URL when searchParams change (Back/Forward navigation).
-  // useState lazy initializer only runs once; this effect keeps state in sync with
-  // the URL after history navigation restores a different ?page= value.
-  useEffect(() => {
-    const pageFromUrl = Number(searchParams.get('page')) || 1;
-    setCurrentPage(prev => prev !== pageFromUrl ? pageFromUrl : prev);
-  }, [searchParams]);
+  }, [filters.searchQuery, categoryFromUrl, currentPage, router]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
+    // Push new page to URL immediately (don't wait for the debounced effect)
+    const params = new URLSearchParams(searchParams.toString());
+    if (page > 1) params.set('page', String(page));
+    else params.delete('page');
+    router.push(`/shop?${params.toString()}`, { scroll: false });
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [router, searchParams]);
 
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     setFilters(prev => {
-      // SearchFilterBar owns: search, price, sort, sale, stock flags.
-      // Categories are owned exclusively by handleCategorySelect below.
-      // Always discard whatever categories SearchFilterBar emits and keep prev.categories,
-      // so a sort/search/price change never clobbers the active category tab.
-      const merged: FilterOptions = { ...newFilters, categories: prev.categories };
+      // SearchFilterBar owns: search, price, sort, sale/stock/new/bestseller flags.
+      // Category is owned by the URL (categoryFromUrl) — never stored in filters.categories.
+      // Discard whatever categories SearchFilterBar emits so it can never clobber the
+      // active category tab.
+      const merged: FilterOptions = { ...newFilters, categories: [] };
 
       const filtersChanged =
         prev.searchQuery !== merged.searchQuery ||
-        prev.minPrice !== merged.minPrice ||
-        prev.maxPrice !== merged.maxPrice ||
-        prev.sortBy !== merged.sortBy ||
-        prev.showOnSale !== merged.showOnSale ||
+        prev.minPrice    !== merged.minPrice    ||
+        prev.maxPrice    !== merged.maxPrice    ||
+        prev.sortBy      !== merged.sortBy      ||
+        prev.showOnSale  !== merged.showOnSale  ||
         prev.showInStock !== merged.showInStock ||
-        prev.showNewArrivals !== merged.showNewArrivals ||
-        prev.showBestSellers !== merged.showBestSellers;
+        prev.showNewArrivals  !== merged.showNewArrivals  ||
+        prev.showBestSellers  !== merged.showBestSellers;
 
       if (filtersChanged) setCurrentPage(1);
       return merged;
     });
   }, []);
 
-  // Dedicated category setter — writes categories directly to state, bypassing
-  // handleFilterChange (which preserves prev.categories to prevent SearchFilterBar
-  // from resetting tab selection on sort/search changes).
+  // Category selection writes directly to the URL — the URL is the source of
+  // truth; selectedCategoryId is derived from it. This removes the circular
+  // dependency between SearchFilterBar's internal URL-watching effect and
+  // this component's filters.categories state.
   const handleCategorySelect = useCallback((category: string) => {
-    setFilters(prev => ({
-      ...prev,
-      categories: (category && category !== 'all') ? [category] : [],
-    }));
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('page'); // reset to page 1 on category change
+    if (category && category !== 'all') {
+      params.set('category', category);
+    } else {
+      params.delete('category');
+    }
+    router.push(params.toString() ? `/shop?${params.toString()}` : '/shop', { scroll: false });
     setCurrentPage(1);
-  }, []);
+  }, [router, searchParams]);
 
   const handleClearFilters = useCallback(() => {
     setFilters({
@@ -272,7 +333,7 @@ function ShopContent() {
 
   const totalPages = apiMeta?.last_page ?? 1;
   const indexOfFirstProduct = ((apiMeta?.current_page ?? 1) - 1) * (apiMeta?.per_page ?? productsPerPage);
-  const indexOfLastProduct = Math.min(indexOfFirstProduct + (apiMeta?.per_page ?? productsPerPage), apiMeta?.total ?? apiProducts.length);
+  const indexOfLastProduct  = Math.min(indexOfFirstProduct + (apiMeta?.per_page ?? productsPerPage), apiMeta?.total ?? apiProducts.length);
 
   // Categories for filter bar — use API categories if available
   const filterCategories = apiCategories.length > 0
@@ -292,16 +353,21 @@ function ShopContent() {
       });
 
   const priceRange = getPriceRangeFromProducts(apiProducts.length > 0 ? apiProducts : (allProducts as Product[]));
+  void priceRange; // available for future use
 
-  // suppress unused warning — priceRange is available for future use
-  void priceRange;
+  // Build the filters object to pass down — include the active category from
+  // the URL so CategoryTabs highlights the correct tab.
+  const filtersWithCategory: FilterOptions = {
+    ...filters,
+    categories: categoryFromUrl ? [categoryFromUrl] : [],
+  };
 
   return (
     <div className="min-h-screen bg-white">
       <div className="pt-4">
         <DynamicShopContent
           categories={filterCategories}
-          filters={filters}
+          filters={filtersWithCategory}
           setFilters={handleFilterChange}
           onCategorySelect={handleCategorySelect}
           filteredProducts={apiProducts}
@@ -313,7 +379,7 @@ function ShopContent() {
           indexOfLastProduct={indexOfLastProduct}
           productsPerPage={productsPerPage}
           onPageChange={handlePageChange}
-          initialSearchQuery={initialSearchQuery}
+          initialSearchQuery={searchFromUrl}
           allProducts={apiProducts.length > 0 ? apiProducts : (allProducts as Product[])}
           isLoading={isApiLoading}
         />
