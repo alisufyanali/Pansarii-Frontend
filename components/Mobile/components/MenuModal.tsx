@@ -231,7 +231,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
             target="_blank" 
             rel="noopener noreferrer"
             className="hover:scale-110 active:scale-95 transition-transform"
-            aria-label="Twitter"
+            aria-label="X"
           >
             <FaXTwitter size={22} color="#000000" />
           </a>

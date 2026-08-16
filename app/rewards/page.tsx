@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { api, getApiErrorMessage } from '@/lib/axios';
 import {
@@ -165,6 +166,7 @@ function TierCard({ tier, isCurrent, userPoints }: { tier: typeof tiers[0]; isCu
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function RewardsPage() {
+  const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'earn' | 'redeem' | 'tiers'>('overview');
   const [rewardsData, setRewardsData] = useState<RewardsData | null>(null);
@@ -214,7 +216,7 @@ export default function RewardsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <p className="text-red-500 text-sm mb-4">{error}</p>
-          <button onClick={() => window.location.reload()} className="px-6 py-2.5 bg-[#197B33] text-white text-sm font-semibold rounded-2xl">
+          <button onClick={() => router.refresh()} className="px-6 py-2.5 bg-[#197B33] text-white text-sm font-semibold rounded-2xl">
             Retry
           </button>
         </div>

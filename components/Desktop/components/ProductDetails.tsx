@@ -186,12 +186,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       const token = getAuthToken();
       const user = getStoredUser();
       setIsLoggedIn(!!(token && user));
+      setIsLoading(false);
     });
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => {
-      cancelAnimationFrame(frame);
-      clearTimeout(timer);
-    };
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {

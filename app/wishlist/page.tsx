@@ -16,7 +16,6 @@ import { FaStar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useCart } from '@/context/CartContext';
 import { useWishlist, type WishlistItem } from '@/context/WishList';
-import { allProducts } from '../../data/products';
 
  
 

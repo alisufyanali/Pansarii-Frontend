@@ -9,6 +9,7 @@ import { getProducts, getCategoriesCached } from '@/lib/products';
 import ProductCard from '@/components/Desktop/components/ProductCard';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 import SearchFilterBar from '@/components/Desktop/components/SearchFilterBar';
+import Pagination from '@/components/Desktop/Sections/shop/Pagination';
 import MobileProductCard from '@/components/Mobile/components/ProductCard';
 import { FilterOptions } from '@/utils/filterProducts';
 import {
@@ -372,12 +373,12 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
       const staticProducts = allProducts.filter(p => p.category === categoryName) as Product[];
       setFilteredProducts(staticProducts);
       setCategoryProducts(staticProducts);
-      const t = setTimeout(() => setIsLoading(false), 300);
-      return () => clearTimeout(t);
+      setIsLoading(false);
+      return;
     }
 
     setIsLoading(true);
-    getProducts({ category_id: categoryId, per_page: 100 }).then(res => {
+    getProducts({ category_id: categoryId, per_page: productsPerPage, page: currentPage }).then(res => {
       const products: Product[] = res.data.map(p => {
         const price = p.variants?.length ? Math.min(...p.variants.map(v => v.price)) : (p.sale_price ?? p.price);
         return {
@@ -665,37 +666,13 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
           </div>
         )}
 
-        {/* Pagination */}
+        {/* Pagination — uses windowed Pagination component (same as shop page) */}
         {!isLoading && totalPages > 1 && (
-          <div className="mt-8 sm:mt-10 flex items-center justify-center gap-2">
-            <button
-              onClick={() => paginate(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 text-lg"
-            >
-              ‹
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => paginate(page)}
-                className={`w-10 h-10 flex items-center justify-center rounded-lg border text-sm font-medium ${
-                  currentPage === page
-                    ? config.paginationActive
-                    : 'border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 text-lg"
-            >
-              ›
-            </button>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={paginate}
+          />
         )}
       </div>
 

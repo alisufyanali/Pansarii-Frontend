@@ -159,11 +159,12 @@ function CategoryBrowseContent() {
     const sortParams = sortMap[filters.sortBy] || {};
 
     try {
+      const priceActive = filters.minPrice > 0 || filters.maxPrice < 5000;
       const res = await getProducts({
         search:      filters.searchQuery || undefined,
         category_id: selectedCategoryId,
-        min_price:   filters.minPrice > 0 ? filters.minPrice : undefined,
-        max_price:   filters.maxPrice < 5000 ? filters.maxPrice : undefined,
+        min_price:   priceActive ? filters.minPrice : undefined,
+        max_price:   priceActive ? filters.maxPrice : undefined,
         per_page:    productsPerPage,
         page:        currentPage,
         ...sortParams,
