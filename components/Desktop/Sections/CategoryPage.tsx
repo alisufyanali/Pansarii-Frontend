@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { allProducts } from '@/data/products';
-import type { Product } from '@/types/product';
+import type { Product, ApiCategory } from '@/types/product';
+import { apiProductToLegacy } from '@/types/product';
 import { getProducts, getCategoriesCached } from '@/lib/products';
 import ProductCard from '@/components/Desktop/components/ProductCard';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
@@ -314,22 +315,25 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
 
   const { Icon } = config;
 
-  const [categoryProducts, setCategoryProducts] = useState<Product[]>(
-    allProducts.filter(p => p.category === categoryName) as Product[]
-  );
-  const productCount = categoryProducts.length;
+  // ── Server-side state ─────────────────────────────────────────────────────
+  // All products from the API for the current page — never the full set.
+  const [pageProducts, setPageProducts] = useState<Product[]>([]);
+  // API meta — drives totalPages and productCount display
+  const [apiTotal,     setApiTotal]     = useState(0);
+  const [apiLastPage,  setApiLastPage]  = useState(1);
+  // productCount shown in the hero badge — uses API total when available
+  const productCount = apiTotal > 0
+    ? apiTotal
+    : (allProducts.filter(p => p.category === categoryName) as Product[]).length;
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(
-    allProducts.filter(p => p.category === categoryName) as Product[]
-  );
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [productsPerPage, setProductsPerPage] = useState(20);
-  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [searchQuery,      setSearchQuery]      = useState('');
+  const [viewMode,         setViewMode]         = useState<'grid' | 'list'>('grid');
+  const [selectedProduct,  setSelectedProduct]  = useState<Product | null>(null);
+  const [isModalOpen,      setIsModalOpen]      = useState(false);
+  const [isLoading,        setIsLoading]        = useState(true);
+  const [currentPage,      setCurrentPage]      = useState(1);
+  const [productsPerPage,  setProductsPerPage]  = useState(20);
+  const [categoryId,       setCategoryId]       = useState<number | null>(null);
 
   const [filters, setFilters] = useState<FilterOptions>({
     searchQuery: '', minPrice: 0, maxPrice: 5000, categories: [],
@@ -337,7 +341,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
     showNewArrivals: false, showBestSellers: false,
   });
 
-  // Responsive products-per-page
+  // Responsive products-per-page — reset to page 1 when it changes
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
@@ -351,7 +355,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Fetch category ID from API
+  // Fetch category ID from API once
   useEffect(() => {
     getCategoriesCached().then(cats => {
       const found = cats.find(c =>
@@ -359,84 +363,89 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
         c.slug === categoryName.toLowerCase().replace(/\s+/g, '-')
       );
       if (found) setCategoryId(found.id);
-      else setCategoryId(0); // no match — trigger static fallback in next effect
+      else setCategoryId(0); // no match — static fallback
     }).catch(() => setCategoryId(0));
   }, [categoryName]);
 
-  // Fetch products when categoryId is resolved
+  // Fetch the current page from the API whenever categoryId, page, or per_page changes.
+  // Adding currentPage and productsPerPage to deps ensures clicking a pagination
+  // button (which calls setCurrentPage) actually triggers a new API request.
   useEffect(() => {
-    // Wait until categoryId has been resolved (null = not yet fetched)
-    if (categoryId === null) return;
+    if (categoryId === null) return; // not resolved yet
 
     if (categoryId === 0) {
-      // Use static fallback
-      const staticProducts = allProducts.filter(p => p.category === categoryName) as Product[];
-      setFilteredProducts(staticProducts);
-      setCategoryProducts(staticProducts);
+      // Static fallback — paginate locally
+      const all = allProducts.filter(p => p.category === categoryName) as Product[];
+      setApiTotal(all.length);
+      setApiLastPage(Math.ceil(all.length / productsPerPage) || 1);
+      setPageProducts(all.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage));
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
-    getProducts({ category_id: categoryId, per_page: productsPerPage, page: currentPage }).then(res => {
+    const sortMap: Record<string, { sort_by?: string; sort_order?: 'asc' | 'desc' }> = {
+      'price-low':  { sort_by: 'price', sort_order: 'asc'  },
+      'price-high': { sort_by: 'price', sort_order: 'desc' },
+      'rating':     { sort_by: 'rating', sort_order: 'desc' },
+      'name':       { sort_by: 'name',  sort_order: 'asc'  },
+    };
+    const sortParams = sortMap[filters.sortBy] || {};
+    const priceActive = filters.minPrice > 0 || filters.maxPrice < 5000;
+
+    getProducts({
+      category_id: categoryId,
+      search:    filters.searchQuery || undefined,
+      min_price: priceActive ? filters.minPrice : undefined,
+      max_price: priceActive ? filters.maxPrice : undefined,
+      per_page:  productsPerPage,
+      page:      currentPage,
+      ...sortParams,
+    }).then(res => {
+      // Store API meta so totalPages is derived from res.meta.last_page,
+      // not from the length of the current page's product array.
+      setApiTotal(res.meta.total);
+      setApiLastPage(res.meta.last_page);
+
       const products: Product[] = res.data.map(p => {
-        const price = p.variants?.length ? Math.min(...p.variants.map(v => v.price)) : (p.sale_price ?? p.price);
+        const price = p.variants?.length
+          ? Math.min(...p.variants.map(v => v.price))
+          : (p.sale_price ?? p.price);
         return {
-          id: p.id,
-          img: p.thumbnail || '/images/product.png',
-          nameEn: p.name,
-          nameUr: p.name,
+          id:          p.id,
+          slug:        p.slug,
+          img:         p.thumbnail || '/images/product.png',
+          nameEn:      p.name,
+          nameUr:      p.name,
           description: p.description || '',
-          rating: p.rating || 4.5,
-          reviews: p.reviews_count || 0,
+          rating:      p.rating || 4.5,
+          reviews:     p.reviews_count || 0,
           price,
-          oldPrice: p.sale_price && p.price > p.sale_price ? p.price : null,
-          sale: p.sale_price ? `${Math.round(((p.price - p.sale_price) / p.price) * 100)}% OFF` : null,
+          oldPrice:    p.sale_price && p.price > p.sale_price ? p.price : null,
+          sale:        p.sale_price
+            ? `${Math.round(((p.price - p.sale_price) / p.price) * 100)}% OFF`
+            : null,
           category: p.category?.name,
-          inStock: p.variants?.some(v => v.stock > 0) ?? true,
+          inStock:  p.variants?.some(v => v.stock > 0) ?? true,
+          variants: p.variants,
+          sizes:    p.variants?.length ? p.variants.map(v => v.name) : undefined,
         };
       });
-      const result = products.length > 0 ? products : (allProducts.filter(p => p.category === categoryName) as Product[]);
-      setCategoryProducts(result);
-      setFilteredProducts(result);
-    }).catch(() => {
-      const fallback = allProducts.filter(p => p.category === categoryName) as Product[];
-      setCategoryProducts(fallback);
-      setFilteredProducts(fallback);
-    }).finally(() => setIsLoading(false));
-  }, [categoryId, categoryName]);
 
-  const applyFilters = (newFilters: FilterOptions) => {
-    let products = [...categoryProducts];
-
-    if (newFilters.searchQuery) {
-      const q = newFilters.searchQuery.toLowerCase();
-      products = products.filter(p =>
-        p.nameEn.toLowerCase().includes(q) ||
-        p.nameUr.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
+      setPageProducts(
+        products.length > 0
+          ? products
+          : (allProducts.filter(p => p.category === categoryName) as Product[])
       );
-    }
-
-    products = products.filter(p => p.price >= newFilters.minPrice && p.price <= newFilters.maxPrice);
-
-    if (newFilters.showOnSale) products = products.filter(p => p.sale);
-
-    switch (newFilters.sortBy) {
-      case 'price-low':  products.sort((a, b) => a.price - b.price); break;
-      case 'price-high': products.sort((a, b) => b.price - a.price); break;
-      case 'rating':     products.sort((a, b) => (b.rating || 0) - (a.rating || 0)); break;
-      case 'name':       products.sort((a, b) => a.nameEn.localeCompare(b.nameEn)); break;
-    }
-
-    setFilteredProducts(products);
-    setCurrentPage(1);
-  };
+    }).catch(() => {
+      setPageProducts(allProducts.filter(p => p.category === categoryName) as Product[]);
+    }).finally(() => setIsLoading(false));
+  }, [categoryId, categoryName, currentPage, productsPerPage, filters]);
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
     setSearchQuery(newFilters.searchQuery || '');
-    applyFilters(newFilters);
+    setCurrentPage(1); // reset to page 1 whenever filters change
   };
 
   const clearFilters = () => {
@@ -446,15 +455,17 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
       showNewArrivals: false, showBestSellers: false,
     };
     setFilters(reset);
-    setFilteredProducts(categoryProducts);
     setCurrentPage(1);
   };
 
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * productsPerPage,
-    currentPage * productsPerPage
-  );
+  // totalPages and paginatedProducts now come from the API meta, not a
+  // client-side slice of the local array. This is what was causing pagination
+  // to never render — filteredProducts only held the current page's 20 items.
+  const totalPages = apiLastPage;
+  const paginatedProducts = pageProducts; // already the correct page from the API
+
+  const from = apiTotal === 0 ? 0 : (currentPage - 1) * productsPerPage + 1;
+  const to   = Math.min(currentPage * productsPerPage, apiTotal);
 
   const paginate = (page: number) => {
     setCurrentPage(page);
@@ -492,7 +503,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
         <SearchFilterBar
           onFilterChange={handleFilterChange}
           onViewModeChange={setViewMode}
-          productCount={filteredProducts.length}
+          productCount={apiTotal}
           categories={[]}
           initialSearchQuery={searchQuery}
         />
@@ -524,12 +535,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
               All {config.label}
             </h2>
             <p className="text-xs sm:text-sm text-gray-500">
-              Showing{' '}
-              {filteredProducts.length === 0
-                ? 0
-                : (currentPage - 1) * productsPerPage + 1}
-              –{Math.min(currentPage * productsPerPage, filteredProducts.length)}{' '}
-              of {filteredProducts.length} products
+              Showing {from}–{to} of {apiTotal} products
             </p>
           </div>
           {filters.sortBy !== 'default' && (
@@ -548,7 +554,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
         {/* Products */}
         {isLoading ? (
           <GridSkeleton />
-        ) : filteredProducts.length > 0 ? (
+        ) : paginatedProducts.length > 0 ? (
           viewMode === 'grid' ? (
             <>
               {/* Mobile */}

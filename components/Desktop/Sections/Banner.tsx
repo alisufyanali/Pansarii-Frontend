@@ -89,11 +89,11 @@ export default function Banner({ slides }: { slides?: ApiSlide[] }) {
               </span>
             )}
 
-            {slide.title && (
+            {/* {slide.title && (
               <h1 className="text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight text-[#005316] font-poppins">
                 {slide.title}
               </h1>
-            )}
+            )} */}
 
             {slide.description && (
               <p className="text-sm lg:text-base xl:text-lg font-medium max-w-md xl:max-w-lg text-gray-800 leading-relaxed font-poppins">
