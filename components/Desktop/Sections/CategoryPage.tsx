@@ -262,7 +262,7 @@ function GridSkeleton() {
           </div>
         ))}
       </div>
-      <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
+      <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 2xl:gap-8">
         {[...Array(12)].map((_, i) => (
           <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
             <div className="aspect-square bg-gray-200 rounded-t-lg" />
@@ -599,7 +599,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
                 ))}
               </div>
               {/* Desktop */}
-              <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
+              <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 2xl:gap-8">
                 {paginatedProducts.map(product => (
                   <div key={product.id} className="w-full">
                     <ProductCard product={product} />
