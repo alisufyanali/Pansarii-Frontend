@@ -315,16 +315,12 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
 
   const { Icon } = config;
 
-  // ── Server-side state ─────────────────────────────────────────────────────
-  // All products from the API for the current page — never the full set.
+  // ── Server-side state (never the full set) ────────────────────────────────
   const [pageProducts, setPageProducts] = useState<Product[]>([]);
-  // API meta — drives totalPages and productCount display
   const [apiTotal,     setApiTotal]     = useState(0);
   const [apiLastPage,  setApiLastPage]  = useState(1);
-  // productCount shown in the hero badge — uses API total when available
-  const productCount = apiTotal > 0
-    ? apiTotal
-    : (allProducts.filter(p => p.category === categoryName) as Product[]).length;
+  const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
+  const [categoryId,    setCategoryId]    = useState<number | null>(null);
 
   const [searchQuery,      setSearchQuery]      = useState('');
   const [viewMode,         setViewMode]         = useState<'grid' | 'list'>('grid');
@@ -333,7 +329,6 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
   const [isLoading,        setIsLoading]        = useState(true);
   const [currentPage,      setCurrentPage]      = useState(1);
   const [productsPerPage,  setProductsPerPage]  = useState(20);
-  const [categoryId,       setCategoryId]       = useState<number | null>(null);
 
   const [filters, setFilters] = useState<FilterOptions>({
     searchQuery: '', minPrice: 0, maxPrice: 5000, categories: [],
@@ -341,7 +336,11 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
     showNewArrivals: false, showBestSellers: false,
   });
 
-  // Responsive products-per-page — reset to page 1 when it changes
+  const productCount = apiTotal > 0
+    ? apiTotal
+    : (allProducts.filter(p => p.category === categoryName) as Product[]).length;
+
+  // ── Responsive products-per-page ──────────────────────────────────────────
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
@@ -355,26 +354,40 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Fetch category ID from API once
+  // ── Fetch categories & resolve categoryId ─────────────────────────────────
   useEffect(() => {
-    getCategoriesCached().then(cats => {
-      const found = cats.find(c =>
-        c.name === categoryName ||
-        c.slug === categoryName.toLowerCase().replace(/\s+/g, '-')
-      );
-      if (found) setCategoryId(found.id);
-      else setCategoryId(0); // no match — static fallback
-    }).catch(() => setCategoryId(0));
+    getCategoriesCached()
+      .then(cats => {
+        setApiCategories(cats);
+        const found = cats.find(c =>
+          c.name === categoryName ||
+          c.slug === categoryName.toLowerCase().replace(/\s+/g, '-')
+        );
+        if (found) setCategoryId(found.id);
+        else setCategoryId(0);
+      })
+      .catch(() => {
+        setApiCategories([]);
+        setCategoryId(0);
+      });
   }, [categoryName]);
 
-  // Fetch the current page from the API whenever categoryId, page, or per_page changes.
-  // Adding currentPage and productsPerPage to deps ensures clicking a pagination
-  // button (which calls setCurrentPage) actually triggers a new API request.
+  // ── Clamp currentPage when totalPages shrinks (filter reduces result set) ─
   useEffect(() => {
-    if (categoryId === null) return; // not resolved yet
+    if (apiLastPage > 0 && currentPage > apiLastPage) {
+      setCurrentPage(apiLastPage);
+    }
+  }, [apiLastPage, currentPage]);
 
+  // ── Fetch current page from the API ───────────────────────────────────────
+  // Server params: search, min_price, max_price, sort_by/sort_order, per_page, page.
+  // NOT sent (API doesn't support them — applied client-side below):
+  //   showOnSale, showInStock, showNewArrivals, showBestSellers.
+  const fetchProducts = useCallback(async (signal?: AbortSignal) => {
+    if (categoryId === null) return;
+
+    // Static fallback — paginate locally
     if (categoryId === 0) {
-      // Static fallback — paginate locally
       const all = allProducts.filter(p => p.category === categoryName) as Product[];
       setApiTotal(all.length);
       setApiLastPage(Math.ceil(all.length / productsPerPage) || 1);
@@ -393,62 +406,72 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
     const sortParams = sortMap[filters.sortBy] || {};
     const priceActive = filters.minPrice > 0 || filters.maxPrice < 5000;
 
-    getProducts({
-      category_id: categoryId,
-      search:    filters.searchQuery || undefined,
-      min_price: priceActive ? filters.minPrice : undefined,
-      max_price: priceActive ? filters.maxPrice : undefined,
-      per_page:  productsPerPage,
-      page:      currentPage,
-      ...sortParams,
-    }).then(res => {
-      // Store API meta so totalPages is derived from res.meta.last_page,
-      // not from the length of the current page's product array.
+    let settled = false;
+    try {
+      const res = await getProducts({
+        category_id: categoryId,
+        search:    filters.searchQuery || undefined,
+        min_price: priceActive ? filters.minPrice : undefined,
+        max_price: priceActive ? filters.maxPrice : undefined,
+        per_page:  productsPerPage,
+        page:      currentPage,
+        ...sortParams,
+      }, { signal });
+
+      if (signal?.aborted) return;
+      settled = true;
+
+      // ── Store API meta in state (REQUIREMENT #1) ──────────────────────
       setApiTotal(res.meta.total);
       setApiLastPage(res.meta.last_page);
 
-      const products: Product[] = res.data.map(p => {
-        const price = p.variants?.length
-          ? Math.min(...p.variants.map(v => v.price))
-          : (p.sale_price ?? p.price);
-        return {
-          id:          p.id,
-          slug:        p.slug,
-          img:         p.thumbnail || '/images/product.png',
-          nameEn:      p.name,
-          nameUr:      p.name,
-          description: p.description || '',
-          rating:      p.rating || 4.5,
-          reviews:     p.reviews_count || 0,
-          price,
-          oldPrice:    p.sale_price && p.price > p.sale_price ? p.price : null,
-          sale:        p.sale_price
-            ? `${Math.round(((p.price - p.sale_price) / p.price) * 100)}% OFF`
-            : null,
-          category: p.category?.name,
-          inStock:  p.variants?.some(v => v.stock > 0) ?? true,
-          variants: p.variants,
-          sizes:    p.variants?.length ? p.variants.map(v => v.name) : undefined,
-        };
-      });
+      // Map ApiProduct → legacy Product shape via shared helper so fixes
+      // to apiProductToLegacy (e.g. nameUr ← urdu_name, hoverImg,
+      // scientific_name) automatically apply here too.
+      const products: Product[] = res.data.map(p => ({
+        ...apiProductToLegacy(p),
+        inStock: p.variants?.some(v => v.stock > 0) ?? true,
+      }));
 
       setPageProducts(
         products.length > 0
           ? products
           : (allProducts.filter(p => p.category === categoryName) as Product[])
       );
-    }).catch(() => {
+    } catch {
+      if (signal?.aborted) return;
+      settled = true;
       setPageProducts(allProducts.filter(p => p.category === categoryName) as Product[]);
-    }).finally(() => setIsLoading(false));
+    } finally {
+      if (!signal?.aborted) setIsLoading(false);
+    }
   }, [categoryId, categoryName, currentPage, productsPerPage, filters]);
 
-  const handleFilterChange = (newFilters: FilterOptions) => {
-    setFilters(newFilters);
-    setSearchQuery(newFilters.searchQuery || '');
-    setCurrentPage(1); // reset to page 1 whenever filters change
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchProducts(controller.signal);
+    return () => controller.abort();
+  }, [fetchProducts]);
 
-  const clearFilters = () => {
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const handleFilterChange = useCallback((newFilters: FilterOptions) => {
+    setFilters(prev => {
+      const changed =
+        prev.searchQuery     !== newFilters.searchQuery     ||
+        prev.minPrice        !== newFilters.minPrice        ||
+        prev.maxPrice        !== newFilters.maxPrice        ||
+        prev.sortBy          !== newFilters.sortBy          ||
+        prev.showOnSale      !== newFilters.showOnSale      ||
+        prev.showInStock     !== newFilters.showInStock     ||
+        prev.showNewArrivals !== newFilters.showNewArrivals ||
+        prev.showBestSellers !== newFilters.showBestSellers;
+      if (changed) setCurrentPage(1);
+      return newFilters;
+    });
+    setSearchQuery(newFilters.searchQuery || '');
+  }, []);
+
+  const clearFilters = useCallback(() => {
     const reset: FilterOptions = {
       searchQuery: '', minPrice: 0, maxPrice: 5000, categories: [],
       sortBy: 'default', showOnSale: false, showInStock: true,
@@ -456,21 +479,33 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
     };
     setFilters(reset);
     setCurrentPage(1);
-  };
+  }, []);
 
-  // totalPages and paginatedProducts now come from the API meta, not a
-  // client-side slice of the local array. This is what was causing pagination
-  // to never render — filteredProducts only held the current page's 20 items.
+  const paginate = useCallback((page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // ── Derived values ────────────────────────────────────────────────────────
+  // totalPages from API meta (REQUIREMENT #2) — never from a client-side slice.
   const totalPages = apiLastPage;
-  const paginatedProducts = pageProducts; // already the correct page from the API
+
+  // ── Client-side filters applied ON TOP of the current server page ─────────
+  // These four flags are NOT API params, so they filter only the products
+  // returned for the current page. Search/price/sort are server-side and
+  // do NOT need to be re-applied here.
+  const filteredProducts = pageProducts.filter(p => {
+    if (filters.showInStock    && !p.inStock)                      return false;
+    if (filters.showOnSale     && !p.sale)                         return false;
+    if (filters.showBestSellers && !p.isBestSeller)                return false;
+    if (filters.showNewArrivals) return false;
+    return true;
+  });
+
+  const paginatedProducts = filteredProducts;
 
   const from = apiTotal === 0 ? 0 : (currentPage - 1) * productsPerPage + 1;
   const to   = Math.min(currentPage * productsPerPage, apiTotal);
-
-  const paginate = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -504,7 +539,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
           onFilterChange={handleFilterChange}
           onViewModeChange={setViewMode}
           productCount={apiTotal}
-          categories={[]}
+          categories={apiCategories.map(c => c.name)}
           initialSearchQuery={searchQuery}
         />
       </div>
