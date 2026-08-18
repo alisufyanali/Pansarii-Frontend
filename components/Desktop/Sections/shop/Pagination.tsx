@@ -11,10 +11,8 @@ export default function Pagination({
   onPageChange
 }: PaginationProps) {
   const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      onPageChange(page);
-    }
-  };
+  onPageChange(page);   // no validation – parent handles it
+};
 
   const nextPage = () => {
     if (currentPage < totalPages) {

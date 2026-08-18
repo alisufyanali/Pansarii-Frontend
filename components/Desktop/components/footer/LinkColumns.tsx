@@ -7,16 +7,18 @@ const linkGroups = [
       { name: 'About Us',    url: '/aboutus'     },
       { name: 'Our Story',   url: '/our-story'   },
       { name: 'Blog',        url: '/blog'        },
+      { name: 'Wishlist',        url: '/wishlist'        },
     ],
   },
   {
     title: 'Shop',
     links: [
+      { name: 'Herb',          url: '/herb'                    },
       { name: 'Skincare',          url: '/beauty-corner'          },
       { name: 'Haircare',          url: '/oils'                    },
       { name: 'Oils',              url: '/oils'                    },
-      { name: 'Supplements',       url: '/shop?category=Supplements' },
-      { name: 'Featured Products', url: '/shop?featured=true'      },
+      { name: 'Supplements',       url: '/supplements' },
+      // { name: 'Featured Products', url: '/shop?featured=true'      },
     ],
   },
   {

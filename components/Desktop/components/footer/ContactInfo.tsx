@@ -2,11 +2,11 @@ import Image from 'next/image';
 import { FaFacebook, FaYoutube, FaInstagram } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import { SOCIAL_LINKS } from '@/lib/social-links';
-
+import { FaEnvelope, FaPhone } from 'react-icons/fa';
 const socialLinks = [
-  { name: 'Facebook',  Icon: FaFacebook,  url: SOCIAL_LINKS.facebook  },
-  { name: 'X',         Icon: FaXTwitter,  url: SOCIAL_LINKS.twitter   },
-  { name: 'YouTube',   Icon: FaYoutube,   url: SOCIAL_LINKS.youtube   },
+  { name: 'Facebook', Icon: FaFacebook, url: SOCIAL_LINKS.facebook },
+  { name: 'X', Icon: FaXTwitter, url: SOCIAL_LINKS.twitter },
+  { name: 'YouTube', Icon: FaYoutube, url: SOCIAL_LINKS.youtube },
   { name: 'Instagram', Icon: FaInstagram, url: SOCIAL_LINKS.instagram },
 ];
 
@@ -27,13 +27,13 @@ export default function ContactInfo() {
       {/* Contact — inline label + value, matching design */}
       <div className="space-y-1.5 text-sm text-gray-700">
         <p>
-          <span className="font-medium text-gray-900">Email: </span>
+          <FaEnvelope className="w-3.5 h-3.5 text-gray-900" /> :
           <a href="mailto:pansariinn@gmail.com" className="text-gray-700 hover:text-green-700 transition-colors">
             pansariinn@gmail.com
           </a>
         </p>
         <p>
-          <span className="font-medium text-gray-900">Phone: </span>
+          <FaPhone className="w-3.5 h-3.5 text-gray-900" /> :
           <a href="tel:+923045779900" className="text-gray-700 hover:text-green-700 transition-colors">
             0304 577 9900
           </a>
