@@ -305,7 +305,7 @@ export default function NewArrivalsPage() {
                 )}
               </div>
 
-              <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+              <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-2 lg:grid-cols-4 xl:grid-cols-5' : 'grid-cols-1'}`}>
                 {products.map((product) => (
                   <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                     {isMobile ? <MobileProductCard product={product} /> : <DesktopProductCard product={product} />}

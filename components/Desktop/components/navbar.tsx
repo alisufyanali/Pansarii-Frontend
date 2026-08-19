@@ -38,6 +38,7 @@ const navLinks = [
   { name: 'Shop',       href: '/shop'     },
   { name: 'By Concern', href: '/concern'  },
   { name: 'Category',   href: '/category' },
+  { name: 'New Arrival',   href: '/newarrival' },
   { name: 'Offers',     href: '/offers'   },
   { name: 'Rewards',    href: '/rewards'  },
   { name: 'Blog',       href: '/blog'     },
