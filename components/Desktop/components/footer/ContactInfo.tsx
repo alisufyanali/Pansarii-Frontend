@@ -27,14 +27,14 @@ export default function ContactInfo() {
       {/* Contact — inline label + value, matching design */}
       <div className="space-y-1.5 text-sm text-gray-700">
         <p>
-          <FaEnvelope className="w-3.5 h-3.5 text-gray-900" /> :
           <a href="mailto:pansariinn@gmail.com" className="text-gray-700 hover:text-green-700 transition-colors">
+          <FaEnvelope className="w-3.5 h-3.5 text-gray-900" /> :
             pansariinn@gmail.com
           </a>
         </p>
         <p>
-          <FaPhone className="w-3.5 h-3.5 text-gray-900" /> :
           <a href="tel:+923045779900" className="text-gray-700 hover:text-green-700 transition-colors">
+          <FaPhone className="w-3.5 h-3.5 text-gray-900" /> :
             0304 577 9900
           </a>
         </p>
