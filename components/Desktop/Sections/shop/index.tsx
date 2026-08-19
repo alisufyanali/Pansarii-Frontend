@@ -206,7 +206,11 @@ function ShopContent() {
             slug: p.slug,
             img: p.thumbnail || '/images/product.png',
             nameEn: p.name,
-            nameUr: p.name,
+            // Only set nameUr when the API returns a real Urdu name that differs
+            // from the English name — never duplicate the English name in the Urdu field.
+            nameUr: (p.urdu_name && p.urdu_name.trim() && p.urdu_name !== p.name)
+              ? p.urdu_name.trim()
+              : '',
             description: p.description || '',
             rating: p.rating || 4.5,
             reviews: p.reviews_count || 0,

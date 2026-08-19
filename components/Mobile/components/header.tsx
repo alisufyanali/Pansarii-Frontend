@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';import { FiSearch, FiX } from 'react-icons/fi';
+import { useState, useRef, useEffect } from 'react';
+import { FiSearch, FiX } from 'react-icons/fi';
 import { RiUserLine, RiShoppingCartLine } from 'react-icons/ri';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { allProducts } from '@/data/products';
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -16,21 +16,66 @@ interface HeaderProps {
 
 // ── Search bar ────────────────────────────────────────────────────────────────
 function MobileSearchBar() {
-  const router = useRouter();
+  const router   = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
+  const [query,       setQuery]       = useState('');
+  const [suggestions, setSuggestions] = useState<Array<{
+    id: string; name: string; slug: string;
+    price: number; salePrice?: number;
+    image?: string; category?: string;
+  }>>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [open,      setOpen]      = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const suggestions = query.trim()
-    ? allProducts
-      .filter(p => p.nameEn.toLowerCase().includes(query.toLowerCase()))
-      .slice(0, 5)
-    : [];
+  // Fetch suggestions from the real API — same pattern as desktop navbar/searchbar.tsx
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!query.trim()) { setSuggestions([]); return; }
+
+    debounceRef.current = setTimeout(async () => {
+      setIsLoading(true);
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://custom.pansariinn.pk/api';
+        const params  = new URLSearchParams({ search: query.trim(), per_page: '5' });
+        const res     = await fetch(`${baseUrl}/products?${params}`, {
+          headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(
+            (data.data ?? []).map((p: {
+              id: number; name: string; slug: string;
+              price: number; sale_price?: number | null;
+              thumbnail?: string | null;
+              category?: { name?: string };
+            }) => ({
+              id:        String(p.id),
+              name:      p.name,
+              slug:      p.slug,               // real API slug — never name-derived
+              price:     p.price,
+              salePrice: p.sale_price ?? undefined,
+              image:     p.thumbnail ?? undefined,
+              category:  p.category?.name,
+            }))
+          );
+          setOpen(true);
+        }
+      } catch {
+        // silently ignore — suggestions are not critical
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300);
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [query]);
 
   const handleSearch = (q: string) => {
     if (!q.trim()) return;
     setQuery('');
     setOpen(false);
+    setSuggestions([]);
     router.push(`/shop?search=${encodeURIComponent(q.trim())}`);
   };
 
@@ -49,9 +94,10 @@ function MobileSearchBar() {
             placeholder="Search"
             className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none"
             aria-label="Search products"
+            autoComplete="off"
           />
           {query ? (
-            <button type="button" onClick={() => { setQuery(''); setOpen(false); }} aria-label="Clear search">
+            <button type="button" onClick={() => { setQuery(''); setOpen(false); setSuggestions([]); }} aria-label="Clear search">
               <FiX className="w-4 h-4 text-gray-400" aria-hidden="true" />
             </button>
           ) : (
@@ -60,25 +106,62 @@ function MobileSearchBar() {
         </div>
       </form>
 
-      {/* Suggestions */}
-      {open && suggestions.length > 0 && (
+      {/* Suggestions dropdown */}
+      {open && query.trim() && (
         <div className="absolute left-4 right-4 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden">
-          {suggestions.map(p => (
+          {isLoading && (
+            <div className="flex items-center justify-center gap-2 px-4 py-3 text-xs text-gray-400">
+              <div className="w-3.5 h-3.5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+              Searching…
+            </div>
+          )}
+          {!isLoading && suggestions.length > 0 && suggestions.map(p => (
             <button
               key={p.id}
-              onClick={() => handleSearch(p.nameEn)}
+              onClick={() => {
+                setOpen(false);
+                setQuery('');
+                setSuggestions([]);
+                // Use real API slug — never derive from name (fixes 404 bug)
+                router.push(`/${p.slug}`);
+              }}
               className="flex items-center gap-3 w-full px-4 py-2.5 hover:bg-gray-50 text-left"
             >
               <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                <Image src={p.img} alt={`${p.nameEn} product image`} fill className="object-contain" sizes="32px" />
+                {p.image ? (
+                  <Image src={p.image} alt={p.name} fill className="object-contain" sizes="32px" />
+                ) : (
+                  <div className="w-full h-full bg-gray-200" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-900 truncate">{p.nameEn}</p>
-                <p className="text-[10px] text-gray-400">{p.category}</p>
+                <p className="text-xs font-medium text-gray-900 truncate">{p.name}</p>
+                {p.category && <p className="text-[10px] text-gray-400">{p.category}</p>}
               </div>
-              <span className="text-xs font-semibold text-green-700 flex-shrink-0">PKR {p.price}</span>
+              <div className="flex-shrink-0 text-right">
+                {p.salePrice ? (
+                  <>
+                    <p className="text-xs font-semibold text-green-700">PKR {p.salePrice.toLocaleString()}</p>
+                    <p className="text-[10px] text-gray-400 line-through">PKR {p.price.toLocaleString()}</p>
+                  </>
+                ) : (
+                  <span className="text-xs font-semibold text-green-700">PKR {p.price.toLocaleString()}</span>
+                )}
+              </div>
             </button>
           ))}
+          {!isLoading && suggestions.length === 0 && (
+            <div className="px-4 py-3 text-xs text-gray-400 text-center">No products found</div>
+          )}
+          {/* View all results link */}
+          {!isLoading && (
+            <button
+              onClick={() => handleSearch(query)}
+              className="w-full px-4 py-2.5 text-xs font-semibold text-green-700 hover:bg-green-50 text-center border-t border-gray-100"
+            >
+              See all results for &ldquo;{query}&rdquo;
+            </button>
+          )}
         </div>
       )}
     </div>

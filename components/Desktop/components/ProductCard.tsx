@@ -83,9 +83,9 @@ export default function ProductCard({ product, priority = false }: { product: Pr
             </div>
 
             <div className="flex items-center justify-center gap-2 pt-0.5">
-              <span className="text-sm font-bold text-gray-900">PKR {product.price}</span>
+              <span className="text-sm font-bold text-gray-900">PKR {product.price.toLocaleString()}</span>
               {product.oldPrice !== null && product.oldPrice !== undefined && (
-                <span className="text-xs text-gray-400 line-through">PKR {product.oldPrice}</span>
+                <span className="text-xs text-gray-400 line-through">PKR {product.oldPrice.toLocaleString()}</span>
               )}
             </div>
           </div>

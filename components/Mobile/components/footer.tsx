@@ -17,7 +17,7 @@ import { toast } from 'react-toastify';
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const iconData = [
-  { icon: FaTruck, label: 'Free Shipping' },
+  { icon: FaTruck, label: 'Free Shipping On 5,000' },
   { icon: FaMapMarkerAlt, label: 'Nationwide' },
   { icon: FaShieldAlt, label: '100% Authentic' },
 ];
