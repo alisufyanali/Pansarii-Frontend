@@ -312,7 +312,7 @@ export default function ProductDetailsSection({
     if (!productId) return toast.error("Failed to add item to cart!");
     try {
       for (let i = 0; i < quantity; i++) await addToCart(cartPayload());
-      toast.success(`Added ${quantity} × ${product?.nameEn} (${selectedSize}) to cart!`);
+      toast.success(`Added ${quantity} × ${product?.nameEn} (${selectedLabel}) to cart!`);
     } catch { /* error already toasted by context */ }
   };
 
