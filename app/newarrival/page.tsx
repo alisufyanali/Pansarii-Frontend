@@ -396,7 +396,7 @@ export default function NewArrivalsPage() {
           </div>
         </section>
 
-        <section className="bg-gradient-to-r from-green-800 to-emerald-800 rounded-xl p-6 sm:p-8 text-center">
+        {/* <section className="bg-gradient-to-r from-green-800 to-emerald-800 rounded-xl p-6 sm:p-8 text-center">
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">
             Get Notified About New Arrivals
           </h3>
@@ -431,9 +431,9 @@ export default function NewArrivalsPage() {
           <p className="text-green-200 text-xs sm:text-sm mt-3 sm:mt-4">
             We respect your privacy. No spam ever.
           </p>
-        </section>
+        </section> */}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
+        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
           <div className="bg-green-50 p-3 sm:p-4 rounded-lg text-center">
             <div className="text-xl sm:text-2xl font-bold text-green-800">{stats.totalNewProducts}</div>
             <div className="text-xs sm:text-sm text-gray-700">New Products</div>
@@ -450,7 +450,7 @@ export default function NewArrivalsPage() {
             <div className="text-xl sm:text-2xl font-bold text-amber-800">20%</div>
             <div className="text-xs sm:text-sm text-gray-700">Launch Discount</div>
           </div>
-        </div>
+        </div> */}
       </main>
 
       <style jsx global>{`

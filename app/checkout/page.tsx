@@ -309,7 +309,24 @@ export default function CheckoutPage() {
           items,
         });
 
-        sessionStorage.setItem('last-guest-order', JSON.stringify(order));
+        sessionStorage.setItem('last-guest-order', JSON.stringify({
+          ...order,
+          // Persist cart items in the session so the confirmation page can show
+          // them even though the order-creation response doesn't include items.
+          // This must be stored BEFORE clearCart() is called.
+          items: order.items?.length
+            ? order.items
+            : cartItems.map((item, idx) => ({
+                id:           idx + 1,
+                product_id:   Number(item.id),
+                product_name: item.nameEn,
+                variant_name: item.size || undefined,
+                quantity:     item.quantity,
+                price:        item.price,
+                subtotal:     item.price * item.quantity,
+                thumbnail:    item.img || undefined,
+              })),
+        }));
         await clearCart();
 
         if (order.account_created) {

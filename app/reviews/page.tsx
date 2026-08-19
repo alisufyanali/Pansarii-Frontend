@@ -314,8 +314,8 @@ function ReviewFormModal({
         if (apiErrors.order_number) {
           const msg = apiErrors.order_number[0];
           // Normalise known messages to user-friendly strings
-          if (/not found|doesn.t exist|no order/i.test(msg)) {
-            fieldMap.order_number = "We couldn't find an order with this number. Please check and try again.";
+          if (/not found|doesn.t exist|no order|no delivered/i.test(msg)) {
+            fieldMap.order_number = "We couldn't find a delivered order with this number. Only delivered orders can be reviewed.";
           } else if (/already.*review|review.*already|duplicate/i.test(msg)) {
             fieldMap.order_number = 'A review has already been submitted for this order.';
           } else {
@@ -342,7 +342,24 @@ function ReviewFormModal({
 
         if (Object.keys(fieldMap).length > 0) {
           setErrors(prev => ({ ...prev, ...fieldMap }));
-          return; // Don't show generic toast — inline errors are sufficient
+          // Also show a toast so the error is visible regardless of scroll position
+          const firstMsg = fieldMap.order_number || fieldMap.email || Object.values(fieldMap)[0];
+          if (firstMsg) toast.error(firstMsg);
+          return;
+        }
+      }
+
+      // Handle 422 with top-level `message` but no `errors` key
+      // (e.g. { success: false, message: "No delivered order found..." })
+      if (isAxiosError(err) && err.response?.status === 422) {
+        const msg = (err.response.data as { message?: string })?.message;
+        if (msg) {
+          // Map order-related messages to the order_number field
+          if (/order|delivered|not found/i.test(msg)) {
+            setErrors(prev => ({ ...prev, order_number: msg }));
+          }
+          toast.error(msg);
+          return;
         }
       }
 
