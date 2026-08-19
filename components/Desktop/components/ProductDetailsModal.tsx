@@ -82,7 +82,7 @@ export default function ProductDetailsModal({
   const goToProductDetail = () => {
     if (product.id) {
       onClose(); // close modal first
-      router.push(`/product/${product.id}`);
+      router.push(`/${product.slug}`);
     }
   };
 
