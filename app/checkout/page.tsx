@@ -159,6 +159,7 @@ export default function CheckoutPage() {
   const [orderNote,     setOrderNote]     = useState('');
   const [isSubmitting,  setIsSubmitting]  = useState(false);
   const [submitError,   setSubmitError]   = useState('');
+  const [authPhoneError, setAuthPhoneError] = useState('');
 
   // Load cities on mount
   useEffect(() => {
@@ -240,7 +241,15 @@ export default function CheckoutPage() {
     if (!guestName.trim()) errs.name = 'Full name is required';
     if (!guestEmail.trim()) errs.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(guestEmail)) errs.email = 'Email is invalid';
-    if (!guestPhone) errs.phone = 'Phone number is required';
+    
+    if (!guestPhone) {
+      errs.phone = 'Phone number is required';
+    } else {
+      const cleanPhone = guestPhone.replace(/[\s\-\(\)]/g, '');
+      if (!/^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
+        errs.phone = 'Please enter a valid Pakistani mobile number (e.g. 03XXXXXXXXX)';
+      }
+    }
     setGuestFieldErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -265,6 +274,18 @@ export default function CheckoutPage() {
     setSubmitError('');
 
     if (checkoutMode === 'guest' && !validateGuestFields()) return;
+
+    if (checkoutMode === 'auth') {
+      if (!phoneValue) {
+        setAuthPhoneError('Phone number is required');
+        return;
+      }
+      const cleanPhone = phoneValue.replace(/[\s\-\(\)]/g, '');
+      if (!/^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
+        setAuthPhoneError('Please enter a valid Pakistani mobile number (e.g. 03XXXXXXXXX)');
+        return;
+      }
+    }
 
     // City is required — show inline error if not selected
     if (!selectedCityId) {
@@ -352,22 +373,39 @@ export default function CheckoutPage() {
         router.push(`/order-confirmation?orderId=${order.id}`);
       }
     } catch (err) {
+      console.error('Order submission error:', err);
       const e422 = err as { response?: { status?: number; data?: { message?: string } } };
       const msg = e422?.response?.data?.message || 'Failed to place order. Please try again.';
 
       if (checkoutMode === 'guest') {
         const fields = extractFieldErrors<GuestFields>(err);
+        const knownFields: Partial<GuestFields> = {};
+        let hasUnknownOrNoFields = false;
+
         if (Object.keys(fields).length) {
-          setGuestFieldErrors(fields);
-        } else if (e422?.response?.status === 422) {
+          (Object.keys(fields) as Array<keyof GuestFields>).forEach((key) => {
+            if (['name', 'email', 'phone'].includes(key)) {
+              knownFields[key] = fields[key];
+            } else {
+              hasUnknownOrNoFields = true;
+            }
+          });
+          setGuestFieldErrors(knownFields);
+        } else {
+          hasUnknownOrNoFields = true;
+        }
+
+        if (hasUnknownOrNoFields && e422?.response?.status === 422) {
+          toast.error(msg);
+        } else if (e422?.response?.status !== 422) {
+          setSubmitError(msg);
+        }
+      } else {
+        if (e422?.response?.status === 422) {
           toast.error(msg);
         } else {
           setSubmitError(msg);
         }
-      } else if (e422?.response?.status === 422) {
-        toast.error(msg);
-      } else {
-        setSubmitError(msg);
       }
     } finally {
       setIsSubmitting(false);
@@ -527,7 +565,24 @@ export default function CheckoutPage() {
                         international
                         defaultCountry="PK"
                         value={guestPhone}
-                        onChange={v => handleGuestFieldChange('phone', v || '')}
+                        onChange={v => {
+                          const val = v || '';
+                          handleGuestFieldChange('phone', val);
+                          const cleanPhone = val.replace(/[\s\-\(\)]/g, '');
+                          if (val && /^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
+                            setGuestFieldErrors(prev => ({ ...prev, phone: undefined }));
+                          }
+                        }}
+                        onBlur={() => {
+                          if (!guestPhone) {
+                            setGuestFieldErrors(prev => ({ ...prev, phone: 'Phone number is required' }));
+                          } else {
+                            const cleanPhone = guestPhone.replace(/[\s\-\(\)]/g, '');
+                            if (!/^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
+                              setGuestFieldErrors(prev => ({ ...prev, phone: 'Please enter a valid Pakistani mobile number (e.g. 03XXXXXXXXX)' }));
+                            }
+                          }
+                        }}
                         placeholder="Enter phone number"
                       />
                       {guestFieldErrors.phone && (
@@ -574,9 +629,29 @@ export default function CheckoutPage() {
                         international
                         defaultCountry="PK"
                         value={phoneValue}
-                        onChange={v => setPhoneValue(v || '')}
+                        onChange={v => {
+                          const val = v || '';
+                          setPhoneValue(val);
+                          const cleanPhone = val.replace(/[\s\-\(\)]/g, '');
+                          if (val && /^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
+                            setAuthPhoneError('');
+                          }
+                        }}
+                        onBlur={() => {
+                          if (!phoneValue) {
+                            setAuthPhoneError('Phone number is required');
+                          } else {
+                            const cleanPhone = phoneValue.replace(/[\s\-\(\)]/g, '');
+                            if (!/^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
+                              setAuthPhoneError('Please enter a valid Pakistani mobile number (e.g. 03XXXXXXXXX)');
+                            }
+                          }
+                        }}
                         placeholder="Enter phone number"
                       />
+                      {authPhoneError && (
+                        <p className="mt-1 text-xs text-red-500">{authPhoneError}</p>
+                      )}
                     </div>
                   </div>
                 </div>
