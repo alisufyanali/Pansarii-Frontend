@@ -58,7 +58,6 @@ const linkGroups = [
       { name: 'FAQs',                      url: '/faqs'                       },
       { name: 'Pricing Policy',            url: '/pricing-policy'             },
       { name: 'Our Commitment to Quality', url: '/our-commitment-to-quality'  },
-      { name: 'Contact Us',                url: '/contact'                    },
     ],
   },
 ];
