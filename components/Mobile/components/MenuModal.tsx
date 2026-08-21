@@ -8,7 +8,7 @@ import { getCategoriesCached } from '@/lib/products';
 import { useAuth } from '@/context/AuthContext';
 import {
   FaTimes, FaUser, FaChevronRight, FaLeaf,
-  FaShoppingBag, FaStar, FaHeart, FaBook,
+  FaShoppingBag, FaStar, FaHeart, FaBook, FaTruck,
   FaFacebook, FaYoutube,
 } from 'react-icons/fa';
 import { FaXTwitter, FaInstagram } from 'react-icons/fa6';
@@ -30,6 +30,7 @@ const mainLinks = [
   { name: 'Shop All',     href: '/shop',       Icon: FaShoppingBag },
   { name: 'New Arrivals', href: '/newarrival', Icon: FaStar        },
   { name: 'Wishlist',     href: '/wishlist',   Icon: FaHeart       },
+  { name: 'Track Order',   href: '/track-order', Icon: FaTruck        },
   { name: 'Blog',         href: '/blog',       Icon: FaBook        },
 ];
 

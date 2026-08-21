@@ -27,19 +27,24 @@ export default function ContactInfo() {
       {/* Contact — inline label + value, matching design */}
       <div className="space-y-1.5 text-sm text-gray-700">
         <p>
-          <a href="mailto:pansariinn@gmail.com" className="text-gray-700 hover:text-green-700 transition-colors">
-          <FaEnvelope className="w-3.5 h-3.5 text-gray-900" /> :
-            pansariinn@gmail.com
+          <a
+            href="mailto:pansariinn@gmail.com"
+            className="flex items-center gap-2 text-gray-700 hover:text-green-700 transition-colors"
+          >
+            <FaEnvelope className="w-3.5 h-3.5 text-gray-900 shrink-0" />
+            <span>pansariinn@gmail.com</span>
           </a>
         </p>
         <p>
-          <a href="tel:+923045779900" className="text-gray-700 hover:text-green-700 transition-colors">
-          <FaPhone className="w-3.5 h-3.5 text-gray-900" /> :
-            0304 577 9900
+          <a
+            href="tel:+923045779900"
+            className="flex items-center gap-2 text-gray-700 hover:text-green-700 transition-colors"
+          >
+            <FaPhone className="w-3.5 h-3.5 text-gray-900 shrink-0" />
+            <span>0304 577 9900</span>
           </a>
         </p>
       </div>
-
       {/* Social icons */}
       <div>
         <p className="text-sm text-gray-700 font-medium mb-2">Follow Our Social Media!</p>

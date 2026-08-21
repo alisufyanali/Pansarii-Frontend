@@ -5,6 +5,7 @@ const linkGroups = [
     title: 'Quick Links',
     links: [
       { name: 'About Us',    url: '/aboutus'     },
+      { name: 'Contact Us',    url: '/contact'     },
       { name: 'Our Story',   url: '/our-story'   },
       { name: 'Blog',        url: '/blog'        },
       { name: 'Wishlist',        url: '/wishlist'        },
