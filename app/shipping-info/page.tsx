@@ -5,9 +5,9 @@ import Link from 'next/link';
 import PageBanner from '@/components/PageBanner';
 
 const deliveryZones = [
-  { zone: 'Major Cities',  cities: ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad'], time: '2–3 business days', cost: 'PKR 150' },
-  { zone: 'Other Cities',  cities: ['Multan', 'Peshawar', 'Quetta', 'Sialkot', 'Gujranwala'],     time: '3–5 business days', cost: 'PKR 200' },
-  { zone: 'Remote Areas',  cities: ['All other areas'],                                             time: '5–7 business days', cost: 'PKR 250' },
+  { zone: 'Major Cities',  cities: ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad'], time: '2–3 business days', cost: 'PKR 250' },
+  { zone: 'Other Cities',  cities: ['Multan', 'Peshawar', 'Quetta', 'Sialkot', 'Gujranwala'],     time: '3–5 business days', cost: 'PKR 250' },
+  { zone: 'Remote Areas',  cities: ['All other areas'],                                             time: '3–7 business days', cost: 'PKR 250' },
 ];
 
 const processSteps = [

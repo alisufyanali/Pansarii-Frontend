@@ -25,11 +25,13 @@ const linkGroups = [
   {
     title: 'Customer Service',
     links: [
-      { name: 'Track Order',   url: '/track-order'   },
-      { name: 'Returns',       url: '/returns'       },
-      { name: 'Shipping Info', url: '/shipping-info' },
-      { name: 'FAQs',          url: '/faqs'          },
-      { name: 'Contact Us',    url: '/contact'       },
+      { name: 'Track Order',              url: '/track-order'                },
+      { name: 'Returns',                  url: '/returns'                    },
+      { name: 'Shipping Info',            url: '/shipping-info'              },
+      { name: 'FAQs',                     url: '/faqs'                       },
+      { name: 'Pricing Policy',           url: '/pricing-policy'             },
+      { name: 'Our Commitment to Quality',url: '/our-commitment-to-quality'  },
+      { name: 'Contact Us',               url: '/contact'                    },
     ],
   },
 ];

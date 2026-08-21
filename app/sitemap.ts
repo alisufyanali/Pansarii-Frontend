@@ -36,6 +36,10 @@ export default async function sitemap() {
   return [
     { url: SITE_URL, priority: 1.0 },
     { url: `${SITE_URL}/shop`, priority: 0.9 },
+    { url: `${SITE_URL}/shipping-info`,             changeFrequency: 'monthly' as const, priority: 0.5 },
+    { url: `${SITE_URL}/faqs`,                      changeFrequency: 'monthly' as const, priority: 0.5 },
+    { url: `${SITE_URL}/pricing-policy`,            changeFrequency: 'monthly' as const, priority: 0.5 },
+    { url: `${SITE_URL}/our-commitment-to-quality`, changeFrequency: 'monthly' as const, priority: 0.5 },
     ...productUrls,
     ...blogUrls,
   ];
