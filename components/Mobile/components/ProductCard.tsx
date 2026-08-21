@@ -1,21 +1,23 @@
 "use client";
 
 import { useState, MouseEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import SafeImage from '@/components/SafeImage';
 import { FaStar } from 'react-icons/fa';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 import type { Product } from '@/types/product';
+import { useProductNavigation } from '@/hooks/useProductNavigation';
 
 export default function MobileProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
+  const { navigateTo, isPendingFor, anyPending } = useProductNavigation();
+
+  const isLoading = isPendingFor(product.id ?? product.slug ?? '');
 
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!product.slug) return;
-    router.push(`/${product.slug}`);
+    if (!product.slug || anyPending) return;
+    navigateTo(product.slug, product.id ?? product.slug ?? '');
   };
 
   const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {
@@ -27,8 +29,11 @@ export default function MobileProductCard({ product, priority = false }: { produ
   return (
     <>
       <div
-        className="flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.98] transition-transform h-full"
+        className={`flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.98] transition-transform h-full ${
+          isLoading ? 'opacity-75' : ''
+        }`}
         onClick={handleCardClick}
+        aria-busy={isLoading}
       >
         {/* Fixed-height image */}
         <div className="relative w-full h-36 flex-shrink-0 bg-gray-50">
@@ -46,6 +51,12 @@ export default function MobileProductCard({ product, priority = false }: { produ
             loading={priority ? "eager" : "lazy"}
             priority={priority}
           />
+          {/* Loading overlay — appears instantly on click, specific to this card */}
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10">
+              <span className="w-7 h-7 rounded-full border-[3px] border-green-700 border-t-transparent animate-spin" />
+            </div>
+          )}
         </div>
 
         {/* Content — flex-col so price+button always at bottom */}

@@ -4,19 +4,21 @@ import SafeImage from '@/components/SafeImage';
 import { FaStar, FaCheckCircle, FaShoppingCart } from "react-icons/fa";
 import { useState, MouseEvent } from "react";
 import ProductDetailsModal from "./ProductDetailsModal";
-import { useRouter } from "next/navigation";
 import { Product } from '@/types/product';
+import { useProductNavigation } from '@/hooks/useProductNavigation';
 
 export default function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
+  const { navigateTo, isPendingFor, anyPending } = useProductNavigation();
+
+  const isLoading = isPendingFor(product.id ?? product.slug ?? '');
 
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!product.slug) return;
-    router.push(`/${product.slug}`);
+    if (!product.slug || anyPending) return;
+    navigateTo(product.slug, product.id ?? product.slug ?? '');
   };
 
   const handleQuickAdd = (e: MouseEvent<HTMLButtonElement>) => {
@@ -30,11 +32,13 @@ export default function ProductCard({ product, priority = false }: { product: Pr
   return (
     <>
       <div
-        className={`w-full h-full rounded-2xl overflow-hidden flex flex-col bg-white cursor-pointer transition-all duration-300 border-2 ${isHovered ? 'border-green-700' : 'border-gray-200'
-          }`}
+        className={`w-full h-full rounded-2xl overflow-hidden flex flex-col bg-white cursor-pointer transition-all duration-300 border-2 ${
+          isLoading ? 'border-green-700 opacity-75' : isHovered ? 'border-green-700' : 'border-gray-200'
+        }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}
+        aria-busy={isLoading}
       >
         {/* Fixed-height image */}
         <div className="relative w-full h-44 flex-shrink-0 border-b border-gray-100">
@@ -53,6 +57,12 @@ export default function ProductCard({ product, priority = false }: { product: Pr
             <span className="absolute top-2 right-2 px-2 py-0.5 bg-red-500 text-white text-[11px] font-medium rounded-full">
               {product.sale}
             </span>
+          )}
+          {/* Loading overlay — appears instantly on click, specific to this card */}
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10">
+              <span className="w-8 h-8 rounded-full border-[3px] border-green-700 border-t-transparent animate-spin" />
+            </div>
           )}
         </div>
 
