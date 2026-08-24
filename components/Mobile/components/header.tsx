@@ -8,6 +8,7 @@ import { FiSearch, FiX } from 'react-icons/fi';
 import { RiUserLine, RiShoppingCartLine } from 'react-icons/ri';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { API_BASE_URL } from '@/lib/api-config';
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -36,7 +37,7 @@ function MobileSearchBar() {
     debounceRef.current = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://custom.pansariinn.pk/api';
+        const baseUrl = API_BASE_URL;
         const params  = new URLSearchParams({ search: query.trim(), per_page: '5' });
         const res     = await fetch(`${baseUrl}/products?${params}`, {
           headers: { Accept: 'application/json' },

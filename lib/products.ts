@@ -217,10 +217,11 @@ export async function getRecommendedProducts(
   options?: { signal?: AbortSignal },
 ): Promise<Product[]> {
   try {
-    const params = excludeId !== undefined ? { exclude_id: excludeId } : undefined;
+    const params: Record<string, unknown> = { per_page: 10 };
+    if (excludeId !== undefined) params.exclude_id = excludeId;
     const res = await api.get<ApiResponse<ApiProduct[]>>(
       '/products/recommended',
-      params as Record<string, unknown> | undefined,
+      params,
       { signal: options?.signal },
     );
     return (res.data ?? []).map(p => ({

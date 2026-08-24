@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fi';
 import { HiOutlineShoppingBag, HiOutlineTag } from 'react-icons/hi';
 import { BsStar } from 'react-icons/bs';
+import { API_BASE_URL } from '@/lib/api-config';
 
 export interface ProductSuggestion {
   id: string;
@@ -99,7 +100,7 @@ export default function SearchBar({
             search: debouncedQuery.trim(),
             per_page: '5',
           });
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://custom.pansariinn.pk/api';
+          const baseUrl = API_BASE_URL;
           const response = await fetch(`${baseUrl}/products?${params.toString()}`, {
             headers: { Accept: 'application/json' },
           });
