@@ -14,11 +14,10 @@ const linkGroups = [
   {
     title: 'Shop',
     links: [
-      { name: 'Herb',          url: '/herb'                    },
-      { name: 'Skincare',          url: '/beauty-corner'          },
-      { name: 'Haircare',          url: '/oils'                    },
-      { name: 'Oils',              url: '/oils'                    },
-      { name: 'Supplements',       url: '/supplements' },
+      { name: 'Herb',          url: '/herb'          },
+      { name: 'Skincare',      url: '/beauty-corner' },
+      { name: 'Oils',          url: '/oils'          },
+      { name: 'Supplements',   url: '/supplements'   },
       // { name: 'Featured Products', url: '/shop?featured=true'      },
     ],
   },

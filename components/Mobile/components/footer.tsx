@@ -42,11 +42,10 @@ const linkGroups = [
   {
     title: 'Shop',
     links: [
-      { name: 'Skincare',          url: '/beauty-corner'             },
-      { name: 'Haircare',          url: '/oils'                      },
-      { name: 'Oils',              url: '/oils'                      },
-      { name: 'Supplements',       url: '/shop?category=Supplements' },
-      { name: 'Featured Products', url: '/shop?featured=true'        },
+      { name: 'Herb',        url: '/herb'          },
+      { name: 'Skincare',    url: '/beauty-corner' },
+      { name: 'Oils',        url: '/oils'          },
+      { name: 'Supplements', url: '/supplements'   },
     ],
   },
   {

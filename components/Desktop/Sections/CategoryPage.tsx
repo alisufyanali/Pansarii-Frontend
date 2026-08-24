@@ -174,6 +174,28 @@ const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
     breadcrumbCurrent: 'text-blue-700',
     Icon: FaPills,
   },
+  Oils: {
+    label: 'Oils',
+    subtitle: '100% pure cold-pressed natural oils for health and wellness',
+    tags: 'Cold-Pressed • Pure • Natural',
+    emptyEmoji: '🫙',
+    heroBg: 'bg-gradient-to-r from-yellow-50 to-amber-50',
+    heroBorder: 'border-yellow-100',
+    iconBg: 'bg-yellow-100',
+    iconColor: 'text-yellow-700',
+    badgeBg: 'bg-yellow-100',
+    badgeText: 'text-yellow-800',
+    descColor: 'text-yellow-700',
+    reviewColor: 'text-yellow-700',
+    saveBadgeBg: 'bg-yellow-100',
+    saveBadgeText: 'text-yellow-800',
+    btnClass: 'bg-yellow-600 hover:bg-yellow-700',
+    clearBtnClass: 'bg-yellow-600 hover:bg-yellow-700',
+    paginationActive: 'bg-yellow-600 text-white border-yellow-600',
+    breadcrumbHover: 'hover:text-yellow-600',
+    breadcrumbCurrent: 'text-yellow-700',
+    Icon: FaLeaf,
+  },
   Arqiyaat: {
     label: 'Arqiyaat',
     subtitle: 'Distilled herbal extracts and floral waters',
@@ -436,7 +458,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
       setPageProducts(
         products.length > 0
           ? products
-          : (allProducts.filter(p => p.category === categoryName) as Product[])
+          : []
       );
     } catch {
       if (signal?.aborted) return;
