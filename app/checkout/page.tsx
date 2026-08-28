@@ -374,39 +374,57 @@ export default function CheckoutPage() {
       }
     } catch (err) {
       console.error('Order submission error:', err);
-      const e422 = err as { response?: { status?: number; data?: { message?: string } } };
-      const msg = e422?.response?.data?.message || 'Failed to place order. Please try again.';
 
-      if (checkoutMode === 'guest') {
-        const fields = extractFieldErrors<GuestFields>(err);
-        const knownFields: Partial<GuestFields> = {};
-        let hasUnknownOrNoFields = false;
+      // ── Classify the error ──────────────────────────────────────────────
+      const axiosErr = err as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } };
+      const status   = axiosErr?.response?.status;
+      const data     = axiosErr?.response?.data;
 
-        if (Object.keys(fields).length) {
-          (Object.keys(fields) as Array<keyof GuestFields>).forEach((key) => {
-            if (['name', 'email', 'phone'].includes(key)) {
-              knownFields[key] = fields[key];
-            } else {
-              hasUnknownOrNoFields = true;
+      // Human-readable top-level message from backend, or a sensible fallback
+      const topMsg = data?.message
+        || (status === undefined
+          ? "We couldn't place your order. Please check your connection and try again, or contact support if this continues."
+          : status === 500
+          ? "A server error occurred. Please try again in a moment, or contact support if this continues."
+          : 'Failed to place your order. Please try again.');
+
+      // ── Handle 422 validation errors ────────────────────────────────────
+      if (status === 422) {
+        // Always show the top-level message as a toast so it's visible
+        // regardless of where the user is scrolled.
+        toast.error(topMsg);
+
+        if (checkoutMode === 'guest') {
+          // Highlight individual form fields that the backend flagged.
+          const fields = extractFieldErrors<GuestFields>(err);
+          if (Object.keys(fields).length) {
+            const knownFields: Partial<GuestFields> = {};
+            (Object.keys(fields) as Array<keyof GuestFields>).forEach(key => {
+              if (['name', 'email', 'phone'].includes(key)) {
+                knownFields[key] = fields[key];
+              }
+            });
+            if (Object.keys(knownFields).length) {
+              setGuestFieldErrors(knownFields);
+              // Scroll the first invalid field into view so the user can see it.
+              const firstField = Object.keys(knownFields)[0];
+              const fieldEl = document.querySelector(`[name="guest_${firstField}"]`) as HTMLElement | null;
+              fieldEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-          });
-          setGuestFieldErrors(knownFields);
+          }
         } else {
-          hasUnknownOrNoFields = true;
+          // Auth mode — try to surface phone field error inline if backend returns it.
+          const fields = extractFieldErrors<{ phone?: string }>(err);
+          if (fields.phone) setAuthPhoneError(fields.phone);
         }
-
-        if (hasUnknownOrNoFields && e422?.response?.status === 422) {
-          toast.error(msg);
-        } else if (e422?.response?.status !== 422) {
-          setSubmitError(msg);
-        }
-      } else {
-        if (e422?.response?.status === 422) {
-          toast.error(msg);
-        } else {
-          setSubmitError(msg);
-        }
+        // Don't set submitError for 422 — the toast + inline fields are enough.
+        return;
       }
+
+      // ── All other errors (network, 500, stock, etc.) ────────────────────
+      // Show a prominent toast AND keep the inline message as a fallback.
+      toast.error(topMsg);
+      setSubmitError(topMsg);
     } finally {
       setIsSubmitting(false);
     }
