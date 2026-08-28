@@ -22,7 +22,11 @@ export default function ProductDetailsModal({
   const { addToCart } = useCart();
   const router = useRouter();
 
-  // ── Two-level variant selection (mirrors ProductDetailsSection.tsx) ─────────
+  // ── Three-tier variant selection ─────────────────────────────────────────────
+  // Tier 1 — Rich: variants have attributes (Weight/Volume/Size/… + optional Form)
+  // Tier 2 — Named flat: variants have no attributes but have a non-blank name
+  // Tier 3 — Price-only: variants have neither attributes nor names (e.g. Ginger Oil)
+  //           → synthesize a label from price + unit for the selector button
   const richVariants = ((product as unknown as {
     variants?: Array<{
       id: number; name: string; price: number; is_default?: boolean;
@@ -31,11 +35,13 @@ export default function ProductDetailsModal({
   })?.variants ?? []);
 
   // Auto-detect the primary dimension key (Weight, Volume, Size, Qty, …).
-  // We treat "Form" as the fixed secondary key and any OTHER attribute key as
-  // the primary one — so the selector works regardless of what the admin named it.
+  // "Form" is reserved as the secondary key; any OTHER non-empty attribute key
+  // is treated as primary — handles any future attribute name the admin uses.
   const primaryKey: string | undefined = (() => {
     for (const v of richVariants) {
-      const keys = Object.keys(v.attributes ?? {}).filter(k => k !== 'Form');
+      const attrs = v.attributes;
+      if (!attrs || Array.isArray(attrs)) continue;   // skip empty [] from API
+      const keys = Object.keys(attrs).filter(k => k !== 'Form');
       if (keys.length > 0) return keys[0];
     }
     return undefined;
@@ -43,30 +49,53 @@ export default function ProductDetailsModal({
 
   const weightOptions = primaryKey
     ? Array.from(
-        new Set(richVariants.map(v => v.attributes?.[primaryKey]).filter(Boolean) as string[])
+        new Set(richVariants.map(v => {
+          const attrs = v.attributes;
+          if (!attrs || Array.isArray(attrs)) return undefined;
+          return attrs[primaryKey];
+        }).filter(Boolean) as string[])
       ).sort((a, b) => Number(a) - Number(b))
     : [];
 
   const formOptions = Array.from(
-    new Set(richVariants.map(v => v.attributes?.Form).filter(Boolean) as string[])
+    new Set(richVariants.map(v => {
+      const attrs = v.attributes;
+      if (!attrs || Array.isArray(attrs)) return undefined;
+      return attrs.Form;
+    }).filter(Boolean) as string[])
   );
 
   const variantUnit     = richVariants[0]?.unit ?? '';
   const hasRichVariants = weightOptions.length > 0;
 
+  // Tier 2: named flat variants (no attributes, but name is a real string)
+  const hasNamedVariants = !hasRichVariants && richVariants.some(v => v.name?.trim());
+  // Tier 3: price-only variants (no attributes, no names)
+  const hasPriceOnlyVariants = !hasRichVariants && !hasNamedVariants && richVariants.length > 0;
+
   const [selectedWeight, setSelectedWeight] = useState<string>(weightOptions[0] ?? '');
   const [selectedForm,   setSelectedForm]   = useState<string>(formOptions[0]   ?? '');
 
-  // Simple flat-size fallback (legacy / non-rich products)
-  const availableSizes = !hasRichVariants && product.sizes?.length ? product.sizes : [];
+  // For tier 2 (named) and tier 3 (price-only) we use a single selected-variant index
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState<number>(0);
+
+  // Simple flat-size fallback (legacy / non-rich, non-API products from product.sizes[])
+  const availableSizes = !hasRichVariants && !hasNamedVariants && !hasPriceOnlyVariants && product.sizes?.length
+    ? product.sizes
+    : [];
   const [selectedSize, setSelectedSize] = useState(availableSizes[0] ?? '');
 
   // Matched variant — used for price and variantId
   const matchedVariant = hasRichVariants
-    ? richVariants.find(v =>
-        primaryKey && v.attributes?.[primaryKey] === selectedWeight &&
-        (formOptions.length === 0 || v.attributes?.Form === selectedForm)
-      )
+    ? richVariants.find(v => {
+        const attrs = v.attributes;
+        if (!attrs || Array.isArray(attrs)) return false;
+        return primaryKey
+          && attrs[primaryKey] === selectedWeight
+          && (formOptions.length === 0 || attrs.Form === selectedForm);
+      })
+    : (hasNamedVariants || hasPriceOnlyVariants)
+    ? richVariants[selectedVariantIdx]
     : richVariants.find(v => v.name === selectedSize);
 
   // final_price is authoritative (includes any admin surcharge)
@@ -75,12 +104,20 @@ export default function ProductDetailsModal({
     matchedVariant?.price ??
     product.price ?? 0;
 
+  // Label for tier 3 buttons: "PKR 300" or "PKR 300 / ml" when unit is present
+  const priceOnlyLabel = (v: typeof richVariants[number]) =>
+    `PKR ${(v.final_price ?? v.price).toLocaleString()}${variantUnit ? ' / ' + variantUnit : ''}`;
+
   // Label used in cart payload and toast
   const selectedLabel = hasRichVariants
     ? [
         selectedWeight ? `${selectedWeight}${variantUnit ? ' ' + variantUnit : ''}` : '',
         selectedForm,
       ].filter(Boolean).join(' / ')
+    : hasNamedVariants
+    ? (matchedVariant?.name ?? '')
+    : hasPriceOnlyVariants
+    ? priceOnlyLabel(matchedVariant ?? richVariants[0])
     : selectedSize;
 
   useEffect(() => {
@@ -227,7 +264,7 @@ export default function ProductDetailsModal({
                 )}
               </div>
 
-              {/* Variant selector — rich (weight+form+unit) or flat sizes */}
+              {/* Variant selector — rich (weight+form+unit), named flat, price-only, or legacy sizes */}
               {hasRichVariants ? (
                 <div>
                   {/* Weight buttons with unit suffix */}
@@ -238,8 +275,11 @@ export default function ProductDetailsModal({
                         onClick={() => {
                           setSelectedWeight(w);
                           const available = richVariants
-                            .filter(v => v.attributes?.Weight === w)
-                            .map(v => v.attributes?.Form)
+                            .filter(v => {
+                              const attrs = v.attributes;
+                              return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === w;
+                            })
+                            .map(v => (v.attributes as Record<string,string>)?.Form)
                             .filter(Boolean) as string[];
                           if (formOptions.length > 0 && !available.includes(selectedForm)) {
                             setSelectedForm(available[0] ?? formOptions[0]);
@@ -255,13 +295,15 @@ export default function ProductDetailsModal({
                       </button>
                     ))}
                   </div>
-                  {/* Form buttons (when multiple forms exist) */}
                   {formOptions.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {formOptions.map(f => {
                         const available = richVariants
-                          .filter(v => v.attributes?.Weight === selectedWeight)
-                          .map(v => v.attributes?.Form) as string[];
+                          .filter(v => {
+                            const attrs = v.attributes;
+                            return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === selectedWeight;
+                          })
+                          .map(v => (v.attributes as Record<string,string>)?.Form) as string[];
                         const disabled = !available.includes(f);
                         return (
                           <button
@@ -282,6 +324,33 @@ export default function ProductDetailsModal({
                       })}
                     </div>
                   )}
+                </div>
+              ) : (hasNamedVariants || hasPriceOnlyVariants) ? (
+                /* Tier 2 + 3: named or price-only variants */
+                <div>
+                  <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                    {variantUnit ? `Size (${variantUnit})` : 'Size'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {richVariants.map((v, idx) => {
+                      const label = hasNamedVariants
+                        ? `${v.name}${variantUnit ? ' ' + variantUnit : ''}`
+                        : priceOnlyLabel(v);
+                      return (
+                        <button
+                          key={v.id ?? idx}
+                          onClick={() => setSelectedVariantIdx(idx)}
+                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                            selectedVariantIdx === idx
+                              ? 'bg-green-700 text-white border-green-700'
+                              : 'border-gray-300 text-gray-700 hover:border-green-600'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               ) : availableSizes.length > 0 ? (
                 <div>
@@ -446,17 +515,14 @@ export default function ProductDetailsModal({
                 </div>
               )}
 
-              {/* Variant selector — rich (weight+form+unit) or flat sizes */}
+              {/* Variant selector — rich (weight+form+unit), named flat, price-only, or legacy sizes */}
               {hasRichVariants ? (
                 <div>
                   <p className="text-sm font-semibold text-gray-900 mb-2">
                     {primaryKey
-                      ? variantUnit
-                        ? `${primaryKey} (${variantUnit})`
-                        : primaryKey
+                      ? variantUnit ? `${primaryKey} (${variantUnit})` : primaryKey
                       : 'Size'}
                   </p>
-                  {/* Weight buttons */}
                   <div className="flex flex-wrap gap-2 mb-2">
                     {weightOptions.map(w => (
                       <button
@@ -464,8 +530,11 @@ export default function ProductDetailsModal({
                         onClick={() => {
                           setSelectedWeight(w);
                           const available = richVariants
-                            .filter(v => v.attributes?.Weight === w)
-                            .map(v => v.attributes?.Form)
+                            .filter(v => {
+                              const attrs = v.attributes;
+                              return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === w;
+                            })
+                            .map(v => (v.attributes as Record<string,string>)?.Form)
                             .filter(Boolean) as string[];
                           if (formOptions.length > 0 && !available.includes(selectedForm)) {
                             setSelectedForm(available[0] ?? formOptions[0]);
@@ -481,13 +550,15 @@ export default function ProductDetailsModal({
                       </button>
                     ))}
                   </div>
-                  {/* Form buttons */}
                   {formOptions.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {formOptions.map(f => {
                         const available = richVariants
-                          .filter(v => v.attributes?.Weight === selectedWeight)
-                          .map(v => v.attributes?.Form) as string[];
+                          .filter(v => {
+                            const attrs = v.attributes;
+                            return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === selectedWeight;
+                          })
+                          .map(v => (v.attributes as Record<string,string>)?.Form) as string[];
                         const disabled = !available.includes(f);
                         return (
                           <button
@@ -508,6 +579,32 @@ export default function ProductDetailsModal({
                       })}
                     </div>
                   )}
+                </div>
+              ) : (hasNamedVariants || hasPriceOnlyVariants) ? (
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-2">
+                    {variantUnit ? `Size (${variantUnit})` : 'Size'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {richVariants.map((v, idx) => {
+                      const label = hasNamedVariants
+                        ? `${v.name}${variantUnit ? ' ' + variantUnit : ''}`
+                        : priceOnlyLabel(v);
+                      return (
+                        <button
+                          key={v.id ?? idx}
+                          onClick={() => setSelectedVariantIdx(idx)}
+                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                            selectedVariantIdx === idx
+                              ? 'bg-green-700 text-white border-green-700'
+                              : 'border-gray-300 hover:border-green-600'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               ) : availableSizes.length > 0 ? (
                 <div>
