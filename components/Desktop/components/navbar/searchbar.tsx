@@ -75,7 +75,7 @@ export default function SearchBar({
     }
   }, [initialQuery]);
 
-  const debouncedQuery = useDebounce(query, 300);
+  const debouncedQuery = useDebounce(query, 900);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -108,17 +108,42 @@ export default function SearchBar({
           if (response.ok) {
             const data = await response.json();
             const products: ProductSuggestion[] = (data.data ?? []).map(
-              (p: { id: number; name: string; slug: string; price: number; sale_price?: number | null; thumbnail?: string | null; category?: { name?: string }; rating?: number; featured?: boolean }) => ({
-                id:          String(p.id),
-                name:        p.name,
-                slug:        p.slug,           // real slug from database — never derived
-                price:       p.price,
-                salePrice:   p.sale_price ?? undefined,
-                image:       p.thumbnail ?? undefined,
-                category:    p.category?.name,
-                rating:      p.rating,
-                isBestSeller: p.featured ?? false,
-              })
+              (p: {
+                id: number;
+                name: string;
+                slug: string;
+                price: number;
+                sale_price?: number | null;
+                thumbnail?: string | null;
+                category?: { name?: string };
+                rating?: number;
+                featured?: boolean;
+                variants?: Array<{ price: number; final_price?: number }>;
+              }) => {
+                // Use the cheapest variant's final_price (includes any admin
+                // surcharge) or variant price, falling back to the product-level
+                // price.  Product-level price is 0 for variant-based products.
+                const variantPrices = p.variants?.length
+                  ? p.variants.map(v => v.final_price ?? v.price).filter(x => x > 0)
+                  : [];
+                const displayPrice = variantPrices.length > 0
+                  ? Math.min(...variantPrices)
+                  : (p.sale_price ?? p.price);
+
+                return {
+                  id:          String(p.id),
+                  name:        p.name,
+                  slug:        p.slug,
+                  price:       displayPrice,
+                  salePrice:   p.sale_price && p.sale_price < displayPrice
+                    ? p.sale_price
+                    : undefined,
+                  image:       p.thumbnail ?? undefined,
+                  category:    p.category?.name,
+                  rating:      p.rating,
+                  isBestSeller: p.featured ?? false,
+                };
+              }
             );
             setSuggestions(products);
             setIsOpen(true);
