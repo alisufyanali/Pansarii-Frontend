@@ -17,15 +17,58 @@ export default function ProductDetailsModal({
   onClose: () => void;
 }) {
   const [selectedImage, setSelectedImage] = useState(product.img);
-  const availableSizes = product.sizes?.length ? product.sizes : [];
-  const [selectedSize, setSelectedSize] = useState(availableSizes[0] ?? '');
   const [quantity, setQuantity] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
   const { addToCart } = useCart();
   const router = useRouter();
 
-  const _modalVariants = (product as unknown as { variants?: Array<{ name: string; price: number }> }).variants;
-  const displayedPrice = _modalVariants?.find(v => v.name === selectedSize)?.price ?? product.price;
+  // ── Two-level variant selection (mirrors ProductDetailsSection.tsx) ─────────
+  const richVariants = ((product as unknown as {
+    variants?: Array<{
+      id: number; name: string; price: number; is_default?: boolean;
+      attributes?: Record<string, string>; unit?: string; final_price?: number;
+    }>;
+  })?.variants ?? []);
+
+  const weightOptions = Array.from(
+    new Set(richVariants.map(v => v.attributes?.Weight).filter(Boolean) as string[])
+  ).sort((a, b) => Number(a) - Number(b));
+
+  const formOptions = Array.from(
+    new Set(richVariants.map(v => v.attributes?.Form).filter(Boolean) as string[])
+  );
+
+  const variantUnit     = richVariants[0]?.unit ?? '';
+  const hasRichVariants = weightOptions.length > 0;
+
+  const [selectedWeight, setSelectedWeight] = useState<string>(weightOptions[0] ?? '');
+  const [selectedForm,   setSelectedForm]   = useState<string>(formOptions[0]   ?? '');
+
+  // Simple flat-size fallback (legacy / non-rich products)
+  const availableSizes = !hasRichVariants && product.sizes?.length ? product.sizes : [];
+  const [selectedSize, setSelectedSize] = useState(availableSizes[0] ?? '');
+
+  // Matched variant — used for price and variantId
+  const matchedVariant = hasRichVariants
+    ? richVariants.find(v =>
+        v.attributes?.Weight === selectedWeight &&
+        (formOptions.length === 0 || v.attributes?.Form === selectedForm)
+      )
+    : richVariants.find(v => v.name === selectedSize);
+
+  // final_price is authoritative (includes any admin surcharge)
+  const displayedPrice: number =
+    matchedVariant?.final_price ??
+    matchedVariant?.price ??
+    product.price ?? 0;
+
+  // Label used in cart payload and toast
+  const selectedLabel = hasRichVariants
+    ? [
+        selectedWeight ? `${selectedWeight}${variantUnit ? ' ' + variantUnit : ''}` : '',
+        selectedForm,
+      ].filter(Boolean).join(' / ')
+    : selectedSize;
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -51,20 +94,20 @@ export default function ProductDetailsModal({
 
   const cartPayload = () => ({
     id: product.id!,
-    variantId: (product as { variants?: Array<{ id: number; name: string; is_default?: boolean }> }).variants?.find(v => v.name === selectedSize)?.id
-      ?? (product as { variants?: Array<{ id: number; name: string; is_default?: boolean }> }).variants?.[0]?.id,
+    variantId: matchedVariant?.id
+      ?? (product as { variants?: Array<{ id: number }> }).variants?.[0]?.id,
     img: product.img,
     nameEn: product.nameEn,
     nameUr: product.nameUr,
     price: displayedPrice,
-    size: selectedSize,
+    size: selectedLabel,
   });
 
   const handleAddToCart = async () => {
     if (!product.id) return toast.error('Failed to add item to cart!');
     try {
       for (let i = 0; i < quantity; i++) await addToCart(cartPayload());
-      toast.success(`Added ${quantity} × ${product.nameEn} to cart!`);
+      toast.success(`Added ${quantity} × ${product.nameEn} (${selectedLabel}) to cart!`);
     } catch { /* error already toasted by context */ }
   };
 
@@ -171,7 +214,63 @@ export default function ProductDetailsModal({
                 )}
               </div>
 
-              {availableSizes.length > 0 && (
+              {/* Variant selector — rich (weight+form+unit) or flat sizes */}
+              {hasRichVariants ? (
+                <div>
+                  {/* Weight buttons with unit suffix */}
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {weightOptions.map(w => (
+                      <button
+                        key={w}
+                        onClick={() => {
+                          setSelectedWeight(w);
+                          const available = richVariants
+                            .filter(v => v.attributes?.Weight === w)
+                            .map(v => v.attributes?.Form)
+                            .filter(Boolean) as string[];
+                          if (formOptions.length > 0 && !available.includes(selectedForm)) {
+                            setSelectedForm(available[0] ?? formOptions[0]);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                          selectedWeight === w
+                            ? 'bg-green-700 text-white border-green-700'
+                            : 'border-gray-300 text-gray-700 hover:border-green-600'
+                        }`}
+                      >
+                        {w}{variantUnit ? ` ${variantUnit}` : ''}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Form buttons (when multiple forms exist) */}
+                  {formOptions.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {formOptions.map(f => {
+                        const available = richVariants
+                          .filter(v => v.attributes?.Weight === selectedWeight)
+                          .map(v => v.attributes?.Form) as string[];
+                        const disabled = !available.includes(f);
+                        return (
+                          <button
+                            key={f}
+                            onClick={() => !disabled && setSelectedForm(f)}
+                            disabled={disabled}
+                            className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                              selectedForm === f
+                                ? 'bg-green-700 text-white border-green-700'
+                                : disabled
+                                ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                : 'border-gray-300 text-gray-700 hover:border-green-600'
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : availableSizes.length > 0 ? (
                 <div>
                   <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Size</p>
                   <div className="flex flex-wrap gap-2">
@@ -179,17 +278,18 @@ export default function ProductDetailsModal({
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedSize === size
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                          selectedSize === size
                             ? 'bg-green-700 text-white border-green-700'
                             : 'border-gray-300 text-gray-700 hover:border-green-600'
-                          }`}
+                        }`}
                       >
                         {size}
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
+              ) : null}
 
               <div>
                 <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Quantity</p>
@@ -333,7 +433,66 @@ export default function ProductDetailsModal({
                 </div>
               )}
 
-              {availableSizes.length > 0 && (
+              {/* Variant selector — rich (weight+form+unit) or flat sizes */}
+              {hasRichVariants ? (
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-2">
+                    {variantUnit ? `Size (${variantUnit})` : 'Size'}
+                  </p>
+                  {/* Weight buttons */}
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {weightOptions.map(w => (
+                      <button
+                        key={w}
+                        onClick={() => {
+                          setSelectedWeight(w);
+                          const available = richVariants
+                            .filter(v => v.attributes?.Weight === w)
+                            .map(v => v.attributes?.Form)
+                            .filter(Boolean) as string[];
+                          if (formOptions.length > 0 && !available.includes(selectedForm)) {
+                            setSelectedForm(available[0] ?? formOptions[0]);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                          selectedWeight === w
+                            ? 'bg-green-700 text-white border-green-700'
+                            : 'border-gray-300 hover:border-green-600'
+                        }`}
+                      >
+                        {w}{variantUnit ? ` ${variantUnit}` : ''}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Form buttons */}
+                  {formOptions.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {formOptions.map(f => {
+                        const available = richVariants
+                          .filter(v => v.attributes?.Weight === selectedWeight)
+                          .map(v => v.attributes?.Form) as string[];
+                        const disabled = !available.includes(f);
+                        return (
+                          <button
+                            key={f}
+                            onClick={() => !disabled && setSelectedForm(f)}
+                            disabled={disabled}
+                            className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                              selectedForm === f
+                                ? 'bg-green-700 text-white border-green-700'
+                                : disabled
+                                ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                : 'border-gray-300 hover:border-green-600'
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : availableSizes.length > 0 ? (
                 <div>
                   <p className="text-sm font-semibold text-gray-900 mb-2">Size</p>
                   <div className="flex flex-wrap gap-2">
@@ -341,17 +500,18 @@ export default function ProductDetailsModal({
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedSize === size
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
+                          selectedSize === size
                             ? 'bg-green-700 text-white border-green-700'
                             : 'border-gray-300 hover:border-green-600'
-                          }`}
+                        }`}
                       >
                         {size}
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {product.features && product.features.length > 0 && (
                 <div>
