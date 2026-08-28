@@ -30,9 +30,22 @@ export default function ProductDetailsModal({
     }>;
   })?.variants ?? []);
 
-  const weightOptions = Array.from(
-    new Set(richVariants.map(v => v.attributes?.Weight).filter(Boolean) as string[])
-  ).sort((a, b) => Number(a) - Number(b));
+  // Auto-detect the primary dimension key (Weight, Volume, Size, Qty, …).
+  // We treat "Form" as the fixed secondary key and any OTHER attribute key as
+  // the primary one — so the selector works regardless of what the admin named it.
+  const primaryKey: string | undefined = (() => {
+    for (const v of richVariants) {
+      const keys = Object.keys(v.attributes ?? {}).filter(k => k !== 'Form');
+      if (keys.length > 0) return keys[0];
+    }
+    return undefined;
+  })();
+
+  const weightOptions = primaryKey
+    ? Array.from(
+        new Set(richVariants.map(v => v.attributes?.[primaryKey]).filter(Boolean) as string[])
+      ).sort((a, b) => Number(a) - Number(b))
+    : [];
 
   const formOptions = Array.from(
     new Set(richVariants.map(v => v.attributes?.Form).filter(Boolean) as string[])
@@ -51,7 +64,7 @@ export default function ProductDetailsModal({
   // Matched variant — used for price and variantId
   const matchedVariant = hasRichVariants
     ? richVariants.find(v =>
-        v.attributes?.Weight === selectedWeight &&
+        primaryKey && v.attributes?.[primaryKey] === selectedWeight &&
         (formOptions.length === 0 || v.attributes?.Form === selectedForm)
       )
     : richVariants.find(v => v.name === selectedSize);
@@ -437,7 +450,11 @@ export default function ProductDetailsModal({
               {hasRichVariants ? (
                 <div>
                   <p className="text-sm font-semibold text-gray-900 mb-2">
-                    {variantUnit ? `Size (${variantUnit})` : 'Size'}
+                    {primaryKey
+                      ? variantUnit
+                        ? `${primaryKey} (${variantUnit})`
+                        : primaryKey
+                      : 'Size'}
                   </p>
                   {/* Weight buttons */}
                   <div className="flex flex-wrap gap-2 mb-2">

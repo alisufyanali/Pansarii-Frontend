@@ -209,9 +209,21 @@ export default function ProductDetailsSection({
     attributes?: Record<string, string>; unit?: string; final_price?: number;
   }> })?.variants ?? []);
 
-  const weightOptions = Array.from(
-    new Set(richVariants.map(v => v.attributes?.Weight).filter(Boolean) as string[])
-  ).sort((a, b) => Number(a) - Number(b));
+  // Auto-detect the primary dimension key (Weight, Volume, Size, Qty, …).
+  // "Form" is the fixed secondary key — any other attribute key is primary.
+  const primaryKey: string | undefined = (() => {
+    for (const v of richVariants) {
+      const keys = Object.keys(v.attributes ?? {}).filter(k => k !== 'Form');
+      if (keys.length > 0) return keys[0];
+    }
+    return undefined;
+  })();
+
+  const weightOptions = primaryKey
+    ? Array.from(
+        new Set(richVariants.map(v => v.attributes?.[primaryKey]).filter(Boolean) as string[])
+      ).sort((a, b) => Number(a) - Number(b))
+    : [];
 
   const formOptions = Array.from(
     new Set(richVariants.map(v => v.attributes?.Form).filter(Boolean) as string[])
@@ -227,7 +239,7 @@ export default function ProductDetailsSection({
   // Matched variant for price and variantId
   const matchedVariant = hasRichVariants
     ? richVariants.find(v =>
-        v.attributes?.Weight === selectedWeight &&
+        primaryKey && v.attributes?.[primaryKey] === selectedWeight &&
         (formOptions.length === 0 || v.attributes?.Form === selectedForm)
       )
     : richVariants.find(v => v.name === selectedSize);
