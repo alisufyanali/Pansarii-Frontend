@@ -49,12 +49,12 @@ export default function ProductDetailsModal({
 
   const weightOptions = primaryKey
     ? Array.from(
-        new Set(richVariants.map(v => {
-          const attrs = v.attributes;
-          if (!attrs || Array.isArray(attrs)) return undefined;
-          return attrs[primaryKey];
-        }).filter(Boolean) as string[])
-      ).sort((a, b) => Number(a) - Number(b))
+      new Set(richVariants.map(v => {
+        const attrs = v.attributes;
+        if (!attrs || Array.isArray(attrs)) return undefined;
+        return attrs[primaryKey];
+      }).filter(Boolean) as string[])
+    ).sort((a, b) => Number(a) - Number(b))
     : [];
 
   const formOptions = Array.from(
@@ -65,7 +65,7 @@ export default function ProductDetailsModal({
     }).filter(Boolean) as string[])
   );
 
-  const variantUnit     = richVariants[0]?.unit ?? '';
+  const variantUnit = richVariants[0]?.unit ?? '';
   const hasRichVariants = weightOptions.length > 0;
 
   // Tier 2: named flat variants (no attributes, but name is a real string)
@@ -74,7 +74,7 @@ export default function ProductDetailsModal({
   const hasPriceOnlyVariants = !hasRichVariants && !hasNamedVariants && richVariants.length > 0;
 
   const [selectedWeight, setSelectedWeight] = useState<string>(weightOptions[0] ?? '');
-  const [selectedForm,   setSelectedForm]   = useState<string>(formOptions[0]   ?? '');
+  const [selectedForm, setSelectedForm] = useState<string>(formOptions[0] ?? '');
 
   // For tier 2 (named) and tier 3 (price-only) we use a single selected-variant index
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number>(0);
@@ -88,15 +88,15 @@ export default function ProductDetailsModal({
   // Matched variant — used for price and variantId
   const matchedVariant = hasRichVariants
     ? richVariants.find(v => {
-        const attrs = v.attributes;
-        if (!attrs || Array.isArray(attrs)) return false;
-        return primaryKey
-          && attrs[primaryKey] === selectedWeight
-          && (formOptions.length === 0 || attrs.Form === selectedForm);
-      })
+      const attrs = v.attributes;
+      if (!attrs || Array.isArray(attrs)) return false;
+      return primaryKey
+        && attrs[primaryKey] === selectedWeight
+        && (formOptions.length === 0 || attrs.Form === selectedForm);
+    })
     : (hasNamedVariants || hasPriceOnlyVariants)
-    ? richVariants[selectedVariantIdx]
-    : richVariants.find(v => v.name === selectedSize);
+      ? richVariants[selectedVariantIdx]
+      : richVariants.find(v => v.name === selectedSize);
 
   // final_price is authoritative (includes any admin surcharge)
   const displayedPrice: number =
@@ -111,14 +111,14 @@ export default function ProductDetailsModal({
   // Label used in cart payload and toast
   const selectedLabel = hasRichVariants
     ? [
-        selectedWeight ? `${selectedWeight}${variantUnit ? ' ' + variantUnit : ''}` : '',
-        selectedForm,
-      ].filter(Boolean).join(' / ')
+      selectedWeight ? `${selectedWeight}${variantUnit ? ' ' + variantUnit : ''}` : '',
+      selectedForm,
+    ].filter(Boolean).join(' / ')
     : hasNamedVariants
-    ? (matchedVariant?.name ?? '')
-    : hasPriceOnlyVariants
-    ? priceOnlyLabel(matchedVariant ?? richVariants[0])
-    : selectedSize;
+      ? (matchedVariant?.name ?? '')
+      : hasPriceOnlyVariants
+        ? priceOnlyLabel(matchedVariant ?? richVariants[0])
+        : selectedSize;
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -279,17 +279,16 @@ export default function ProductDetailsModal({
                               const attrs = v.attributes;
                               return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === w;
                             })
-                            .map(v => (v.attributes as Record<string,string>)?.Form)
+                            .map(v => (v.attributes as Record<string, string>)?.Form)
                             .filter(Boolean) as string[];
                           if (formOptions.length > 0 && !available.includes(selectedForm)) {
                             setSelectedForm(available[0] ?? formOptions[0]);
                           }
                         }}
-                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
-                          selectedWeight === w
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedWeight === w
                             ? 'bg-green-700 text-white border-green-700'
                             : 'border-gray-300 text-gray-700 hover:border-green-600'
-                        }`}
+                          }`}
                       >
                         {w}{variantUnit ? ` ${variantUnit}` : ''}
                       </button>
@@ -303,20 +302,19 @@ export default function ProductDetailsModal({
                             const attrs = v.attributes;
                             return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === selectedWeight;
                           })
-                          .map(v => (v.attributes as Record<string,string>)?.Form) as string[];
+                          .map(v => (v.attributes as Record<string, string>)?.Form) as string[];
                         const disabled = !available.includes(f);
                         return (
                           <button
                             key={f}
                             onClick={() => !disabled && setSelectedForm(f)}
                             disabled={disabled}
-                            className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
-                              selectedForm === f
+                            className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedForm === f
                                 ? 'bg-green-700 text-white border-green-700'
                                 : disabled
-                                ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-                                : 'border-gray-300 text-gray-700 hover:border-green-600'
-                            }`}
+                                  ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                  : 'border-gray-300 text-gray-700 hover:border-green-600'
+                              }`}
                           >
                             {f}
                           </button>
@@ -340,11 +338,10 @@ export default function ProductDetailsModal({
                         <button
                           key={v.id ?? idx}
                           onClick={() => setSelectedVariantIdx(idx)}
-                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
-                            selectedVariantIdx === idx
+                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedVariantIdx === idx
                               ? 'bg-green-700 text-white border-green-700'
                               : 'border-gray-300 text-gray-700 hover:border-green-600'
-                          }`}
+                            }`}
                         >
                           {label}
                         </button>
@@ -360,11 +357,10 @@ export default function ProductDetailsModal({
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
-                          selectedSize === size
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedSize === size
                             ? 'bg-green-700 text-white border-green-700'
                             : 'border-gray-300 text-gray-700 hover:border-green-600'
-                        }`}
+                          }`}
                       >
                         {size}
                       </button>
@@ -534,17 +530,16 @@ export default function ProductDetailsModal({
                               const attrs = v.attributes;
                               return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === w;
                             })
-                            .map(v => (v.attributes as Record<string,string>)?.Form)
+                            .map(v => (v.attributes as Record<string, string>)?.Form)
                             .filter(Boolean) as string[];
                           if (formOptions.length > 0 && !available.includes(selectedForm)) {
                             setSelectedForm(available[0] ?? formOptions[0]);
                           }
                         }}
-                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
-                          selectedWeight === w
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedWeight === w
                             ? 'bg-green-700 text-white border-green-700'
                             : 'border-gray-300 hover:border-green-600'
-                        }`}
+                          }`}
                       >
                         {w}{variantUnit ? ` ${variantUnit}` : ''}
                       </button>
@@ -558,20 +553,19 @@ export default function ProductDetailsModal({
                             const attrs = v.attributes;
                             return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === selectedWeight;
                           })
-                          .map(v => (v.attributes as Record<string,string>)?.Form) as string[];
+                          .map(v => (v.attributes as Record<string, string>)?.Form) as string[];
                         const disabled = !available.includes(f);
                         return (
                           <button
                             key={f}
                             onClick={() => !disabled && setSelectedForm(f)}
                             disabled={disabled}
-                            className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
-                              selectedForm === f
+                            className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedForm === f
                                 ? 'bg-green-700 text-white border-green-700'
                                 : disabled
-                                ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-                                : 'border-gray-300 hover:border-green-600'
-                            }`}
+                                  ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                  : 'border-gray-300 hover:border-green-600'
+                              }`}
                           >
                             {f}
                           </button>
@@ -594,11 +588,10 @@ export default function ProductDetailsModal({
                         <button
                           key={v.id ?? idx}
                           onClick={() => setSelectedVariantIdx(idx)}
-                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
-                            selectedVariantIdx === idx
+                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedVariantIdx === idx
                               ? 'bg-green-700 text-white border-green-700'
                               : 'border-gray-300 hover:border-green-600'
-                          }`}
+                            }`}
                         >
                           {label}
                         </button>
@@ -614,11 +607,10 @@ export default function ProductDetailsModal({
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${
-                          selectedSize === size
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition ${selectedSize === size
                             ? 'bg-green-700 text-white border-green-700'
                             : 'border-gray-300 hover:border-green-600'
-                        }`}
+                          }`}
                       >
                         {size}
                       </button>

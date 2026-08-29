@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishList";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import VideoProductsSection from "./ProductDetails/VideoProductsSection";
 import RecommendedProductsSection from "./ProductDetails/RecommendedProductsSection";
@@ -437,7 +437,6 @@ export default function ProductDetailsSection({
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} theme="light" />
       {showReviewForm && (
         <ReviewFormModal
           onClose={() => setShowReviewForm(false)}
