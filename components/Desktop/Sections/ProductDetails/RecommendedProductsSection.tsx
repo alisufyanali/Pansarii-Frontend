@@ -26,7 +26,7 @@ function RecommendedSkeleton({ isMobile }: { isMobile: boolean }) {
     );
   }
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-6">
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="animate-pulse bg-white rounded-lg border border-gray-200">
           <div className="aspect-square bg-gray-200 rounded-t-lg" />
@@ -85,8 +85,8 @@ export default function RecommendedProductsSection({ productId }: Props) {
             ))}
           </div>
         ) : (
-          /* Desktop — grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          /* Desktop — responsive grid that accommodates any count cleanly */
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {products.map(product => (
               <div key={product.id} className="w-full">
                 <DesktopProductCard product={product} />

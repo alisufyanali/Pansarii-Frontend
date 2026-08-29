@@ -1,7 +1,7 @@
 "use client";
 
 import SafeImage from '@/components/SafeImage';
-import { FaStar, FaCheckCircle, FaShoppingCart } from "react-icons/fa";
+import { FaStar, FaShoppingCart } from "react-icons/fa";
 import { useState, MouseEvent } from "react";
 import ProductDetailsModal from "./ProductDetailsModal";
 import { Product } from '@/types/product';
@@ -82,17 +82,12 @@ export default function ProductCard({ product, priority = false }: { product: Pr
             )}
             <p className="text-xs text-green-700 line-clamp-1">{product.description}</p>
 
-            <div className="flex items-center justify-center gap-2 text-xs font-medium pt-0.5">
+            <div className="flex items-center justify-center gap-1.5 text-xs font-medium pt-0.5">
               <span className="flex items-center gap-1 text-yellow-500">
                 <FaStar size={11} /> {product.rating}
               </span>
               {product.reviews > 0 && (
-                <>
-                  <span className="text-gray-300">|</span>
-                  <span className="flex items-center gap-1 text-green-600">
-                    <FaCheckCircle size={11} /> {product.reviews}
-                  </span>
-                </>
+                <span className="text-gray-400">· {product.reviews} reviews</span>
               )}
             </div>
 
