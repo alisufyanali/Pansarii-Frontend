@@ -86,10 +86,14 @@ export default function ProductCard({ product, priority = false }: { product: Pr
               <span className="flex items-center gap-1 text-yellow-500">
                 <FaStar size={11} /> {product.rating}
               </span>
-              <span className="text-gray-300">|</span>
-              <span className="flex items-center gap-1 text-green-600">
-                <FaCheckCircle size={11} /> {product.reviews}
-              </span>
+              {product.reviews > 0 && (
+                <>
+                  <span className="text-gray-300">|</span>
+                  <span className="flex items-center gap-1 text-green-600">
+                    <FaCheckCircle size={11} /> {product.reviews}
+                  </span>
+                </>
+              )}
             </div>
 
             <div className="flex items-center justify-center gap-2 pt-0.5">

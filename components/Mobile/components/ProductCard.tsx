@@ -76,7 +76,10 @@ export default function MobileProductCard({ product, priority = false }: { produ
             
             <div className="flex items-center gap-1 mb-1">
               <FaStar className="w-2.5 h-2.5 text-yellow-400 flex-shrink-0" />
-              <span className="text-[10px] text-gray-500">{product.rating} · {product.reviews} reviews</span>
+              <span className="text-[10px] text-gray-500">
+                {product.rating}
+                {product.reviews > 0 && ` · ${product.reviews} reviews`}
+              </span>
             </div>
           </div>
 
