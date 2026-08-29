@@ -50,15 +50,30 @@ function MobileSearchBar() {
               price: number; sale_price?: number | null;
               thumbnail?: string | null;
               category?: { name?: string };
-            }) => ({
-              id:        String(p.id),
-              name:      p.name,
-              slug:      p.slug,               // real API slug — never name-derived
-              price:     p.price,
-              salePrice: p.sale_price ?? undefined,
-              image:     p.thumbnail ?? undefined,
-              category:  p.category?.name,
-            }))
+              variants?: Array<{ price: number; final_price?: number }>;
+            }) => {
+              // Product-level price is 0 for variant-based products — use
+              // the cheapest variant's final_price (includes admin surcharge)
+              // or variant price, falling back to product-level price.
+              const variantPrices = p.variants?.length
+                ? p.variants.map(v => v.final_price ?? v.price).filter(x => x > 0)
+                : [];
+              const displayPrice = variantPrices.length > 0
+                ? Math.min(...variantPrices)
+                : (p.sale_price ?? p.price);
+
+              return {
+                id:        String(p.id),
+                name:      p.name,
+                slug:      p.slug,
+                price:     displayPrice,
+                salePrice: p.sale_price && p.sale_price < displayPrice
+                  ? p.sale_price
+                  : undefined,
+                image:     p.thumbnail ?? undefined,
+                category:  p.category?.name,
+              };
+            })
           );
           setOpen(true);
         }
