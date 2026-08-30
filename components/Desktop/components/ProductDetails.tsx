@@ -129,12 +129,35 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     }
   >;
 
-  const weightOptions = Array.from(
-    new Set(richVariants.map(v => v.attributes?.Weight).filter(Boolean) as string[])
-  ).sort((a, b) => Number(a) - Number(b));
+  // Auto-detect the primary dimension key (Weight, Volume, Size, Qty, …).
+  // "Form" is reserved as the secondary key; any OTHER non-empty attribute key
+  // is treated as primary — handles any future attribute name the admin uses.
+  const primaryKey: string | undefined = (() => {
+    for (const v of richVariants) {
+      const attrs = v.attributes;
+      if (!attrs || Array.isArray(attrs)) continue;
+      const keys = Object.keys(attrs).filter(k => k !== 'Form');
+      if (keys.length > 0) return keys[0];
+    }
+    return undefined;
+  })();
+
+  const weightOptions = primaryKey
+    ? Array.from(
+        new Set(richVariants.map(v => {
+          const attrs = v.attributes;
+          if (!attrs || Array.isArray(attrs)) return undefined;
+          return attrs[primaryKey];
+        }).filter(Boolean) as string[])
+      ).sort((a, b) => Number(a) - Number(b))
+    : [];
 
   const formOptions = Array.from(
-    new Set(richVariants.map(v => v.attributes?.Form).filter(Boolean) as string[])
+    new Set(richVariants.map(v => {
+      const attrs = v.attributes;
+      if (!attrs || Array.isArray(attrs)) return undefined;
+      return attrs.Form;
+    }).filter(Boolean) as string[])
   );
 
   const variantUnit = richVariants[0]?.unit ?? '';
@@ -142,16 +165,19 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const [selectedWeight, setSelectedWeight] = useState<string>(weightOptions[0] ?? '');
   const [selectedForm,   setSelectedForm]   = useState<string>(formOptions[0]   ?? '');
   const [selectedSize,   setSelectedSize]   = useState(product.sizes?.[0] ?? '');
-  const [quantity,       setQuantity]       = useState(1);  // ✅ FIXED: added quantity state
+  const [quantity,       setQuantity]       = useState(1);
 
   const hasRichVariants = weightOptions.length > 0;
 
   // Matched variant
   const matchedVariant = hasRichVariants
-    ? richVariants.find(v =>
-        v.attributes?.Weight === selectedWeight &&
-        (formOptions.length === 0 || v.attributes?.Form === selectedForm)
-      )
+    ? richVariants.find(v => {
+        const attrs = v.attributes;
+        if (!attrs || Array.isArray(attrs)) return false;
+        return primaryKey
+          && attrs[primaryKey] === selectedWeight
+          && (formOptions.length === 0 || attrs.Form === selectedForm);
+      })
     : richVariants.find(v => v.name === selectedSize);
 
   const displayedPrice: number =
@@ -432,7 +458,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           <div className="mt-2 space-y-2">
             <div>
               <p className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-widest">
-                Weight{variantUnit ? ` (${variantUnit})` : ''}
+                {primaryKey
+                  ? variantUnit ? `${primaryKey} (${variantUnit})` : primaryKey
+                  : variantUnit ? `Size (${variantUnit})` : 'Size'}
               </p>
               <div className="flex flex-wrap gap-1">
                 {weightOptions.map(w => (
@@ -440,8 +468,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     onClick={() => {
                       setSelectedWeight(w);
                       const available = richVariants
-                        .filter(v => v.attributes?.Weight === w)
-                        .map(v => v.attributes?.Form)
+                        .filter(v => {
+                          const attrs = v.attributes;
+                          return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === w;
+                        })
+                        .map(v => (v.attributes as Record<string, string>)?.Form)
                         .filter(Boolean) as string[];
                       if (formOptions.length > 0 && !available.includes(selectedForm)) {
                         setSelectedForm(available[0] ?? formOptions[0]);
@@ -463,8 +494,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <div className="flex flex-wrap gap-1">
                   {formOptions.map(f => {
                     const available = richVariants
-                      .filter(v => v.attributes?.Weight === selectedWeight)
-                      .map(v => v.attributes?.Form) as string[];
+                      .filter(v => {
+                        const attrs = v.attributes;
+                        return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === selectedWeight;
+                      })
+                      .map(v => (v.attributes as Record<string, string>)?.Form) as string[];
                     const disabled = !available.includes(f);
                     return (
                       <button key={f}
@@ -599,7 +633,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         <div className="space-y-2">
           <div>
             <p className="text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">
-              Weight{variantUnit ? ` (${variantUnit})` : ''}
+              {primaryKey
+                ? variantUnit ? `${primaryKey} (${variantUnit})` : primaryKey
+                : variantUnit ? `Size (${variantUnit})` : 'Size'}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {weightOptions.map(w => (
@@ -607,8 +643,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   onClick={() => {
                     setSelectedWeight(w);
                     const available = richVariants
-                      .filter(v => v.attributes?.Weight === w)
-                      .map(v => v.attributes?.Form).filter(Boolean) as string[];
+                      .filter(v => {
+                        const attrs = v.attributes;
+                        return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === w;
+                      })
+                      .map(v => (v.attributes as Record<string, string>)?.Form).filter(Boolean) as string[];
                     if (formOptions.length > 0 && !available.includes(selectedForm)) {
                       setSelectedForm(available[0] ?? formOptions[0]);
                     }
@@ -627,8 +666,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <div className="flex flex-wrap gap-1.5">
                 {formOptions.map(f => {
                   const available = richVariants
-                    .filter(v => v.attributes?.Weight === selectedWeight)
-                    .map(v => v.attributes?.Form) as string[];
+                    .filter(v => {
+                      const attrs = v.attributes;
+                      return attrs && !Array.isArray(attrs) && primaryKey && attrs[primaryKey] === selectedWeight;
+                    })
+                    .map(v => (v.attributes as Record<string, string>)?.Form) as string[];
                   const disabled = !available.includes(f);
                   return (
                     <button key={f}
