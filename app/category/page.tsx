@@ -355,25 +355,59 @@ function CategoryBrowseContent() {
         )}
 
         {!isLoading && totalPages > 1 && (
-          <div className="mt-8 sm:mt-10 flex items-center justify-center gap-2">
+          <div className="mt-8 sm:mt-10 flex items-center justify-center gap-1.5 flex-wrap">
+            {/* Prev */}
             <button
               onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               disabled={currentPage === 1}
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 text-lg"
+              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 text-lg flex-shrink-0"
             >‹</button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                className={`w-10 h-10 flex items-center justify-center rounded-lg border text-sm font-medium ${currentPage === page ? 'bg-[#197B33] text-white border-[#197B33]' : 'border-gray-300 hover:bg-gray-50'}`}
-              >
-                {page}
-              </button>
-            ))}
+
+            {/* Windowed page numbers with ellipsis */}
+            {(() => {
+              // On mobile show ±1 around current; on larger screens ±2.
+              // We always show first + last page; gaps get an ellipsis.
+              const SIBLING = 1; // pages on each side of current
+              const pages: (number | 'ellipsis-start' | 'ellipsis-end')[] = [];
+
+              const rangeStart = Math.max(2, currentPage - SIBLING);
+              const rangeEnd   = Math.min(totalPages - 1, currentPage + SIBLING);
+
+              pages.push(1);
+              if (rangeStart > 2) pages.push('ellipsis-start');
+              for (let p = rangeStart; p <= rangeEnd; p++) pages.push(p);
+              if (rangeEnd < totalPages - 1) pages.push('ellipsis-end');
+              if (totalPages > 1) pages.push(totalPages);
+
+              return pages.map(item => {
+                if (item === 'ellipsis-start' || item === 'ellipsis-end') {
+                  return (
+                    <span key={item} className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-gray-400 text-sm select-none">
+                      …
+                    </span>
+                  );
+                }
+                return (
+                  <button
+                    key={item}
+                    onClick={() => { setCurrentPage(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg border text-sm font-medium transition flex-shrink-0 ${
+                      currentPage === item
+                        ? 'bg-[#197B33] text-white border-[#197B33] shadow-sm'
+                        : 'border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item}
+                  </button>
+                );
+              });
+            })()}
+
+            {/* Next */}
             <button
               onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               disabled={currentPage === totalPages}
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 text-lg"
+              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 text-lg flex-shrink-0"
             >›</button>
           </div>
         )}
