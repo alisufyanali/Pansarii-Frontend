@@ -97,6 +97,14 @@ apiClient.interceptors.request.use(
 );
 
 // ─── Response interceptor — handle 401 ───────────────────────────────────────
+//
+// Auth endpoints that legitimately receive 401 as a "wrong credentials"
+// signal. The interceptor must NOT redirect away for these — the calling
+// code (AuthContext.login / register) owns the error handling there.
+// Redirecting here would cause a full page reload instead of showing an
+// inline error message to the user.
+const AUTH_ENDPOINTS = ['/login', '/register'];
+
 apiClient.interceptors.response.use(
   // Pass successful responses straight through
   (response: AxiosResponse) => response,
@@ -104,16 +112,26 @@ apiClient.interceptors.response.use(
   // Handle errors
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid — clean up and redirect to login
-      clearAuthData();
+      // Extract the URL of the request that failed.
+      // error.config.url is relative (e.g. "/login"), matching AUTH_ENDPOINTS.
+      const requestUrl = error.config?.url ?? '';
+      const isAuthEndpoint = AUTH_ENDPOINTS.some(ep => requestUrl.endsWith(ep));
 
-      // Only redirect in the browser (not during SSR/RSC)
-      if (typeof window !== 'undefined') {
-        // Preserve the page the user was trying to reach so we can
-        // redirect back after a successful login.
-        const returnTo = encodeURIComponent(window.location.pathname);
-        window.location.href = `/login?returnTo=${returnTo}`;
+      if (!isAuthEndpoint) {
+        // Token expired or invalid on a protected route — clean up and
+        // redirect to login so the user can re-authenticate.
+        clearAuthData();
+
+        // Only redirect in the browser (not during SSR/RSC)
+        if (typeof window !== 'undefined') {
+          // Preserve the page the user was trying to reach so we can
+          // redirect back after a successful login.
+          const returnTo = encodeURIComponent(window.location.pathname);
+          window.location.href = `/login?returnTo=${returnTo}`;
+        }
       }
+      // For auth endpoints: fall through to Promise.reject so the caller's
+      // catch block handles the 401 as a normal "wrong credentials" error.
     }
 
     return Promise.reject(error);

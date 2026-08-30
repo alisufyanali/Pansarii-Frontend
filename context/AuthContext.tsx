@@ -105,7 +105,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── login ──────────────────────────────────────────────────────────────────
   const login = useCallback(async (payload: LoginPayload) => {
     const res = await api.post<AuthApiResponse>('/login', payload);
-    const { token, user: loggedInUser } = res.data;
+    // Guard: backend may return HTTP 200 with success:false for invalid
+    // credentials instead of a proper 401. Without this check, login()
+    // would resolve successfully despite bad credentials, causing
+    // handleSubmit to proceed to window.location.href (full page reload).
+    if (!res.data.success) {
+      throw new Error(res.data.message || 'Login failed');
+    }
+    const { token, user: loggedInUser } = res.data.data;
     setAuthData(token, loggedInUser);
     setUser(loggedInUser);
     // Merge guest cart into API cart after successful login
@@ -121,7 +128,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── register ───────────────────────────────────────────────────────────────
   const register = useCallback(async (payload: RegisterPayload) => {
     const res = await api.post<AuthApiResponse>('/register', payload);
-    const { token, user: newUser } = res.data;
+    // Same success:false guard as login — backend may return 200 with
+    // success:false for validation failures that slip past HTTP status codes.
+    if (!res.data.success) {
+      throw new Error(res.data.message || 'Registration failed');
+    }
+    const { token, user: newUser } = res.data.data;
     setAuthData(token, newUser);
     setUser(newUser);
     // Merge guest cart after registration too
