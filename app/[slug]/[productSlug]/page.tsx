@@ -1,20 +1,24 @@
 /**
- * app/[category]/[slug]/page.tsx
+ * app/[slug]/[productSlug]/page.tsx
  *
- * Alternate product detail URL: /{category}/{slug}
+ * Alternate product detail URL: /{category}/{productSlug}
  * e.g.  /herb/goldleaf   /beauty-corner/roseoil   /supplements/kalonji
  *
+ * The top-level folder is named [slug] (matching app/[slug]/page.tsx) so
+ * Next.js does not throw "different slug names for the same dynamic path".
+ * At runtime params.slug holds the CATEGORY segment and params.productSlug
+ * holds the PRODUCT SLUG segment.
+ *
  * Rules:
- *  - The product is fetched by `slug` alone (slugs are globally unique).
- *  - The `category` segment is validated: if it doesn't match the product's
- *    real category (case-insensitive), we 301-redirect to the canonical
- *    /{slug} URL so the correct category is reflected in the URL.
- *  - Canonical <link> always points to /{slug} to prevent duplicate-content
- *    indexing between this URL and the /{slug} variant.
+ *  - The product is fetched by productSlug alone (product slugs are globally unique).
+ *  - The category segment is validated: if it doesn't match the product's real
+ *    category (case-insensitive) we 301-redirect to the canonical /{productSlug}
+ *    URL so the correct category is reflected in the URL.
+ *  - Canonical <link> always points to /{productSlug} to prevent duplicate-content
+ *    indexing between this URL and the /{productSlug} variant.
  *  - Static routes at the same first-segment level (e.g. /herb/page.tsx) are
  *    NOT affected — Next.js resolves static segments before dynamic ones, and
- *    that rule applies per-segment-depth.  /herb  →  app/herb/page.tsx
- *    /herb/goldleaf  →  this file (app/[category]/[slug]/page.tsx).
+ *    that rule applies per-segment-depth.
  */
 
 import { notFound, redirect } from 'next/navigation';
@@ -35,33 +39,26 @@ export const dynamicParams = true;
 
 // ─── Routing helpers ──────────────────────────────────────────────────────────
 
-/**
- * Convert a category name (from the DB, e.g. "Beauty Corner") to its
- * URL slug form (e.g. "beauty-corner").  Mirrors CATEGORY_SLUG_MAP logic
- * used elsewhere in the app.
- */
 function categoryToSlug(name: string): string {
   return name.toLowerCase().replace(/\s+/g, '-');
 }
 
-/**
- * Return true if the URL category segment matches the product's real
- * category, tolerating case differences and spaces-vs-hyphens.
- */
 function categoryMatches(urlCategory: string, productCategory: string | undefined): boolean {
-  if (!productCategory) return true; // no category data — don't reject
+  if (!productCategory) return true;
   return categoryToSlug(urlCategory) === categoryToSlug(productCategory);
 }
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const siteUrl  = process.env.NEXT_PUBLIC_SITE_URL || 'https://pansariinn.com';
+  // params.slug     = category segment  (e.g. "herb")
+  // params.productSlug = product slug   (e.g. "goldleaf")
+  const { productSlug } = await params;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pansariinn.com';
 
   let apiProduct = null;
   try {
-    apiProduct = await fetchApiProduct(slug);
+    apiProduct = await fetchApiProduct(productSlug);
   } catch {
     return { title: 'Loading… | Pansari Inn' };
   }
@@ -70,12 +67,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: `${apiProduct.name} | Pansari Inn`,
       description: apiProduct.description || `Buy ${apiProduct.name} at Pansari Inn`,
-      // Canonical points to the short /{slug} form — prevents duplicate indexing.
-      alternates: { canonical: `${siteUrl}/${slug}` },
+      alternates: { canonical: `${siteUrl}/${productSlug}` },
       openGraph: {
         title: `${apiProduct.name} | Pansari Inn`,
         description: apiProduct.description || `Buy ${apiProduct.name}`,
-        url: `${siteUrl}/${slug}`,
+        url: `${siteUrl}/${productSlug}`,
         images: apiProduct.thumbnail
           ? [{ url: apiProduct.thumbnail, width: 800, height: 800, alt: apiProduct.name }]
           : [],
@@ -84,7 +80,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const foundProduct = findProductBySlug(slug);
+  const foundProduct = findProductBySlug(productSlug);
   if (!foundProduct) return { title: 'Product Not Found' };
 
   return {
@@ -92,11 +88,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description:
       foundProduct.description ||
       `Buy ${foundProduct.nameEn} - 100% pure and natural herbal product at Pansari Inn.`,
-    alternates: { canonical: `${siteUrl}/${slug}` },
+    alternates: { canonical: `${siteUrl}/${productSlug}` },
     openGraph: {
       title: `${foundProduct.nameEn} | Pansari Inn`,
       description: foundProduct.description || `Buy ${foundProduct.nameEn}`,
-      url: `${siteUrl}/${slug}`,
+      url: `${siteUrl}/${productSlug}`,
       images: [{ url: foundProduct.img, width: 800, height: 800, alt: foundProduct.nameEn }],
       type: 'website',
     },
@@ -104,41 +100,38 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 // ─── Static params ────────────────────────────────────────────────────────────
-// Generate the most common category+slug combos at build time.
-// All others are served via ISR (dynamicParams = true).
 
 export async function generateStaticParams() {
   const staticParams = allProducts
     .filter(p => p.category)
     .map(p => ({
-      category: categoryToSlug(p.category!),
-      slug:     toProductSlug(p.nameEn),
+      slug:        categoryToSlug(p.category!),   // category segment → params.slug
+      productSlug: toProductSlug(p.nameEn),        // product slug    → params.productSlug
     }));
 
-  let apiParams: { category: string; slug: string }[] = [];
+  let apiParams: { slug: string; productSlug: string }[] = [];
   try {
     const res = await fetchApiProducts({ per_page: 50, page: 1 });
     apiParams = res.data
       .filter(p => p.slug && p.category?.name)
       .map(p => ({
-        category: categoryToSlug(p.category!.name),
-        slug:     p.slug,
+        slug:        categoryToSlug(p.category!.name),
+        productSlug: p.slug,
       }));
   } catch {
-    console.warn('[generateStaticParams /[category]/[slug]] API unavailable — using static slugs only.');
+    console.warn('[generateStaticParams /[slug]/[productSlug]] API unavailable — using static slugs only.');
   }
 
-  // Deduplicate by category+slug pair
   const seen = new Set<string>();
   return [...apiParams, ...staticParams].filter(p => {
-    const key = `${p.category}/${p.slug}`;
+    const key = `${p.slug}/${p.productSlug}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
 
-// ─── Helpers (identical to /{slug} page) ──────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 type CatalogProduct = (typeof allProducts)[number];
 
@@ -193,28 +186,29 @@ function buildProduct(foundProduct: CatalogProduct): Product {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 interface PageProps {
-  params: Promise<{ category: string; slug: string }>;
+  params: Promise<{
+    slug:        string;  // category segment, e.g. "herb"
+    productSlug: string;  // product slug,    e.g. "goldleaf"
+  }>;
 }
 
 export default async function CategoryProductPage({ params }: PageProps) {
-  const { category, slug } = await params;
+  const { slug: category, productSlug } = await params;
 
   // ── API product ────────────────────────────────────────────────────────────
   let apiProduct = null;
   try {
-    apiProduct = await fetchApiProduct(slug);
+    apiProduct = await fetchApiProduct(productSlug);
   } catch (err) {
-    throw err; // propagate to error.tsx — not a confirmed 404
+    throw err;
   }
 
   if (apiProduct) {
     const productCategory = apiProduct.category?.name;
 
-    // If the category segment doesn't match, 301-redirect to the canonical URL
-    // so the user and bots always land on the correct address.
     if (!categoryMatches(category, productCategory)) {
       const correctCategory = productCategory ? categoryToSlug(productCategory) : null;
-      redirect(correctCategory ? `/${correctCategory}/${slug}` : `/${slug}`);
+      redirect(correctCategory ? `/${correctCategory}/${productSlug}` : `/${productSlug}`);
     }
 
     const price = apiProduct.variants?.length
@@ -272,13 +266,12 @@ export default async function CategoryProductPage({ params }: PageProps) {
   }
 
   // ── Static fallback ────────────────────────────────────────────────────────
-  const foundProduct = findProductBySlug(slug);
+  const foundProduct = findProductBySlug(productSlug);
   if (!foundProduct) notFound();
 
-  // Validate category against static data too
   if (!categoryMatches(category, foundProduct!.category)) {
     const correctCategory = foundProduct!.category ? categoryToSlug(foundProduct!.category) : null;
-    redirect(correctCategory ? `/${correctCategory}/${slug}` : `/${slug}`);
+    redirect(correctCategory ? `/${correctCategory}/${productSlug}` : `/${productSlug}`);
   }
 
   const product = buildProduct(foundProduct!);
