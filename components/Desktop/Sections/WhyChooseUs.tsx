@@ -67,8 +67,8 @@ export default function WhyChooseUs() {
           <div className="absolute w-64 h-64 rounded-full bg-amber-100 opacity-60 blur-2xl" />
           <div className="relative w-56 h-56 sm:w-64 sm:h-64 drop-shadow-xl">
             <Image
-              src="/images/product.png"
-              alt="Pansari Inn Herbal Product"
+              src="/images/whychoose.png"
+              alt="Why Choose Pansari Inn"
               fill
               className="object-contain"
               sizes="256px"
