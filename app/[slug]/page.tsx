@@ -169,16 +169,13 @@ export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
 
   // ── API product ────────────────────────────────────────────────────────────
-  // fetchApiProduct throws on transient errors (network/timeout/5xx) and
-  // returns null only on confirmed 404. We let throws propagate to error.tsx
-  // so Next.js does NOT cache the failure as a 404 in ISR.
-  let apiProduct = null;
-  try {
-    apiProduct = await fetchApiProduct(slug);
-  } catch (err) {
-    // Re-throw — Next.js will render error.tsx (not cached by ISR)
-    throw err;
-  }
+  // fetchApiProduct is wrapped with React cache() in lib/products.ts, so this
+  // call deduplicates automatically with the identical call in generateMetadata
+  // — only ONE network request fires per slug per render pass.
+  // Throws on transient errors (network/timeout/5xx); returns null on 404.
+  // We let throws propagate to error.tsx so Next.js does NOT cache the failure
+  // as a 404 in ISR.
+  const apiProduct = await fetchApiProduct(slug);
 
   if (apiProduct) {
     const price = apiProduct.variants?.length

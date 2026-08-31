@@ -109,10 +109,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // credentials instead of a proper 401. Without this check, login()
     // would resolve successfully despite bad credentials, causing
     // handleSubmit to proceed to window.location.href (full page reload).
-    if (!res.data.success) {
-      throw new Error(res.data.message || 'Login failed');
+    // NOTE: api.post<T> already unwraps .data, so `res` IS AuthApiResponse.
+    if (!res.success) {
+      throw new Error(res.message || 'Login failed');
     }
-    const { token, user: loggedInUser } = res.data.data;
+    const { token, user: loggedInUser } = res.data;
     setAuthData(token, loggedInUser);
     setUser(loggedInUser);
     // Merge guest cart into API cart after successful login
@@ -130,10 +131,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await api.post<AuthApiResponse>('/register', payload);
     // Same success:false guard as login — backend may return 200 with
     // success:false for validation failures that slip past HTTP status codes.
-    if (!res.data.success) {
-      throw new Error(res.data.message || 'Registration failed');
+    // NOTE: api.post<T> already unwraps .data, so `res` IS AuthApiResponse.
+    if (!res.success) {
+      throw new Error(res.message || 'Registration failed');
     }
-    const { token, user: newUser } = res.data.data;
+    const { token, user: newUser } = res.data;
     setAuthData(token, newUser);
     setUser(newUser);
     // Merge guest cart after registration too

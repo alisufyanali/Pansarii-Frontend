@@ -29,7 +29,6 @@ import { allProducts } from '@/data/products';
 import { findProductBySlug, toProductSlug } from '@/lib/productSlug';
 import {
   getProductBySlug as fetchApiProduct,
-  getProducts as fetchApiProducts,
 } from '@/lib/products';
 import type { Product, ProductFeature, LegacyProduct } from '@/types/product';
 
@@ -100,35 +99,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 // ─── Static params ────────────────────────────────────────────────────────────
-
+// This route (/{category}/{productSlug}) is a secondary SEO-friendly URL.
+// Pre-generating all category×product combinations at build time contributed
+// ~100 extra pages to the 241-page build, tripling API calls and causing
+// 429 rate-limit storms. Since dynamicParams = true, every /{cat}/{slug}
+// URL still works correctly on first visit via ISR — it just won't be
+// pre-built. The canonical /{slug} route (app/[slug]/page.tsx) continues
+// to pre-generate the top-50 API products at build time.
 export async function generateStaticParams() {
-  const staticParams = allProducts
-    .filter(p => p.category)
-    .map(p => ({
-      slug:        categoryToSlug(p.category!),   // category segment → params.slug
-      productSlug: toProductSlug(p.nameEn),        // product slug    → params.productSlug
-    }));
-
-  let apiParams: { slug: string; productSlug: string }[] = [];
-  try {
-    const res = await fetchApiProducts({ per_page: 50, page: 1 });
-    apiParams = res.data
-      .filter(p => p.slug && p.category?.name)
-      .map(p => ({
-        slug:        categoryToSlug(p.category!.name),
-        productSlug: p.slug,
-      }));
-  } catch {
-    console.warn('[generateStaticParams /[slug]/[productSlug]] API unavailable — using static slugs only.');
-  }
-
-  const seen = new Set<string>();
-  return [...apiParams, ...staticParams].filter(p => {
-    const key = `${p.slug}/${p.productSlug}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return [];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -196,12 +175,9 @@ export default async function CategoryProductPage({ params }: PageProps) {
   const { slug: category, productSlug } = await params;
 
   // ── API product ────────────────────────────────────────────────────────────
-  let apiProduct = null;
-  try {
-    apiProduct = await fetchApiProduct(productSlug);
-  } catch (err) {
-    throw err;
-  }
+  // fetchApiProduct is wrapped with React cache() — deduplicates automatically
+  // with the identical call in generateMetadata for the same productSlug.
+  const apiProduct = await fetchApiProduct(productSlug);
 
   if (apiProduct) {
     const productCategory = apiProduct.category?.name;

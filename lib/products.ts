@@ -4,6 +4,8 @@
  * Falls back to static data if API is unavailable.
  */
 
+import { cache } from 'react';
+
 import { api, isAxiosError } from './axios';
 import type { ApiProduct, ApiCategory } from '@/types/product';
 import { allProducts, bestSellers } from '@/data/products';
@@ -108,9 +110,31 @@ function sleep(ms: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
-export async function getProductBySlug(slug: string): Promise<ApiProduct | null> {
-  const maxAttempts = 5;
+// ─── Build-time vs runtime retry policy ──────────────────────────────────────
+// At build time (static generation) a 429 from the API blocks the whole build
+// worker for the duration of the backoff. Build-time failures are not
+// user-facing — a failed fetch just falls back to ISR on the first real visit.
+// So we use a much shorter policy during builds:
+//   • Max 2 attempts instead of 5
+//   • 429 wait capped at 10s (not the full Retry-After which can be 45-60s)
+//   • Exponential back-off capped at 4s (not 16s)
+// At runtime (SSR / ISR) we keep the original aggressive retry policy.
+const IS_BUILD = process.env.NEXT_PHASE === 'phase-production-build';
+const BUILD_MAX_ATTEMPTS   = 2;
+const RUNTIME_MAX_ATTEMPTS = 5;
+const BUILD_MAX_WAIT_MS    = 10_000;   // 10s max wait per retry during build
+const BUILD_429_WAIT_MS    = 10_000;   // ignore Retry-After; just wait 10s
+
+// ─── Per-request deduplication via React cache() ─────────────────────────────
+// React's cache() memoises calls with identical arguments within a single
+// render pass (which includes both generateMetadata and the page component
+// for the same request). This means the real network call fires ONCE per
+// slug per page — halving API calls during static generation and eliminating
+// the 429 storms caused by duplicate fetches.
+export const getProductBySlug = cache(async (slug: string): Promise<ApiProduct | null> => {
+  const maxAttempts = IS_BUILD ? BUILD_MAX_ATTEMPTS : RUNTIME_MAX_ATTEMPTS;
   let lastErr: unknown;
+  let last429 = false;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -132,19 +156,24 @@ export async function getProductBySlug(slug: string): Promise<ApiProduct | null>
       let delayMs: number;
 
       if (status === 429) {
-        // Rate-limited — respect the Retry-After header if present; otherwise
-        // wait 60s as a safe default (the backend's 60-req/min window resets).
+        last429 = true;
+        // Rate-limited — at runtime respect Retry-After; at build time use
+        // a short fixed cap so one slow product doesn't block the whole build.
         const retryAfter = isAxiosError(err)
           ? Number(err.response?.headers?.['retry-after'] ?? 0)
           : 0;
-        delayMs = retryAfter > 0 ? retryAfter * 1000 : 60_000;
+        const runtimeWait = retryAfter > 0 ? retryAfter * 1000 : 60_000;
+        delayMs = IS_BUILD ? BUILD_429_WAIT_MS : runtimeWait;
         console.warn(
           `[products] Product "${slug}" rate-limited (429), attempt ${attempt}/${maxAttempts}.`,
           `Waiting ${Math.round(delayMs / 1000)}s before retry.`,
         );
       } else {
-        // Network error, timeout, or 5xx — exponential back-off: 2s, 4s, 8s, 16s
-        delayMs = Math.min(2_000 * 2 ** (attempt - 1), 16_000);
+        last429 = false;
+        // Network error, timeout, or 5xx — exponential back-off.
+        // Runtime: 2s, 4s, 8s, 16s. Build: 2s, 4s (capped lower).
+        const expWait = Math.min(2_000 * 2 ** (attempt - 1), 16_000);
+        delayMs = IS_BUILD ? Math.min(expWait, BUILD_MAX_WAIT_MS) : expWait;
         console.error(
           `[products] Product "${slug}" fetch failed (status=${status ?? 'network'}, attempt ${attempt}/${maxAttempts}).`,
           isAxiosError(err) ? `${err.code ?? ''} ${err.message}` : err,
@@ -158,10 +187,20 @@ export async function getProductBySlug(slug: string): Promise<ApiProduct | null>
     }
   }
 
+  // At build time: a rate-limited product should NOT crash the build worker.
+  // Return null so the page falls back to static data or ISR on first visit.
+  // At runtime: re-throw so the caller can surface the error properly.
+  if (IS_BUILD && last429) {
+    console.warn(
+      `[products] Product "${slug}" still rate-limited after ${maxAttempts} attempts at build time — skipping (will be served via ISR on first visit).`,
+    );
+    return null;
+  }
+
   // All attempts exhausted — throw so the caller can distinguish a transient
   // failure from a confirmed 404.
   throw lastErr;
-}
+});
 
 // ─── Related products ─────────────────────────────────────────────────────────
 
