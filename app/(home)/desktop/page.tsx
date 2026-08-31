@@ -11,6 +11,7 @@ const NewArrivals     = dynamic(() =>
 const BeautyCorner    = dynamic(() => import("../../../components/Desktop/Sections/BeautyCorner"));
 const PansariInn      = dynamic(() => import("../../../components/Desktop/Sections/Pureinnoils"));
 const ComboDeal       = dynamic(() => import("../../../components/Desktop/Sections/ComboDeal"));
+const WhyChooseUs     = dynamic(() => import("../../../components/Desktop/Sections/WhyChooseUs"));
 const VideoProducts   = dynamic(() => import("../../../components/Desktop/Sections/VideoProducts"));
 const Review          = dynamic(() => import("../../../components/Desktop/Sections/Review"));
 const Blog            = dynamic(() => import("../../../components/Desktop/Sections/Blog"));
@@ -29,6 +30,7 @@ export default function HomePage() {
       <BeautyCorner />
       <PansariInn />
       <ComboDeal />
+      <WhyChooseUs />
       <VideoProducts />
       <Review />
       <Blog />
