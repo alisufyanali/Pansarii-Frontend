@@ -1,42 +1,52 @@
 "use client";
 
 import Image from "next/image";
+import { GiAncientColumns } from "react-icons/gi";
+import { FaLeaf, FaCertificate, FaFlask, FaBan, FaGlobe } from "react-icons/fa";
+import type { IconType } from "react-icons";
 
-const reasons = [
+interface Reason {
+  Icon: IconType;
+  title: string;
+  desc: string;
+  position: string;
+}
+
+const reasons: Reason[] = [
   {
-    icon: "🏺",
+    Icon: GiAncientColumns,
     title: "100+ Years of Ayurvedic Legacy",
-    desc: "Trusted since 1920, pansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
+    desc: "Trusted since 1920, PansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
     position: "top-left",
   },
   {
-    icon: "🌿",
+    Icon: FaLeaf,
     title: "100% Herbal",
-    desc: "Trusted since 1920, pansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
+    desc: "Trusted since 1920, PansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
     position: "top-right",
   },
   {
-    icon: "📜",
+    Icon: FaCertificate,
     title: "Certifications",
-    desc: "Trusted since 1920, pansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
+    desc: "Trusted since 1920, PansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
     position: "mid-left",
   },
   {
-    icon: "🔬",
+    Icon: FaFlask,
     title: "Clinically Proven",
-    desc: "Trusted since 1920, pansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
+    desc: "Trusted since 1920, PansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
     position: "mid-right",
   },
   {
-    icon: "🧪",
+    Icon: FaBan,
     title: "Chemical Free",
-    desc: "Trusted since 1920, pansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
+    desc: "Trusted since 1920, PansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
     position: "bot-left",
   },
   {
-    icon: "🌍",
+    Icon: FaGlobe,
     title: "Global Presence & Trust",
-    desc: "Trusted since 1920, pansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
+    desc: "Trusted since 1920, PansariInn blends time-tested Ayurvedic wisdom with modern formulations.",
     position: "bot-right",
   },
 ];
@@ -63,7 +73,6 @@ export default function WhyChooseUs() {
 
         {/* ── CENTER IMAGE ── */}
         <div className="relative flex items-center justify-center">
-          {/* Decorative amber blurred circle */}
           <div className="absolute w-64 h-64 rounded-full bg-amber-100 opacity-60 blur-2xl" />
           <div className="relative w-56 h-56 sm:w-64 sm:h-64 drop-shadow-xl">
             <Image
@@ -90,12 +99,12 @@ export default function WhyChooseUs() {
 
 // ─── Individual card ──────────────────────────────────────────────────────────
 function ReasonCard({
-  icon,
+  Icon,
   title,
   desc,
   align,
 }: {
-  icon: string;
+  Icon: IconType;
   title: string;
   desc: string;
   align: "left" | "right";
@@ -107,8 +116,8 @@ function ReasonCard({
       }`}
     >
       {/* Icon bubble */}
-      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-2xl shadow-sm">
-        {icon}
+      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shadow-sm">
+        <Icon className="w-5 h-5 text-amber-600" />
       </div>
 
       <div>
