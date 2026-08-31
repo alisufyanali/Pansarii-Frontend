@@ -24,6 +24,8 @@ const ComboDeal       = dynamic(() => import("./Sections/ComboDeal"), { ssr: fal
 const VideoProducts   = dynamic(() => import("./Sections/VideoProducts"), { ssr: false });
 const Review          = dynamic(() => import("./Sections/Review"), { ssr: false });
 const Blog            = dynamic(() => import("./Sections/Blog"), { ssr: false });
+const WhyChooseUs     = dynamic(() => import("./Sections/WhyChooseUs"));
+
 
 export default function DesktopHome() {
   const [homepageData, setHomepageData] = useState<HomepageData>(EMPTY_HOMEPAGE);
@@ -53,6 +55,7 @@ export default function DesktopHome() {
       <Suspense fallback={null}>
         <VideoProducts products={homepageData.video_products} />
       </Suspense>
+      <WhyChooseUs />
       <Suspense fallback={null}>
         <Review reviews={homepageData.reviews} />
       </Suspense>
