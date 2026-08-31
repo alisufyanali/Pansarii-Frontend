@@ -15,7 +15,7 @@ import ProductDetails from '@/components/Desktop/components/ProductDetails';
 import ProductDetailsSection from '@/components/Desktop/Sections/ProductDetailsSection';
 import { allProducts } from '@/data/products';
 import { findProductBySlug, toProductSlug } from '@/lib/productSlug';
-import { getProductBySlug as fetchApiProduct, getProducts as fetchApiProducts } from '@/lib/products';
+import { getProductBySlug as fetchApiProduct, getProducts as fetchApiProducts, fetchProductBySlugUncached } from '@/lib/products';
 import type { Product, ProductFeature, LegacyProduct } from '@/types/product';
 
 type CatalogProduct = (typeof allProducts)[number];
@@ -172,10 +172,25 @@ export default async function ProductPage({ params }: PageProps) {
   // fetchApiProduct is wrapped with React cache() in lib/products.ts, so this
   // call deduplicates automatically with the identical call in generateMetadata
   // — only ONE network request fires per slug per render pass.
-  // Throws on transient errors (network/timeout/5xx); returns null on 404.
-  // We let throws propagate to error.tsx so Next.js does NOT cache the failure
-  // as a 404 in ISR.
-  const apiProduct = await fetchApiProduct(slug);
+  //
+  // Runtime retry safety net: for pages not pre-built at build time (e.g. the
+  // 22 API-only slugs skipped due to 429s), the very first visitor after a
+  // deploy may hit a still-rate-limited API. If the cached call throws, we
+  // wait 3 s and try once more via fetchProductBySlugUncached (which bypasses
+  // React's cache so it fires a fresh request). On a second failure we fall
+  // through to the static fallback or notFound() rather than showing error.tsx.
+  // This is a runtime-only guard — build-time behaviour is unchanged.
+  let apiProduct = null;
+  try {
+    apiProduct = await fetchApiProduct(slug);
+  } catch {
+    // Primary fetch failed (likely transient 429 or network hiccup).
+    // Wait 3 s then try a single uncached follow-up before giving up.
+    await new Promise(r => setTimeout(r, 3_000));
+    apiProduct = await fetchProductBySlugUncached(slug);
+    // fetchProductBySlugUncached returns null on any error — no re-throw.
+    // If apiProduct is still null here, we fall through to static / notFound().
+  }
 
   if (apiProduct) {
     const price = apiProduct.variants?.length

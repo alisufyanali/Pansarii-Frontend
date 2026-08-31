@@ -202,6 +202,25 @@ export const getProductBySlug = cache(async (slug: string): Promise<ApiProduct |
   throw lastErr;
 });
 
+// ─── Runtime-only one-shot fetch (bypasses React cache) ──────────────────────
+// getProductBySlug is cache()-memoised: if it already threw for a slug in the
+// current render, calling it again returns the same rejected promise — it does
+// NOT retry. This uncached variant is used exclusively by the runtime retry
+// guard in app/[slug]/page.tsx to fire a single fresh network request after
+// a short delay when the cached call failed with a transient error (e.g. a
+// first-visitor-after-deploy 429 race).
+// NOT exported as cache() — intentional.
+export async function fetchProductBySlugUncached(slug: string): Promise<ApiProduct | null> {
+  try {
+    const res = await api.get<ApiResponse<ApiProduct>>(`/products/${slug}`);
+    return res.data ?? null;
+  } catch (err) {
+    const status = isAxiosError(err) ? err.response?.status : undefined;
+    if (status === 404) return null;
+    return null; // any other transient error → null (caller decides what to render)
+  }
+}
+
 // ─── Related products ─────────────────────────────────────────────────────────
 
 /**

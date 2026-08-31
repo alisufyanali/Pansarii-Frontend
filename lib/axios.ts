@@ -81,6 +81,13 @@ export function isAuthenticated(): boolean {
   return Boolean(getAuthToken());
 }
 
+// ─── Build-time bypass token ──────────────────────────────────────────────────
+// READ AT MODULE LEVEL (server only — process.env is not available in the
+// browser bundle for non-NEXT_PUBLIC_ vars, so this is always undefined
+// on the client). Used by the request interceptor below.
+const BUILD_API_TOKEN =
+  typeof window === 'undefined' ? (process.env.BUILD_API_TOKEN ?? '') : '';
+
 // ─── Request interceptor — attach token ───────────────────────────────────────
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
@@ -89,6 +96,17 @@ apiClient.interceptors.request.use(
     if (token) {
       // Axios v1 stores headers as an AxiosHeaders object
       config.headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    // Attach build-bypass token on the server (build time + SSR/ISR).
+    // Never sent from the browser: BUILD_API_TOKEN is a non-NEXT_PUBLIC_ env
+    // var so Next.js never inlines it into the client bundle, and the
+    // typeof window guard above ensures it's always '' on the client.
+    // The backend uses this header to exempt the build server from the
+    // 60-req/min rate limit so generateStaticParams can pre-render all
+    // product pages without hitting 429s.
+    if (BUILD_API_TOKEN) {
+      config.headers.set('X-Build-Token', BUILD_API_TOKEN);
     }
 
     return config;
