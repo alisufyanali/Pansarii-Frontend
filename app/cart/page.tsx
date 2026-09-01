@@ -4,17 +4,26 @@
 import SafeImage from '@/components/SafeImage';
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { FaTrash, FaShoppingCart, FaHeart, FaTag, FaShieldAlt, FaTruck, FaArrowLeft } from 'react-icons/fa';
+import { FaTrash, FaShoppingCart, FaShieldAlt, FaTruck, FaArrowLeft, FaExclamationTriangle } from 'react-icons/fa';
 import { useCart } from '@/context/CartContext';
+import { useCartStockValidation } from '@/lib/stockValidation';
 
 function CartContent() {
   const { cartItems, updateQuantity, removeFromCart, getCartTotal, getCartCount, isCartLoading } = useCart();
+  const { isValidating, warnings, validate } = useCartStockValidation();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
   }, []);
+
+  // Run stock validation once the cart has finished loading
+  useEffect(() => {
+    if (!mounted || isCartLoading || cartItems.length === 0) return;
+    validate(cartItems, removeFromCart, updateQuantity);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, isCartLoading]);
 
   const shipping = getCartTotal() > 5000 ? 0 : 200;
   const total = getCartTotal() + shipping;
@@ -135,75 +144,102 @@ function CartContent() {
               {getCartTotal() >= 5000 && (
                 <div className="bg-green-50 border border-green-100 rounded-xl px-5 py-3 flex items-center gap-2">
                   <FaTruck className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
-                <span className="text-xs font-medium text-green-700">You&apos;ve unlocked free shipping!</span>
+                  <span className="text-xs font-medium text-green-700">You&apos;ve unlocked free shipping!</span>
                 </div>
               )}
 
               {/* Items card */}
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="divide-y divide-gray-50">
-                  {cartItems.map((item) => (
-                    <div key={`${item.id}-${item.size}`} className="p-4 sm:p-5 hover:bg-gray-50/50 transition">
-                      <div className="flex gap-3 sm:gap-4">
+              <div className="relative bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
 
-                        {/* Product image */}
-                        <div className="w-18 h-18 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 relative"
-                          style={{ width: '72px', height: '72px' }}>
-                          <SafeImage
-                            src={item.img}
-                            alt={item.nameEn}
-                            fill
-                            className="object-cover"
-                            sizes="72px"
-                          />
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <h3 className="text-sm font-semibold text-gray-900 truncate">{item.nameEn}</h3>
-                              <p className="text-xs text-gray-400 mt-0.5">{item.nameUr}</p>
-                              <p className="text-xs text-gray-400 mt-0.5">Size: <span className="text-gray-600">{item.size}</span></p>
-                            </div>
-                            {/* Action buttons */}
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              <button onClick={() => removeFromCart(item.id, item.size)}
-                                className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Remove">
-                                <FaTrash className="w-3.5 h-3.5" />
-                              </button>
-                              
-                            </div>
-                          </div>
-
-                          {/* Quantity + price row */}
-                          <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                              <button
-                                onClick={() => {
-                                  if (item.quantity <= 1) removeFromCart(item.id, item.size);
-                                  else updateQuantity(item.id, item.size, item.quantity - 1);
-                                }}
-                                className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition text-gray-600 text-sm">−</button>
-                              <span className="w-8 h-8 flex items-center justify-center border-x border-gray-200 text-sm font-semibold text-gray-900">
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
-                                className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition text-gray-600 text-sm">+</button>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-bold text-gray-900">PKR {(item.price * item.quantity).toLocaleString()}</p>
-                              {item.quantity > 1 && (
-                                <p className="text-[11px] text-gray-400">PKR {item.price.toLocaleString()} each</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                      </div>
+                {/* Validation overlay — spins while check-stock is in flight */}
+                {isValidating && (
+                  <div className="absolute inset-0 z-10 bg-white/70 flex items-center justify-center rounded-xl">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <svg className="animate-spin w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Checking stock…
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                <div className="divide-y divide-gray-50">
+                  {cartItems.map((item) => {
+                    const key = `${item.id}-${item.size}`;
+                    const warning = warnings.get(key);
+
+                    return (
+                      <div key={key} className={`p-4 sm:p-5 hover:bg-gray-50/50 transition ${warning ? 'bg-amber-50/40' : ''}`}>
+                        <div className="flex gap-3 sm:gap-4">
+
+                          {/* Product image */}
+                          <div className="w-18 h-18 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 relative"
+                            style={{ width: '72px', height: '72px' }}>
+                            <SafeImage
+                              src={item.img}
+                              alt={item.nameEn}
+                              fill
+                              className="object-cover"
+                              sizes="72px"
+                            />
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <h3 className="text-sm font-semibold text-gray-900 truncate">{item.nameEn}</h3>
+                                <p className="text-xs text-gray-400 mt-0.5">{item.nameUr}</p>
+                                <p className="text-xs text-gray-400 mt-0.5">Size: <span className="text-gray-600">{item.size}</span></p>
+
+                                {/* ── Inline stock warning ── */}
+                                {warning && (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <FaExclamationTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                                    <span className="text-xs text-amber-700 font-medium">{warning.message}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Action buttons */}
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <button onClick={() => removeFromCart(item.id, item.size)}
+                                  className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Remove">
+                                  <FaTrash className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Quantity + price row */}
+                            <div className="flex items-center justify-between mt-3">
+                              <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                                <button
+                                  onClick={() => {
+                                    if (item.quantity <= 1) removeFromCart(item.id, item.size);
+                                    else updateQuantity(item.id, item.size, item.quantity - 1);
+                                  }}
+                                  className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition text-gray-600 text-sm">−</button>
+                                <span className="w-8 h-8 flex items-center justify-center border-x border-gray-200 text-sm font-semibold text-gray-900">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                                  className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition text-gray-600 text-sm">+</button>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-bold text-gray-900">PKR {(item.price * item.quantity).toLocaleString()}</p>
+                                {item.quantity > 1 && (
+                                  <p className="text-[11px] text-gray-400">PKR {item.price.toLocaleString()} each</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Continue shopping */}
@@ -249,26 +285,23 @@ function CartContent() {
                   </div>
                 </div>
 
-                {/* Promo code
-                <div className="mt-4">
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <FaTag className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-300" />
-                      <input type="text" value={promoCode} onChange={e => setPromoCode(e.target.value)}
-                        placeholder="Promo code"
-                        className="w-full pl-8 pr-3 py-2.5 border border-gray-200 rounded-lg text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition" />
-                    </div>
-                    <button className="px-4 py-2.5 border border-green-700 text-green-700 rounded-lg text-xs font-semibold hover:bg-green-50 transition whitespace-nowrap">
-                      Apply
-                    </button>
+                {/* Checkout CTA — disabled while validation is running */}
+                {warnings.size > 0 ? (
+                  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 text-center">
+                    <FaExclamationTriangle className="inline w-3 h-3 mr-1 text-amber-500" />
+                    Some items were updated. Please review before checking out.
                   </div>
-                </div> */}
-
-                {/* Checkout CTA */}
-                <Link href="/checkout"
-                  className="mt-4 flex items-center justify-center w-full bg-green-700 text-white py-3 rounded-full text-sm font-bold hover:bg-green-600 transition shadow-sm hover:shadow-md">
-                  Proceed to Checkout →
-                </Link>
+                ) : (
+                  <Link
+                    href="/checkout"
+                    aria-disabled={isValidating}
+                    className={`mt-4 flex items-center justify-center w-full bg-green-700 text-white py-3 rounded-full text-sm font-bold transition shadow-sm hover:shadow-md ${
+                      isValidating ? 'opacity-50 pointer-events-none' : 'hover:bg-green-600'
+                    }`}
+                  >
+                    {isValidating ? 'Checking stock…' : 'Proceed to Checkout →'}
+                  </Link>
+                )}
 
                 {/* Trust badges */}
                 <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-gray-400">

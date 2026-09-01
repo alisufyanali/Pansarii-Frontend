@@ -23,6 +23,16 @@ export interface ApiCartItem {
     name: string;
     sku: string;
   };
+  /** Included in GET /api/cart response as of latest backend version */
+  stock?: number;
+  in_stock?: boolean;
+}
+
+/** Shape returned by POST /api/products/check-stock */
+export interface StockCheckResult {
+  variant_id: number;
+  stock: number;
+  in_stock: boolean;
 }
 
 // ─── API functions ────────────────────────────────────────────────────────────
@@ -60,4 +70,19 @@ export const removeCartItemApi = async (cartId: number): Promise<void> => {
 
 export const clearCartApi = async (): Promise<void> => {
   await apiClient.delete('/cart');
+};
+
+/**
+ * Check current stock levels for a list of variant IDs.
+ * Used for guest cart validation (no backend cart record to check against).
+ * POST /api/products/check-stock { variant_ids: [...] }
+ */
+export const checkStockApi = async (
+  variantIds: number[],
+): Promise<StockCheckResult[]> => {
+  const res = await apiClient.post<{ success: boolean; data: StockCheckResult[] }>(
+    '/products/check-stock',
+    { variant_ids: variantIds },
+  );
+  return res.data.data ?? [];
 };

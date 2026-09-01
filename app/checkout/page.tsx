@@ -16,6 +16,7 @@ import { useAuth, extractFieldErrors } from '@/context/AuthContext';
 import { createOrder, createGuestOrder } from '@/lib/orders';
 import { validateCoupon, type CouponResult } from '@/lib/coupons';
 import { getCities, DEFAULT_SHIPPING, type City } from '@/lib/cities';
+import { useCartStockValidation } from '@/lib/stockValidation';
 
 type CheckoutMode = 'pending' | 'guest' | 'auth';
 
@@ -138,8 +139,11 @@ interface GuestFields {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems, getCartTotal, clearCart, isCartLoading, syncFromApi } = useCart();
+  const { cartItems, getCartTotal, clearCart, isCartLoading, syncFromApi, updateQuantity, removeFromCart } = useCart();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+
+  // Stock validation — shared hook (same logic used by cart page)
+  const { isValidating: isStockValidating, validate: validateStock } = useCartStockValidation();
 
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>('pending');
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -272,6 +276,23 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError('');
+
+    // ── Pre-submission stock re-check ─────────────────────────────────────
+    // Re-validate the cart right before placing the order. If anything changed
+    // since the cart page was viewed (stock depleted, quantity exceeded), block
+    // submission and show the user exactly what was adjusted.
+    const cartIsClean = await validateStock(cartItems, removeFromCart, updateQuantity);
+    if (!cartIsClean) {
+      setSubmitError(
+        'Some items in your cart were updated due to stock changes. Please review your cart and try again.',
+      );
+      // Scroll the error into view so the user sees it immediately
+      setTimeout(() => {
+        document.querySelector('[data-checkout-error]')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return;
+    }
 
     if (checkoutMode === 'guest' && !validateGuestFields()) return;
 
@@ -849,11 +870,19 @@ export default function CheckoutPage() {
                   <span className="text-base font-bold text-gray-900">PKR {total.toLocaleString()}</span>
                 </div>
 
-                {submitError && <p className="text-xs text-red-500 mb-2 text-center">{submitError}</p>}
+                {submitError && <p data-checkout-error className="text-xs text-red-500 mb-2 text-center">{submitError}</p>}
 
-                <button type="submit" disabled={isSubmitting}
-                  className={`w-full py-3 rounded-full text-sm font-bold text-white transition shadow-sm ${isSubmitting ? 'bg-green-600 opacity-70 cursor-not-allowed' : 'bg-green-700 hover:bg-green-600 hover:shadow-md'}`}>
-                  {isSubmitting ? (
+                <button type="submit" disabled={isSubmitting || isStockValidating}
+                  className={`w-full py-3 rounded-full text-sm font-bold text-white transition shadow-sm ${(isSubmitting || isStockValidating) ? 'bg-green-600 opacity-70 cursor-not-allowed' : 'bg-green-700 hover:bg-green-600 hover:shadow-md'}`}>
+                  {isStockValidating ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Checking stock…
+                    </span>
+                  ) : isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
                       <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

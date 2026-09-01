@@ -185,6 +185,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     matchedVariant?.price ??
     product.price;
 
+  // Stock guard — derived from the variant already on the page (no extra API call).
+  // `stock` is always present on ProductVariant from the API.
+  const variantStock: number = matchedVariant?.stock ?? Infinity;
+  const isOutOfStock = variantStock === 0;
+
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -266,10 +271,20 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       toast.error("Failed to add item to cart!");
       return;
     }
+    if (isOutOfStock) {
+      toast.error("This item is out of stock.");
+      return;
+    }
 
     const variantId = resolveVariantId();
     if (getAuthToken() && !variantId) {
       toast.error("Please select a valid size before adding to cart.");
+      return;
+    }
+
+    // Guest: cap quantity against known stock to avoid silent over-ordering
+    if (!getAuthToken() && variantStock !== Infinity && quantity > variantStock) {
+      toast.error(`Only ${variantStock} available in stock.`);
       return;
     }
 
@@ -279,13 +294,17 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       }
       toast.success(`Added ${quantity} × ${product.nameEn} (${selectedLabel}) to cart!`);
     } catch {
-      // error already toasted by CartContext
+      // CartContext already toasts the exact backend message (incl. 422 "Only N more available")
     }
   };
 
   const handleBuyNow = async () => {
     if (!productId) {
       toast.error("Failed to add item to cart!");
+      return;
+    }
+    if (isOutOfStock) {
+      toast.error("This item is out of stock.");
       return;
     }
 
@@ -295,13 +314,18 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       return;
     }
 
+    if (!getAuthToken() && variantStock !== Infinity && quantity > variantStock) {
+      toast.error(`Only ${variantStock} available in stock.`);
+      return;
+    }
+
     try {
       for (let i = 0; i < quantity; i++) {
         await addToCart(buildCartPayload(variantId));
       }
       router.push("/cart");
     } catch {
-      // error already toasted by CartContext
+      // CartContext already toasts the exact backend message
     }
   };
 
@@ -551,15 +575,23 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
         <div className="mt-3 space-y-1.5">
           <div className="flex gap-2">
-            <button onClick={handleAddToCart}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-green-700 text-white font-semibold py-2 rounded-lg hover:bg-green-800 transition-all shadow-sm text-sm">
-              <FaShoppingCart className="w-3.5 h-3.5" />
-              Add to Cart
-            </button>
-            <button onClick={handleBuyNow}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-amber-500 text-gray-900 font-semibold py-2 rounded-lg hover:bg-amber-600 transition-all shadow-sm text-sm">
-              Buy Now
-            </button>
+            {isOutOfStock ? (
+              <div className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 text-gray-400 font-semibold py-2 rounded-lg text-sm cursor-not-allowed select-none border border-gray-200">
+                Out of Stock
+              </div>
+            ) : (
+              <>
+                <button onClick={handleAddToCart}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-green-700 text-white font-semibold py-2 rounded-lg hover:bg-green-800 transition-all shadow-sm text-sm">
+                  <FaShoppingCart className="w-3.5 h-3.5" />
+                  Add to Cart
+                </button>
+                <button onClick={handleBuyNow}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-amber-500 text-gray-900 font-semibold py-2 rounded-lg hover:bg-amber-600 transition-all shadow-sm text-sm">
+                  Buy Now
+                </button>
+              </>
+            )}
           </div>
           <button onClick={handleWhatsAppOrder}
             className="w-full flex items-center justify-center gap-2 border border-[#25D366] text-[#25D366] font-semibold py-2 rounded-lg hover:bg-[#25D366] hover:text-white transition-all text-sm">
@@ -720,12 +752,20 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
       <div className="space-y-2 pt-1">
         <div className="flex gap-2">
-          <button onClick={handleAddToCart} className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-3 rounded-lg hover:bg-green-800 transition-all text-sm">
-            <FaShoppingCart className="w-4 h-4" /> Add to Cart
-          </button>
-          <button onClick={handleBuyNow} className="flex-1 flex items-center justify-center bg-amber-500 text-gray-900 font-semibold py-3 rounded-lg hover:bg-amber-600 transition-all text-sm">
-            Buy Now
-          </button>
+          {isOutOfStock ? (
+            <div className="flex-1 flex items-center justify-center bg-gray-100 text-gray-400 font-semibold py-3 rounded-lg text-sm cursor-not-allowed select-none border border-gray-200">
+              Out of Stock
+            </div>
+          ) : (
+            <>
+              <button onClick={handleAddToCart} className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-3 rounded-lg hover:bg-green-800 transition-all text-sm">
+                <FaShoppingCart className="w-4 h-4" /> Add to Cart
+              </button>
+              <button onClick={handleBuyNow} className="flex-1 flex items-center justify-center bg-amber-500 text-gray-900 font-semibold py-3 rounded-lg hover:bg-amber-600 transition-all text-sm">
+                Buy Now
+              </button>
+            </>
+          )}
         </div>
         <button onClick={handleWhatsAppOrder} className="w-full flex items-center justify-center gap-2 border border-[#25D366] text-[#25D366] font-semibold py-3 rounded-lg hover:bg-[#25D366] hover:text-white transition-all text-sm">
           <FaWhatsapp className="w-5 h-5" /> Order on WhatsApp
