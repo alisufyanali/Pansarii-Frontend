@@ -95,7 +95,7 @@ export default function CategoryProductRow({
       <div className="max-w-[1920px] mx-auto">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-2xl lg:text-3xl 2xl:text-4xl font-semibold">
-            {category.name}
+           Shop By <span className="me-color-y">{category.name}</span>
           </h2>
           <div className="flex items-center gap-3">
             <div

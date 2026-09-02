@@ -576,8 +576,26 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         <div className="mt-3 space-y-1.5">
           <div className="flex gap-2">
             {isOutOfStock ? (
-              <div className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 text-gray-400 font-semibold py-2 rounded-lg text-sm cursor-not-allowed select-none border border-gray-200">
-                Out of Stock
+              <div className="flex-1 flex flex-col gap-2">
+                <div className="flex items-center justify-center gap-1.5 bg-gray-100 text-gray-400 font-semibold py-2 rounded-lg text-sm cursor-not-allowed select-none border border-gray-200">
+                  Out of Stock
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] text-gray-500 leading-snug">
+                    This item is currently out of stock. Add it to your wishlist to keep track of it.
+                  </p>
+                  <button
+                    onClick={handleWishlistToggle}
+                    className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition ${
+                      isWishlisted
+                        ? 'border-red-200 bg-red-50 text-red-500'
+                        : 'border-gray-300 text-gray-500 hover:border-red-300 hover:bg-red-50 hover:text-red-500'
+                    }`}
+                  >
+                    {isWishlisted ? <FaHeart className="w-2.5 h-2.5" /> : <FaRegHeart className="w-2.5 h-2.5" />}
+                    {isWishlisted ? 'Saved' : 'Wishlist'}
+                  </button>
+                </div>
               </div>
             ) : (
               <>
@@ -753,8 +771,26 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       <div className="space-y-2 pt-1">
         <div className="flex gap-2">
           {isOutOfStock ? (
-            <div className="flex-1 flex items-center justify-center bg-gray-100 text-gray-400 font-semibold py-3 rounded-lg text-sm cursor-not-allowed select-none border border-gray-200">
-              Out of Stock
+            <div className="flex-1 flex flex-col gap-2">
+              <div className="flex items-center justify-center bg-gray-100 text-gray-400 font-semibold py-3 rounded-lg text-sm cursor-not-allowed select-none border border-gray-200">
+                Out of Stock
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-gray-500 leading-snug">
+                  Currently out of stock. Save it to your wishlist to keep track of it.
+                </p>
+                <button
+                  onClick={handleWishlistToggle}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold transition ${
+                    isWishlisted
+                      ? 'border-red-200 bg-red-50 text-red-500'
+                      : 'border-gray-300 text-gray-500 hover:border-red-300 hover:bg-red-50 hover:text-red-500'
+                  }`}
+                >
+                  {isWishlisted ? <FaHeart className="w-3 h-3" /> : <FaRegHeart className="w-3 h-3" />}
+                  {isWishlisted ? 'Saved' : 'Save'}
+                </button>
+              </div>
             </div>
           ) : (
             <>

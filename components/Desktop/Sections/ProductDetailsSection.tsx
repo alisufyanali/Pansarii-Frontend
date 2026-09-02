@@ -890,9 +890,19 @@ export default function ProductDetailsSection({
                     <FaWhatsapp className="w-4 h-4" />
                   </button>
                   {isOutOfStock ? (
-                    <div className="flex items-center justify-center h-10 px-3 bg-gray-100 text-gray-400 rounded-lg text-xs font-bold border border-gray-200 cursor-not-allowed select-none">
-                      Out of Stock
-                    </div>
+                    <button
+                      onClick={toggleWishlist}
+                      className={`flex items-center justify-center gap-1 h-10 px-3 rounded-lg border text-xs font-bold transition ${
+                        isWishlisted
+                          ? 'border-red-200 bg-red-50 text-red-500'
+                          : 'border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-400'
+                      }`}
+                      aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+                    >
+                      {isWishlisted ? <FaHeart className="w-3 h-3" /> : <FaRegHeart className="w-3 h-3" />}
+                      <span className="text-gray-400 font-bold mr-0.5">Out of stock</span>
+                      <span>{isWishlisted ? '· Saved' : '· Wishlist'}</span>
+                    </button>
                   ) : (
                     <>
                       <button onClick={handleAddToCart}
@@ -1064,8 +1074,24 @@ export default function ProductDetailsSection({
                     {isWishlisted ? <FaHeart className="w-4 h-4 text-red-500" /> : <FaRegHeart className="w-4 h-4 text-gray-500" />}
                   </button>
                   {isOutOfStock ? (
-                    <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-400 rounded-lg text-xs font-semibold border border-gray-200 cursor-not-allowed select-none">
-                      Out of Stock
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-400 rounded-lg text-xs font-semibold border border-gray-200 cursor-not-allowed select-none">
+                        Out of Stock
+                      </div>
+                      <p className="text-xs text-gray-500 leading-snug hidden lg:block">
+                        This item is out of stock.
+                      </p>
+                      <button
+                        onClick={toggleWishlist}
+                        className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-xs font-semibold transition ${
+                          isWishlisted
+                            ? 'border-red-200 bg-red-50 text-red-500'
+                            : 'border-gray-300 text-gray-500 hover:border-red-300 hover:bg-red-50 hover:text-red-500'
+                        }`}
+                      >
+                        {isWishlisted ? <FaHeart className="w-3.5 h-3.5" /> : <FaRegHeart className="w-3.5 h-3.5" />}
+                        {isWishlisted ? 'Saved' : 'Save to Wishlist'}
+                      </button>
                     </div>
                   ) : (
                     <>
