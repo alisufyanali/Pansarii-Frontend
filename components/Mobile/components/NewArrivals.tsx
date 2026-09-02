@@ -12,8 +12,9 @@ interface MobileNewArrivalsProps {
   /**
    * Products from data.new_arrivals in the /api/homepage response.
    * undefined = loading (show skeleton), [] = none (render nothing).
+   * Optional — defaults to undefined so legacy pages compile (shows skeleton).
    */
-  products: ApiProduct[] | undefined;
+  products?: ApiProduct[] | undefined;
 }
 
 function NewArrivalsSkeleton() {

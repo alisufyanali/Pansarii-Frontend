@@ -12,8 +12,10 @@ interface MobileFeaturedProductsProps {
   /**
    * Products from data.featured_products in the /api/homepage response.
    * undefined = loading (show skeleton), [] = none (render nothing).
+   * Optional — defaults to undefined so legacy pages that don't pass
+   * homepageData still compile (shows skeleton).
    */
-  products: ApiProduct[] | undefined;
+  products?: ApiProduct[] | undefined;
 }
 
 function FeaturedSkeleton() {

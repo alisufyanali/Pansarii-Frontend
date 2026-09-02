@@ -3,7 +3,9 @@ import dynamic from 'next/dynamic';
 // Lazy load all sections using next/dynamic (works in Server Components)
 const Banner          = dynamic(() => import("../../../components/Desktop/Sections/Banner"));
 const SolutionBar     = dynamic(() => import("../../../components/Desktop/Sections/SolutionBar"));
-const FeaturedProducts = dynamic(() => import("../../../components/Desktop/Sections/FeaturedProducts"));
+const FeaturedProducts = dynamic(() =>
+  import("../../../components/Desktop/Sections/FeaturedProducts").then(m => ({ default: m.FeaturedProductsLoader }))
+);
 const Category        = dynamic(() => import("../../../components/Desktop/Sections/Category"));
 const NewArrivals     = dynamic(() =>
   import("../../../components/Desktop/Sections/NewArrivals").then(m => ({ default: m.NewArrivalsLoader }))

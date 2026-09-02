@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import ProductSection from "./ProductSection";
+import { getHomepageData } from "@/lib/homepage";
 import { apiProductToLegacy } from "@/types/product";
 import type { ApiProduct, Product } from "@/types/product";
 
@@ -42,10 +44,7 @@ function FeaturedProductsSkeleton() {
 }
 
 export default function FeaturedProducts({ products }: FeaturedProductsProps) {
-  // Still waiting for the homepage API response
   if (products === undefined) return <FeaturedProductsSkeleton />;
-
-  // API returned but no featured products configured — hide section entirely
   if (products.length === 0) return null;
 
   const legacyProducts: Product[] = products.map(apiProductToLegacy);
@@ -60,20 +59,19 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
   );
 }
 
-/** Self-fetching wrapper for pages that do not receive homepage data from a parent. */
+/**
+ * Self-fetching wrapper — for pages that do not receive homepageData from
+ * a parent (e.g. the old app/(home)/desktop/page.tsx static route).
+ * Mirrors the NewArrivalsLoader pattern exactly.
+ */
 export function FeaturedProductsLoader() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { useState, useEffect } = require('react') as typeof import('react');
   const [products, setProducts] = useState<ApiProduct[] | undefined>(undefined);
 
   useEffect(() => {
     let active = true;
-    // Re-use the homepage endpoint so we don't add a separate API call
-    import('@/lib/homepage').then(({ getHomepageData }) =>
-      getHomepageData().then(data => {
-        if (active) setProducts(data.featured_products ?? []);
-      })
-    );
+    getHomepageData().then(data => {
+      if (active) setProducts(data.featured_products ?? []);
+    });
     return () => { active = false; };
   }, []);
 
