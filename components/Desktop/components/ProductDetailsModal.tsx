@@ -3,9 +3,10 @@
 import Image from 'next/image';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaStar, FaCheckCircle, FaShoppingCart, FaTimes, FaMinus, FaPlus } from "react-icons/fa";
+import { FaStar, FaCheckCircle, FaShoppingCart, FaTimes, FaMinus, FaPlus, FaHeart, FaRegHeart } from "react-icons/fa";
 import { AiOutlineShopping } from "react-icons/ai";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishList";
 import { toast } from 'react-toastify';
 import type { Product } from '@/types/product';
 
@@ -20,7 +21,30 @@ export default function ProductDetailsModal({
   const [quantity, setQuantity] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const router = useRouter();
+
+  const wishlisted = product.id !== undefined ? isInWishlist(product.id) : false;
+
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (product.id === undefined) return;
+    await toggleWishlist({
+      id:        product.id,
+      productId: Number(product.id),
+      variantId: matchedVariantRef(),
+      img:       product.img,
+      nameEn:    product.nameEn,
+      nameUr:    product.nameUr ?? '',
+      price:     product.price,
+      oldPrice:  product.oldPrice ?? undefined,
+      sale:      product.sale    ?? undefined,
+      rating:    product.rating,
+      reviews:   product.reviews,
+      inStock:   true,
+      category:  product.category ?? '',
+    });
+  };
 
   // ── Three-tier variant selection ─────────────────────────────────────────────
   // Tier 1 — Rich: variants have attributes (Weight/Volume/Size/… + optional Form)
@@ -29,7 +53,7 @@ export default function ProductDetailsModal({
   //           → synthesize a label from price + unit for the selector button
   const richVariants = ((product as unknown as {
     variants?: Array<{
-      id: number; name: string; price: number; is_default?: boolean;
+      id: number; name: string; price: number; stock: number; is_default?: boolean;
       attributes?: Record<string, string>; unit?: string; final_price?: number;
     }>;
   })?.variants ?? []);
@@ -104,6 +128,15 @@ export default function ProductDetailsModal({
     matchedVariant?.price ??
     product.price ?? 0;
 
+  // Stock guard — use stock from matched variant (same pattern as ProductDetails.tsx)
+  const variantStock: number = matchedVariant?.stock ?? Infinity;
+  const isOutOfStock = variantStock === 0;
+
+  // Helper used by wishlist toggle (called before matchedVariant is stable in handler)
+  const matchedVariantRef = () =>
+    matchedVariant?.id ??
+    (product as { variants?: Array<{ id: number }> }).variants?.[0]?.id;
+
   // Label for tier 3 buttons: "PKR 300" or "PKR 300 / ml" when unit is present
   const priceOnlyLabel = (v: typeof richVariants[number]) =>
     `PKR ${(v.final_price ?? v.price).toLocaleString()}${variantUnit ? ' / ' + variantUnit : ''}`;
@@ -155,6 +188,7 @@ export default function ProductDetailsModal({
 
   const handleAddToCart = async () => {
     if (!product.id) return toast.error('Failed to add item to cart!');
+    if (isOutOfStock) return toast.error('This item is out of stock.');
     try {
       for (let i = 0; i < quantity; i++) await addToCart(cartPayload());
       toast.success(`Added ${quantity} × ${product.nameEn} (${selectedLabel}) to cart!`);
@@ -163,6 +197,7 @@ export default function ProductDetailsModal({
 
   const handleBuyNow = async () => {
     if (!product.id) return toast.error('Failed to add item to cart!');
+    if (isOutOfStock) return toast.error('This item is out of stock.');
     try {
       for (let i = 0; i < quantity; i++) await addToCart(cartPayload());
       toast.success('Added to cart! Redirecting…', { autoClose: 1500, pauseOnHover: false });
@@ -197,6 +232,18 @@ export default function ProductDetailsModal({
             aria-label="Close"
           >
             <FaTimes className="w-3.5 h-3.5 text-gray-600" />
+          </button>
+
+          {/* Wishlist toggle — mobile */}
+          <button
+            onClick={handleWishlistToggle}
+            className="absolute top-3 left-4 z-10 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition"
+            aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
+            {wishlisted
+              ? <FaHeart className="w-3.5 h-3.5 text-red-500" />
+              : <FaRegHeart className="w-3.5 h-3.5 text-gray-600" />
+            }
           </button>
 
           <div className="overflow-y-auto flex-1 px-4 pb-4">
@@ -400,20 +447,28 @@ export default function ProductDetailsModal({
           </div>
 
           <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100 bg-white flex gap-3">
-            <button
-              onClick={handleAddToCart}
-              className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-3 rounded-xl hover:bg-green-800 transition text-sm"
-            >
-              <FaShoppingCart className="w-4 h-4" />
-              Add to Cart
-            </button>
-            <button
-              onClick={handleBuyNow}
-              className="flex-1 flex items-center justify-center gap-2 bg-amber-500 text-white font-semibold py-3 rounded-xl hover:bg-amber-600 transition text-sm"
-            >
-              <AiOutlineShopping className="w-4 h-4" />
-              Buy Now
-            </button>
+            {isOutOfStock ? (
+              <div className="flex-1 flex items-center justify-center bg-gray-100 text-gray-400 font-semibold py-3 rounded-xl text-sm border border-gray-200 cursor-not-allowed select-none">
+                Out of Stock
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-3 rounded-xl hover:bg-green-800 transition text-sm"
+                >
+                  <FaShoppingCart className="w-4 h-4" />
+                  Add to Cart
+                </button>
+                <button
+                  onClick={handleBuyNow}
+                  className="flex-1 flex items-center justify-center gap-2 bg-amber-500 text-white font-semibold py-3 rounded-xl hover:bg-amber-600 transition text-sm"
+                >
+                  <AiOutlineShopping className="w-4 h-4" />
+                  Buy Now
+                </button>
+              </>
+            )}
           </div>
 
         </div>
@@ -473,12 +528,25 @@ export default function ProductDetailsModal({
             <div className="flex-1 space-y-4 overflow-y-auto">
 
               <div>
-                <button
-                  onClick={goToProductDetail}
-                  className="text-xl font-bold text-gray-900 leading-tight hover:text-green-700 transition text-left"
-                >
-                  {product.nameEn}
-                </button>
+                <div className="flex items-start justify-between gap-2">
+                  <button
+                    onClick={goToProductDetail}
+                    className="text-xl font-bold text-gray-900 leading-tight hover:text-green-700 transition text-left"
+                  >
+                    {product.nameEn}
+                  </button>
+                  {/* Wishlist toggle — desktop */}
+                  <button
+                    onClick={handleWishlistToggle}
+                    className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 hover:bg-red-50 hover:border-red-200 transition"
+                    aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    {wishlisted
+                      ? <FaHeart className="w-4 h-4 text-red-500" />
+                      : <FaRegHeart className="w-4 h-4 text-gray-500" />
+                    }
+                  </button>
+                </div>
                 <p className="text-gray-500 text-sm mt-0.5">{product.nameUr}</p>
                 {product.description && (
                   <p className="text-green-700 text-sm mt-1">{product.description}</p>
@@ -657,20 +725,28 @@ export default function ProductDetailsModal({
             </div>
 
             <div className="flex gap-3 mt-4 pt-4 border-t border-gray-100 flex-shrink-0">
-              <button
-                onClick={handleAddToCart}
-                className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-3 rounded-xl hover:bg-green-800 transition"
-              >
-                <FaShoppingCart className="w-4 h-4" />
-                Add to Cart
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="flex-1 flex items-center justify-center gap-2 bg-amber-500 text-white font-semibold py-3 rounded-xl hover:bg-amber-600 transition"
-              >
-                <AiOutlineShopping className="w-4 h-4" />
-                Buy Now
-              </button>
+              {isOutOfStock ? (
+                <div className="flex-1 flex items-center justify-center bg-gray-100 text-gray-400 font-semibold py-3 rounded-xl text-sm border border-gray-200 cursor-not-allowed select-none">
+                  Out of Stock
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={handleAddToCart}
+                    className="flex-1 flex items-center justify-center gap-2 bg-green-700 text-white font-semibold py-3 rounded-xl hover:bg-green-800 transition"
+                  >
+                    <FaShoppingCart className="w-4 h-4" />
+                    Add to Cart
+                  </button>
+                  <button
+                    onClick={handleBuyNow}
+                    className="flex-1 flex items-center justify-center gap-2 bg-amber-500 text-white font-semibold py-3 rounded-xl hover:bg-amber-600 transition"
+                  >
+                    <AiOutlineShopping className="w-4 h-4" />
+                    Buy Now
+                  </button>
+                </>
+              )}
             </div>
           </div>
 

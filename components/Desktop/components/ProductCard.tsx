@@ -1,18 +1,21 @@
 "use client";
 
 import SafeImage from '@/components/SafeImage';
-import { FaStar, FaShoppingCart } from "react-icons/fa";
+import { FaStar, FaShoppingCart, FaHeart, FaRegHeart } from "react-icons/fa";
 import { useState, MouseEvent } from "react";
 import ProductDetailsModal from "./ProductDetailsModal";
 import { Product } from '@/types/product';
 import { useProductNavigation } from '@/hooks/useProductNavigation';
+import { useWishlist } from '@/context/WishList';
 
 export default function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { navigateTo, isPendingFor, anyPending } = useProductNavigation();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const isLoading = isPendingFor(product.id ?? product.slug ?? '');
+  const wishlisted = product.id !== undefined ? isInWishlist(product.id) : false;
 
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -25,6 +28,26 @@ export default function ProductCard({ product, priority = false }: { product: Pr
     e.preventDefault();
     e.stopPropagation();
     setIsModalOpen(true);
+  };
+
+  const handleWishlist = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (product.id === undefined) return;
+    toggleWishlist({
+      id:        product.id,
+      productId: Number(product.id),
+      img:       product.img,
+      nameEn:    product.nameEn,
+      nameUr:    product.nameUr ?? '',
+      price:     product.price,
+      oldPrice:  product.oldPrice ?? undefined,
+      sale:      product.sale    ?? undefined,
+      rating:    product.rating,
+      reviews:   product.reviews,
+      inStock:   true,
+      category:  product.category ?? '',
+    });
   };
 
   const displayImage = isHovered && product.hoverImg ? product.hoverImg : product.img;
@@ -53,6 +76,17 @@ export default function ProductCard({ product, priority = false }: { product: Pr
               priority={priority}
             />
           </div>
+          {/* Wishlist heart — top-left */}
+          <button
+            onClick={handleWishlist}
+            className="absolute top-2 left-2 z-10 w-7 h-7 flex items-center justify-center bg-white/90 rounded-full shadow-sm hover:scale-110 transition-transform"
+            aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
+            {wishlisted
+              ? <FaHeart className="w-3.5 h-3.5 text-red-500" />
+              : <FaRegHeart className="w-3.5 h-3.5 text-gray-400" />
+            }
+          </button>
           {product.sale && (
             <span className="absolute top-2 right-2 px-2 py-0.5 bg-red-500 text-white text-[11px] font-medium rounded-full">
               {product.sale}

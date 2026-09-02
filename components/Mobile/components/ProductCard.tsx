@@ -2,16 +2,19 @@
 
 import { useState, MouseEvent } from 'react';
 import SafeImage from '@/components/SafeImage';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaHeart, FaRegHeart } from 'react-icons/fa';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 import type { Product } from '@/types/product';
 import { useProductNavigation } from '@/hooks/useProductNavigation';
+import { useWishlist } from '@/context/WishList';
 
 export default function MobileProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { navigateTo, isPendingFor, anyPending } = useProductNavigation();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const isLoading = isPendingFor(product.id ?? product.slug ?? '');
+  const wishlisted = product.id !== undefined ? isInWishlist(product.id) : false;
 
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -24,6 +27,26 @@ export default function MobileProductCard({ product, priority = false }: { produ
     e.preventDefault();
     e.stopPropagation();
     setIsModalOpen(true);
+  };
+
+  const handleWishlist = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (product.id === undefined) return;
+    toggleWishlist({
+      id:        product.id,
+      productId: Number(product.id),
+      img:       product.img,
+      nameEn:    product.nameEn,
+      nameUr:    product.nameUr ?? '',
+      price:     product.price,
+      oldPrice:  product.oldPrice ?? undefined,
+      sale:      product.sale    ?? undefined,
+      rating:    product.rating,
+      reviews:   product.reviews,
+      inStock:   true,
+      category:  product.category ?? '',
+    });
   };
 
   return (
@@ -42,6 +65,17 @@ export default function MobileProductCard({ product, priority = false }: { produ
               {product.sale}
             </span>
           )}
+          {/* Wishlist heart — top-right */}
+          <button
+            onClick={handleWishlist}
+            className="absolute top-2 right-2 z-10 w-6 h-6 flex items-center justify-center bg-white/90 rounded-full shadow-sm active:scale-110 transition-transform"
+            aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
+            {wishlisted
+              ? <FaHeart className="w-3 h-3 text-red-500" />
+              : <FaRegHeart className="w-3 h-3 text-gray-400" />
+            }
+          </button>
           <SafeImage
             src={product.img}
             alt={product.nameEn}
