@@ -33,9 +33,16 @@ function estimatedDelivery(createdAt: string): string {
 }
 
 function toInvoiceData(order: ApiOrder): InvoiceData {
+  // shipping_address is stored as "Name, Street Address, City" (joined at checkout).
+  // Split on the first comma to recover the customer name separately from the address.
+  const raw = order.shipping_address || '';
+  const firstComma = raw.indexOf(',');
+  const customerName    = firstComma !== -1 ? raw.slice(0, firstComma).trim() : raw.trim() || 'Customer';
+  const streetAndCity   = firstComma !== -1 ? raw.slice(firstComma + 1).trim() : '';
+
   const address = {
-    name:    order.shipping_address || 'Customer',
-    address: order.shipping_address || '',
+    name:    customerName,
+    address: streetAndCity,
     city:    order.city || '',
     phone:   '',
   };
