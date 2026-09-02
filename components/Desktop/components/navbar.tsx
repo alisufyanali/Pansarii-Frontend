@@ -53,15 +53,15 @@ const GRID = "grid grid-cols-[auto_minmax(280px,480px)_auto] items-center gap-x-
 
 // ── component ─────────────────────────────────────────────────────────────────
 
-export default function Navbar() {
+export default function Navbar({ onCartOpen }: { onCartOpen?: () => void }) {
   return (
     <Suspense fallback={<div className="h-32 bg-white" />}>
-      <NavbarContent />
+      <NavbarContent onCartOpen={onCartOpen} />
     </Suspense>
   );
 }
 
-function NavbarContent() {
+function NavbarContent({ onCartOpen }: { onCartOpen?: () => void }) {
   const router       = useRouter();
   const pathname     = usePathname();
   const searchParams = useSearchParams();
@@ -248,9 +248,11 @@ function NavbarContent() {
                   )
                 )}
 
-                <Link href="/cart"
+                <button
+                  onClick={() => onCartOpen?.()}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition group relative"
-                  aria-label="Shopping Cart">
+                  aria-label="Shopping Cart"
+                >
                   <div className="relative">
                     <FaShoppingCart className="w-4 h-4 text-gray-600 group-hover:text-green-700 transition" />
                     {cartCount > 0 && (
@@ -265,7 +267,7 @@ function NavbarContent() {
                       <span className="text-[11px] text-gray-500">PKR {cartTotal.toLocaleString()}</span>
                     )}
                   </div>
-                </Link>
+                </button>
 
               </div>
             </div>
