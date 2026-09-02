@@ -59,3 +59,23 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
     />
   );
 }
+
+/** Self-fetching wrapper for pages that do not receive homepage data from a parent. */
+export function FeaturedProductsLoader() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { useState, useEffect } = require('react') as typeof import('react');
+  const [products, setProducts] = useState<ApiProduct[] | undefined>(undefined);
+
+  useEffect(() => {
+    let active = true;
+    // Re-use the homepage endpoint so we don't add a separate API call
+    import('@/lib/homepage').then(({ getHomepageData }) =>
+      getHomepageData().then(data => {
+        if (active) setProducts(data.featured_products ?? []);
+      })
+    );
+    return () => { active = false; };
+  }, []);
+
+  return <FeaturedProducts products={products} />;
+}
