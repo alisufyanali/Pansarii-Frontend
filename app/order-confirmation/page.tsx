@@ -37,14 +37,30 @@ function toInvoiceData(order: ApiOrder): InvoiceData {
   // Split on the first comma to recover the customer name separately from the address.
   const raw = order.shipping_address || '';
   const firstComma = raw.indexOf(',');
-  const customerName    = firstComma !== -1 ? raw.slice(0, firstComma).trim() : raw.trim() || 'Customer';
-  const streetAndCity   = firstComma !== -1 ? raw.slice(firstComma + 1).trim() : '';
+
+  // Prefer the explicitly persisted customer name (guest orders save it as _customer_name).
+  // Fall back to splitting shipping_address for older orders that don't have it.
+  const customerName =
+    order._customer_name?.trim() ||
+    (firstComma !== -1 ? raw.slice(0, firstComma).trim() : raw.trim()) ||
+    'Customer';
+
+  const streetAndCity = firstComma !== -1 ? raw.slice(firstComma + 1).trim() : '';
+
+  // Phone — persisted from guest checkout, not returned by API
+  const phone = order._customer_phone || '';
+
+  // Email and order note — persisted from guest checkout
+  const customerEmail = order._customer_email || '';
+  const orderNote     = order._order_note || (typeof order.order_note === 'string' ? order.order_note : '') || '';
 
   const address = {
     name:    customerName,
     address: streetAndCity,
     city:    order.city || '',
-    phone:   '',
+    phone,
+    email:        customerEmail || undefined,
+    deliveryNote: orderNote     || undefined,
   };
   return {
     orderId:           String(order.order_number),
