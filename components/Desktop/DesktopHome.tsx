@@ -18,6 +18,7 @@ const SolutionBar     = dynamic(() => import("./Sections/SolutionBar"), { ssr: f
 const CategoryProductsSection = dynamic(() => import("./Sections/CategoryProductsSection"), { ssr: false });
 const Category        = dynamic(() => import("./Sections/Category"), { ssr: false });
 const NewArrivals     = dynamic(() => import("./Sections/NewArrivals"), { ssr: false });
+const FeaturedProducts = dynamic(() => import("./Sections/FeaturedProducts"), { ssr: false });
 const BeautyCorner    = dynamic(() => import("./Sections/BeautyCorner"), { ssr: false });
 const PansariInn      = dynamic(() => import("./Sections/Pureinnoils"), { ssr: false });
 const ComboDeal       = dynamic(() => import("./Sections/ComboDeal"), { ssr: false });
@@ -46,6 +47,7 @@ export default function DesktopHome() {
       <SolutionBar />
       <Category />
       <NewArrivals products={homepageData.new_arrivals} />
+      <FeaturedProducts products={homepageData.featured_products} />
       <Suspense fallback={null}>
         <CategoryProductsSection data={homepageData.category_products} />
       </Suspense>

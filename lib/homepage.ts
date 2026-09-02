@@ -15,7 +15,7 @@ export interface HomepageData {
   banners: ApiSlide[];
   categories: ApiCategory[];
   category_products: HomepageCategorySection[];
-  featured_products: ApiProduct[];
+  featured_products?: ApiProduct[];
   video_products: ApiProduct[];
   reviews: HomepageReview[];
   blogs: ApiBlog[];
@@ -28,7 +28,7 @@ export const EMPTY_HOMEPAGE: HomepageData = {
   banners: [],
   categories: [],
   category_products: [],
-  featured_products: [],
+  featured_products: undefined,
   video_products: [],
   reviews: [],
   blogs: [],
@@ -42,13 +42,11 @@ export async function getHomepageData(): Promise<HomepageData> {
     return {
       ...EMPTY_HOMEPAGE,
       ...data,
-      new_arrivals: data.new_arrivals ?? [],
+      new_arrivals:     data.new_arrivals     ?? [],
+      featured_products: data.featured_products ?? [],
     };
   } catch (err) {
-    // Use console.error so homepage data failures are always visible,
-    // not just in development. Silent warn makes it impossible to debug
-    // why reviews/banners/etc aren't loading in production.
     console.error('[homepage] getHomepageData failed, falling back to empty:', err);
-    return { ...EMPTY_HOMEPAGE, new_arrivals: [] };
+    return { ...EMPTY_HOMEPAGE, new_arrivals: [], featured_products: [] };
   }
 }

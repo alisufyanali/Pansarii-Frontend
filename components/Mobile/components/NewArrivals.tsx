@@ -8,19 +8,19 @@ import { apiProductToLegacy } from '@/types/product';
 import ProductDetailsModal from '@/components/Desktop/components/ProductDetailsModal';
 import type { ApiProduct, Product } from '@/types/product';
 
-interface MobileFeaturedProductsProps {
+interface MobileNewArrivalsProps {
   /**
-   * Products from data.featured_products in the /api/homepage response.
+   * Products from data.new_arrivals in the /api/homepage response.
    * undefined = loading (show skeleton), [] = none (render nothing).
    */
   products: ApiProduct[] | undefined;
 }
 
-function FeaturedSkeleton() {
+function NewArrivalsSkeleton() {
   return (
     <section className="py-4">
       <div className="px-4 mb-3">
-        <div className="h-4 w-40 bg-gray-200 rounded animate-pulse" />
+        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
       </div>
       <div className="flex gap-3 pl-4 pr-8">
         {[...Array(3)].map((_, i) => (
@@ -35,13 +35,13 @@ function FeaturedSkeleton() {
   );
 }
 
-export default function MobileFeaturedProducts({ products }: MobileFeaturedProductsProps) {
+export default function MobileNewArrivals({ products }: MobileNewArrivalsProps) {
   const router     = useRouter();
   const sliderRef  = useRef<HTMLDivElement>(null);
   const isHovering = useRef(false);
   const [modal, setModal] = useState<Product | null>(null);
 
-  // Auto-slide every 3 s
+  // Auto-slide every 3 s — mirrors the mobile FeaturedProducts behaviour
   useEffect(() => {
     if (!products || products.length === 0) return;
     const t = setInterval(() => {
@@ -52,7 +52,7 @@ export default function MobileFeaturedProducts({ products }: MobileFeaturedProdu
       if (atEnd) {
         el.scrollLeft = 0;
       } else {
-        const card = el.querySelector('.feat-card') as HTMLElement;
+        const card = el.querySelector('.na-card') as HTMLElement;
         const step = card ? card.offsetWidth + 12 : 260;
         el.scrollLeft += step;
       }
@@ -60,7 +60,7 @@ export default function MobileFeaturedProducts({ products }: MobileFeaturedProdu
     return () => clearInterval(t);
   }, [products]);
 
-  if (products === undefined) return <FeaturedSkeleton />;
+  if (products === undefined) return <NewArrivalsSkeleton />;
   if (products.length === 0) return null;
 
   const legacyProducts: Product[] = products.map(apiProductToLegacy);
@@ -70,10 +70,12 @@ export default function MobileFeaturedProducts({ products }: MobileFeaturedProdu
 
       {/* Header */}
       <div className="px-4 mb-3 flex items-center justify-between">
-        <h2 className="text-base font-bold text-gray-900">Featured Products</h2>
+        <h2 className="text-base font-bold text-gray-900">
+          New <span className="text-amber-500">Arrivals</span>
+        </h2>
         <button
           type="button"
-          onClick={() => router.push('/shop?featured=true')}
+          onClick={() => router.push('/newarrival')}
           className="text-xs font-semibold text-green-700 hover:text-green-600 transition"
         >
           View All →
@@ -92,7 +94,7 @@ export default function MobileFeaturedProducts({ products }: MobileFeaturedProdu
         {legacyProducts.map((product, index) => (
           <div
             key={product.id}
-            className="feat-card flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+            className="na-card flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
             style={{ width: '65vw' }}
             onClick={() => { if (product.slug) router.push(`/${product.slug}`); }}
           >

@@ -19,12 +19,12 @@ const CategoryProductsSection = dynamic(
   { ssr: false },
 );
 
-const Categories = dynamic(() => import('./components/categories'), { ssr: false });
-
-const MobileVideoProducts = dynamic(() => import('./components/VideoProducts'), { ssr: false });
-const MobileComboDeal = dynamic(() => import('./components/ComboDeal'), { ssr: false });
-const MobileReviews = dynamic(() => import('./components/Reviews'), { ssr: false });
-const MobileBlogSection = dynamic(() => import('./components/BlogSection'), { ssr: false });
+const Categories             = dynamic(() => import('./components/categories'),       { ssr: false });
+const MobileNewArrivals      = dynamic(() => import('./components/NewArrivals'),      { ssr: false });
+const MobileFeaturedProducts = dynamic(() => import('./components/FeaturedProducts'), { ssr: false });
+const MobileVideoProducts    = dynamic(() => import('./components/VideoProducts'),    { ssr: false });
+const MobileReviews          = dynamic(() => import('./components/Reviews'),          { ssr: false });
+const MobileBlogSection      = dynamic(() => import('./components/BlogSection'),      { ssr: false });
 
 export default function MobileHome() {
   const [homepageData, setHomepageData] = useState<HomepageData>(EMPTY_HOMEPAGE);
@@ -44,11 +44,16 @@ export default function MobileHome() {
       </Suspense>
       <SolutionBar />
       <Categories />
+
+      {/* New Arrivals — from /homepage new_arrivals field */}
+      <MobileNewArrivals products={homepageData.new_arrivals} />
+
+      {/* Featured Products — from /homepage featured_products field */}
+      <MobileFeaturedProducts products={homepageData.featured_products} />
+
       <Suspense fallback={null}>
         <CategoryProductsSection variant="mobile" data={homepageData.category_products} />
       </Suspense>
-      {/* <ShopProducts /> */}
-      {/* <MobileComboDeal /> */}
       <Suspense fallback={null}>
         <MobileVideoProducts products={homepageData.video_products} />
       </Suspense>
