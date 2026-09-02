@@ -20,16 +20,36 @@ interface MobileNewArrivalsProps {
 function NewArrivalsSkeleton() {
   return (
     <section className="py-4">
-      <div className="px-4 mb-3">
+      {/* Header — matches real: flex justify-between with title + "View All" button */}
+      <div className="px-4 mb-3 flex items-center justify-between">
         <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+        <div className="h-3.5 w-14 bg-gray-200 rounded animate-pulse" />
       </div>
-      <div className="flex gap-3 pl-4 pr-8">
+      {/* Slider — matches real: flex gap-3 overflow-x-auto no-scrollbar pl-4 pr-8 */}
+      <div className="flex gap-3 overflow-x-auto no-scrollbar pl-4 pr-8">
         {[...Array(3)].map((_, i) => (
           <div
             key={i}
-            className="flex-shrink-0 bg-gray-100 rounded-2xl animate-pulse h-24"
+            className="na-card flex-shrink-0 bg-white rounded-2xl border border-gray-100 animate-pulse"
             style={{ width: '65vw' }}
-          />
+          >
+            {/* Inner layout matches: flex items-center p-3 gap-3 */}
+            <div className="flex items-center p-3 gap-3">
+              {/* Product image: w-20 h-20 rounded-xl */}
+              <div className="w-20 h-20 flex-shrink-0 bg-gray-200 rounded-xl" />
+              {/* Text column */}
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="h-3 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <div className="h-3 bg-gray-200 rounded w-2/3" />
+                {/* Price row with add button */}
+                <div className="flex items-center justify-between mt-1">
+                  <div className="h-4 bg-gray-200 rounded w-1/3" />
+                  <div className="w-7 h-7 bg-gray-200 rounded-full flex-shrink-0" />
+                </div>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </section>

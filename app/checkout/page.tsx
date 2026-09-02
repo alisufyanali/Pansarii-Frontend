@@ -458,8 +458,99 @@ export default function CheckoutPage() {
   // ── Show loading while auth or cart resolves ─────────────────────────────
   if (authLoading || (checkoutMode === 'auth' && isCartLoading)) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-700" />
+      <div className="min-h-screen bg-gray-50">
+        {/* Breadcrumb placeholder */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-5xl mx-auto px-4 py-3">
+            <div className="h-3.5 w-48 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+
+        <div className="max-w-5xl mx-auto px-4 py-6">
+          {/* Page heading */}
+          <div className="h-7 w-36 bg-gray-200 rounded animate-pulse mb-6" />
+
+          {/* Two-column layout — matches real: grid-cols-1 lg:grid-cols-[1fr_360px] */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px] gap-6">
+
+            {/* ── LEFT: form panels ── */}
+            <div className="space-y-4">
+              {/* Contact info card */}
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-pulse">
+                <div className="h-4 w-40 bg-gray-200 rounded mb-4" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2 h-10 bg-gray-200 rounded-lg" />
+                  <div className="h-10 bg-gray-200 rounded-lg" />
+                  <div className="h-10 bg-gray-200 rounded-lg" />
+                </div>
+              </div>
+
+              {/* Shipping address card */}
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-pulse">
+                <div className="h-4 w-36 bg-gray-200 rounded mb-4" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="h-10 bg-gray-200 rounded-lg" />
+                  <div className="h-10 bg-gray-200 rounded-lg" />
+                  {/* Order note */}
+                  <div className="sm:col-span-2 h-16 bg-gray-200 rounded-lg" />
+                </div>
+              </div>
+
+              {/* Payment method card */}
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-pulse">
+                <div className="h-4 w-32 bg-gray-200 rounded mb-4" />
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100">
+                      <div className="w-5 h-5 rounded-full bg-gray-200 flex-shrink-0" />
+                      <div className="h-4 bg-gray-200 rounded w-32" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ── RIGHT: order summary ── */}
+            <div className="lg:sticky lg:top-6 h-fit">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-pulse">
+                <div className="h-4 w-28 bg-gray-200 rounded mb-4" />
+
+                {/* Cart item rows */}
+                <div className="space-y-3 mb-4">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="flex gap-3">
+                      <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 bg-gray-200 rounded w-3/4" />
+                        <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      </div>
+                      <div className="h-4 w-16 bg-gray-200 rounded flex-shrink-0" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Totals */}
+                <div className="border-t border-gray-100 pt-3 space-y-2.5 mb-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex justify-between">
+                      <div className="h-3.5 bg-gray-200 rounded w-20" />
+                      <div className="h-3.5 bg-gray-200 rounded w-16" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA button — py-3 matches real */}
+                <div className="h-12 w-full bg-gray-200 rounded-full" />
+
+                {/* Trust badge row */}
+                <div className="mt-3 flex justify-center">
+                  <div className="h-3 w-44 bg-gray-200 rounded" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
     );
   }

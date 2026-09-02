@@ -27,19 +27,55 @@ function mapApiProducts(data: Awaited<ReturnType<typeof getProducts>>['data']): 
 function GridSkeleton() {
   return (
     <>
+      {/* Mobile: 2-col grid — 10 cards matches productsPerPage=10 at <768px */}
       <div className="grid grid-cols-2 gap-3 sm:hidden">
-        {[...Array(6)].map((_, i) => (
+        {[...Array(10)].map((_, i) => (
           <div key={i} className="bg-white rounded-xl border border-gray-100 animate-pulse">
+            {/* h-36 matches MobileProductCard image area */}
             <div className="h-36 bg-gray-200 rounded-t-xl" />
-            <div className="p-2.5 space-y-2">
+            <div className="p-2.5 space-y-1.5">
+              {/* name line-clamp-2 */}
               <div className="h-3 bg-gray-200 rounded w-3/4" />
               <div className="h-3 bg-gray-200 rounded w-1/2" />
+              {/* price + quick-add row */}
+              <div className="flex items-center justify-between mt-2">
+                <div className="h-4 bg-gray-200 rounded w-1/3" />
+                <div className="w-7 h-7 bg-gray-200 rounded-full" />
+              </div>
             </div>
           </div>
         ))}
       </div>
-      <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+
+      {/* sm–lg (768–1279px): 12 cards = 3 rows × 4 cols — matches productsPerPage=12 */}
+      <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 xl:hidden">
         {[...Array(12)].map((_, i) => (
+          <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
+            <div className="aspect-square bg-gray-200 rounded-t-lg" />
+            <div className="p-3 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-8 bg-gray-200 rounded mt-2" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* xl–2xl (1280–2559px): 20 cards = 5 rows × 4 cols — matches productsPerPage=20 */}
+      <div className="hidden xl:grid xl:grid-cols-4 gap-4 lg:gap-6 2xl:hidden">
+        {[...Array(20)].map((_, i) => (
+          <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
+            <div className="aspect-square bg-gray-200 rounded-t-lg" />
+            <div className="p-3 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-8 bg-gray-200 rounded mt-2" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ≥2560px: 25 cards — matches productsPerPage=25 */}
+      <div className="hidden 2xl:grid 2xl:grid-cols-4 gap-6">
+        {[...Array(25)].map((_, i) => (
           <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
             <div className="aspect-square bg-gray-200 rounded-t-lg" />
             <div className="p-3 space-y-2">

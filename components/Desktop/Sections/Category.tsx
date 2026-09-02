@@ -15,9 +15,10 @@ const FALLBACK_COLORS = [
 function CategorySkeleton() {
   return (
     <div className="flex flex-col items-center w-full animate-pulse">
-      {/* Image skeleton — match actual: w-[75%], centered, aspect-auto feel */}
-      <div className="w-[75%] h-[120px] bg-gray-200 rounded mt-4" />
-      {/* Label skeleton — match actual: w-full, h-[50px], centered text */}
+      {/* Image skeleton — aspect-[17/12] matches the real Image width=170 height=120.
+          w-[75%] + aspect-ratio prevents height from changing when real image loads. */}
+      <div className="w-[75%] aspect-[17/12] bg-gray-200 rounded mt-4" />
+      {/* Label skeleton — same h-[50px] as the real label div */}
       <div className="w-full h-[50px] bg-gray-100 rounded mt-2" />
     </div>
   );
