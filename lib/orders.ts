@@ -46,13 +46,17 @@ export interface ApiOrder {
   account_created?: boolean;
   /**
    * Courier tracking payload — currently always null in the API response.
-   * Shape is unknown until a courier integration (e.g. Movex/PostEx/Leopard)
-   * populates it. Typed as unknown until the backend defines and documents
-   * this field's structure.
    */
   tracking?: unknown;
   created_at: string;
   items?: ApiOrderItem[];
+  // ── Persisted locally for guest orders (not returned by API) ──────────────
+  // Saved into sessionStorage at checkout so the confirmation page can display
+  // customer name/email/phone/note without an extra API call.
+  _customer_name?:  string;
+  _customer_email?: string;
+  _customer_phone?: string;
+  _order_note?:     string;
 }
 
 export interface ApiOrderItem {

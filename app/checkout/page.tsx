@@ -353,6 +353,12 @@ export default function CheckoutPage() {
 
         sessionStorage.setItem('last-guest-order', JSON.stringify({
           ...order,
+          // Persist customer info since the API response doesn't echo it back.
+          // Used by the order-confirmation page to display name/email/phone/note.
+          _customer_name:  guestName.trim(),
+          _customer_email: guestEmail.trim(),
+          _customer_phone: guestPhone,
+          _order_note:     orderNote || undefined,
           // Persist cart items in the session so the confirmation page can show
           // them even though the order-creation response doesn't include items.
           // This must be stored BEFORE clearCart() is called.
