@@ -208,7 +208,7 @@ export default function ProductDetailsSection({
   // Tier 2 — Named flat: variants have no attributes but have a non-blank name
   // Tier 3 — Price-only: variants have neither (e.g. Ginger Oil — price+unit only)
   const richVariants = ((product as unknown as { variants?: Array<{
-    id: number; name: string; price: number; is_default?: boolean;
+    id: number; name: string; price: number; stock: number; is_default?: boolean;
     attributes?: Record<string, string>; unit?: string; final_price?: number;
   }> })?.variants ?? []);
 
