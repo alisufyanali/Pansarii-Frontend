@@ -2,7 +2,7 @@
 'use client';
 
 import { Suspense, useState, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { toast } from 'react-toastify';
@@ -53,7 +53,6 @@ interface LoginFields {
 // ─── Content ──────────────────────────────────────────────────────────────────
 
 function LoginPageContent() {
-  const router       = useRouter();
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -67,32 +66,37 @@ function LoginPageContent() {
   // When true, the mount-guard effect below must not fire a competing redirect.
   const hasNavigatedRef = useRef(false);
 
-  // Guard: redirect away from /login ONLY if the user was already authenticated
-  // before this render (e.g. manually navigated to /login while logged in).
-  // Does NOT run after a fresh login — handleSubmit owns that redirect to
-  // avoid a double-navigation race condition.
-  //
-  // NOTE: `router` is intentionally excluded from the dependency array.
-  // The Next.js App Router returns a new router object reference on every
-  // render, so including it would cause this effect to re-run after every
-  // state update (e.g. setApiError, setIsLoading) — which can trigger a
-  // spurious router.replace when a stale localStorage token makes
-  // isAuthenticated briefly true, producing the "auto-refresh on bad
-  // credentials" symptom.
-  useEffect(() => {
-    if (!authLoading && isAuthenticated && !hasNavigatedRef.current) {
-      const raw      = searchParamsRef.current.get('returnTo') ?? '/';
-      const returnTo = safeReturnTo(raw);
-      router.replace(returnTo);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, authLoading]);
-
+  // ── All useState hooks declared unconditionally before any early return ─────
   const [formData, setFormData] = useState<LoginFields>({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading,    setIsLoading]    = useState(false);
   const [apiError,     setApiError]     = useState('');
   const [fieldErrors,  setFieldErrors]  = useState<Partial<LoginFields>>({});
+
+  // Guard: redirect away from /login if the user is already authenticated.
+  // Does NOT run after a fresh login — handleSubmit owns that redirect.
+  //
+  // Uses window.location.replace (hard navigation) instead of router.replace
+  // because router.replace is a no-op when called during the first post-Suspense
+  // render commit before the App Router is fully hydrated on the client.
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && !hasNavigatedRef.current) {
+      const raw      = searchParamsRef.current.get('returnTo') ?? '/';
+      const returnTo = safeReturnTo(raw);
+      window.location.replace(returnTo);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, authLoading]);
+
+  // While auth is resolving OR once confirmed authenticated (redirect imminent),
+  // render only the spinner so the login form never flashes.
+  if (authLoading || isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700" />
+      </div>
+    );
+  }
 
   // ── Client validation ───────────────────────────────────────────────────────
   const validate = (): boolean => {
