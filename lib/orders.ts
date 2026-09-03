@@ -57,6 +57,10 @@ export interface ApiOrder {
   _customer_email?: string;
   _customer_phone?: string;
   _order_note?:     string;
+  // ── Returned by API for authenticated orders ───────────────────────────────
+  customer_name?:  string | null;
+  customer_email?: string | null;
+  customer_phone?: string | null;
 }
 
 export interface ApiOrderItem {

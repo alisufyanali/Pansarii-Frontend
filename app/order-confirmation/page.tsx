@@ -33,32 +33,46 @@ function estimatedDelivery(createdAt: string): string {
 }
 
 function toInvoiceData(order: ApiOrder): InvoiceData {
-  // shipping_address is stored as "Name, Street Address, City" (joined at checkout).
-  // Split on the first comma to recover the customer name separately from the address.
+  // ── Customer name ──────────────────────────────────────────────────────────
+  // Priority:
+  //   1. API field customer_name  — auth orders (backend now returns this)
+  //   2. _customer_name           — guest orders (saved to sessionStorage at checkout)
+  //   3. First segment of shipping_address before the first comma (legacy fallback)
+  //   4. Literal 'Customer' if all else is empty
   const raw = order.shipping_address || '';
   const firstComma = raw.indexOf(',');
+  const nameFromAddress = firstComma !== -1 ? raw.slice(0, firstComma).trim() : raw.trim();
+  const streetAndCity   = firstComma !== -1 ? raw.slice(firstComma + 1).trim() : '';
 
-  // Prefer the explicitly persisted customer name (guest orders save it as _customer_name).
-  // Fall back to splitting shipping_address for older orders that don't have it.
   const customerName =
-    order._customer_name?.trim() ||
-    (firstComma !== -1 ? raw.slice(0, firstComma).trim() : raw.trim()) ||
+    order.customer_name?.trim()  ||   // ← API field (auth orders)
+    order._customer_name?.trim() ||   // ← sessionStorage field (guest orders)
+    nameFromAddress               ||
     'Customer';
 
-  const streetAndCity = firstComma !== -1 ? raw.slice(firstComma + 1).trim() : '';
+  // ── Phone ──────────────────────────────────────────────────────────────────
+  const phone =
+    order.customer_phone?.trim()  ||  // ← API field (auth orders)
+    order._customer_phone?.trim() ||  // ← sessionStorage field (guest orders)
+    '';
 
-  // Phone — persisted from guest checkout, not returned by API
-  const phone = order._customer_phone || '';
+  // ── Email ──────────────────────────────────────────────────────────────────
+  const customerEmail =
+    order.customer_email?.trim()  ||  // ← API field (auth orders)
+    order._customer_email?.trim() ||  // ← sessionStorage field (guest orders)
+    '';
 
-  // Email and order note — persisted from guest checkout
-  const customerEmail = order._customer_email || '';
-  const orderNote     = order._order_note || (typeof order.order_note === 'string' ? order.order_note : '') || '';
+  // ── Order note ────────────────────────────────────────────────────────────
+  const orderNote =
+    order._order_note ||
+    (typeof order.order_note === 'string' ? order.order_note : '') ||
+    '';
 
   const address = {
     name:    customerName,
     address: streetAndCity,
     city:    order.city || '',
-    phone,
+    phone:        phone         || undefined,
     email:        customerEmail || undefined,
     deliveryNote: orderNote     || undefined,
   };
