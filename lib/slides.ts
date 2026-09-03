@@ -44,9 +44,9 @@ export const DEFAULT_SLIDES: BannerSlide[] = [
 
 /** Mobile fallback banners */
 export const DEFAULT_MOBILE_SLIDES: BannerSlide[] = [
-  { id: 1, image: '/images/Banner.png',  title: 'Premium Ayurvedic', subtitle: 'Natural & Organic', link: '/shop'       },
-  { id: 2, image: '/images/Banner2.png', title: 'Summer Sale',       subtitle: 'Up to 50% OFF',    link: '/offers'     },
-  { id: 3, image: '/images/Banner3.png', title: 'New Collection',    subtitle: 'Fresh Arrivals',   link: '/newarrival' },
+  { id: 1, image: '/images/Banner.png',  title: '', subtitle: '', link: '/shop'       },
+  { id: 2, image: '/images/Banner2.png', title: '',       subtitle: '',    link: '/offers'     },
+  { id: 3, image: '/images/Banner3.png', title: '',    subtitle: '',   link: '/newarrival' },
 ];
 
 export function mapApiSlideToBanner(slide: ApiSlide): BannerSlide {
