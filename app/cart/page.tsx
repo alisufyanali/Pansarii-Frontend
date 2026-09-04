@@ -102,7 +102,8 @@ function CartContent() {
         </h1>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-[4%] pb-12">
+      {/* pb-24 on mobile clears the fixed BottomNav; sm:pb-12 on larger screens */}
+      <div className="max-w-[1600px] mx-auto px-[4%] pb-24 sm:pb-12">
 
         {/* ── EMPTY STATE ── */}
         {cartItems.length === 0 ? (
@@ -122,6 +123,15 @@ function CartContent() {
 
             {/* ── LEFT: Cart items ── */}
             <div className="flex flex-col gap-3">
+
+              {/* Mobile: show validation warning at the top of the items column
+                  so it's immediately visible without scrolling to the summary */}
+              {warnings.size > 0 && (
+                <div className="sm:hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 flex items-center gap-2">
+                  <FaExclamationTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                  Some items were updated due to stock changes. Please review before checking out.
+                </div>
+              )}
 
               {/* Free shipping progress bar */}
               {getCartTotal() < 5000 && (
