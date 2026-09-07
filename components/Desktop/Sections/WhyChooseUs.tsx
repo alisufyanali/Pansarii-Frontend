@@ -51,6 +51,55 @@ const reasons: Reason[] = [
   },
 ];
 
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// Matches the real section's height/layout so there's no CLS when the
+// lazy-loaded bundle arrives. Uses the same py-14 + 3-col grid structure.
+export function WhyChooseUsSkeleton() {
+  return (
+    <section className="w-full bg-white py-14 px-4 animate-pulse">
+      {/* Heading placeholder */}
+      <div className="flex justify-center mb-12">
+        <div className="h-8 w-72 bg-gray-200 rounded" />
+      </div>
+
+      {/* 3-col grid: left cards | center image | right cards */}
+      <div className="max-w-6xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-x-8 gap-y-10">
+
+        {/* Left column — 3 card placeholders */}
+        <div className="flex flex-col gap-10">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-start gap-3 max-w-xs ml-auto flex-row-reverse">
+              <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0" />
+              <div className="space-y-2 flex-1">
+                <div className="h-3.5 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-full" />
+                <div className="h-3 bg-gray-200 rounded w-4/5" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Center image placeholder — w-56 h-56 matches real Image */}
+        <div className="w-56 h-56 sm:w-64 sm:h-64 rounded-full bg-gray-200 flex-shrink-0" />
+
+        {/* Right column — 3 card placeholders */}
+        <div className="flex flex-col gap-10">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-start gap-3 max-w-xs">
+              <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0" />
+              <div className="space-y-2 flex-1">
+                <div className="h-3.5 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-full" />
+                <div className="h-3 bg-gray-200 rounded w-4/5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function WhyChooseUs() {
   return (
     <section className="w-full bg-white py-14 px-4">

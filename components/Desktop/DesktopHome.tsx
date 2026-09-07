@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { Suspense, useEffect, useState } from 'react';
 
 import { getHomepageData, EMPTY_HOMEPAGE, type HomepageData } from '@/lib/homepage';
+import { WhyChooseUsSkeleton } from './Sections/WhyChooseUs';
 
 const Banner = dynamic(() => import("./Sections/Banner"), { ssr: false });
 
@@ -26,7 +27,6 @@ const VideoProducts   = dynamic(() => import("./Sections/VideoProducts"), { ssr:
 const Review          = dynamic(() => import("./Sections/Review"), { ssr: false });
 const Blog            = dynamic(() => import("./Sections/Blog"), { ssr: false });
 const WhyChooseUs     = dynamic(() => import("./Sections/WhyChooseUs"));
-
 
 export default function DesktopHome() {
   const [homepageData, setHomepageData] = useState<HomepageData>(EMPTY_HOMEPAGE);
@@ -57,7 +57,9 @@ export default function DesktopHome() {
       <Suspense fallback={null}>
         <VideoProducts products={homepageData.video_products} />
       </Suspense>
-      <WhyChooseUs />
+      <Suspense fallback={<WhyChooseUsSkeleton />}>
+        <WhyChooseUs />
+      </Suspense>
       <Suspense fallback={null}>
         <Review reviews={homepageData.reviews} />
       </Suspense>
