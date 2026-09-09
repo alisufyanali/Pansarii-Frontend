@@ -152,6 +152,12 @@ function PaymentBadge({ method }: { method: string }) {
   );
 }
 
+const LABEL: React.CSSProperties = {
+  fontWeight: 700,
+  color: '#6b7280',
+  marginRight: 6,
+};
+
 function AddressCard({ title, addr, note }: { title: string; addr: AddressBlock; note?: string }) {
   return (
     <div>
@@ -162,16 +168,35 @@ function AddressCard({ title, addr, note }: { title: string; addr: AddressBlock;
       }}>
         {title}
       </p>
-      <p style={{ fontWeight: 700, fontSize: 13, color: '#111827', margin: '0 0 3px' }}>
-        {addr.name}
-      </p>
-      <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.65, margin: 0 }}>
-        {addr.address}<br />
-        {addr.city}{addr.postalCode ? `, ${addr.postalCode}` : ''}
-        {addr.phone    && <><br />{addr.phone}</>}
-        {addr.email    && <><br />{addr.email}</>}
+      <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.75, margin: 0 }}>
+        <span style={{ display: 'block', fontWeight: 700, fontSize: 13, color: '#111827', marginBottom: 2 }}>
+          <span style={LABEL}>Name:</span>{addr.name}
+        </span>
+        {addr.address && <><span style={LABEL}>Address:</span>{addr.address}<br /></>}
+        {addr.city && (
+          <>
+            <span style={LABEL}>City:</span>
+            {addr.city}{addr.postalCode ? `, ${addr.postalCode}` : ''}
+            <br />
+          </>
+        )}
+        {addr.phone && (
+          <>
+            <span style={LABEL}>Phone:</span>{addr.phone}<br />
+          </>
+        )}
+        {addr.email && (
+          <>
+            <span style={LABEL}>Email:</span>{addr.email}<br />
+          </>
+        )}
         {addr.deliveryNote && (
-          <><br /><em style={{ color: '#9ca3af', fontSize: 11 }}>{addr.deliveryNote}</em></>
+          <span style={{ display: 'block', marginTop: 6 }}>
+            <em style={{ color: '#9ca3af', fontSize: 11 }}>
+              <span style={{ fontWeight: 700, color: '#6b7280', marginRight: 6 }}>Delivery Note:</span>
+              {addr.deliveryNote}
+            </em>
+          </span>
         )}
       </p>
       {note && (

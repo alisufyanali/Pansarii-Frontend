@@ -294,16 +294,50 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (checkoutMode === 'guest' && !validateGuestFields()) return;
+    if (checkoutMode === 'guest' && !validateGuestFields()) {
+      // Focus + scroll to the FIRST invalid guest field in visual order: name → email → phone
+      const fieldOrder: Array<keyof GuestFields> = ['name', 'email', 'phone'];
+      const firstBad = fieldOrder.find((f) => !!guestFieldErrors[f]);
+      if (firstBad) {
+        setTimeout(() => {
+          const selector =
+            firstBad === 'phone'
+              ? 'input[name="guest_phone"]'
+              : `[name="guest_${firstBad}"]`;
+          const el = document.querySelector(selector) as HTMLElement | null;
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if ('focus' in el && typeof (el as HTMLElement).focus === 'function') {
+              (el as HTMLElement).focus();
+            }
+          }
+        }, 50);
+      }
+      return;
+    }
 
     if (checkoutMode === 'auth') {
+      let phoneInvalid = false;
       if (!phoneValue) {
         setAuthPhoneError('Phone number is required');
-        return;
+        phoneInvalid = true;
+      } else {
+        const cleanPhone = phoneValue.replace(/[\s\-\(\)]/g, '');
+        if (!/^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
+          setAuthPhoneError('Please enter a valid Pakistani mobile number (e.g. 03XXXXXXXXX)');
+          phoneInvalid = true;
+        }
       }
-      const cleanPhone = phoneValue.replace(/[\s\-\(\)]/g, '');
-      if (!/^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
-        setAuthPhoneError('Please enter a valid Pakistani mobile number (e.g. 03XXXXXXXXX)');
+      if (phoneInvalid) {
+        setTimeout(() => {
+          const phoneInput = document.querySelector(
+            '.PhoneInputInput[name="phone"], .PhoneInputInput',
+          ) as HTMLElement | null;
+          phoneInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (phoneInput && 'focus' in phoneInput && typeof phoneInput.focus === 'function') {
+            phoneInput.focus();
+          }
+        }, 50);
         return;
       }
     }
@@ -311,9 +345,19 @@ export default function CheckoutPage() {
     // City is required — show inline error if not selected
     if (!selectedCityId) {
       setSubmitError('Please select a city to calculate shipping charges before placing your order.');
-      // Scroll the city select into view
-      const cityEl = document.querySelector('[name="city"]') as HTMLElement | null;
-      cityEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Scroll + focus the visible city combobox input (not the hidden one)
+      setTimeout(() => {
+        const cityWrap = document.querySelector('[name="city"]') as HTMLElement | null;
+        const cityInput =
+          (cityWrap?.parentElement?.querySelector('input[type="text"]') as HTMLElement | null) ??
+          cityWrap;
+        if (cityInput) {
+          cityInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if ('focus' in cityInput && typeof cityInput.focus === 'function') {
+            cityInput.focus();
+          }
+        }
+      }, 50);
       return;
     }
 
@@ -433,16 +477,45 @@ export default function CheckoutPage() {
             });
             if (Object.keys(knownFields).length) {
               setGuestFieldErrors(knownFields);
-              // Scroll the first invalid field into view so the user can see it.
-              const firstField = Object.keys(knownFields)[0];
-              const fieldEl = document.querySelector(`[name="guest_${firstField}"]`) as HTMLElement | null;
-              fieldEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // Scroll + focus the FIRST invalid guest field in visual order: name → email → phone
+              const fieldOrder: Array<keyof GuestFields> = ['name', 'email', 'phone'];
+              const firstBad = fieldOrder.find((f) => !!knownFields[f]);
+              if (firstBad) {
+                setTimeout(() => {
+                  let el: HTMLElement | null = null;
+                  if (firstBad === 'phone') {
+                    const phoneWrap = document.querySelector('[name="guest_phone"]') as HTMLElement | null;
+                    el = (phoneWrap?.closest('.PhoneInput')?.querySelector('.PhoneInputInput') as HTMLElement | null) ?? phoneWrap;
+                  } else {
+                    el = document.querySelector(`[name="guest_${firstBad}"]`) as HTMLElement | null;
+                  }
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if ('focus' in el && typeof el.focus === 'function') {
+                      el.focus();
+                    }
+                  }
+                }, 50);
+              }
             }
           }
         } else {
           // Auth mode — try to surface phone field error inline if backend returns it.
           const fields = extractFieldErrors<{ phone?: string }>(err);
-          if (fields.phone) setAuthPhoneError(fields.phone);
+          if (fields.phone) {
+            setAuthPhoneError(fields.phone);
+            setTimeout(() => {
+              const phoneInput = document.querySelector(
+                '.PhoneInputInput[name="phone"], .PhoneInputInput',
+              ) as HTMLElement | null;
+              if (phoneInput) {
+                phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if ('focus' in phoneInput && typeof phoneInput.focus === 'function') {
+                  phoneInput.focus();
+                }
+              }
+            }, 50);
+          }
         }
         // Don't set submitError for 422 — the toast + inline fields are enough.
         return;
@@ -700,6 +773,7 @@ export default function CheckoutPage() {
                       <PhoneInput
                         international
                         defaultCountry="PK"
+                        name="guest_phone"
                         value={guestPhone}
                         onChange={v => {
                           const val = v || '';
@@ -764,6 +838,7 @@ export default function CheckoutPage() {
                       <PhoneInput
                         international
                         defaultCountry="PK"
+                        name="phone"
                         value={phoneValue}
                         onChange={v => {
                           const val = v || '';

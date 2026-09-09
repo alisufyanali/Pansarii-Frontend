@@ -42,7 +42,7 @@ function toInvoiceData(order: ApiOrder): InvoiceData {
   const raw = order.shipping_address || '';
   const firstComma = raw.indexOf(',');
   const nameFromAddress = firstComma !== -1 ? raw.slice(0, firstComma).trim() : raw.trim();
-  const streetAndCity   = firstComma !== -1 ? raw.slice(firstComma + 1).trim() : '';
+  const streetRaw = firstComma !== -1 ? raw.slice(firstComma + 1).trim() : raw;
 
   const customerName =
     order.customer_name?.trim()  ||   // ← API field (auth orders)
@@ -68,10 +68,40 @@ function toInvoiceData(order: ApiOrder): InvoiceData {
     (typeof order.order_note === 'string' ? order.order_note : '') ||
     '';
 
+  // ── Street address ─────────────────────────────────────────────────────────
+  // The API provides a separate `order.city` field, so we must NOT duplicate
+  // the city name inside `address` (which is displayed on its own line).
+  // Strategy: strip the city name from the tail of `streetRaw` if present,
+  // then trim any trailing commas/whitespace. This avoids the invoice showing
+  // "Street, Karachi" on one line followed by "Karachi" on a duplicate line.
+  const apiCity = (order.city || '').trim();
+  let streetOnly = streetRaw.trim();
+
+  // 1. If streetRaw ends with ", CityName" — strip that trailing segment
+  if (apiCity) {
+    const trailingCommaCity = new RegExp(
+      `,\\s*${apiCity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`,
+      'i',
+    );
+    streetOnly = streetOnly.replace(trailingCommaCity, '').trim();
+    // Also strip bare trailing city name (no comma needed if it's the whole thing)
+    const bareCity = new RegExp(
+      `^${apiCity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`,
+      'i',
+    );
+    if (bareCity.test(streetOnly)) streetOnly = '';
+    // Strip trailing comma + country/region if present (e.g. ", Pakistan")
+    // — common case where backend stored "Karachi, Pakistan" as shipping_address
+    streetOnly = streetOnly.replace(/,\s*[^,]+$/, '').trim();
+  }
+
+  // 2. Cleanup any empty trailing comma artifacts
+  streetOnly = streetOnly.replace(/,\s*,/g, ',').replace(/^,|,$/g, '').trim();
+
   const address = {
     name:    customerName,
-    address: streetAndCity,
-    city:    order.city || '',
+    address: streetOnly,
+    city:    apiCity,
     phone:        phone         || undefined,
     email:        customerEmail || undefined,
     deliveryNote: orderNote     || undefined,

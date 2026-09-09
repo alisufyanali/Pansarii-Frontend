@@ -164,10 +164,20 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   const [selectedWeight, setSelectedWeight] = useState<string>(weightOptions[0] ?? '');
   const [selectedForm,   setSelectedForm]   = useState<string>(formOptions[0]   ?? '');
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState<number>(0);
   const [selectedSize,   setSelectedSize]   = useState(product.sizes?.[0] ?? '');
   const [quantity,       setQuantity]       = useState(1);
 
-  const hasRichVariants = weightOptions.length > 0;
+  // Only show the rich weight+form selector when there are genuinely multiple
+  // weight options to choose from. Single-variant products (e.g. Bay Leaf with
+  // one Weight value) must fall through to Tier 2 (hasNamedVariants) so they
+  // use matchedVariant.name ("50g") instead of the raw weight number.
+  const hasRichVariants = weightOptions.length > 1;
+
+  // Tier 2: named flat variants (no attributes, but name is populated)
+  const hasNamedVariants = !hasRichVariants && richVariants.some(v => v.name?.trim());
+  // Tier 3: price-only variants (no attributes, no names)
+  const hasPriceOnlyVariants = !hasRichVariants && !hasNamedVariants && richVariants.length > 0;
 
   // Matched variant
   const matchedVariant = hasRichVariants
@@ -178,6 +188,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           && attrs[primaryKey] === selectedWeight
           && (formOptions.length === 0 || attrs.Form === selectedForm);
       })
+    : (hasNamedVariants || hasPriceOnlyVariants)
+    ? richVariants[selectedVariantIdx]
     : richVariants.find(v => v.name === selectedSize);
 
   const displayedPrice: number =
@@ -251,8 +263,16 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     return variants.find(v => v.is_default)?.id ?? variants[0]?.id;
   };
 
+  // Label helper for Tier 3 (price-only variants): "PKR 300 / ml"
+  const priceOnlyLabel = (v: typeof richVariants[number]) =>
+    `PKR ${(v.final_price ?? v.price).toLocaleString()}${variantUnit ? ' / ' + variantUnit : ''}`;
+
   const selectedLabel = hasRichVariants
     ? [selectedWeight ? `${selectedWeight}${variantUnit ? ' ' + variantUnit : ''}` : '', selectedForm].filter(Boolean).join(' / ')
+    : hasNamedVariants
+    ? (matchedVariant?.name ?? '')
+    : hasPriceOnlyVariants
+    ? priceOnlyLabel(matchedVariant ?? richVariants[0])
     : selectedSize;
 
   const buildCartPayload = (variantId?: number) => ({
