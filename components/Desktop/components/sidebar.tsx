@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import SafeImage from '@/components/SafeImage';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishList';
@@ -333,23 +334,30 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                     {cartItems.map((item) => {
                       const isUpdating = isItemUpdating(item);
                       const discount = item.oldPrice ? Math.round((1 - item.price / item.oldPrice) * 100) : 0;
+                      const productHref = item.slug ? `/${item.slug}` : `/shop?search=${encodeURIComponent(item.nameEn)}`;
                       return (
                         <div key={`${item.id}-${item.size}`} className="flex gap-3 p-3 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                           {/* Image */}
-                          <div className="w-[70px] h-[70px] flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-50">
+                          <Link
+                            href={productHref}
+                            onClick={onClose}
+                            className="w-[70px] h-[70px] flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-50 block hover:opacity-90 transition"
+                          >
                             <SafeImage src={item.img} alt={item.nameEn} fill className="object-cover" sizes="70px" />
                             {discount > 0 && (
                               <div className="absolute top-1 left-1 bg-red-500 text-white text-[9px] font-bold px-1 rounded">
                                 -{discount}%
                               </div>
                             )}
-                          </div>
+                          </Link>
 
                           {/* Details */}
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start gap-1">
                               <div className="min-w-0">
-                                <h4 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">{item.nameEn}</h4>
+                                <Link href={productHref} onClick={onClose} className="hover:text-green-700 transition">
+                                  <h4 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 hover:text-green-700 transition">{item.nameEn}</h4>
+                                </Link>
                                 {item.size && item.size !== 'Standard' && (
                                   <span className="text-[11px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded mt-1 inline-block">{item.size}</span>
                                 )}

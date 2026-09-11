@@ -178,14 +178,18 @@ function CartContent() {
                   {cartItems.map((item) => {
                     const key = `${item.id}-${item.size}`;
                     const warning = warnings.get(key);
+                    const productHref = item.slug ? `/${item.slug}` : `/shop?search=${encodeURIComponent(item.nameEn)}`;
 
                     return (
                       <div key={key} className={`p-4 sm:p-5 hover:bg-gray-50/50 transition ${warning ? 'bg-amber-50/40' : ''}`}>
                         <div className="flex gap-3 sm:gap-4">
 
                           {/* Product image */}
-                          <div className="w-18 h-18 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 relative"
-                            style={{ width: '72px', height: '72px' }}>
+                          <Link
+                            href={productHref}
+                            className="w-18 h-18 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 relative block hover:opacity-90 transition"
+                            style={{ width: '72px', height: '72px' }}
+                          >
                             <SafeImage
                               src={item.img}
                               alt={item.nameEn}
@@ -193,13 +197,15 @@ function CartContent() {
                               className="object-cover"
                               sizes="72px"
                             />
-                          </div>
+                          </Link>
 
                           {/* Info */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
-                                <h3 className="text-sm font-semibold text-gray-900 truncate">{item.nameEn}</h3>
+                                <Link href={productHref} className="hover:text-green-700 transition">
+                                  <h3 className="text-sm font-semibold text-gray-900 truncate hover:text-green-700 transition">{item.nameEn}</h3>
+                                </Link>
                                 <p className="text-xs text-gray-400 mt-0.5">{item.nameUr}</p>
                                 <p className="text-xs text-gray-400 mt-0.5">Size: <span className="text-gray-600">{item.size}</span></p>
 

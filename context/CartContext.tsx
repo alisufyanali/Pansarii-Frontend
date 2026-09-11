@@ -32,6 +32,7 @@ export interface CartItem {
   cartItemId?: number;
   /** variant ID — required for API calls */
   variantId?: number;
+  slug?: string;
   img: string;
   nameEn: string;
   nameUr: string;
@@ -100,6 +101,7 @@ function apiItemToCartItem(a: ApiCartItem): CartItem {
     id: a.product.id,
     cartItemId: a.id,
     variantId: a.variant.id,
+    slug: a.product.slug,
     img: a.product.thumbnail || '/images/product.png',
     nameEn: a.product.name,
     nameUr: a.product.name,
