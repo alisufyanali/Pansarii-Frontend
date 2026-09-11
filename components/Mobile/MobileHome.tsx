@@ -5,7 +5,6 @@ import { Suspense, useEffect, useState } from 'react';
 import SolutionBar from './components/solutionbar';
 
 import { getHomepageData, EMPTY_HOMEPAGE, type HomepageData } from '@/lib/homepage';
-import { WhyChooseUsSkeleton } from '@/components/Desktop/Sections/WhyChooseUs';
 
 const HeroBanner = dynamic(() => import('./components/HeroBanner'), { ssr: false });
 
@@ -26,7 +25,6 @@ const MobileFeaturedProducts = dynamic(() => import('./components/FeaturedProduc
 const MobileVideoProducts    = dynamic(() => import('./components/VideoProducts'),    { ssr: false });
 const MobileReviews          = dynamic(() => import('./components/Reviews'),          { ssr: false });
 const MobileBlogSection      = dynamic(() => import('./components/BlogSection'),      { ssr: false });
-const WhyChooseUs            = dynamic(() => import('@/components/Desktop/Sections/WhyChooseUs'), { ssr: false });
 
 export default function MobileHome() {
   const [homepageData, setHomepageData] = useState<HomepageData>(EMPTY_HOMEPAGE);
@@ -58,9 +56,6 @@ export default function MobileHome() {
       </Suspense>
       <Suspense fallback={null}>
         <MobileVideoProducts products={homepageData.video_products} />
-      </Suspense>
-      <Suspense fallback={<WhyChooseUsSkeleton />}>
-        <WhyChooseUs />
       </Suspense>
       <Suspense fallback={null}>
         <MobileReviews reviews={homepageData.reviews} />

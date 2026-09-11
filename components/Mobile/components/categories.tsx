@@ -126,6 +126,9 @@ export default function Categories() {
                       className="object-contain w-[75%] h-[72px] drop-shadow-md mt-4"
                       loading={index < 3 ? "eager" : "lazy"}
                       quality={60}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `/images/category-${index + 1}.png`;
+                      }}
                     />
 
                     {/* Label */}

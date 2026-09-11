@@ -53,9 +53,74 @@ const GRID = "grid grid-cols-[auto_minmax(280px,480px)_auto] items-center gap-x-
 
 // ── component ─────────────────────────────────────────────────────────────────
 
+function NavbarFallback() {
+  return (
+    <header className="w-full fixed top-0 left-0 z-40">
+      {/* Top bar shell */}
+      <div className="bg-green-700 text-white max-h-[34px] py-1">
+        <div className={CONTAINER}>
+          <div className="grid grid-cols-3 items-center">
+            <div className="flex items-center gap-3">
+              <span className="w-16 h-3 bg-green-600 rounded animate-pulse" />
+            </div>
+            <p className="text-[11px] flex items-center justify-center gap-1.5 whitespace-nowrap">
+              <FaLeaf className="w-3 h-3" />
+              100% Ayurvedic &amp; Herbal Products
+            </p>
+            <div className="flex justify-end">
+              <span className="w-24 h-3 bg-green-600 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Middle bar shell */}
+      <div className="bg-white shadow-sm">
+        <div className={CONTAINER}>
+          <div className={`${GRID} py-2.5`}>
+            <div className="relative w-36 h-9 flex-shrink-0">
+              <Image
+                src="/images/logo.png"
+                alt="pansariinn.pk Logo"
+                fill
+                className="object-contain object-left"
+                priority
+                sizes="144px"
+                fetchPriority="high"
+              />
+            </div>
+            <div className="relative w-full">
+              <div className="w-full h-9 px-5 border border-gray-200 rounded-full bg-gray-50 animate-pulse" />
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0 justify-end">
+              <div className="w-20 h-7 bg-gray-100 rounded-full animate-pulse hidden xl:block" />
+              <div className="w-16 h-7 bg-gray-100 rounded-full animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom bar shell */}
+      <div className="bg-white border-t border-gray-100 max-h-[46px]">
+        <div className={CONTAINER}>
+          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-6 py-2">
+            <div className="w-28 h-7 bg-green-700/80 rounded-full animate-pulse flex-shrink-0" />
+            <div className="flex items-center justify-center gap-4 lg:gap-6">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="w-12 h-4 bg-gray-100 rounded animate-pulse" />
+              ))}
+            </div>
+            <div className="w-36 h-7 bg-amber-500/80 rounded-full animate-pulse flex-shrink-0" />
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 export default function Navbar({ onCartOpen }: { onCartOpen?: () => void }) {
   return (
-    <Suspense fallback={<div className="h-32 bg-white" />}>
+    <Suspense fallback={<NavbarFallback />}>
       <NavbarContent onCartOpen={onCartOpen} />
     </Suspense>
   );

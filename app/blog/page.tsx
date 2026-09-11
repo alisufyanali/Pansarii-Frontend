@@ -144,17 +144,18 @@ function Pagination({ current, total, onChange }: { current: number; total: numb
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<NormPost[]>([]);
-  const [categories, setCategories] = useState<{ id: string | number; name: string; count: number }[]>([]);
+  const [categories, setCategories] = useState<{ id: number | 'all'; name: string; count: number }[]>([]);
   const [popularTags, setPopularTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<number | 'all'>('all');
+  const [activeCategoryName, setActiveCategoryName] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
   // ── Fetch ────────────────────────────────────────────────────────────────────
-  const fetchPosts = useCallback(async (page: number, catId: number | 'all', search: string, signal?: AbortSignal) => {
+  const fetchPosts = useCallback(async (page: number, catId: number | 'all', search: string, catName: string, signal?: AbortSignal) => {
     setIsLoading(true);
     try {
       const res = await getBlogs({
@@ -189,21 +190,23 @@ export default function BlogPage() {
       // Fallback to static data
       const norm = blogPosts.map(normStatic);
       const filtered = norm.filter(p => {
-        const matchCat = catId === 'all' || p.category.id === catId;
+        const matchCat = catId === 'all' || p.category.name === catName;
         const matchSrch = !search || p.title.toLowerCase().includes(search.toLowerCase());
         return matchCat && matchSrch;
       });
       const start = (page - 1) * POSTS_PER_PAGE;
       setPosts(filtered.slice(start, start + POSTS_PER_PAGE));
-      setTotalPages(Math.ceil(filtered.length / POSTS_PER_PAGE));
+      setTotalPages(Math.ceil(filtered.length / POSTS_PER_PAGE) || 1);
       setTotalCount(filtered.length);
 
       if (categories.length === 0) {
+        // Use numeric index-based IDs so the type stays `number | 'all'`
+        const catNames = Array.from(new Set(blogPosts.map(p => p.category)));
         const catMap = new Map<string, number>();
         blogPosts.forEach(p => catMap.set(p.category, (catMap.get(p.category) ?? 0) + 1));
         setCategories([
           { id: 'all', name: 'All Posts', count: blogPosts.length },
-          ...Array.from(catMap.entries()).map(([name, count]) => ({ id: name.toLowerCase().replace(/\s+/g, '-'), name, count })),
+          ...catNames.map((name, idx) => ({ id: idx + 1, name, count: catMap.get(name) ?? 0 })),
         ]);
         const tagMap = new Map<string, number>();
         blogPosts.forEach(p => p.tags.forEach(t => tagMap.set(t, (tagMap.get(t) ?? 0) + 1)));
@@ -217,11 +220,17 @@ export default function BlogPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchPosts(currentPage, activeCategory, searchQuery, controller.signal);
+    fetchPosts(currentPage, activeCategory, searchQuery, activeCategoryName, controller.signal);
     return () => controller.abort();
-  }, [currentPage, activeCategory, searchQuery, fetchPosts]);
+  }, [currentPage, activeCategory, searchQuery, activeCategoryName, fetchPosts]);
 
-  const handleCategoryChange = (id: number | 'all') => { setActiveCategory(id); setCurrentPage(1); };
+  const handleCategoryChange = (id: number | 'all') => {
+    setActiveCategory(id);
+    // Store name so the static fallback can filter by name (since static IDs are positional)
+    const found = categories.find(c => c.id === id);
+    setActiveCategoryName(found && id !== 'all' ? found.name : '');
+    setCurrentPage(1);
+  };
   const handleSearch = (q: string) => { setSearchQuery(q); setCurrentPage(1); };
   const handleTagSearch = (tag: string) => { handleSearch(tag); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
@@ -253,7 +262,7 @@ export default function BlogPage() {
             {categories.map(cat => (
               <button
                 key={cat.id}
-                onClick={() => handleCategoryChange(cat.id as number | 'all')}
+                onClick={() => handleCategoryChange(cat.id)}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all ${activeCategory === cat.id ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >

@@ -89,6 +89,9 @@ export default function Category() {
                         className="object-contain w-[75%] h-auto drop-shadow-md mt-4"
                         loading="lazy"
                         quality={60}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `/images/category-${index + 1}.png`;
+                        }}
                       />
                     ) : (
                       /* No image from API — show a coloured placeholder circle */
