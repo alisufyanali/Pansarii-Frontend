@@ -199,7 +199,7 @@ function ShopContent() {
       )
       .then(res => {
         if (controller.signal.aborted) return;
-        setApiProducts(res.data.map(p => {
+        const mapped = res.data.map(p => {
           const price = p.variants?.length ? Math.min(...p.variants.map(v => v.price)) : (p.sale_price ?? p.price);
           return {
             id: p.id,
@@ -223,7 +223,11 @@ function ShopContent() {
             variants: p.variants,
             sizes: p.variants?.length ? p.variants.map(v => v.name) : undefined,
           };
-        }));
+        });
+        const filtered = priceActive
+          ? mapped.filter(p => p.price >= filters.minPrice && p.price <= filters.maxPrice)
+          : mapped;
+        setApiProducts(filtered);
         setApiMeta(res.meta);
       })
       .catch(err => {

@@ -9,7 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import {
   FaTimes, FaUser, FaChevronRight, FaLeaf,
   FaShoppingBag, FaStar, FaHeart, FaBook, FaTruck,
-  FaFacebook, FaYoutube,
+  FaFacebook, FaYoutube, FaTag,
 } from 'react-icons/fa';
 import { FaXTwitter, FaInstagram } from 'react-icons/fa6';
 import { SOCIAL_LINKS } from '@/lib/social-links';
@@ -28,6 +28,7 @@ const CATEGORY_SLUG_MAP: Record<string, string> = {
 
 const mainLinks = [
   { name: 'Shop All',     href: '/shop',       Icon: FaShoppingBag },
+  { name: 'Offers',       href: '/offers',     Icon: FaTag         },
   { name: 'New Arrivals', href: '/newarrival', Icon: FaStar        },
   { name: 'Wishlist',     href: '/wishlist',   Icon: FaHeart       },
   { name: 'Track Order',   href: '/track-order', Icon: FaTruck        },

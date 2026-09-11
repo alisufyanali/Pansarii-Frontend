@@ -205,7 +205,11 @@ function CategoryBrowseContent() {
         page:        currentPage,
         ...sortParams,
       }, { signal });
-      setProducts(mapApiProducts(res.data));
+      const mapped = mapApiProducts(res.data);
+      const filtered = priceActive
+        ? mapped.filter(p => p.price >= filters.minPrice && p.price <= filters.maxPrice)
+        : mapped;
+      setProducts(filtered);
       setTotalProducts(res.meta.total);
       setTotalPages(res.meta.last_page);
     } catch {

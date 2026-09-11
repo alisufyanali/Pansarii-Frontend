@@ -294,9 +294,9 @@ export default function RewardsPage() {
           <div className="space-y-10">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { icon: <FaShoppingBag className="w-5 h-5" />, label: 'Shop & Earn', sub: 'Earn points now', color: 'bg-green-600', href: '/shop' },
+                { icon: <FaShoppingBag className="w-5 h-5" />, label: 'Shop & Earn', sub: 'Earn points now', color: 'bg-green-600', onClick: () => router.push('/shop') },
                 { icon: <FaGift className="w-5 h-5" />, label: 'Redeem Points', sub: `${points.toLocaleString()} pts available`, color: 'bg-purple-600', onClick: () => setActiveTab('redeem') },
-                { icon: <FaUserFriends className="w-5 h-5" />, label: 'Refer & Earn', sub: '+200 pts per referral', color: 'bg-blue-600' },
+                { icon: <FaUserFriends className="w-5 h-5" />, label: 'Refer & Earn', sub: '+200 pts per referral', color: 'bg-blue-600', onClick: () => setActiveTab('earn') },
                 { icon: <FaTrophy className="w-5 h-5" />, label: 'View Tiers', sub: `You're ${currentTier.name}`, color: 'bg-amber-600', onClick: () => setActiveTab('tiers') },
               ].map((action, i) => (
                 <button key={i} onClick={action.onClick}

@@ -354,7 +354,7 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
 
   const [filters, setFilters] = useState<FilterOptions>({
     searchQuery: '', minPrice: 0, maxPrice: 5000, categories: [],
-    sortBy: 'default', showOnSale: false, showInStock: true,
+    sortBy: 'default', showOnSale: false, showInStock: false,
     showNewArrivals: false, showBestSellers: false,
   });
 
@@ -517,6 +517,8 @@ export default function CategoryPage({ categoryName }: CategoryPageProps) {
   // returned for the current page. Search/price/sort are server-side and
   // do NOT need to be re-applied here.
   const filteredProducts = pageProducts.filter(p => {
+    const priceActive = filters.minPrice > 0 || filters.maxPrice < 5000;
+    if (priceActive && (p.price < filters.minPrice || p.price > filters.maxPrice)) return false;
     if (filters.showInStock    && !p.inStock)                      return false;
     if (filters.showOnSale     && !p.sale)                         return false;
     if (filters.showBestSellers && !p.isBestSeller)                return false;

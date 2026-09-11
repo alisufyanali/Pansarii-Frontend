@@ -127,6 +127,7 @@ function toInvoiceData(order: ApiOrder): InvoiceData {
     total:           order.grand_total,
     billingAddress:  address,
     shippingAddress: address,
+    logoUrl:         '/images/logo.png',
     companyName:     'Pansari Inn',
     companyTagline:  'Premium Quality Products',
     companyEmail:    'chat@pansariinn.com',

@@ -46,6 +46,7 @@ const linkGroups = [
       { name: 'Skincare',    url: '/beauty-corner' },
       { name: 'Oils',        url: '/oils'          },
       { name: 'Supplements', url: '/supplements'   },
+      { name: 'Offers',      url: '/offers'        },
     ],
   },
   {
