@@ -77,11 +77,13 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setFieldErrors({});
+    setSuccessMessage('');
     try {
       await submitContact({
         name: formData.name,
@@ -90,10 +92,12 @@ export default function ContactPage() {
         subject: formData.subject || undefined,
         message: formData.message,
       });
-      toast.success('Your message has been sent successfully!');
+      const msg = 'Your message has been sent successfully! We will get back to you shortly.';
+      setSuccessMessage(msg);
+      toast.success(msg);
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (err) {
-      const e422 = err as { response?: { status?: number; data?: { errors?: Record<string, string[]> } } };
+      const e422 = err as { response?: { status?: number; data?: { errors?: Record<string, string[]>; message?: string } } };
       if (e422?.response?.status === 422 && e422.response.data?.errors) {
         const mapped: Record<string, string> = {};
         Object.entries(e422.response.data.errors).forEach(([k, msgs]) => {
@@ -101,7 +105,8 @@ export default function ContactPage() {
         });
         setFieldErrors(mapped);
       } else {
-        toast.error('Failed to send message. Please try again.');
+        const errorMsg = e422?.response?.data?.message || 'Failed to send message. Please try again.';
+        toast.error(errorMsg);
       }
     } finally {
       setIsSubmitting(false);
@@ -176,7 +181,16 @@ export default function ContactPage() {
             {/* Contact Form */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 lg:p-10">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Send us a Message</h2>
-              <p className="text-gray-500 mb-8">Fill out the form below and we'll get back to you shortly.</p>
+              <p className="text-gray-500 mb-6">Fill out the form below and we'll get back to you shortly.</p>
+
+              {successMessage && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl flex items-center gap-3 text-sm font-medium animate-fadeIn">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 text-green-600 font-bold">
+                    ✓
+                  </div>
+                  <p>{successMessage}</p>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>

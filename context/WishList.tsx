@@ -98,20 +98,21 @@ function clearLocalWishlist(): void {
 }
 
 function apiItemToWishlistItem(a: ApiWishlistItem): WishlistItem {
-  const displayPrice = a.variant?.price ?? a.product.sale_price ?? a.product.price;
+  const product = a.product || { id: 0, name: 'Product', slug: '', price: 0, sale_price: null, thumbnail: null };
+  const displayPrice = a.variant?.price ?? product.sale_price ?? product.price ?? 0;
   return {
-    id: a.product.id,
+    id: product.id || a.id,
     wishlistId: a.id,
-    productId: a.product.id,
+    productId: product.id || undefined,
     variantId: a.variant?.id,
     variantName: a.variant?.name,
-    slug: a.product.slug,
-    img: a.product.thumbnail || '/images/product.png',
-    nameEn: a.product.name,
-    nameUr: a.product.name,
-    price: displayPrice,
-    oldPrice: a.product.sale_price && a.product.price > a.product.sale_price
-      ? a.product.price
+    slug: product.slug,
+    img: product.thumbnail || '/images/product.png',
+    nameEn: product.name || 'Product',
+    nameUr: product.name || 'Product',
+    price: Number(displayPrice) || 0,
+    oldPrice: product.sale_price && product.price > product.sale_price
+      ? product.price
       : undefined,
     inStock: a.variant ? a.variant.stock > 0 : true,
   };

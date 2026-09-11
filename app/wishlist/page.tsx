@@ -165,9 +165,9 @@ export default function WishlistPage() {
 
       {/* ── Product grid ── */}
       <div className="px-4 pt-4 grid grid-cols-2 gap-3">
-        {wishlistItems.map((item) => (
+        {wishlistItems.filter(item => item && item.id != null).map((item, idx) => (
           <div
-            key={item.id}
+            key={`${item.id}-${item.variantId ?? idx}`}
             className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100"
           >
             {/* Image */}
@@ -206,23 +206,23 @@ export default function WishlistPage() {
                 </span>
                 <div className="flex items-center gap-0.5">
                   <FaStar className="w-2.5 h-2.5 text-yellow-400" />
-                  <span className="text-[10px] text-gray-500">{item.rating ?? '4.5'}</span>
+                  <span className="text-[10px] text-gray-500">{item.rating ?? 4.5}</span>
                 </div>
               </div>
 
               {/* Name */}
               <p className="text-xs font-semibold text-gray-900 line-clamp-2 mb-1.5 leading-snug">
-                {item.nameEn}
+                {item.nameEn || 'Unnamed Product'}
               </p>
 
               {/* Price */}
               <div className="flex items-baseline gap-1.5 mb-3">
                 <span className="text-sm font-bold text-green-700">
-                  PKR {item.price.toLocaleString()}
+                  PKR {Number(item.price ?? 0).toLocaleString()}
                 </span>
-                {item.oldPrice && (
+                {item.oldPrice != null && !isNaN(Number(item.oldPrice)) && (
                   <span className="text-[10px] text-gray-400 line-through">
-                    PKR {item.oldPrice.toLocaleString()}
+                    PKR {Number(item.oldPrice).toLocaleString()}
                   </span>
                 )}
               </div>

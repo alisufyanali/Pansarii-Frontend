@@ -38,7 +38,9 @@ export default function GlobalError({ error, reset }: ErrorProps) {
           Something went wrong
         </h1>
         <p className="text-gray-500 text-sm mb-1">
-          An unexpected error occurred. Our team has been notified.
+          {error.message && error.message !== 'An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details.'
+            ? error.message
+            : 'An unexpected error occurred. Our team has been notified.'}
         </p>
 
         {/* Error digest for support reference */}
