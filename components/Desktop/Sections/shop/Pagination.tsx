@@ -28,51 +28,41 @@ export default function Pagination({
 
   // Generate page numbers to display
   const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = typeof window !== 'undefined' && window.innerWidth < 640 ? 3 : 5;
-    
-    if (totalPages <= maxVisiblePages) {
-      // Show all pages if total pages is less than or equal to maxVisiblePages
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Always show first page
-      pages.push(1);
-      
-      // Calculate start and end of visible pages
-      let start = Math.max(2, currentPage - 1);
-      let end = Math.min(totalPages - 1, currentPage + 1);
-      
-      // Adjust if we're near the beginning
-      if (currentPage <= 3) {
-        end = maxVisiblePages - 1;
-      }
-      
-      // Adjust if we're near the end
-      if (currentPage >= totalPages - 2) {
-        start = totalPages - (maxVisiblePages - 2);
-      }
-      
-      // Add ellipsis after first page if needed
-      if (start > 2) {
-        pages.push('...');
-      }
-      
-      // Add middle pages
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-      
-      // Add ellipsis before last page if needed
-      if (end < totalPages - 1) {
-        pages.push('...');
-      }
-      
-      // Always show last page
-      pages.push(totalPages);
+    if (totalPages <= 1) return [];
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-    
+
+    // Always include page 1
+    const pages: (number | string)[] = [1];
+
+    // Determine window around current page
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+
+    if (currentPage <= 2) {
+      start = 2;
+      end = Math.min(totalPages - 1, 3);
+    } else if (currentPage >= totalPages - 1) {
+      start = Math.max(2, totalPages - 2);
+      end = totalPages - 1;
+    }
+
+    if (start > 2) {
+      pages.push('...');
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    if (end < totalPages - 1) {
+      pages.push('...');
+    }
+
+    // Always include last page
+    pages.push(totalPages);
+
     return pages;
   };
 

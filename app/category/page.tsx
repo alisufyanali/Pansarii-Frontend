@@ -405,19 +405,38 @@ function CategoryBrowseContent() {
 
             {/* Windowed page numbers with ellipsis */}
             {(() => {
-              // On mobile show ±1 around current; on larger screens ±2.
-              // We always show first + last page; gaps get an ellipsis.
-              const SIBLING = 1; // pages on each side of current
-              const pages: (number | 'ellipsis-start' | 'ellipsis-end')[] = [];
+              if (totalPages <= 5) {
+                return Array.from({ length: totalPages }, (_, i) => i + 1).map(item => (
+                  <button
+                    key={item}
+                    onClick={() => { setCurrentPage(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg border text-sm font-medium transition flex-shrink-0 ${
+                      currentPage === item
+                        ? 'bg-[#197B33] text-white border-[#197B33] shadow-sm'
+                        : 'border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ));
+              }
 
-              const rangeStart = Math.max(2, currentPage - SIBLING);
-              const rangeEnd   = Math.min(totalPages - 1, currentPage + SIBLING);
+              const pages: (number | 'ellipsis-start' | 'ellipsis-end')[] = [1];
+              let rangeStart = Math.max(2, currentPage - 1);
+              let rangeEnd   = Math.min(totalPages - 1, currentPage + 1);
 
-              pages.push(1);
+              if (currentPage <= 2) {
+                rangeStart = 2;
+                rangeEnd = Math.min(totalPages - 1, 3);
+              } else if (currentPage >= totalPages - 1) {
+                rangeStart = Math.max(2, totalPages - 2);
+                rangeEnd = totalPages - 1;
+              }
+
               if (rangeStart > 2) pages.push('ellipsis-start');
               for (let p = rangeStart; p <= rangeEnd; p++) pages.push(p);
               if (rangeEnd < totalPages - 1) pages.push('ellipsis-end');
-              if (totalPages > 1) pages.push(totalPages);
+              pages.push(totalPages);
 
               return pages.map(item => {
                 if (item === 'ellipsis-start' || item === 'ellipsis-end') {
