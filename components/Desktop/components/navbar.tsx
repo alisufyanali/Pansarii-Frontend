@@ -481,12 +481,58 @@ function NavbarContent({ onCartOpen }: { onCartOpen?: () => void }) {
             </div>
 
             {/* Sidebar footer */}
-            <div className="sticky bottom-0 p-3 border-t bg-white">
-              <div className="flex items-center justify-between">
+            <div className="sticky bottom-0 border-t bg-white">
+              {/* Total count row */}
+              <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
                 <span className="text-xs text-gray-600">Total Categories</span>
                 <span className="text-xs font-bold text-green-700 bg-green-100 px-2.5 py-1 rounded-full">
                   {categories.length}
                 </span>
+              </div>
+
+              {/* WhatsApp button */}
+              <div className="px-3 pt-2.5 pb-1.5">
+                <a
+                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2 bg-[#25D366] hover:bg-[#1da851] text-white rounded-lg text-xs font-semibold transition"
+                  aria-label="Chat on WhatsApp"
+                >
+                  <FaWhatsapp className="w-3.5 h-3.5" />
+                  Chat on WhatsApp
+                </a>
+              </div>
+
+              {/* Contact info */}
+              <div className="px-3 pb-2">
+                <a
+                  href="mailto:chat@pansariinn.pk"
+                  className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-green-700 transition justify-center"
+                >
+                  chat@pansariinn.pk
+                </a>
+              </div>
+
+              {/* Social icons */}
+              <div className="flex items-center justify-center gap-3 px-3 pb-3 pt-1 border-t border-gray-100">
+                {[
+                  { href: SOCIAL_LINKS.facebook,  Icon: FaFacebookF, label: 'Facebook'  },
+                  { href: SOCIAL_LINKS.instagram, Icon: FaInstagram, label: 'Instagram' },
+                  { href: SOCIAL_LINKS.twitter,   Icon: FaXTwitter,  label: 'X'         },
+                  { href: SOCIAL_LINKS.youtube,   Icon: FaYoutube,   label: 'YouTube'   },
+                ].map(({ href, Icon, label }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 hover:bg-green-700 hover:text-white text-gray-500 transition"
+                  >
+                    <Icon className="w-3 h-3" />
+                  </a>
+                ))}
               </div>
             </div>
 
