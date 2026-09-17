@@ -112,27 +112,30 @@ export default function SolutionBar() {
               key={i}
               onClick={() => router.push(`/${card.slug}`)}
               className="relative flex flex-col flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer group transition-transform duration-300 hover:scale-[1.03] hover:shadow-xl"
-              style={{ width: "19vw", height: "30vw", minWidth: "160px", minHeight: "210px" }}
+              style={{ width: "calc((100vw * 0.92 - 4 * 1rem) / 5)" }}
             >
-              {/* Image area — top ~80% */}
-              <div className="relative flex-1 overflow-hidden">
+              {/* Image area — fixed aspect ratio so image never cuts */}
+              <div
+                className="relative w-full overflow-hidden bg-gray-100"
+                style={{ aspectRatio: "3 / 4" }}
+              >
                 <Image
                   src={pic}
                   alt={card.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  sizes="(max-width: 1920px) 20vw, 350px"
-                  quality={60}
+                  className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1920px) 20vw, 340px"
+                  quality={75}
                   loading="lazy"
                 />
               </div>
 
               {/* Green bottom bar */}
-              <div className="relative z-20 bg-[#2d7a3a] flex items-center justify-between px-4 py-3 gap-2">
-                <span className="text-white font-bold text-sm 2xl:text-base leading-tight">
+              <div className="bg-[#2d7a3a] flex items-center justify-between px-3 py-3 gap-2">
+                <span className="text-white font-bold text-sm lg:text-base leading-tight">
                   {card.title}
                 </span>
-                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="#2d7a3a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
