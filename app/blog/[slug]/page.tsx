@@ -34,6 +34,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pansariinn.com';
+  const canonicalUrl = `${siteUrl}/blog/${slug}`;
 
   // Try API
   const post = await fetchBlogServer(slug);
@@ -42,12 +44,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title:       `${post.meta_title || post.title} | Pansari Inn Blog`,
       description: post.meta_desc || post.excerpt || post.title,
       keywords:    post.tags.map(t => t.name),
+      alternates:  { canonical: canonicalUrl },
       openGraph: {
-        title:       post.title,
-        description: post.excerpt,
-        images:      post.thumbnail ? [{ url: post.thumbnail, width: 1200, height: 630, alt: post.title }] : [],
-        type:        'article',
+        title:         post.title,
+        description:   post.excerpt,
+        images:        post.thumbnail ? [{ url: post.thumbnail, width: 1200, height: 630, alt: post.title }] : [],
+        type:          'article',
         publishedTime: post.created_at,
+        url:           canonicalUrl,
+        siteName:      'Pansari Inn',
+      },
+      twitter: {
+        card:        'summary_large_image',
+        title:       post.meta_title || post.title,
+        description: post.meta_desc || post.excerpt,
+        images:      post.thumbnail ? [post.thumbnail] : [],
       },
     };
   }
@@ -59,12 +70,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title:       `${staticPost.title} | Pansari Inn Blog`,
     description: staticPost.excerpt,
     keywords:    [...staticPost.tags, 'herbal', 'ayurvedic', 'wellness'],
+    alternates:  { canonical: canonicalUrl },
     openGraph: {
-      title:     staticPost.title,
-      description: staticPost.excerpt,
-      images:    [{ url: staticPost.image, width: 1200, height: 630, alt: staticPost.title }],
-      type:      'article',
+      title:         staticPost.title,
+      description:   staticPost.excerpt,
+      images:        [{ url: staticPost.image, width: 1200, height: 630, alt: staticPost.title }],
+      type:          'article',
       publishedTime: staticPost.date,
+      url:           canonicalUrl,
+      siteName:      'Pansari Inn',
+    },
+    twitter: {
+      card:        'summary_large_image',
+      title:       staticPost.title,
+      description: staticPost.excerpt,
+      images:      [staticPost.image],
     },
   };
 }
@@ -88,9 +108,33 @@ export default async function BlogDetailPage({ params }: PageProps) {
     const safeContent = DOMPurify.sanitize(apiPost.content || '');
     const thumb = apiPost.thumbnail || '/images/product.png';
     const dateStr = new Date(apiPost.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pansariinn.com';
+
+    // ── Article JSON-LD ───────────────────────────────────────────────────
+    const articleSchema = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: apiPost.title,
+      description: apiPost.excerpt,
+      image: apiPost.thumbnail ? [apiPost.thumbnail] : undefined,
+      datePublished: apiPost.created_at,
+      dateModified: apiPost.created_at,
+      url: `${siteUrl}/blog/${apiPost.slug}`,
+      publisher: {
+        "@type": "Organization",
+        name: "Pansari Inn",
+        logo: { "@type": "ImageObject", url: `${siteUrl}/images/logo.png` },
+      },
+      mainEntityOfPage: { "@type": "WebPage", "@id": `${siteUrl}/blog/${apiPost.slug}` },
+    };
 
     return (
-      <div className="min-h-screen bg-white">
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
+        <div className="min-h-screen bg-white">
         <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
             <BackButton />
@@ -163,6 +207,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
           </div>
         </article>
       </div>
+      </>
     );
   }
 

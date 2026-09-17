@@ -38,6 +38,23 @@ export const metadata: Metadata = {
     description: "100% Pure Ayurvedic & Herbal Products for health and wellness",
     type: "website",
     locale: "en_US",
+    url: "https://pansariinn.com",
+    siteName: "Pansari Inn",
+    images: [
+      {
+        url: "/images/Banner.png",
+        width: 1200,
+        height: 630,
+        alt: "Pansari Inn - Premium Ayurvedic & Herbal Products",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@pansariinn",
+    title: "Pansari Inn - Premium Ayurvedic & Herbal Products",
+    description: "100% Pure Ayurvedic & Herbal Products for health and wellness.",
+    images: ["/images/Banner.png"],
   },
 };
 
@@ -56,6 +73,52 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
       </head>
       <body className={`${poppins.className} bg-white text-gray-900 antialiased`}>
+        {/* Organization + WebSite JSON-LD — site-wide structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "Pansari Inn",
+                url: "https://pansariinn.com",
+                logo: "https://pansariinn.com/images/logo.png",
+                description: "100% Pure Ayurvedic & Herbal Products — premium quality natural products for health, beauty, and wellness.",
+                email: "chat@pansariinn.pk",
+                telephone: "+923045779900",
+                sameAs: [
+                  "https://facebook.com/pansariinn",
+                  "https://instagram.com/pansariinn",
+                  "https://twitter.com/pansariin",
+                  "https://youtube.com/pansariin",
+                ],
+                contactPoint: {
+                  "@type": "ContactPoint",
+                  telephone: "+923045779900",
+                  contactType: "customer service",
+                  availableLanguage: ["English", "Urdu"],
+                  contactOption: "TollFree",
+                  areaServed: "PK",
+                },
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "Pansari Inn",
+                url: "https://pansariinn.com",
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: "https://pansariinn.com/shop?search={search_term_string}",
+                  },
+                  "query-input": "required name=search_term_string",
+                },
+              },
+            ]),
+          }}
+        />
         <AuthProvider>
           <CartProvider>
             <CartAuthBridge />

@@ -31,6 +31,8 @@ export const dynamicParams = true;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pansariinn.com';
+  const canonicalUrl = `${siteUrl}/${slug}`;
 
   let apiProduct = null;
   try {
@@ -41,27 +43,41 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   if (apiProduct) {
+    const price = apiProduct.variants?.length
+      ? Math.min(...apiProduct.variants.map((v) => v.price))
+      : (apiProduct.sale_price ?? apiProduct.price);
+    const image = apiProduct.thumbnail
+      ? [{ url: apiProduct.thumbnail, width: 800, height: 800, alt: apiProduct.name }]
+      : [];
+    const desc = apiProduct.description || `Buy ${apiProduct.name} at Pansari Inn`;
     return {
       title: `${apiProduct.name} | Pansari Inn`,
-      description: apiProduct.description || `Buy ${apiProduct.name} at Pansari Inn`,
+      description: desc,
+      alternates: { canonical: canonicalUrl },
       openGraph: {
         title: `${apiProduct.name} | Pansari Inn`,
-        description: apiProduct.description || `Buy ${apiProduct.name}`,
-        images: apiProduct.thumbnail
-          ? [{ url: apiProduct.thumbnail, width: 800, height: 800, alt: apiProduct.name }]
-          : [],
+        description: desc,
+        images: image,
+        url: canonicalUrl,
         type: 'website',
+        siteName: 'Pansari Inn',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${apiProduct.name} | Pansari Inn`,
+        description: desc,
+        images: apiProduct.thumbnail ? [apiProduct.thumbnail] : [],
       },
     };
   }
 
   const foundProduct = findProductBySlug(slug);
   if (!foundProduct) return { title: 'Product Not Found' };
+  const desc = foundProduct.description ||
+    `Buy ${foundProduct.nameEn} - 100% pure and natural herbal product at Pansari Inn. Premium quality at PKR ${foundProduct.price.toLocaleString()}.`;
   return {
     title: `${foundProduct.nameEn} | Pansari Inn`,
-    description:
-      foundProduct.description ||
-      `Buy ${foundProduct.nameEn} - 100% pure and natural herbal product at Pansari Inn. Premium quality at PKR ${foundProduct.price.toLocaleString()}.`,
+    description: desc,
     keywords: [
       foundProduct.nameEn,
       foundProduct.nameUr,
@@ -71,13 +87,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       'ayurvedic',
       'Pakistan',
     ],
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title: `${foundProduct.nameEn} | Pansari Inn`,
-      description:
-        foundProduct.description ||
-        `Buy ${foundProduct.nameEn} - 100% pure and natural herbal product`,
+      description: desc,
       images: [{ url: foundProduct.img, width: 800, height: 800, alt: foundProduct.nameEn }],
+      url: canonicalUrl,
       type: 'website',
+      siteName: 'Pansari Inn',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${foundProduct.nameEn} | Pansari Inn`,
+      description: desc,
+      images: [foundProduct.img],
     },
   };
 }
@@ -239,11 +262,51 @@ export default async function ProductPage({ params }: PageProps) {
 
     const normalizedFeatures: import('@/types/product').ProductFeature[] = [];
 
+    // ── Product JSON-LD ───────────────────────────────────────────────────
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pansariinn.com';
+    const productSchema = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: apiProduct.name,
+      description: apiProduct.description || undefined,
+      image: apiProduct.thumbnail ? [apiProduct.thumbnail] : undefined,
+      sku: apiProduct.sku || undefined,
+      brand: { "@type": "Brand", name: "Pansari Inn" },
+      url: `${siteUrl}/${apiProduct.slug}`,
+      offers: {
+        "@type": "Offer",
+        price: String(price),
+        priceCurrency: "PKR",
+        availability: apiProduct.variants?.some(v => v.stock > 0)
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+        url: `${siteUrl}/${apiProduct.slug}`,
+        seller: { "@type": "Organization", name: "Pansari Inn" },
+      },
+      ...(apiProduct.rating && apiProduct.reviews_count
+        ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: String(apiProduct.rating),
+              reviewCount: String(apiProduct.reviews_count),
+              bestRating: "5",
+              worstRating: "1",
+            },
+          }
+        : {}),
+    };
+
     return (
-      <div className="bg-white">
-        <ProductDetails product={{ ...product, features: normalizedFeatures }} />
-        <ProductDetailsSection product={legacyProduct} />
-      </div>
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
+        <div className="bg-white">
+          <ProductDetails product={{ ...product, features: normalizedFeatures }} />
+          <ProductDetailsSection product={legacyProduct} />
+        </div>
+      </>
     );
   }
 
