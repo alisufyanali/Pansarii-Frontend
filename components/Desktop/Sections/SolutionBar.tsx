@@ -118,8 +118,8 @@ export default function SolutionBar() {
               `}
               style={{
                 /* 5 cards visible, 4 gaps of 16px */
-                width: "calc((min(92vw, 1766px) - 64px) / 5)",
-                height: "clamp(180px, 18vw, 240px)",
+                width: "19vw",
+                height: "25vw",
               }}
             >
               {/* Background image */}
@@ -134,7 +134,7 @@ export default function SolutionBar() {
               />
 
               {/* Gradient overlay */}
-              <div className="absolute inset-0 z-10 bg-gradient-to-t from-green-800/90 via-black/30 to-black/10" />
+              <div className="absolute inset-0 z-10  " />
 
               {/* Card label */}
               <div className="relative z-20 p-3">
