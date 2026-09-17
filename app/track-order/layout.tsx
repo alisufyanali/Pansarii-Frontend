@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 export const metadata: Metadata = {
   title: 'Track Order | Pansari Inn',
   description: 'Track your order status and delivery progress in real-time with our order tracking system.',
+  robots: { index: false, follow: false },
 };
 
 export default function Layout({ children }: { children: ReactNode }) {

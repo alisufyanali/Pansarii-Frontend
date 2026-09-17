@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 export const metadata: Metadata = {
   title: 'Order Confirmation | Pansari Inn',
   description: 'Your order has been placed successfully. View your order details, invoice, and estimated delivery information.',
+  robots: { index: false, follow: false },
 };
 
 export default function Layout({ children }: { children: ReactNode }) {
