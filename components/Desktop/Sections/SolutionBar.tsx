@@ -111,38 +111,31 @@ export default function SolutionBar() {
             <div
               key={i}
               onClick={() => router.push(`/${card.slug}`)}
-              className={`
-                relative flex flex-col justify-end flex-shrink-0 rounded-xl overflow-hidden
-                cursor-pointer group transition-transform duration-300
-                hover:scale-[1.03] hover:shadow-xl
-              `}
-              style={{
-                /* 5 cards visible, 4 gaps of 16px */
-                width: "19vw",
-                height: "25vw",
-              }}
+              className="relative flex flex-col flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer group transition-transform duration-300 hover:scale-[1.03] hover:shadow-xl"
+              style={{ width: "19vw", height: "30vw", minWidth: "160px", minHeight: "210px" }}
             >
-              {/* Background image */}
-              <Image
-                src={pic}
-                alt={card.title}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                sizes="(max-width: 1920px) 20vw, 350px"
-                quality={60}
-                loading="lazy"
-              />
+              {/* Image area — top ~80% */}
+              <div className="relative flex-1 overflow-hidden">
+                <Image
+                  src={pic}
+                  alt={card.title}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  sizes="(max-width: 1920px) 20vw, 350px"
+                  quality={60}
+                  loading="lazy"
+                />
+              </div>
 
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 z-10  " />
-
-              {/* Card label */}
-              <div className="relative z-20 p-3">
-                <p className="text-white text-sm font-semibold leading-snug drop-shadow">
+              {/* Green bottom bar */}
+              <div className="relative z-20 bg-[#2d7a3a] flex items-center justify-between px-4 py-3 gap-2">
+                <span className="text-white font-bold text-sm 2xl:text-base leading-tight">
                   {card.title}
-                </p>
-                <span className="inline-block mt-0.5 text-xs text-green-200 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Shop now →
+                </span>
+                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="#2d7a3a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </span>
               </div>
             </div>
