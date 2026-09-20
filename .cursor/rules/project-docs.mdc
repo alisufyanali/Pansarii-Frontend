@@ -1,0 +1,5 @@
+alwaysApply: true
+
+Before any task, read docs/project/rules.md, tasks.md and memory.md.
+After completing any task, update tasks.md (move item to DONE) and append a dated line to memory.md if a decision or gotcha was learned.
+Never store secrets in docs.
