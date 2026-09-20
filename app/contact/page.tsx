@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { SOCIAL_LINKS } from '@/lib/social-links';
 import { submitContact } from '@/lib/contact';
 import PageBanner from '@/components/PageBanner';
+import { isValidPakistanPhone, PAKISTAN_PHONE_ERROR } from '@/lib/validation';
 
 const contactData = {
   hero: {
@@ -84,6 +85,17 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setFieldErrors({});
     setSuccessMessage('');
+
+    const errs: Record<string, string> = {};
+    if (formData.phone && !isValidPakistanPhone(formData.phone)) {
+      errs.phone = PAKISTAN_PHONE_ERROR;
+    }
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       await submitContact({
         name: formData.name,

@@ -8,6 +8,7 @@ import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiPhone, FiCheck } from 'react
 import { toast } from 'react-toastify';
 import { useAuth, extractFieldErrors } from '@/context/AuthContext';
 import { getApiErrorMessage } from '@/lib/axios';
+import { isValidPakistanPhone, PAKISTAN_PHONE_ERROR } from '@/lib/validation';
 
 // ─── Field error shape ────────────────────────────────────────────────────────
 interface RegisterFields {
@@ -77,8 +78,8 @@ export default function RegisterPage() {
       errs.name = 'Name must be at least 2 characters';
     if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email))
       errs.email = 'Valid email is required';
-    if (!formData.phone || !/^[0-9]{10,15}$/.test(formData.phone.replace(/[-()\s+]/g, '')))
-      errs.phone = 'Valid phone number is required';
+    if (!formData.phone || !isValidPakistanPhone(formData.phone))
+      errs.phone = PAKISTAN_PHONE_ERROR;
     if (!formData.password || formData.password.length < 8)
       errs.password = 'Password must be at least 8 characters';
     if (formData.password !== formData.confirmPassword)

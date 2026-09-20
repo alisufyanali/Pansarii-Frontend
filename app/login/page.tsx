@@ -6,8 +6,9 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import { useAuth, extractFieldErrors } from '@/context/AuthContext';
+import { useAuth, extractFieldErrors } from '@/context/AuthContext';  
 import { getApiErrorMessage } from '@/lib/axios';
+import { isValidPakistanPhone, PAKISTAN_PHONE_ERROR } from '@/lib/validation';
 
 // ─── Wrapper ──────────────────────────────────────────────────────────────────
 
@@ -105,9 +106,8 @@ function LoginPageContent() {
     if (!trimmedLogin) {
       errs.login = 'Email ya phone number zaroori hai';
     } else if (!trimmedLogin.includes('@')) {
-      const digitsOnly = trimmedLogin.replace(/\D/g, '');
-      if (digitsOnly.length < 10) {
-        errs.login = 'Phone number kam az kam 10 digits ka hona chahiye';
+      if (!isValidPakistanPhone(trimmedLogin)) {
+        errs.login = PAKISTAN_PHONE_ERROR;
       }
     }
 
