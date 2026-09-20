@@ -193,13 +193,17 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (authLoading) return;
     if (isAuthenticated) {
+      if (user?.must_change_password) {
+        router.replace('/change-password');
+        return;
+      }
       setCheckoutMode('auth');
       // Pre-fill phone from stored user profile
       if (user?.phone) setPhoneValue(user.phone);
     } else {
       setShowCheckoutModal(true);
     }
-  }, [authLoading, isAuthenticated, user]);
+  }, [authLoading, isAuthenticated, user, router]);
 
   // ── Refresh cart from API when checkout mounts (logged-in users) ───────────
   useEffect(() => {

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import SafeImage from '@/components/SafeImage';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   RiShoppingBagLine,
@@ -121,7 +122,13 @@ function MobileProfileView() {
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!isLoading && user?.must_change_password) {
+      router.replace('/change-password');
+    }
+  }, [isLoading, user, router]);
+
+  if (isLoading || (user?.must_change_password)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700" />

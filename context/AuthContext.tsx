@@ -28,10 +28,11 @@ export interface AuthUser {
   phone?: string;
   roles?: string[];
   customer?: Record<string, unknown>;
+  must_change_password?: boolean;
 }
 
 interface LoginPayload {
-  email: string;
+  login: string;
   password: string;
 }
 
@@ -49,6 +50,7 @@ interface AuthApiResponse {
   data: {
     token: string;
     user: AuthUser;
+    must_change_password?: boolean;
   };
 }
 
@@ -59,9 +61,10 @@ interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
+  login: (payload: LoginPayload) => Promise<{ must_change_password: boolean }>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
+  updateMustChangePassword: (mustChange: boolean) => void;
   /** Inject cart merge callback — called by CartProvider */
   setCartMerge: (fn: () => Promise<void>) => void;
   /** Inject wishlist merge callback — called by WishlistProvider */
@@ -91,6 +94,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     wishlistMergeRef.current = fn;
   }, []);
 
+  const updateMustChangePassword = useCallback((mustChange: boolean) => {
+    setUser(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, must_change_password: mustChange };
+      const token = getAuthToken();
+      if (token) {
+        setAuthData(token, updated);
+      }
+      return updated;
+    });
+  }, []);
+
   // Rehydrate from localStorage on mount
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -113,9 +128,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.success) {
       throw new Error(res.message || 'Login failed');
     }
-    const { token, user: loggedInUser } = res.data;
-    setAuthData(token, loggedInUser);
-    setUser(loggedInUser);
+    const { token, user: loggedInUser, must_change_password } = res.data;
+    const mustChange = Boolean(must_change_password ?? loggedInUser.must_change_password);
+    const resolvedUser: AuthUser = {
+      ...loggedInUser,
+      must_change_password: mustChange,
+    };
+    setAuthData(token, resolvedUser);
+    setUser(resolvedUser);
     // Merge guest cart into API cart after successful login
     if (cartMergeRef.current) {
       try { await cartMergeRef.current(); } catch { /* non-blocking */ }
@@ -124,7 +144,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (wishlistMergeRef.current) {
       try { await wishlistMergeRef.current(); } catch { /* non-blocking */ }
     }
-  }, []);
+
+    if (mustChange) {
+      router.push('/change-password');
+    }
+
+    return { must_change_password: mustChange };
+  }, [router]);
 
   // ── register ───────────────────────────────────────────────────────────────
   const register = useCallback(async (payload: RegisterPayload) => {
@@ -171,6 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        updateMustChangePassword,
         setCartMerge,
         setWishlistMerge,
       }}

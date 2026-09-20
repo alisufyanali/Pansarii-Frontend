@@ -46,7 +46,7 @@ function safeReturnTo(raw: string): string {
 
 // ─── Field error shape ────────────────────────────────────────────────────────
 interface LoginFields {
-  email: string;
+  login: string;
   password: string;
 }
 
@@ -67,7 +67,7 @@ function LoginPageContent() {
   const hasNavigatedRef = useRef(false);
 
   // ── All useState hooks declared unconditionally before any early return ─────
-  const [formData, setFormData] = useState<LoginFields>({ email: '', password: '' });
+  const [formData, setFormData] = useState<LoginFields>({ login: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading,    setIsLoading]    = useState(false);
   const [apiError,     setApiError]     = useState('');
@@ -101,10 +101,22 @@ function LoginPageContent() {
   // ── Client validation ───────────────────────────────────────────────────────
   const validate = (): boolean => {
     const errs: Partial<LoginFields> = {};
-    if (!formData.email)                         errs.email    = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) errs.email = 'Email is invalid';
-    if (!formData.password)                      errs.password = 'Password is required';
-    else if (formData.password.length < 6)       errs.password = 'Password must be at least 6 characters';
+    const trimmedLogin = formData.login.trim();
+    if (!trimmedLogin) {
+      errs.login = 'Email ya phone number zaroori hai';
+    } else if (!trimmedLogin.includes('@')) {
+      const digitsOnly = trimmedLogin.replace(/\D/g, '');
+      if (digitsOnly.length < 10) {
+        errs.login = 'Phone number kam az kam 10 digits ka hona chahiye';
+      }
+    }
+
+    if (!formData.password) {
+      errs.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      errs.password = 'Password must be at least 6 characters';
+    }
+
     setFieldErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -117,11 +129,20 @@ function LoginPageContent() {
 
     setIsLoading(true);
     try {
-      await login({ email: formData.email, password: formData.password });
+      const { must_change_password } = await login({
+        login: formData.login.trim(),
+        password: formData.password,
+      });
 
       // Mark as navigated BEFORE redirecting so the mount-guard useEffect
       // cannot fire a competing redirect when isAuthenticated commits.
       hasNavigatedRef.current = true;
+
+      if (must_change_password) {
+        toast.info('Security ke liye password badalna zaroori hai.');
+        window.location.href = '/change-password';
+        return;
+      }
 
       const raw      = searchParamsRef.current.get('returnTo') ?? '/';
       const returnTo = safeReturnTo(raw);
@@ -177,21 +198,21 @@ function LoginPageContent() {
               </div>
             )}
 
-            {/* Email */}
+            {/* Login (Email ya Phone number) */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+              <label htmlFor="login" className="block text-sm font-medium text-gray-700 mb-2">
+                Email ya Phone number
               </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="email" name="email" type="email" autoComplete="email"
-                  value={formData.email} onChange={handleChange} disabled={isLoading}
-                  placeholder="your@email.com"
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'}`}
+                  id="login" name="login" type="text" autoComplete="username"
+                  value={formData.login} onChange={handleChange} disabled={isLoading}
+                  placeholder="name@example.com ya 03001234567"
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${fieldErrors.login ? 'border-red-500' : 'border-gray-300'}`}
                 />
               </div>
-              {fieldErrors.email && <p className="mt-1 text-sm text-red-500">{fieldErrors.email}</p>}
+              {fieldErrors.login && <p className="mt-1 text-sm text-red-500">{fieldErrors.login}</p>}
             </div>
 
             {/* Password */}

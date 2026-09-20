@@ -78,15 +78,19 @@ export default function ProfileLayout({ children, title, subtitle }: ProfileLayo
   const router   = useRouter();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
 
-  // Auth guard — redirect to login when rehydration completes and user is not signed in
+  // Auth guard — redirect to login when unauthenticated, or /change-password when password change is required
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.replace(`/login?returnTo=${encodeURIComponent(pathname)}`);
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.replace(`/login?returnTo=${encodeURIComponent(pathname)}`);
+      } else if (user?.must_change_password && pathname !== '/change-password') {
+        router.replace('/change-password');
+      }
     }
-  }, [isLoading, isAuthenticated, pathname, router]);
+  }, [isLoading, isAuthenticated, user, pathname, router]);
 
-  // Don't flash content while loading auth state
-  if (isLoading || !isAuthenticated) {
+  // Don't flash content while loading auth state or redirecting
+  if (isLoading || !isAuthenticated || (user?.must_change_password && pathname !== '/change-password')) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-10 w-10 border-2 border-green-600 border-t-transparent" />
