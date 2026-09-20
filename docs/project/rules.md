@@ -34,7 +34,7 @@ public/images/      Static product/banner/logo image assets
 ### Component Patterns
 - **Server vs Client**: Mark `"use client";` at top of any file that uses hooks, browser APIs, or interactivity. Pages themselves can be server components rendering client children.
 - **Context hook throw pattern**: Each context exports `useX()` that throws `Error('useX must be used within <XProvider>')` if used outside provider (not returning null).
-- **Form validation mix**: Checkout uses controlled state + inline regex patterns; react-hook-form + zod are installed — TODO: confirm migration target (leave alone unless actively modifying checkout/login/register).
+- **Form validation mix**: Only `/change-password` uses react-hook-form + zod (`change-password/page.tsx:L6-L43`). Every other form (login/register/checkout/blog/profile) uses controlled-state pattern with inline error objects. Migration NOT scheduled — leave alone unless actively modifying a form.
 - **Empty/skeleton states**: Always render animated skeleton pulse for load times (auth, cart, checkout, blog, order-confirmation). Pattern: `animate-pulse bg-gray-200` placeholder boxes.
 - **"use client" home page**: `app/page.tsx` uses device detection → conditional DesktopHome/MobileHome. This is intentional (device viewport is browser-only concept).
 

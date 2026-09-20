@@ -9,12 +9,12 @@
 | Language | TypeScript | ^5 (strict) | `tsconfig.json` `strict: true` ✅ |
 | Styling | Tailwind CSS v4 | ^4.1.18 | `package.json` + `@import "tailwindcss"` in globals.css ✅ |
 | HTTP Client | Axios | 1.7.9 | `lib/axios.ts` ✅ |
-| Forms | react-hook-form + zod (installed but not used everywhere) | ^7.79.0 / ^4.4.3 | `package.json` ✅; checkout uses controlled state, TODO: confirm remaining forms migrated |
+| Forms | react-hook-form + zod (installed, used partially) | ^7.79.0 / ^4.4.3 | `package.json` ✅; `/change-password` ONLY uses react-hook-form + zodResolver. All other forms use controlled-state pattern (login, register, checkout, blog, profile). Migration NOT scheduled. Only migrate when modifying a form. (confirmed: [change-password/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/change-password/page.tsx#L6-L43)) |
 | Toasts | react-toastify | ^11.0.5 | Root layout + all forms ✅ |
 | Phone input | react-phone-number-input + libphonenumber-js | ^3.4.14 / ^1.12.36 | Checkout page ✅ |
 | Icons | react-icons | ^5.5.0 | `next.config.ts` optimizePackageImports ✅ |
 | Icons (alt) | Fi, Fa, Hi, Bs icon sets | — | Used across components |
-| HTML sanitizer | isomorphic-dompurify | 3.14.0 | `package.json` ✅; TODO: confirm exact usage locations |
+| HTML sanitizer | isomorphic-dompurify | 3.14.0 | `package.json` ✅; used ONLY at `app/blog/[slug]/page.tsx` L8 to sanitize blog body content HTML (`DOMPurify.sanitize(post.content)`). (confirmed: [blog/[slug]/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/blog/%5Bslug%5D/page.tsx#L8)) |
 | Tests (e2e) | Playwright | ^1.49.1 | `playwright.config.ts` ✅ |
 | Tests (unit) | Jest + ts-jest | ^29.7.0 / ^29.2.5 | `jest.config.ts` ✅ |
 | Build output | Next.js standalone | — | `next.config.ts` `output: 'standalone'` ✅ |
@@ -54,7 +54,7 @@ app/
 ├─ blog/page.tsx            Blog listing (9/post page, filters, pagination)
 │  ├─ layout.tsx, loading.tsx
 │  └─ [slug]/               Blog detail
-│     ├─ page.tsx (server)  fetchBlogServer + generateMetadata + generateStaticParams TODO: confirm
+│     ├─ page.tsx (server)  fetchBlogServer + generateMetadata + generateStaticParams. gSP returns API's top-100 per_page slugs or static fallback. generateMetadata and page body BOTH call fetchBlogServer independently — NOT deduped via cache(). (confirmed: [blog/[slug]/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/blog/%5Bslug%5D/page.tsx#L22-L98))
 │     ├─ BlogDetailClient.tsx, layout.tsx, loading.tsx
 │
 ├─ cart/page.tsx            Client cart (stock validation, free-shipping progress, proceed to checkout)
@@ -94,12 +94,12 @@ app/
 | `/shop` | `app/shop/page.tsx` | Server page → `<Shop />` client component | metadata static |
 | `/category` | `app/category/page.tsx` | Server → layout + client components | — |
 | `/blog` | `app/blog/page.tsx` | Client | `getBlogs()` API, fallback to static blogposts |
-| `/blog/{slug}` | `app/blog/[slug]/page.tsx` | Server + client | `fetchBlogServer(slug)` `revalidate: 60`; generateMetadata uses same fetcher — TODO: confirm cache() shared |
+| `/blog/{slug}` | `app/blog/[slug]/page.tsx` | Server + client | `fetchBlogServer(slug)` `revalidate: 60`; generateMetadata calls fetchBlogServer INDEPENDENTLY of page body (no `cache()` wrapper) → 2 API calls per view. VIOLATES hard rule #1. Needs cache() wrapping. (confirmed: [blog/[slug]/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/blog/%5Bslug%5D/page.tsx#L41) and L98) |
 | `/cart`, `/checkout`, `/order-confirmation` | Client components | CSR only | `"use client"` throughout |
 | `/login`, `/register`, `/forgot-password` etc. | Server pages wrapping client forms | — | Auth flows; middleware does NOT intercept |
 | Protected: `/profile`, `/orders`, `/wishlist`, `/rewards`, `/change-password`, `/cancel-order` | — | CSR + **middleware redirect** | Edge middleware checks `pansari-auth-token` cookie → redirects to `/login?returnTo=` |
-| Info pages (`/aboutus`, `/pricing-policy`, …) | Server pages | SSG | Static content — TODO: confirm content source |
-| `/api/auth/forgot-password`, `/api/auth/reset-password` | Route handlers | Server | TODO: confirm API internals wired to backend |
+| Info pages (`/aboutus`, `/pricing-policy`, …) | Server pages ('use client') | SSG — hardcoded JS arrays in-page | Content stored as TS objects: `pageData` (aboutus), `sections` array (quality), `policyPoints` array (pricing policy), page-specific lists. No CMS. (confirmed: [aboutus/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/aboutus/page.tsx#L9-L78), [our-commitment-to-quality/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/our-commitment-to-quality/page.tsx#L6-L22), [pricing-policy/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/pricing-policy/page.tsx#L6-L10)) |
+| `/api/auth/forgot-password`, `/api/auth/reset-password` | Route handlers | Server | Both wired. `POST /api/auth/forgot-password` → `laravelPost('/forgot-password', { email })` + in-memory 3-per-hour sliding-window rate limit per email. `POST /api/auth/reset-password` → `laravelPost('/reset-password', { token, email, password, password_confirmation })` + CSRF origin validate on both. (confirmed: [forgot-password/route.ts](file:///d:/laragon/www/Pansarii-Frontend/app/api/auth/forgot-password/route.ts#L41), [reset-password/route.ts](file:///d:/laragon/www/Pansarii-Frontend/app/api/auth/reset-password/route.ts#L41-L46)) |
 
 ---
 
@@ -135,7 +135,7 @@ app/
 ### Blog Server-Safe Fetchers (separate, native fetch)
 - `lib/blog.ts` → `fetchBlogsServer(params)`, `fetchBlogServer(slug)`
 - Uses native `fetch(url, { next: { revalidate: 60 } })` directly
-- TODO: confirm migrate to cache()-wrapped pattern so metadata + page share calls
+- **NOT cache()-wrapped**. `app/blog/[slug]/page.tsx` generateMetadata + page body call fetchBlogServer(slug) INDEPENDENTLY → 2 API calls per view. **VIOLATES hard rule #1**. Wrap fetchBlogServer/fetchBlogsServer in `cache()` immediately with build-time-vs-runtime retry pattern to match products.ts. (confirmed: [blog.ts](file:///d:/laragon/www/Pansarii-Frontend/lib/blog.ts#L61-L82), [blog/[slug]/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/blog/%5Bslug%5D/page.tsx#L41) and L98)
 
 ### Homepage Aggregator
 - `lib/homepage.ts` → `getHomepageData()` → single GET `/homepage`
@@ -194,8 +194,8 @@ app/
 | POST | `/login` | Credentials → { token, user } |
 | POST | `/register` | Create user → { token, user } |
 | POST | `/logout` | Invalidate server-side token |
-| POST | `/forgot-password` | App Router route handler → TODO: confirm backend endpoint |
-| POST | `/reset-password` | App Router route handler → TODO: confirm backend endpoint |
+| POST | `/forgot-password` | App Router route handler → Laravel endpoint `POST /forgot-password` via `laravelPost()`. Sends { email }. Applies 3-request-per-email-per-1-hour sliding window rate limit in-process. Backend endpoint name confirmed by route handler call. |
+| POST | `/reset-password` | App Router route handler → Laravel endpoint `POST /reset-password` via `laravelPost()`. Sends { token, email, password, password_confirmation }. Backend endpoint name confirmed by route handler call. |
 
 ### Products
 | Method | Path | Purpose |
@@ -228,9 +228,9 @@ app/
 ### Wishlist (auth only)
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/wishlist` | List (TODO: confirm exact endpoint from lib/wishlist.ts) |
-| POST | `/wishlist` | Add product |
-| DELETE | `/wishlist/{id}` | Remove |
+| GET | `/wishlist` | List all wishlist items. Returns `ApiWishlistItem[]` with nested product + variant. (confirmed: [lib/wishlist.ts](file:///d:/laragon/www/Pansarii-Frontend/lib/wishlist.ts#L34-L37)) |
+| POST | `/wishlist` | Add product (body: `{ product_id, product_variant_id? }`). Returns `{ id: number }`. (confirmed: [lib/wishlist.ts](file:///d:/laragon/www/Pansarii-Frontend/lib/wishlist.ts#L39-L48)) |
+| DELETE | `/wishlist/{id}` | Remove by wishlist row id. (confirmed: [lib/wishlist.ts](file:///d:/laragon/www/Pansarii-Frontend/lib/wishlist.ts#L50-L52)) |
 
 ### Orders
 | Method | Path | Purpose |
@@ -251,7 +251,7 @@ app/
 | POST | `/contact` | Contact form: `{ name, email, phone?, subject?, message }` |
 | GET | `/blogs?per_page&page&search&category_id&tag` | Paginated blog listing |
 | GET | `/blogs/{slug}` | Single blog post (content + meta_title/desc) |
-| GET | `/slides` / GET `/reviews` | Banners and homepage reviews — TODO: confirm exact endpoints (merged into `/homepage` now) |
+| GET | `/slides` / GET `/homepage/reviews` | Banners and homepage reviews. **Dual pattern**: (1) Aggregated via `GET /homepage` → returns `banners + reviews` under one roof (used by default homepage). (2) Separate standalone endpoints: `GET /slides` (banners only, lib/slides.ts) + `GET /reviews` (reviews only w/ query params + submit via lib/reviews.ts POST). Standalone lib files still shipped as fallback / for non-home consumers. (confirmed: [homepage.ts](file:///d:/laragon/www/Pansarii-Frontend/lib/homepage.ts#L8-L40), [slides.ts](file:///d:/laragon/www/Pansarii-Frontend/lib/slides.ts#L75), [reviews.ts](file:///d:/laragon/www/Pansarii-Frontend/lib/reviews.ts#L80-L164)) |
 
 ---
 

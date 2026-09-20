@@ -26,7 +26,7 @@
 - Cannot access: `/orders`, `/wishlist`, `/profile`, `/rewards`, `/change-password`, `/cancel-order` (redirected to `/login` via middleware)
 
 ### 3. Affiliate
-- `/affiliate` page hosts a sign-up form — TODO: confirm full affiliate program scope (tracking, payouts, dashboard)
+- `/affiliate` page is "Coming Soon" landing page only — WhatsApp CTA for program inquiries. No affiliate sign-up form, no referral tracking, no payouts dashboard yet. (confirmed: [affiliate/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/affiliate/page.tsx#L6-L48))
 
 ---
 
@@ -40,7 +40,7 @@
 - Featured products section (`/products/featured` fallback: `data/products.bestSellers`)
 - Category-wise product rows (API endpoint `/homepage/category-products`)
 - New arrivals section
-- Combo deal / offers row — TODO: confirm combo deal API wiring
+- Combo deal / offers row: Coupons + `/offers` page fully wired via `mapApiOffer()` from `/coupons`? endpoint, supports `discount_type: percentage / fixed / freeship / bogo / flash / seasonal / bundle`. Filterable by offer-type tabs, countdown timers on flash sales, coupon code copy buttons. (confirmed: [offers/page-main.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/offers/page-main.tsx#L50-L79))
 - Video products section (`/products/with-video`)
 - Customer reviews carousel
 - Blog highlights
@@ -51,7 +51,7 @@
 - SearchFilterBar: search query, min/max price, category filter, sort options, sale toggle, in-stock toggle
 - Filters come from server API meta — never client-side computed
 - Pagination component (reads `meta.last_page`, `meta.current_page`)
-- Grid/list view toggle — TODO: confirm list view fully implemented
+- Grid/list view toggle — Fully implemented. Shop SearchFilterBar and CategoryPage both expose `onViewModeChange` handler; `ProductGrid` L38 branches `if (viewMode === 'list')` with a horizontal-card layout (description, save badge, expanded details). Toggle UI present. (confirmed: [CategoryPage.tsx](file:///d:/laragon/www/Pansarii-Frontend/components/Desktop/Sections/CategoryPage.tsx#L348), [ShopContent.tsx](file:///d:/laragon/www/Pansarii-Frontend/components/Desktop/Sections/shop/ShopContent.tsx#L99), [ProductGrid.tsx](file:///d:/laragon/www/Pansarii-Frontend/components/Desktop/Sections/shop/ProductGrid.tsx#L38))
 - Debounced search input (900 ms) to prevent API spam
 
 ### Category (`/category` + static category routes: `/herb`, `/oils`, `/supplements`, `/spices`, `/remedies`, `/murrabajat`, `/arqiyaat`, `/beauty-corner`, `/dawakhana`, `/concern`)
@@ -82,7 +82,7 @@
 
 ### Quick View
 - `ProductDetailsModal` opened from ProductCard "Quick Add" button
-- TODO: confirm add-to-cart toast shows **instantly** on quick-view add-to-cart (reported not showing instantly)
+- Known issue: `handleAddToCart` awaits `addToCart()` then fires `toast.success()` AFTER async resolves; for auth users this includes a backend POST so toast appears 300–800 ms later; guest users (localStorage only) see instant toast. Suggestion: optimistic toast pre-call, undo on error. (confirmed: [ProductDetailsModal.tsx](file:///d:/laragon/www/Pansarii-Frontend/components/Desktop/components/ProductDetailsModal.tsx#L189-L196))
 
 ### Search
 - Navbar search bar with debounced suggestions (900 ms, live product lookups)
@@ -100,13 +100,13 @@
 ### Checkout (`/checkout`)
 - Two modes: `auth` (signed-in) or `guest` (modal prompts choice → continue-as-guest or login)
 - Fields: name, email, phone, street address, city (searchable combobox loaded from `/cities`), order note
-- Pakistani phone validation pattern: `/^(\+92|0)3[0-9]{9}$/` (client-side + TODO: confirm backend 422 errors surface for auth mode phone field)
+- Pakistani phone validation pattern: checkout uses `/^(\+92|0)3[0-9]{9}$/` (PK-specific). Login: NO phone field (email only). Register: uses GENERIC regex `/^[0-9]{10,15}$/` — NOT PK-specific, accepts any 10–15 digit phone. Profile: NO edit form, phone not editable from frontend. (confirmed: [checkout/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/checkout/page.tsx), [register/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/register/page.tsx#L80), [login/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/login/page.tsx#L48-L110))
 - Coupon code input (POST `/coupons/validate`) — supports percentage / fixed / freeship types
 - Payment methods: COD (default), Online (card + JazzCash + EasyPaisa), Bank Transfer
 - Stock re-validation immediately before order submission
 - Auth users: POST `/orders`
 - Guest users: POST `/orders/guest` — backend may auto-create account (phone becomes password)
-- TODO: confirm backend validation 422 errors display correctly under each form field for ALL fields (guest name/email/phone partially wired, auth phone partially wired, address + city unknown)
+- Backend 422 validation errors: **INCOMPLETE inline wiring**. GUEST mode: only `name/email/phone` surfaced inline (checkout/page.tsx:L472–L481 explicit whitelist `['name','email','phone']`); `street_address / city_id / order_note / payment_method / items.*.stock` errors → top-level toast only. AUTH mode: only `phone` inline (L506–L522); everything else toast-only. `GuestFields interface` declares ONLY 3 fields (L132–L136) — no address/city typed keys.
 
 ### Guest Checkout
 - Separate API endpoint `/orders/guest` with `{ name, email, phone, ...order }`
@@ -124,7 +124,7 @@
 - `/login` — email + password (POST `/login`); success:false guard even on HTTP 200
 - `/register` — name + email + password + confirm + phone (POST `/register`)
 - `/forgot-password` → `/check-email` → `/reset-password` → `/reset-password-success`  (pages exist, `/api/auth/forgot-password` and `/api/auth/reset-password` routes exist)
-- `/profile` — protected (middleware redirect); TODO: confirm profile edit form wiring
+- `/profile` — protected (middleware redirect); DASHBOARD ONLY: menu links to My Orders / Wishlist / Rewards / Change Password / Contact / Feedback. NO profile edit form (no name/email/phone edit fields rendered anywhere in mobile or desktop views). Profile data fields can only be changed from backend currently. (confirmed: [profile/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/profile/page.tsx#L120-L248))
 - `/orders` — protected, paginated order list (GET `/orders`)
 - `/change-password` — protected
 - `/cancel-order` — protected, reason + comment (PATCH `/orders/{id}/cancel`)
@@ -133,15 +133,15 @@
 ### Rewards (`/rewards`) — protected
 - Tier system UI: Seedling / Bloom / Herb Master / Royal Healer (static config in page)
 - Points balance, tier progress
-- Earn ways grid: Purchase (1 pt/PKR 10), Review (+50), Refer a Friend (+200), Share on Social (+25) — **TODO: confirm these 4 earn actions are all wired to backend API calls**
-- Redeem section: discount coupons / free products — **TODO: confirm redeem section 2nd section not working (per task list)**
+- Earn ways grid: Purchase (auto-credited on backend), Review (CTA to /shop, no backend call for review-click points), Refer a Friend (UI card only — no backend endpoint hooked yet), Share on Social (UI card only — no share dialog / backend ping), plus Birthday Bonus + Monthly Streak (both informational only). Historical transactions loaded from `GET /rewards` endpoint. (confirmed: [rewards/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/rewards/page.tsx#L66-L91))
+- Redeem section: ALL 6 options explicitly marked `available: false` with comment L94–97 "Point redemption API is not yet available… When the backend redemption endpoint ships, set available: true + wire POST /rewards/redeem". All cards show "Coming Soon" lock state. (confirmed: [rewards/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/rewards/page.tsx#L94-L105))
 - Transaction history table
 
 ### Blog
 - `/blog` listing — 9 posts per page, search box, category sidebar chips, tag pills, pagination
 - API: `fetchBlogsServer({ per_page, page, category_id, tag, search })` with 60-s revalidate, fallback to `data/blogposts`
-- `/blog/[slug]` detail — loaded via `fetchBlogServer(slug)` (60-s revalidate) — includes `BlogDetailClient` component
-- TODO: confirm clicking blog category / tag pill returns correct article count (reported showing 0 articles)
+- `/blog/[slug]` detail — loaded via `fetchBlogServer(slug)` (60-s revalidate) — uses `isomorphic-dompurify` for content HTML sanitization
+- Known issues: (1) Category count pills on sidebar show counts computed from first page of posts only (not `meta.total` per category) → displayed numbers are wrong for categories not represented on page #1. (2) Tag pills are folded into `searchQuery` text search via `handleTagSearch(tag)` instead of sending the API's dedicated `tag` parameter (lib/blog.ts L47 `BlogsParams.tag` exists but client never uses it) → tag click does substring search across title/excerpt instead of proper tag filter, often returning 0 articles. (confirmed: [blog/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/blog/page.tsx#L173-L186) and L235)
 
 ### Newsletter
 - Footer Newsletter component wired to `POST /newsletter/subscribe`
@@ -149,8 +149,7 @@
 - Success state: green check panel (resets after 5 s); errors shown inline + toast
 
 ### Health Concerns (`/concern`)
-- Route + layout/loading exist; powered by `GET /health-concerns`
-- TODO: confirm full implementation (listing, filtering by concern)
+- Fully implemented. Concern grid: 12 predefined concern slugs with client-side icon map + gradient + background/border classes; calls `GET /health-concerns` for name/slug. Clicking a concern loads filtered products via `getProducts({ concernId })`, with search query box above product grid. Desktop renders `<ProductCard>`, mobile renders `<MobileProductCard>`. (confirmed: [concern/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/concern/page.tsx#L24-L156))
 
 ### Static Pages
 - `/aboutus` — content page
@@ -183,18 +182,20 @@
 | Newsletter forms wired | Done | `Newsletter.tsx` → POST `/newsletter/subscribe` |
 | Slug-mismatch fix | Done | `useProductNavigation` + guard on `product.slug` before navigation |
 | `/{category}/{slug}` route + folder rename | Done | Route exists; category mismatch → redirect |
-| Variant selector fix | Done | TODO: confirm auto-detection of attribute key (Weight/Volume/Size) — need to read variant selector component |
+| Variant selector fix | Done | Auto-detect primary key: loops `Object.keys(attributes)`, excludes reserved `Form` (secondary), takes first non-empty found key as primary (Weight/Volume/Size/Qty/anything). Implemented in BOTH full PDP and quick-view modal. (confirmed: [ProductDetails.tsx](file:///d:/laragon/www/Pansarii-Frontend/components/Desktop/components/ProductDetails.tsx#L132-L143), [ProductDetailsModal.tsx](file:///d:/laragon/www/Pansarii-Frontend/components/Desktop/components/ProductDetailsModal.tsx#L61-L72)) |
 | Build optimization (cache, static params, retries) | Done | `React.cache()` wrapper, 429 retry loops, top-50 pre-generate |
-| Static pages Quality + Pricing Policy | Done | Routes exist: `/our-commitment-to-quality`, `/pricing-policy` |
+| Static pages Quality + Pricing Policy | Done | Routes exist: `/our-commitment-to-quality`, `/pricing-policy`; content hardcoded JS arrays in-page |
+| Static page content source | Done | All info pages (`aboutus`, `quality`, `pricing-policy`) use in-file JS arrays — no CMS. (confirmed: [our-commitment-to-quality/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/our-commitment-to-quality/page.tsx#L6-L79), [pricing-policy/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/pricing-policy/page.tsx#L6-L71), [aboutus/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/aboutus/page.tsx#L9-L100)) |
 | X-Build-Token in axios interceptor | Partial | Wired in `lib/axios.ts`; `BUILD_API_TOKEN` env var used **only server-side**; TODO: confirm token value set on Vercel and 22 previously skipped products now pre-build |
-| Guest checkout backend validation display | Partial | Toast + inline errors for 422 guest name/email/phone; TODO: confirm ALL backend fields surface inline |
-| Pakistan phone validation | Partial | Regex pattern present in checkout; TODO: confirm consistent in login/register/profile forms |
-| Add-to-cart toast quick-view | Partial | TODO: confirm not showing instantly in quick-view modal |
-| Review count on product card | Missing / Partial | ProductCard shows FaStar count; TODO: confirm `reviews` number displayed on card |
-| Blog category/tag 0 articles | Missing | TODO: confirm filter returns 0 when clicked |
-| Footer category links filter vs product | Missing | TODO: confirm footer category links correctly land on product list not filter-only |
-| Rewards page 2 sections not working | Missing | TODO: confirm earn actions + redeem section both call backend |
-| Banner 812x317 inconsistent sizing | Missing | TODO: confirm banner CSS enforces aspect ratio correctly |
+| Forgot / reset password routes | Done | Wired via `laravelPost('/forgot-password')` and `laravelPost('/reset-password')`; CSRF origin validation + 3-per-email-per-hour rate limit on forgot; in-memory sliding window. (confirmed: [forgot-password/route.ts](file:///d:/laragon/www/Pansarii-Frontend/app/api/auth/forgot-password/route.ts), [reset-password/route.ts](file:///d:/laragon/www/Pansarii-Frontend/app/api/auth/reset-password/route.ts#L41-L46)) |
+| Guest checkout backend validation display | Partial | **PARTIAL (not all fields)**. GUEST: only `name/email/phone` inline — explicit 3-key whitelist at checkout L477–L481. AUTH: only `phone` inline at L508–L510. ALL OTHER backend keys (`street_address`, `city`, `order_note`, `payment_method`, `items.* stock 422`): top-level error toast + global submitError paragraph only (L470 + L530–L531), NO per-field inline red text. Expand `GuestFields interface` (L132) and remove the 3-key whitelist to fix. (confirmed: [checkout/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/checkout/page.tsx#L472-L531)) |
+| Pakistan phone validation | Partial | Checkout: PK regex `/^(\+92|0)3[0-9]{9}$/` ✅. Register: GENERIC 10–15 digit (not PK-specific) ❌. Login: no phone field. Profile: no edit form. (confirmed: [register/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/register/page.tsx#L80)) |
+| Add-to-cart toast quick-view | Partial | Guest (localStorage): instant. Auth: awaits backend POST then toasts → 300–800 ms delay. Suggestion: optimistic toast pre-call, undo on error. (confirmed: [ProductDetailsModal.tsx](file:///d:/laragon/www/Pansarii-Frontend/components/Desktop/components/ProductDetailsModal.tsx#L189-L196)) |
+| Review count on product card | Done | `· {product.reviews} reviews` rendered next to FaStar stars when `product.reviews > 0`. (confirmed: [ProductCard.tsx](file:///d:/laragon/www/Pansarii-Frontend/components/Desktop/components/ProductCard.tsx#L119-L126)) |
+| Blog category/tag 0 articles | Missing / Root cause confirmed | Category: visible count pills computed from first-9 posts slice only, NOT per-category meta totals → wrong numbers. Tag: pills mapped into `searchQuery` text search via `handleTagSearch()` instead of sending dedicated `tag` API param (which `lib/blog.ts` does support). Fix: pass `tag` separately; aggregate category counts from meta. (confirmed: [blog/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/blog/page.tsx#L173-L186) and L235) |
+| Footer category links filter vs product | Done | "Shop" column links target static route pages `/herb`, `/beauty-corner`, `/oils`, `/supplements` (each has page.tsx, layouts, and renders real product grids via API); NOT query-only filter URLs. (confirmed: [footer/LinkColumns.tsx](file:///d:/laragon/www/Pansarii-Frontend/components/Desktop/components/footer/LinkColumns.tsx#L15-L22)) |
+| Rewards page 2 sections not working | Partial | Earn: transactions historical log works from `/rewards`. Redeem: all 6 options `available: false` per explicit comment "Point redemption API is not yet available". Placeholder status. Backend POST `/rewards/redeem` pending. (confirmed: [rewards/page.tsx](file:///d:/laragon/www/Pansarii-Frontend/app/rewards/page.tsx#L94-L105)) |
+| Banner 812×317 inconsistent sizing | Missing / Code confirmed absent | `aspect-[812/317]` wrapper (or `aspect-[2.56/1]` equivalent) NOT present anywhere in codebase. Enforce in PageBanner + hero carousel. (confirmed: grep for 812, 317, aspect across TSX — only 812/317 in the task docs themselves; real aspect classes are `aspect-[9/14]` video, `aspect-[4/3]` reviews, `aspect-[17/12]` category skeleton) |
 
 ---
 

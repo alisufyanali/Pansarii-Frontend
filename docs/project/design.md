@@ -71,7 +71,8 @@
 ### Navbar
 - Desktop navbar component: `components/Desktop/components/navbar.tsx` + wrapper `SearchBarWrapper.tsx`
 - Mobile: `components/Mobile/components/header.tsx` + `MenuButton.tsx` + `IconSection.tsx` + `MenuModal.tsx` (slide-in)
-- Desktop navbar height: ~TODO: confirm sticky offset (`top-[144px]` in checkout sticky suggests header ~144 px)
+- Desktop navbar height: **~144 px** (confirmed from checkout page sticky summary `lg:top-[144px]` which clears the header exactly; `app/checkout/page.tsx`)
+  - Skeleton navbar also confirms fixed top-0 header pattern: `skeletolloading/navbar.tsx:L6`
 - Z-index layering: toasts > modal > filter drawer > sticky header
 
 ### BottomNav (mobile only)
@@ -106,7 +107,9 @@ File: `components/Desktop/components/ProductCard.tsx` / Mobile variant in `compo
 ## Quick-View Modal
 Component: `components/Desktop/components/ProductDetailsModal.tsx`
 
-- Pattern: slide-up or centered modal (TODO: confirm exact open animation)
+- Pattern: **device-dependent animation**. Evidence: `ProductDetailsModal.tsx:L218-L223` (mobile) + L499 (desktop):
+  - **Mobile**: bottom-sheet panel using `@keyframes slideUp` (translateY 100% → 0, 0.3 s ease-out) → rises from bottom of viewport
+  - **Desktop**: centered overlay panel, no slide animation (direct mount, fadeIn backdrop only)
 - Content: product image, variant selector, name, price, Add to Cart CTA
 - **Known UX issue**: Add-to-cart toast reported **not showing instantly** when added from quick-view modal (works fine from main ProductDetails page) — investigate modal DOM / toast container z-index + CartContext update timing
 

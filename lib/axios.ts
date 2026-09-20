@@ -129,6 +129,26 @@ apiClient.interceptors.response.use(
 
   // Handle errors
   (error: AxiosError) => {
+    // ── Handle 403 must_change_password ──────────────────────────────────────
+    if (error.response?.status === 403) {
+      const data = error.response.data as { must_change_password?: boolean } | undefined;
+      if (data?.must_change_password === true) {
+        if (typeof window !== 'undefined') {
+          // Update stored user to have must_change_password = true without wiping token
+          const user = getStoredUser<Record<string, unknown>>();
+          if (user) {
+            user.must_change_password = true;
+            localStorage.setItem(USER_KEY, JSON.stringify(user));
+          }
+
+          // Avoid redirect loop if already on /change-password
+          if (!window.location.pathname.startsWith('/change-password')) {
+            window.location.href = '/change-password';
+          }
+        }
+      }
+    }
+
     if (error.response?.status === 401) {
       // Extract the URL of the request that failed.
       // error.config.url is relative (e.g. "/login"), matching AUTH_ENDPOINTS.

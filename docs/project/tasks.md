@@ -31,7 +31,7 @@
   - Verified: nested folder structure under `app/[slug]/[productSlug]` shares dynamic segment name; category mismatch triggers `redirect()` to canonical URL; `generateStaticParams()` returns empty array to avoid 429 storms. ✅
 
 - [x] **Variant selector fix**
-  - Verified partial: types/api has `variant.attributes?: Record<string,string>` + `unit` — TODO: confirm variant selector component reads attribute key dynamically (need to read ProductDetails / variant selector component) ⚠️
+  - Fully verified ✅: Both `ProductDetails.tsx:L132-L143` and `ProductDetailsModal.tsx:L61-L72` iterate `Object.keys(attributes)` excluding reserved `Form`, return first non-empty key as primary (Weight/Volume/Size). No hardcoded `.Weight` access anywhere. Attribute label = `${attrValue} ${unit}`.
 
 - [x] **Build optimization (React.cache(), static params cap, 429 retries)**
   - Verified: `getProductBySlug = cache(async (slug) => {...})` in `lib/products.ts`; `generateStaticParams()` caps at 50 API products; build-time vs runtime policy split via `NEXT_PHASE === 'phase-production-build'`; 2 attempts + 10 s cap at build; returns null (not throw) for build 429. ✅
@@ -41,6 +41,9 @@
 
 - [x] **Static pages — Pricing Policy**
   - Verified: `app/pricing-policy/page.tsx` + layout.tsx exist. ✅
+
+- [x] **Review count display on product card**
+  - Verified ✅: `ProductCard.tsx:L119-L126` renders `· {product.reviews} reviews` grey span when `product.reviews > 0` (right after star count + numeric rating). Nothing missing.
 
 ---
 
@@ -69,20 +72,19 @@
 
 ## PENDING (P1 — important, not ship-blocking)
 
-- [ ] **P1: Review count display on product card**
-  - Currently: ProductCard shows stars + `product.rating` but check if `reviews_count` number (e.g. "(12 reviews)") is rendered. Audit `ProductCard.tsx` full code; add review count if missing.
+- [ ] **P1: Register page phone validator NOT Pakistan-specific**
+  - Currently: `register/page.tsx:L80` uses generic `/^[0-9]{10,15}$/` (accepts any 10-15 digits). Checkout uses PK pattern `/^(\+92|0)3[0-9]{9}$/`.
+  - Fix: Replace register regex with checkout's PK pattern; add error hint display "e.g. 03XXXXXXXXX". Login has no phone field. Profile has no edit form (confirmed).
 
-- [ ] **P1: Blog category / tag click showing 0 articles**
-  - Verify category_id + tag API params match server endpoint in blog listing page; check URL param read + filter apply; test with real category slug to ID conversion.
+- [ ] **P1: Blog category pill counts computed from first-page slice only; tag pills use text search not dedicated param**
+  - Root cause confirmed dual: (1) `blog/page.tsx:L173-L186` category/tag count pills aggregate against first-9 posts array only, not backend meta per-category totals → undercounts on page 1, reads 0 on page 2+. (2) `handleTagSearch(tag)` at L235 calls `handleSearch(tag)` folding the tag into text query instead of passing `BlogsParams.tag` string (which `lib/blog.ts L47` already supports).
+  - Fix: (1) Aggregate pill counts from a separate uncapped API fetch or backend meta; (2) Call `getBlogs({ ...params, tag: tagName })` directly on tag click instead of text search.
 
-- [ ] **P1: Footer category links — show products instead of just filter**
-  - Ensure clicks on footer category links (Herbs, Oils, etc.) navigate to correct page WITH products loaded, not to a blank filter-only view. Verify `?category=` URL triggers API fetch with correct category_id on shop/category pages.
-
-- [ ] **P1: Rewards page — 2 sections not working**
-  - Rewards page (`/rewards`) has earn + redeem sections. Verify:
-    1. All earn actions (Purchase, Review, Refer, Share) hit backend endpoints, or indicate "coming soon" if backend not ready.
-    2. Redeem section actually calls backend on coupon apply / point redemption, or shows "coming soon" if backend not ready.
-  - Never show a broken button with no action.
+- [ ] **P1: Rewards page earn + redeem UI not fully wired to backend**
+  - Audit confirmed (`rewards/page.tsx:L66-L105`):
+    - **Earn**: Purchase = correctly reflects GET /rewards response (auto backend). Review = CTA to /shop only. Refer/Share/Birthday/Streak = UI cards only with NO backend hooks.
+    - **Redeem**: All 6 options `available: false` with explicit comment at L94-97 "Point redemption API is not yet available". No redeem action wired.
+  - Task: Awaiting backend `POST /rewards/redeem` endpoint ship → set `available:true` + wire form. Add CTA-only messaging for Refer/Share if backend not shipping soon.
 
 ---
 
