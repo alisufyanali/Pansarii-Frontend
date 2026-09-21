@@ -45,6 +45,10 @@
 - [x] **Review count display on product card**
   - Verified ✅: `ProductCard.tsx:L119-L126` renders `· {product.reviews} reviews` grey span when `product.reviews > 0` (right after star count + numeric rating). Nothing missing.
 
+- [x] **Phone/email login (backend)** — `AuthApiController` accepts `login` key (email ya phone; last-10-digits match). 5 failed attempts pe lockout (429). Evidence: temp-user tests email/03../+92.. → 200; 6th galat attempt → 429. ✅
+
+- [x] **must_change_password flow (backend)** — middleware `EnsurePasswordChanged`, change-password endpoint, `api.logout` route. Evidence: login → 403 → change-password 422/200 → same token 200 → old password 401. ✅
+
 ---
 
 ## IN PROGRESS ⚠️
@@ -53,6 +57,14 @@
   - Axios interceptor wired correctly (`lib/axios.ts` L88–L110): reads `BUILD_API_TOKEN` server-only; sets `X-Build-Token` header. ✅
   - **PENDING**: `BUILD_API_TOKEN` value set in Vercel dashboard (uncheck "Browser" scope)
   - **PENDING**: Pre-build dry-run confirms 22 previously-skipped products now render at build time (run `npm run build` → compare "Generating static pages" count before/after)
+
+- [ ] **Forced password change (frontend)** — code complete + `tsc --noEmit` exit 0 + guards code-reviewed. **PENDING**: browser test (phone login, /profile /checkout /orders redirect, weak password errors, success flow).
+
+- [ ] **user.phone null in login and /api/user** (imported users ka `users.phone` null) — backend fix pending.
+
+- [ ] **CustomerImportSeeder** — code done, test mode (20 records). **PENDING**: role check, DB backup, `array_slice` ko `is_array` ke neeche, `Customer::whereNull('user_id')->count()`, 20-record run + tinker check, full run, customers ko notify.
+
+- [ ] **Production: must_change_password migration + backend deploy** (frontend se pehle).
 
 ---
 
@@ -64,6 +76,7 @@
 
 - [ ] **P0: Pakistan phone validation everywhere (login / register / profile forms)**
   - Currently: checkout has `/^(\+92|0)3[0-9]{9}$/` pattern. Audit: `/login`, `/register`, `/profile`, `/change-password`, `/forgot-password` phone fields. Apply same pattern.
+  - **Note**: Login field ab email ya phone (10-digit check) leta hai, change-password mein phone field nahi.
 
 - [ ] **P0: Add-to-cart toast not showing instantly in Quick View**
   - Reproduce: open ProductDetailsModal → add item → toast timing vs full PDP. Check CartContext.addToCart call path in modal; check ToastContainer z-index (999999 is set); investigate if modal unmount clears toast; ensure `toast.success()` fires BEFORE modal close if at all.
@@ -111,8 +124,17 @@
   - robots.txt: confirms `/api` and all transactional pages blocked
   - 308 /products/→/{slug}: confirm with `curl -I`
 
-- [ ] **P2: Hostinger VPS deployment decision (backend side)**
-  - Not frontend code task. Status: owner decision pending on whether backend migrates from current infra to Hostinger VPS. Track only, no code changes.
+- [ ] **P2: Hostinger VPS deployment decision (backend side)** — merged with BACKEND section below. Track only, no code changes.
+
+---
+
+## BACKEND (tracked here)
+
+- [ ] **Manjistha merge** — naam/thumbnail decision pending; doosre slug ka 308; `order_items` repoint.
+
+- [ ] **fileinfo extension** — cPanel se extension enable, warna `move_uploaded_file` + `getimagesize` fallback.
+
+- [ ] **Hostinger VPS decision** — backend current infra se Hostinger VPS pe migrate karna ya nahi; owner decision pending.
 
 ---
 
@@ -125,3 +147,15 @@ After completing any item above, append:
 - Date: YYYY-MM-DD
 - Notes: <anything unexpected>
 ```
+
+---
+
+### Task: Phone/email login (backend)
+- Verified by: temp-user API tests — email/03../+92.. → 200; 6th galat attempt → 429; `AuthApiController` `login` key + last-10-digits match confirmed.
+- Date: 2026-09-21
+- Notes: Frontend `login` key bhi update kar diya gaya (AuthContext.tsx + login/page.tsx).
+
+### Task: must_change_password flow (backend)
+- Verified by: login → 403 → `POST /api/change-password` 422 (weak) → 200 (strong) → same token → 200; old password → 401. Middleware `EnsurePasswordChanged`, `api.logout` route confirmed.
+- Date: 2026-09-21
+- Notes: Frontend interceptor (403 loop-guard), ProfileLayout guard, checkout guard, MobileProfileView guard sab code-reviewed. `tsc --noEmit` exit 0.
