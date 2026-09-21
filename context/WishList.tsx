@@ -11,7 +11,7 @@ import React, {
   useRef,
 } from 'react';
 import { toast } from 'react-toastify';
-import { getAuthToken } from '@/lib/axios';
+import { getAuthToken, getStoredUser } from '@/lib/axios';
 import {
   getWishlist,
   addToWishlistApi,
@@ -143,6 +143,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const initializedRef = useRef(false);
+  // Ensures mergeGuestWishlist runs at most once per login session.
+  // Reset to false on logout/re-login by clearWishlist (called from AuthContext).
+  const mergedRef = useRef(false);
 
   // ── Initialize ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -150,6 +153,16 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     initializedRef.current = true;
 
     if (isLoggedIn()) {
+      // If the user must change their password first, skip all API syncing.
+      // The merge will be triggered by updateMustChangePassword(false) instead.
+      const storedUser = getStoredUser<{ must_change_password?: boolean }>();
+      if (storedUser?.must_change_password === true) {
+        const local = readLocalWishlist();
+        setWishlistItems(local);
+        log('⏭️  Skipping API sync — must_change_password is true');
+        return;
+      }
+
       const guestItems = readLocalWishlist();
       if (guestItems.length > 0) {
         // Token restored from storage — merge pending guest wishlist
@@ -181,7 +194,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
           } catch (err) {
             log('⚠️  Sync failed on mount, keeping local wishlist as fallback:', apiErrMsg(err));
             if (failedItems.length > 0) writeLocalWishlist(failedItems);
-            toast.error('Failed to sync wishlist. Your items are saved locally.');
+            // Suppress toast on auth errors — not actionable by the user.
+            const status = getHttpStatus(err);
+            if (status !== 401 && status !== 403) {
+              toast.error('Failed to sync wishlist. Your items are saved locally.');
+            }
           } finally {
             setIsWishlistLoading(false);
           }
@@ -232,6 +249,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   // ── mergeGuestWishlist ──────────────────────────────────────────────────────
   const mergeGuestWishlist = useCallback(async () => {
+    // Run at most once per login session.
+    if (mergedRef.current) {
+      log('⏭️  mergeGuestWishlist already ran this session, skipping');
+      return;
+    }
+    mergedRef.current = true;
+
     const guestItems = readLocalWishlist();
     if (guestItems.length === 0) {
       await syncFromApi();
@@ -269,7 +293,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       // Sync failed — DO NOT clear local storage; keep guest items as fallback.
       log('⚠️ Sync failed, keeping local wishlist as fallback:', apiErrMsg(err));
       if (failedItems.length > 0) writeLocalWishlist(failedItems);
-      toast.error('Failed to sync wishlist. Your items are saved locally.');
+      // Suppress toast for auth errors (401/403) — these are expected for
+      // must_change_password users and are not actionable by the user.
+      const status = getHttpStatus(err);
+      if (status !== 401 && status !== 403) {
+        toast.error('Failed to sync wishlist. Your items are saved locally.');
+      }
     }
   }, [syncFromApi]);
 
@@ -350,6 +379,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   // ── clearWishlist ───────────────────────────────────────────────────────────
   const clearWishlist = useCallback(() => {
     setWishlistItems([]);
+    mergedRef.current = false; // reset so next login can trigger merge again
     if (!isLoggedIn()) clearLocalWishlist();
   }, []);
 

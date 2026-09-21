@@ -104,6 +104,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return updated;
     });
+    // Password has just been changed — now safe to merge the guest wishlist.
+    // This is the deferred merge skipped in login() for must_change_password users.
+    if (!mustChange && wishlistMergeRef.current) {
+      wishlistMergeRef.current().catch(() => { /* non-blocking */ });
+    }
   }, []);
 
   // Rehydrate from localStorage on mount
@@ -140,8 +145,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (cartMergeRef.current) {
       try { await cartMergeRef.current(); } catch { /* non-blocking */ }
     }
-    // Merge guest wishlist into API wishlist after successful login
-    if (wishlistMergeRef.current) {
+    // Merge guest wishlist into API wishlist after successful login.
+    // Skip if the user must change their password first — the API will return
+    // 403 on every wishlist request until the password is changed.
+    // The merge is deferred to updateMustChangePassword(false) instead.
+    if (!mustChange && wishlistMergeRef.current) {
       try { await wishlistMergeRef.current(); } catch { /* non-blocking */ }
     }
 
