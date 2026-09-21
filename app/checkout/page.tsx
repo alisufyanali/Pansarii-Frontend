@@ -17,6 +17,8 @@ import { createOrder, createGuestOrder } from '@/lib/orders';
 import { validateCoupon, type CouponResult } from '@/lib/coupons';
 import { getCities, DEFAULT_SHIPPING, type City } from '@/lib/cities';
 import { useCartStockValidation } from '@/lib/stockValidation';
+import { normalizePkPhone, PAK_PHONE_ERROR } from '@/lib/phone';
+import { isValidEmail } from '@/lib/validation';
 
 type CheckoutMode = 'pending' | 'guest' | 'auth';
 
@@ -247,16 +249,13 @@ export default function CheckoutPage() {
   const validateGuestFields = (): boolean => {
     const errs: Partial<GuestFields> = {};
     if (!guestName.trim()) errs.name = 'Full name is required';
-    if (!guestEmail.trim()) errs.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(guestEmail)) errs.email = 'Email is invalid';
-    
-    if (!guestPhone) {
-      errs.phone = 'Phone number is required';
-    } else {
-      const cleanPhone = guestPhone.replace(/[\s\-\(\)]/g, '');
-      if (!/^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
-        errs.phone = 'Please enter a valid Pakistani mobile number (e.g. 03XXXXXXXXX)';
-      }
+    if (guestEmail && !isValidEmail(guestEmail)) errs.email = 'Email is invalid';
+
+    const normalizedGuestPhone = normalizePkPhone(guestPhone);
+    if (!normalizedGuestPhone) {
+      errs.phone = guestPhone
+        ? PAK_PHONE_ERROR
+        : 'Phone number is required';
     }
     setGuestFieldErrors(errs);
     return Object.keys(errs).length === 0;
@@ -326,9 +325,8 @@ export default function CheckoutPage() {
         setAuthPhoneError('Phone number is required');
         phoneInvalid = true;
       } else {
-        const cleanPhone = phoneValue.replace(/[\s\-\(\)]/g, '');
-        if (!/^(\+92|0)3[0-9]{9}$/.test(cleanPhone)) {
-          setAuthPhoneError('Please enter a valid Pakistani mobile number (e.g. 03XXXXXXXXX)');
+        if (!normalizePkPhone(phoneValue)) {
+          setAuthPhoneError(PAK_PHONE_ERROR);
           phoneInvalid = true;
         }
       }

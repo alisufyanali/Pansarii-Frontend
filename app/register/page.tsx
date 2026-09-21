@@ -8,7 +8,8 @@ import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiPhone, FiCheck } from 'react
 import { toast } from 'react-toastify';
 import { useAuth, extractFieldErrors } from '@/context/AuthContext';
 import { getApiErrorMessage } from '@/lib/axios';
-import { isValidPakistanPhone, PAKISTAN_PHONE_ERROR } from '@/lib/validation';
+import { normalizePkPhone, PAK_PHONE_ERROR } from '@/lib/phone';
+import { isValidEmail } from '@/lib/validation';
 
 // ─── Field error shape ────────────────────────────────────────────────────────
 interface RegisterFields {
@@ -72,14 +73,16 @@ export default function RegisterPage() {
   const [termsAccepted,       setTermsAccepted]       = useState(false);
 
   // ── Client validation ───────────────────────────────────────────────────────
+  const normalizedPhone = normalizePkPhone(formData.phone);
+
   const validate = (): boolean => {
     const errs: typeof fieldErrors = {};
     if (!formData.name || formData.name.length < 2)
       errs.name = 'Name must be at least 2 characters';
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email))
-      errs.email = 'Valid email is required';
-    if (!formData.phone || !isValidPakistanPhone(formData.phone))
-      errs.phone = PAKISTAN_PHONE_ERROR;
+    if (formData.email && !isValidEmail(formData.email))
+      errs.email = 'Email is invalid';
+    if (!normalizedPhone)
+      errs.phone = PAK_PHONE_ERROR;
     if (!formData.password || formData.password.length < 8)
       errs.password = 'Password must be at least 8 characters';
     if (formData.password !== formData.confirmPassword)
@@ -107,8 +110,8 @@ export default function RegisterPage() {
     try {
       await register({
         name:                  formData.name,
-        email:                 formData.email,
-        phone:                 formData.phone,
+        email:                 formData.email || undefined,
+        phone:                 normalizedPhone!,
         password:              formData.password,
         password_confirmation: formData.confirmPassword,
       });
@@ -177,7 +180,7 @@ export default function RegisterPage() {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                Email Address <span className="text-xs text-gray-400 font-normal">(optional)</span>
               </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />

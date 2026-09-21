@@ -4,11 +4,11 @@
 import { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiPhone, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import { useAuth, extractFieldErrors } from '@/context/AuthContext';  
+import { useAuth, extractFieldErrors } from '@/context/AuthContext';
 import { getApiErrorMessage } from '@/lib/axios';
-import { isValidPakistanPhone, PAKISTAN_PHONE_ERROR } from '@/lib/validation';
+import { normalizePkPhone, PAK_PHONE_ERROR } from '@/lib/phone';
 
 // ─── Wrapper ──────────────────────────────────────────────────────────────────
 
@@ -99,16 +99,15 @@ function LoginPageContent() {
     );
   }
 
-  // ── Client validation ───────────────────────────────────────────────────────
+  const normalizedLogin = normalizePkPhone(formData.login);
+
   const validate = (): boolean => {
     const errs: Partial<LoginFields> = {};
     const trimmedLogin = formData.login.trim();
     if (!trimmedLogin) {
-      errs.login = 'Email ya phone number zaroori hai';
-    } else if (!trimmedLogin.includes('@')) {
-      if (!isValidPakistanPhone(trimmedLogin)) {
-        errs.login = PAKISTAN_PHONE_ERROR;
-      }
+      errs.login = 'Mobile number zaroori hai';
+    } else if (!normalizedLogin) {
+      errs.login = PAK_PHONE_ERROR;
     }
 
     if (!formData.password) {
@@ -130,7 +129,7 @@ function LoginPageContent() {
     setIsLoading(true);
     try {
       const { must_change_password } = await login({
-        login: formData.login.trim(),
+        login: normalizedLogin!,
         password: formData.password,
       });
 
@@ -198,17 +197,17 @@ function LoginPageContent() {
               </div>
             )}
 
-            {/* Login (Email ya Phone number) */}
+            {/* Mobile number */}
             <div>
               <label htmlFor="login" className="block text-sm font-medium text-gray-700 mb-2">
-                Email ya Phone number
+                Mobile number
               </label>
               <div className="relative">
-                <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="login" name="login" type="text" autoComplete="username"
+                  id="login" name="login" type="tel" autoComplete="tel"
                   value={formData.login} onChange={handleChange} disabled={isLoading}
-                  placeholder="name@example.com ya 03001234567"
+                  placeholder="03001234567 ya +923001234567"
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all disabled:opacity-60 ${fieldErrors.login ? 'border-red-500' : 'border-gray-300'}`}
                 />
               </div>
