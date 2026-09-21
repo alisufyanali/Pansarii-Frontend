@@ -1,9 +1,11 @@
 // app/track-order/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { isAxiosError } from "@/lib/axios";
 import { trackOrder, type ApiOrder } from "@/lib/orders";
+import { normalizePkPhone } from "@/lib/phone";
 import {
   FaSearch,
   FaBox,
@@ -207,15 +209,27 @@ function formatCurrency(amount: number): string {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function TrackOrderPage() {
+  const searchParams = useSearchParams();
+  const autoSearchedRef = useRef(false);
+
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [order, setOrder] = useState<DisplayOrder | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expandedItems, setExpandedItems] = useState(false);
 
-  const handleSearch = async () => {
-    if (!orderNumber.trim()) {
+  const handleSearch = async (opts?: {
+    orderNumberOverride?: string;
+    emailOverride?: string;
+    phoneOverride?: string;
+  }) => {
+    const on = (opts?.orderNumberOverride ?? orderNumber).trim();
+    const em = (opts?.emailOverride ?? email).trim();
+    const ph = (opts?.phoneOverride ?? phone).trim();
+
+    if (!on) {
       setError("Please enter your Order Number.");
       return;
     }
@@ -223,19 +237,60 @@ export default function TrackOrderPage() {
     setError("");
     setOrder(null);
     try {
-      const apiOrder = await trackOrder(orderNumber.trim(), email.trim());
+      const cleanPhone = normalizePkPhone(ph);
+      let apiOrder: ApiOrder;
+      if (cleanPhone) {
+        try {
+          apiOrder = await trackOrder(on, cleanPhone, "phone");
+        } catch (err) {
+          if (em) {
+            apiOrder = await trackOrder(on, em, "email");
+          } else {
+            throw err;
+          }
+        }
+      } else if (em) {
+        apiOrder = await trackOrder(on, em, "email");
+      } else {
+        const e = new Error("Email or phone is required to look up an order.");
+        (e as unknown as { display?: boolean }).display = true;
+        throw e;
+      }
       setOrder(mapApiOrderToDisplay(apiOrder));
     } catch (err) {
-      if (isAxiosError(err)) {
+      if ((err as { display?: boolean }).display) {
+        setError((err as Error).message);
+      } else if (isAxiosError(err)) {
         const msg = (err.response?.data as { message?: string })?.message;
-        setError(msg || "Order not found. Please check your details.");
+        setError(msg || "Order not found. Please check your details and try with your email or phone.");
       } else {
-        setError("Order not found. Please check your details.");
+        setError("Order not found. Please check your details and try with your email or phone.");
       }
     } finally {
       setLoading(false);
     }
   };
+
+  // ── Auto-run when URL has a pre-filled order param ─────────────────────
+  useEffect(() => {
+    if (autoSearchedRef.current) return;
+    const fromUrl = searchParams.get("order")
+      || searchParams.get("order_number")
+      || searchParams.get("orderNumber")
+      || "";
+    const emailFromUrl = searchParams.get("email") || "";
+    const phoneFromUrl = searchParams.get("phone") || "";
+    if (!fromUrl) return;
+    autoSearchedRef.current = true;
+    setOrderNumber(fromUrl);
+    setEmail(emailFromUrl);
+    setPhone(phoneFromUrl);
+    void handleSearch({
+      orderNumberOverride: fromUrl,
+      emailOverride: emailFromUrl,
+      phoneOverride: phoneFromUrl,
+    });
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -253,24 +308,39 @@ export default function TrackOrderPage() {
       {/* Search Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto border border-gray-200">
-          <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-1 md:grid-cols-7 gap-4">
             {/* Order Number */}
-            <div className="md:col-span-1">
+            <div className="md:col-span-2">
               <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-1.5 sm:mb-2">
-                Order Number
+                Order Number <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={orderNumber}
                 onChange={(e) => setOrderNumber(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="PANS-789456"
+                placeholder="ORDER-50003"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition bg-white text-gray-900"
+              />
+            </div>
+
+            {/* Phone */}
+            <div className="md:col-span-2">
+              <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-1.5 sm:mb-2">
+                Phone Number <span className="text-gray-400 font-normal">(Recommended)</span>
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="03XXXXXXXXX or +923XXXXXXXXX"
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition bg-white text-gray-900"
               />
             </div>
 
             {/* Email (optional) */}
-            <div className="md:col-span-1">
+            <div className="md:col-span-2">
               <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-1.5 sm:mb-2">
                 Email Address{" "}
                 <span className="text-gray-400 font-normal">(Optional)</span>
@@ -288,7 +358,7 @@ export default function TrackOrderPage() {
             {/* Search Button */}
             <div className="md:col-span-1 flex items-end">
               <button
-                onClick={handleSearch}
+                onClick={() => void handleSearch()}
                 disabled={loading}
                 className="w-full bg-green-700 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg text-sm sm:text-base font-semibold hover:bg-green-800 transition-all shadow hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
               >

@@ -157,7 +157,7 @@ apiClient.interceptors.response.use(
 
       // Pages where a 401 must NOT trigger a redirect — let the caller
       // show an inline error instead (e.g. guest order confirmation).
-      const NO_REDIRECT_PATHS = ['/order-confirmation'];
+      const NO_REDIRECT_PATHS = ['/order-confirmation', '/track-order'];
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
       const skipRedirectPath = NO_REDIRECT_PATHS.some(
         p => currentPath === p || currentPath.startsWith(p + '/'),
