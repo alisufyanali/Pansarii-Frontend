@@ -429,7 +429,13 @@ export default function CheckoutPage() {
           toast.success('Order placed successfully!');
         }
 
-        router.push(`/order-confirmation?orderId=${order.id}`);
+        const confirmParams = new URLSearchParams();
+        confirmParams.set('orderId', String(order.id));
+        if (order.order_number) confirmParams.set('order_number', order.order_number);
+        if (guestPhone)         confirmParams.set('phone', guestPhone);
+        if (guestEmail.trim())  confirmParams.set('email', guestEmail.trim());
+        confirmParams.set('mode', 'guest');
+        router.push(`/order-confirmation?${confirmParams.toString()}`);
       } else {
         const order = await createOrder({
           phone:             phoneValue || undefined,
@@ -443,7 +449,12 @@ export default function CheckoutPage() {
         });
 
         await clearCart();
-        router.push(`/order-confirmation?orderId=${order.id}`);
+
+        const confirmParams = new URLSearchParams();
+        confirmParams.set('orderId', String(order.id));
+        if (order.order_number) confirmParams.set('order_number', order.order_number);
+        confirmParams.set('mode', 'auth');
+        router.push(`/order-confirmation?${confirmParams.toString()}`);
       }
     } catch (err) {
       console.error('Order submission error:', err);

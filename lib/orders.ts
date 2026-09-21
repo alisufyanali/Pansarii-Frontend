@@ -105,8 +105,61 @@ export interface GuestOrderResult extends ApiOrder {
 }
 
 export const createGuestOrder = async (payload: CreateGuestOrderPayload): Promise<GuestOrderResult> => {
-  const res = await api.post<ApiResponse<GuestOrderResult>>('/orders/guest', payload);
-  return res.data;
+  const raw = await apiClient.post<unknown>('/orders/guest', payload);
+  const body = raw.data as
+    | ApiResponse<GuestOrderResult>
+    | GuestOrderResult
+    | { success: boolean; data?: unknown; message?: string };
+
+  if (typeof process === 'undefined' || process.env.NODE_ENV !== 'production') {
+    console.debug('[createGuestOrder] raw response body:', body);
+  }
+
+  let order: GuestOrderResult;
+  if (body && typeof body === 'object' && 'data' in body && body.data && typeof (body as ApiResponse<GuestOrderResult>).data === 'object' && ('id' in (body as ApiResponse<GuestOrderResult>).data || 'order_number' in (body as ApiResponse<GuestOrderResult>).data)) {
+    order = (body as ApiResponse<GuestOrderResult>).data as GuestOrderResult;
+  } else if (body && typeof body === 'object' && ('id' in (body as GuestOrderResult) || 'order_number' in (body as GuestOrderResult))) {
+    order = body as GuestOrderResult;
+  } else {
+    console.warn('[createGuestOrder] unrecognised response shape — treating body as order directly:', body);
+    order = body as GuestOrderResult;
+  }
+
+  if (typeof process === 'undefined' || process.env.NODE_ENV !== 'production') {
+    console.debug('[createGuestOrder] resolved order.id=', order?.id, 'order_number=', order?.order_number);
+  }
+
+  return order;
+};
+
+export const trackOrder = async (orderNumber: string, emailOrPhone: string, kind: 'email' | 'phone' = 'email'): Promise<ApiOrder> => {
+  const params: Record<string, string> = { order_number: orderNumber };
+  if (kind === 'email') params.email = emailOrPhone;
+  else params.phone = emailOrPhone;
+
+  const res = await apiClient.get<
+    | ApiResponse<ApiOrder>
+    | ApiOrder
+    | { success: boolean; data?: unknown; message?: string }
+  >('/orders/track', { params });
+
+  const body = res.data;
+
+  if (typeof process === 'undefined' || process.env.NODE_ENV !== 'production') {
+    console.debug('[trackOrder] raw body:', body, 'params=', params);
+  }
+
+  let order: ApiOrder;
+  if (body && typeof body === 'object' && 'data' in body && body.data && typeof (body as ApiResponse<ApiOrder>).data === 'object' && ('id' in (body as ApiResponse<ApiOrder>).data || 'order_number' in (body as ApiResponse<ApiOrder>).data)) {
+    order = (body as ApiResponse<ApiOrder>).data as ApiOrder;
+  } else if (body && typeof body === 'object' && ('id' in (body as ApiOrder) || 'order_number' in (body as ApiOrder))) {
+    order = body as ApiOrder;
+  } else {
+    console.warn('[trackOrder] unrecognised response shape — treating body as order directly:', body);
+    order = body as ApiOrder;
+  }
+
+  return order;
 };
 
 export const getOrders = async (
@@ -139,12 +192,4 @@ export const cancelOrder = async (
     { reason, ...(comment ? { comment } : {}) },
   );
   return res.data.data;
-};
-
-export const trackOrder = async (orderNumber: string, email: string): Promise<ApiOrder> => {
-  const res = await api.get<ApiResponse<ApiOrder>>('/orders/track', {
-    order_number: orderNumber,
-    email,
-  });
-  return res.data;
 };

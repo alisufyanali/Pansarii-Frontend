@@ -7,7 +7,8 @@ import { FaCheckCircle, FaBox, FaTruck, FaDownload, FaHome, FaStore, FaWhatsapp 
 import { FiPackage } from 'react-icons/fi';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { getOrderById, type ApiOrder } from '@/lib/orders';
+import { getOrderById, trackOrder, type ApiOrder } from '@/lib/orders';
+import { normalizePkPhone } from '@/lib/phone';
 import Invoice, { type InvoiceData, type PaymentStatus } from '@/components/Invoice/Invoice';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -230,13 +231,22 @@ function OrderConfirmationContent() {
   const searchParams = useSearchParams();
   const router       = useRouter();
   const printRef     = useRef<HTMLDivElement>(null);
+  const fetchRanRef  = useRef(false);
 
   const [order,      setOrder]      = useState<ApiOrder | null>(null);
   const [fetchError, setFetchError] = useState('');
   const [loading,    setLoading]    = useState(true);
 
   useEffect(() => {
-    const orderIdRaw = searchParams.get('orderId');
+    if (fetchRanRef.current) return;
+    fetchRanRef.current = true;
+
+    const orderIdRaw   = searchParams.get('orderId');
+    const orderNumber  = searchParams.get('order_number');
+    const mode         = (searchParams.get('mode') as 'guest' | 'auth' | null) ?? null;
+    const phone        = searchParams.get('phone') ?? '';
+    const email        = searchParams.get('email') ?? '';
+
     if (!orderIdRaw) { router.push('/'); return; }
 
     const orderId = Number(orderIdRaw);
@@ -248,14 +258,15 @@ function OrderConfirmationContent() {
       return () => cancelAnimationFrame(frame);
     }
 
-    // Guest orders: use data stored at checkout (no auth token for API fetch)
+    let cancelled = false;
+
+    // ── Guest orders: prefer sessionStorage cache ──────────────────────────
     try {
       const cached = sessionStorage.getItem('last-guest-order');
       if (cached) {
         const parsed = JSON.parse(cached) as ApiOrder;
-        if (parsed.id === orderId) {
+        if (parsed.id === orderId || (orderNumber && parsed.order_number === orderNumber)) {
           setOrder(parsed);
-          sessionStorage.removeItem('last-guest-order');
           setLoading(false);
           return;
         }
@@ -264,10 +275,51 @@ function OrderConfirmationContent() {
       // fall through to API fetch
     }
 
-    getOrderById(orderId)
-      .then(data => setOrder(data))
-      .catch(() => setFetchError('Could not load order details. The order may not exist or you may not have permission to view it.'))
-      .finally(() => setLoading(false));
+    // ── API fallback ──────────────────────────────────────────────────────
+    const resolveOrder = async (): Promise<ApiOrder> => {
+      if (mode === 'guest') {
+        // Guests are not authenticated — use the public track endpoint
+        // with order_number + phone (or email) instead of /orders/{id}.
+        if (orderNumber) {
+          const cleanPhone = normalizePkPhone(phone);
+          if (cleanPhone) {
+            try { return await trackOrder(orderNumber, cleanPhone, 'phone'); }
+            catch (err) {
+              console.warn('[order-confirmation] trackOrder(phone) failed, trying email fallback:', err);
+            }
+          }
+          if (email) {
+            try { return await trackOrder(orderNumber, email, 'email'); }
+            catch (err) {
+              console.warn('[order-confirmation] trackOrder(email) also failed:', err);
+              throw err;
+            }
+          }
+          if (!cleanPhone && !email) {
+            throw new Error('No phone or email provided for guest order lookup.');
+          }
+        }
+        // Fallback without order_number — attempt authenticated fetch
+        // (will 401 if no token, but interceptor skips redirect on this page).
+        return await getOrderById(orderId);
+      }
+
+      // Authenticated mode — use standard auth fetch
+      return await getOrderById(orderId);
+    };
+
+    resolveOrder()
+      .then(data => { if (!cancelled) setOrder(data); })
+      .catch(() => {
+        if (!cancelled) {
+          setFetchError(
+            'Could not load order details. The order may not exist or you may not have permission to view it.',
+          );
+        }
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
   }, [searchParams, router]);
 
   const handleDownload = () => {

@@ -155,7 +155,15 @@ apiClient.interceptors.response.use(
       const requestUrl = error.config?.url ?? '';
       const isAuthEndpoint = AUTH_ENDPOINTS.some(ep => requestUrl.endsWith(ep));
 
-      if (!isAuthEndpoint) {
+      // Pages where a 401 must NOT trigger a redirect — let the caller
+      // show an inline error instead (e.g. guest order confirmation).
+      const NO_REDIRECT_PATHS = ['/order-confirmation'];
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      const skipRedirectPath = NO_REDIRECT_PATHS.some(
+        p => currentPath === p || currentPath.startsWith(p + '/'),
+      );
+
+      if (!isAuthEndpoint && !skipRedirectPath) {
         // Token expired or invalid on a protected route — clean up and
         // redirect to login so the user can re-authenticate.
         clearAuthData();
@@ -168,8 +176,9 @@ apiClient.interceptors.response.use(
           window.location.href = `/login?returnTo=${returnTo}`;
         }
       }
-      // For auth endpoints: fall through to Promise.reject so the caller's
-      // catch block handles the 401 as a normal "wrong credentials" error.
+      // For auth endpoints / no-redirect paths: fall through to
+      // Promise.reject so the caller's catch block handles the 401
+      // inline (e.g. wrong credentials or guest order lookup).
     }
 
     return Promise.reject(error);
