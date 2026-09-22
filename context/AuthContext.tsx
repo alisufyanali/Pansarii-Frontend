@@ -38,7 +38,7 @@ interface LoginPayload {
 
 interface RegisterPayload {
   name: string;
-  email: string;
+  email?: string;
   password: string;
   password_confirmation: string;
   phone: string;
