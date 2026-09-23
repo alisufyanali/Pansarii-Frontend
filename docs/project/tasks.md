@@ -45,7 +45,8 @@
 - [x] **Review count display on product card**
   - Verified ✅: `ProductCard.tsx:L119-L126` renders `· {product.reviews} reviews` grey span when `product.reviews > 0` (right after star count + numeric rating). Nothing missing.
 
-- [x] **Phone/email login (backend)** — `AuthApiController` accepts `login` key (email ya phone; last-10-digits match). 5 failed attempts pe lockout (429). Evidence: temp-user tests email/03../+92.. → 200; 6th galat attempt → 429. ✅
+- [x] **Phone login (backend)** — `AuthApiController` accepts `login` key (phone only; last-10-digits match). 5 failed attempts pe lockout (429). Evidence: temp-user tests 03../+92.. → 200; 6th galat attempt → 429. ✅
+  - ⚠️ Note: frontend `RegisterPayload.email` still `string` (required) — fixed 2026-09-17 to `email?: string`; login is phone-only, email field optional at registration.
 
 - [x] **must_change_password flow (backend)** — middleware `EnsurePasswordChanged`, change-password endpoint, `api.logout` route. Evidence: login → 403 → change-password 422/200 → same token 200 → old password 401. ✅
 
@@ -69,6 +70,35 @@
 ---
 
 ## PENDING (P0 — ship blocking)
+
+- [ ] **P0 [2026-09-17]: lib/phone.ts + login phone-only + register/checkout normalization**
+  - `LoginPayload.login` is phone-only (not email-or-phone); update login page label/placeholder and any "email or phone" hint text.
+  - Extract Pakistan phone normalization (`/^(\+92|0)3[0-9]{9}$/` → `03XXXXXXXXX`) into `lib/phone.ts`; replace duplicated inline regexes in login, register, checkout, profile with the shared util.
+  - Register: replace generic `/^[0-9]{10,15}$/` with PK pattern; show "e.g. 03XXXXXXXXX" hint.
+  - Checkout: confirm `normalizePhone()` call uses lib/phone.ts after extraction.
+
+- [ ] **P0 [2026-09-17]: Checkout email optional + guest-token dead code removal**
+  - `RegisterPayload.email` made optional (`email?: string`) — `tsc --noEmit` exit 0 confirmed.
+  - Audit checkout page for any remaining `guest_token` generation, storage, or passing to API; remove dead code.
+  - Ensure checkout submit does NOT require email for guest orders; backend 422 validation must not reject missing email.
+
+- [ ] **P0 [2026-09-17]: Order-confirmation redirect fix**
+  - After placing an order, user lands on `/order-confirmation` then gets redirected to `/login`.
+  - Root cause: axios 401 interceptor redirects globally; order-confirmation page has no auth guard bypass; `NO_REDIRECT_PATHS` check already added in `lib/axios.ts` but end-to-end not verified.
+  - Fix: persist order lookup key (order_number + phone, or a signed one-time token) in `sessionStorage` immediately after checkout submit; order-confirmation page reads from sessionStorage, not from an authenticated API call; interceptor path already has `/order-confirmation` in `NO_REDIRECT_PATHS`.
+  - Also audit `trackOrder` page for the same 401 redirect issue.
+
+- [ ] **P0 [2026-09-17]: Checkout 422 full field mapping**
+  - Currently: toast shows for 422; guest name/email/phone inline errors partially mapped.
+  - Task: map Laravel's full `errors` object to EVERY checkout field (street address, city, order note, payment method, items/stock 422); ensure auth-mode fields surface inline errors; verify no field silently swallows a validation message.
+
+- [ ] **P0 [2026-09-17]: Wishlist sync 403 / must_change_password fix**
+  - `mergeGuestWishlist` catch: 401/403 no longer toast (only network/5xx toasts).
+  - `AuthContext.login()`: skips `wishlistMergeRef` when `mustChange=true`.
+  - `WishlistProvider` mount effect: skips API sync when stored user has `must_change_password=true`, loads local items silently.
+  - `updateMustChangePassword(false)`: triggers deferred merge after password change.
+  - `mergedRef` guard: merge runs at most once per login session; reset on `clearWishlist`.
+  - `tsc --noEmit` exit 0 confirmed. **PENDING**: browser test (must_change_password login → no toast; change password → wishlist merges once).
 
 - [ ] **P0: Guest checkout backend validation error display (ALL fields)**
   - Currently: toast shows for 422; guest name/email/phone inline errors mapped; address + city + order note fields have NOT been verified for inline error wiring.
@@ -150,10 +180,10 @@ After completing any item above, append:
 
 ---
 
-### Task: Phone/email login (backend)
-- Verified by: temp-user API tests — email/03../+92.. → 200; 6th galat attempt → 429; `AuthApiController` `login` key + last-10-digits match confirmed.
+### Task: Phone login (backend)
+- Verified by: temp-user API tests — 03../+92.. → 200; 6th galat attempt → 429; `AuthApiController` `login` key + last-10-digits match confirmed. Email login NOT supported — login is phone-only.
 - Date: 2026-09-21
-- Notes: Frontend `login` key bhi update kar diya gaya (AuthContext.tsx + login/page.tsx).
+- Notes: Frontend `login` key bhi update kar diya gaya (AuthContext.tsx + login/page.tsx). "Phone/email login" label was incorrect — corrected to phone-only.
 
 ### Task: must_change_password flow (backend)
 - Verified by: login → 403 → `POST /api/change-password` 422 (weak) → 200 (strong) → same token → 200; old password → 401. Middleware `EnsurePasswordChanged`, `api.logout` route confirmed.
