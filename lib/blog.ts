@@ -22,6 +22,14 @@ export interface ApiBlogCategory {
   slug: string;
 }
 
+export interface ApiBlogCategoryWithCount extends ApiBlogCategory {
+  blogs_count: number;
+}
+
+export interface ApiBlogTagWithCount extends ApiBlogTag {
+  blogs_count: number;
+}
+
 export interface ApiBlog {
   id: number;
   title: string;
