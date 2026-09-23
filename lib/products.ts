@@ -50,30 +50,45 @@ export async function getProducts(params?: ProductsParams, options?: { signal?: 
     // slug is intentionally omitted (undefined via spread) so the navigation guard
     // (if (!product.slug) return) safely prevents routing to a guaranteed 404.
     const legacyProducts = allProducts as Product[];
+    // Map to API shape first
+    let mapped = legacyProducts.map(p => ({
+      id: Number(p.id),
+      name: p.nameEn,
+      // No slug — offline cards are non-navigable rather than broken.
+      // ProductCard's guard: `if (!product.slug) return` catches this cleanly.
+      slug: undefined as unknown as string,
+      price: p.price,
+      sale_price: p.oldPrice ?? null,
+      thumbnail: p.img,
+      description: p.description,
+      category: { id: 0, name: p.category || 'Uncategorized', slug: p.category?.toLowerCase() || 'uncategorized' },
+      variants: [],
+      rating: p.rating,
+      reviews_count: p.reviews,
+      featured: p.isBestSeller,
+    }));
+
+    // Apply params to static fallback (so filters work offline)
+    if (params?.min_price !== undefined) mapped = mapped.filter(p => (p.price ?? 0) >= (params.min_price as number));
+    if (params?.max_price !== undefined) mapped = mapped.filter(p => (p.price ?? 0) <= (params.max_price as number));
+    if (params?.search) {
+      const q = (params.search as string).toLowerCase();
+      mapped = mapped.filter(p => p.name.toLowerCase().includes(q));
+    }
+    if (params?.category_id) {
+      const slug = String(params.category_id).toLowerCase();
+      mapped = mapped.filter(p => p.category.slug === slug || p.category.name.toLowerCase() === slug);
+    }
+
     return {
-      data: legacyProducts.map(p => ({
-        id: Number(p.id),
-        name: p.nameEn,
-        // No slug — offline cards are non-navigable rather than broken.
-        // ProductCard's guard: `if (!product.slug) return` catches this cleanly.
-        slug: undefined as unknown as string,
-        price: p.price,
-        sale_price: p.oldPrice ?? null,
-        thumbnail: p.img,
-        description: p.description,
-        category: { id: 0, name: p.category || 'Uncategorized', slug: p.category?.toLowerCase() || 'uncategorized' },
-        variants: [],
-        rating: p.rating,
-        reviews_count: p.reviews,
-        featured: p.isBestSeller,
-      })),
+      data: mapped,
       meta: {
         current_page: 1,
         last_page: 1,
-        per_page: legacyProducts.length,
-        total: legacyProducts.length,
+        per_page: mapped.length,
+        total: mapped.length,
         from: 1,
-        to: legacyProducts.length,
+        to: mapped.length,
       },
     };
   }

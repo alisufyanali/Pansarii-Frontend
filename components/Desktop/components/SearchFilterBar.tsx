@@ -155,7 +155,15 @@ function SearchFilterBarContent({
 
   const applyMobileFilters = () => {
     setFilters(tempFilters);
-    onFilterChange(tempFilters);
+    // Update URL with category from mobile filters
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('categories');
+    if (tempFilters.categories.length === 1) {
+      params.set('category', tempFilters.categories[0]);
+    } else {
+      params.delete('category');
+    }
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
     setIsMobileFilterOpen(false);
   };
 

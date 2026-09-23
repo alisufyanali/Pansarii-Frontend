@@ -83,9 +83,9 @@
   - Ensure checkout submit does NOT require email for guest orders; backend 422 validation must not reject missing email.
 
 - [ ] **P0 [2026-09-17]: Order-confirmation redirect fix**
-  - After placing an order, user lands on `/order-confirmation` then gets redirected to `/login`.
-  - Root cause: axios 401 interceptor redirects globally; order-confirmation page has no auth guard bypass; `NO_REDIRECT_PATHS` check already added in `lib/axios.ts` but end-to-end not verified.
-  - Fix: persist order lookup key (order_number + phone, or a signed one-time token) in `sessionStorage` immediately after checkout submit; order-confirmation page reads from sessionStorage, not from an authenticated API call; interceptor path already has `/order-confirmation` in `NO_REDIRECT_PATHS`.
+  - Bug: after placing an order, user lands on `/order-confirmation` then gets redirected to `/login`.
+  - Root cause to verify: axios 401 interceptor in `lib/axios.ts` may redirect globally without a bypass for `/order-confirmation`; order-confirmation page may call an authenticated API endpoint without a guest fallback.
+  - Fix required: (1) add `/order-confirmation` and `/track-order` to a `NO_REDIRECT_PATHS` list in the 401 interceptor so those pages handle the 401 inline; (2) persist order lookup key (order_number + phone, or a signed one-time token) in `sessionStorage` immediately after checkout submit; (3) order-confirmation page reads from sessionStorage for guest users rather than making an authenticated API call.
   - Also audit `trackOrder` page for the same 401 redirect issue.
 
 - [ ] **P0 [2026-09-17]: Checkout 422 full field mapping**
@@ -93,12 +93,9 @@
   - Task: map Laravel's full `errors` object to EVERY checkout field (street address, city, order note, payment method, items/stock 422); ensure auth-mode fields surface inline errors; verify no field silently swallows a validation message.
 
 - [ ] **P0 [2026-09-17]: Wishlist sync 403 / must_change_password fix**
-  - `mergeGuestWishlist` catch: 401/403 no longer toast (only network/5xx toasts).
-  - `AuthContext.login()`: skips `wishlistMergeRef` when `mustChange=true`.
-  - `WishlistProvider` mount effect: skips API sync when stored user has `must_change_password=true`, loads local items silently.
-  - `updateMustChangePassword(false)`: triggers deferred merge after password change.
-  - `mergedRef` guard: merge runs at most once per login session; reset on `clearWishlist`.
-  - `tsc --noEmit` exit 0 confirmed. **PENDING**: browser test (must_change_password login → no toast; change password → wishlist merges once).
+  - Bug: after login with `must_change_password=true`, a "Failed to sync wishlist" toast appears (sometimes twice).
+  - Root cause: `mergeGuestWishlist` catch block fires `toast.error` on any failure including 403; `AuthContext.login()` calls `wishlistMergeRef` unconditionally even when `mustChange=true`; `WishlistProvider` mount effect re-runs the merge on the `/change-password` page after redirect, firing the toast again for users with guest items.
+  - Fix required: (1) in `mergeGuestWishlist` catch, suppress toast when HTTP status is 401 or 403 — only toast on network errors and 5xx; (2) in `AuthContext.login()`, skip `wishlistMergeRef.current()` when `mustChange=true`; call the merge instead from `updateMustChangePassword(false)` after the password is successfully changed; (3) in `WishlistProvider` mount effect, read the stored user and skip API sync silently when `must_change_password=true`, falling back to local items; (4) add a `mergedRef` guard so merge runs at most once per login session, reset on `clearWishlist`/logout.
 
 - [ ] **P0: Guest checkout backend validation error display (ALL fields)**
   - Currently: toast shows for 422; guest name/email/phone inline errors mapped; address + city + order note fields have NOT been verified for inline error wiring.
