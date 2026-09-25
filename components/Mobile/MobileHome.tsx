@@ -10,7 +10,7 @@ const HeroBanner = dynamic(() => import('./components/HeroBanner'), { ssr: false
 
 function HeroBannerFallback() {
   return (
-    <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden h-48 bg-gray-200 animate-pulse" />
+    <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden aspect-[1624/750] bg-gray-200 animate-pulse" />
   );
 }
 

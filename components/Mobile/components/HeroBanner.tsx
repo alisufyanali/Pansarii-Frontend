@@ -37,7 +37,7 @@ export default function HeroBanner({ slides }: { slides?: ApiSlide[] }) {
   }, [banners.length]);
 
   return (
-    <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden h-48">
+    <div className="relative mx-4 mt-4 rounded-2xl overflow-hidden aspect-[1624/750]">
       {banners.map((banner, index) => {
         const href = banner.link ?? banner.primaryBtn?.href ?? '/shop';
         const title = banner.title ?? 'Premium Ayurvedic';
@@ -52,39 +52,27 @@ export default function HeroBanner({ slides }: { slides?: ApiSlide[] }) {
             }`}
           >
             {banner.video ? (
-              <>
-                <video
-                  src={banner.video}
-                  className="absolute inset-0 w-full h-full object-cover object-center"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  poster={banner.image}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex flex-col items-center justify-end pb-6 text-white">
-                  <h2 className="text-xl font-bold drop-shadow">{title}</h2>
-                  <p className="text-sm opacity-90 drop-shadow">{subtitle}</p>
-                </div>
-              </>
+              <video
+                src={banner.video}
+                className="absolute inset-0 w-full h-full object-cover object-center"
+                autoPlay
+                muted
+                loop
+                playsInline
+                poster={banner.image}
+              />
             ) : !imgErrors[index] ? (
-              <>
-                <Image
-                  src={banner.image}
-                  alt={title}
-                  fill
-                  className="object-cover object-center"
-                  priority={index === 0}
-                  fetchPriority={index === 0 ? "high" : "low"}
-                  sizes="(max-width: 768px) 92vw, 50vw"
-                  quality={70}
-                  onError={() => setImgErrors(prev => ({ ...prev, [index]: true }))}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex flex-col items-center justify-end pb-6 text-white">
-                  <h2 className="text-xl font-bold drop-shadow">{title}</h2>
-                  <p className="text-sm opacity-90 drop-shadow">{subtitle}</p>
-                </div>
-              </>
+              <Image
+                src={banner.image}
+                alt={banner.title || 'Banner'}
+                fill
+                className="object-cover object-center"
+                priority={index === 0}
+                fetchPriority={index === 0 ? "high" : "low"}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                quality={85}
+                onError={() => setImgErrors(prev => ({ ...prev, [index]: true }))}
+              />
             ) : (
               <div className={`w-full h-full bg-gradient-to-br ${fallbackColors[index % fallbackColors.length]} flex flex-col items-center justify-center text-white px-6`}>
                 <h2 className="text-2xl font-bold mb-1">{title}</h2>
@@ -97,15 +85,15 @@ export default function HeroBanner({ slides }: { slides?: ApiSlide[] }) {
 
       {/* Dots */}
       {banners.length > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10" role="group" aria-label="Banner slides">
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5 z-10" role="group" aria-label="Banner slides">
           {banners.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrent(idx)}
               aria-label={`Go to slide ${idx + 1}`}
               aria-current={idx === current ? 'true' : 'false'}
-              className={`h-1.5 rounded-full transition-all ${
-                idx === current ? 'w-6 bg-white' : 'w-1.5 bg-white/60'
+              className={`h-1.5 rounded-full transition-all shadow-sm ${
+                idx === current ? 'w-5 bg-white' : 'w-1.5 bg-white/70'
               }`}
             />
           ))}
