@@ -237,6 +237,13 @@ function OrderConfirmationContent() {
   const [fetchError, setFetchError] = useState('');
   const [loading,    setLoading]    = useState(true);
 
+  // ── Phone-re-entry fallback UI (guest mode, URL missing phone param) ──
+  const [needsPhoneEntry, setNeedsPhoneEntry] = useState(false);
+  const [entryPhone,       setEntryPhone]       = useState('');
+  const [entryOrderNumber, setEntryOrderNumber] = useState('');
+  const [entryLoading,     setEntryLoading]     = useState(false);
+  const [entryError,       setEntryError]       = useState('');
+
   useEffect(() => {
     if (fetchRanRef.current) return;
     fetchRanRef.current = true;
@@ -279,25 +286,16 @@ function OrderConfirmationContent() {
     const resolveOrder = async (): Promise<ApiOrder> => {
       if (mode === 'guest') {
         // Guests are not authenticated — use the public track endpoint
-        // with order_number + phone (or email) instead of /orders/{id}.
+        // with order_number + phone ONLY (email is NOT supported by backend,
+        // see GET /api/orders/track contract).
         if (orderNumber) {
           const cleanPhone = normalizePkPhone(phone);
           if (cleanPhone) {
-            try { return await trackOrder(orderNumber, cleanPhone, 'phone'); }
-            catch (err) {
-              console.warn('[order-confirmation] trackOrder(phone) failed, trying email fallback:', err);
-            }
+            // Always phone-only lookup — no email fallback
+            return await trackOrder(orderNumber, cleanPhone, 'phone');
           }
-          if (email) {
-            try { return await trackOrder(orderNumber, email, 'email'); }
-            catch (err) {
-              console.warn('[order-confirmation] trackOrder(email) also failed:', err);
-              throw err;
-            }
-          }
-          if (!cleanPhone && !email) {
-            throw new Error('No phone or email provided for guest order lookup.');
-          }
+          // Phone is missing from URL params: surface the phone re-entry UI.
+          throw new Error('__NEEDS_PHONE_ENTRY__');
         }
         // Fallback without order_number — attempt authenticated fetch
         // (will 401 if no token, but interceptor skips redirect on this page).
@@ -310,12 +308,17 @@ function OrderConfirmationContent() {
 
     resolveOrder()
       .then(data => { if (!cancelled) setOrder(data); })
-      .catch(() => {
-        if (!cancelled) {
-          setFetchError(
-            'Could not load order details. The order may not exist or you may not have permission to view it.',
-          );
+      .catch(err => {
+        if (cancelled) return;
+        const msg = err instanceof Error ? err.message : '';
+        if (msg === '__NEEDS_PHONE_ENTRY__') {
+          setNeedsPhoneEntry(true);
+          setEntryOrderNumber(orderNumber ?? '');
+          return;
         }
+        setFetchError(
+          'Could not load order details. The order may not exist or you may not have permission to view it.',
+        );
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 
@@ -331,7 +334,96 @@ function OrderConfirmationContent() {
     win.onload = () => win.print();
   };
 
+  const handlePhoneEntrySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEntryError('');
+    const cleanPhone = normalizePkPhone(entryPhone);
+    if (!cleanPhone) {
+      setEntryError('Please enter a valid Pakistan phone number (e.g. 03XX-XXXXXXX)');
+      return;
+    }
+    setEntryLoading(true);
+    try {
+      const data = await trackOrder(entryOrderNumber, cleanPhone, 'phone');
+      setOrder(data);
+      setNeedsPhoneEntry(false);
+    } catch (_err) {
+      setEntryError(
+        'We could not find your order with this phone number. Please double-check the phone number you used at checkout, or contact support.',
+      );
+    } finally {
+      setEntryLoading(false);
+    }
+  };
+
   if (loading) return <OrderConfirmationLoading />;
+
+  // Phone re-entry fallback UI
+  if (needsPhoneEntry) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10 print:hidden">
+        <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="flex flex-col items-center text-center mb-5">
+            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
+              <FaBox className="w-6 h-6 text-amber-600" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Confirm your phone number</h2>
+            <p className="text-sm text-gray-500">
+              We need the phone number you used at checkout to verify your guest order.
+              {entryOrderNumber && (
+                <span className="block mt-1 text-gray-600">
+                  Order: <span className="font-semibold text-gray-800">#{entryOrderNumber}</span>
+                </span>
+              )}
+            </p>
+          </div>
+
+          <form onSubmit={handlePhoneEntrySubmit} className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                inputMode="tel"
+                value={entryPhone}
+                onChange={e => { setEntryPhone(e.target.value); setEntryError(''); }}
+                placeholder="03XX-XXXXXXX or +923XX-XXXXXXX"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-700/20 focus:border-green-600 transition bg-white"
+                autoFocus
+              />
+            </div>
+            {entryError && (
+              <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-md px-3 py-2">
+                {entryError}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={entryLoading}
+              className={`w-full py-2.5 rounded-lg text-sm font-bold text-white transition ${entryLoading ? 'bg-green-600 opacity-70 cursor-not-allowed' : 'bg-green-700 hover:bg-green-600'}`}
+            >
+              {entryLoading ? 'Verifying…' : 'Verify & View Order'}
+            </button>
+            <div className="pt-1 flex flex-col gap-2 text-xs">
+              <Link
+                href="/track-order"
+                className="text-center text-gray-500 hover:text-gray-700 underline-offset-2 hover:underline"
+              >
+                Go to Track Order page
+              </Link>
+              <Link
+                href="/shop"
+                className="text-center text-green-700 font-semibold hover:text-green-600"
+              >
+                ← Back to shop
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   // Error state
   if (fetchError || !order) {

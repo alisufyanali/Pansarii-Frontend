@@ -788,8 +788,12 @@ export default function CheckoutPage() {
                   ))}
                 </div>
               </div>
+            </div>
 
-              {/* ── Items-level errors ── */}
+            {/* ── RIGHT: summary ── */}
+            <div className="lg:sticky lg:top-[144px] h-fit flex flex-col gap-3">
+
+              {/* ── Items-level errors (near cart/summary) ── */}
               {itemErrors.length > 0 && (
                 <div
                   className="bg-red-50 border border-red-200 rounded-xl p-4"
@@ -803,18 +807,19 @@ export default function CheckoutPage() {
                   </ul>
                 </div>
               )}
-            </div>
 
-            {/* ── RIGHT: summary ── */}
-            <div className="lg:sticky lg:top-[144px] h-fit flex flex-col gap-3">
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <h2 className="text-sm font-bold text-gray-900 mb-4">Order Summary</h2>
 
                 {/* Items */}
                 <div className="relative mb-4">
                   <div className={`flex flex-col gap-3 overflow-y-auto pb-1 ${cartItems.length > 4 ? 'max-h-[272px] lg:max-h-none' : ''}`}>
-                    {cartItems.map(item => (
-                      <div key={`${item.id}-${item.size}`} className="flex gap-3">
+                    {cartItems.map((item, idx) => (
+                      <div
+                        key={`${item.id}-${item.size}`}
+                        className="flex gap-3"
+                        data-field-error={`items.${idx}`}
+                      >
                         <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
                           <Image src={item.img} alt={item.nameEn} fill className="object-cover" sizes="48px" />
                         </div>

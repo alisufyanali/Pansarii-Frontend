@@ -132,10 +132,20 @@ export const createGuestOrder = async (payload: CreateGuestOrderPayload): Promis
   return order;
 };
 
-export const trackOrder = async (orderNumber: string, emailOrPhone: string, kind: 'email' | 'phone' = 'email'): Promise<ApiOrder> => {
+export const trackOrder = async (orderNumber: string, emailOrPhone: string, kind: 'email' | 'phone' = 'phone'): Promise<ApiOrder> => {
   const params: Record<string, string> = { order_number: orderNumber };
-  if (kind === 'email') params.email = emailOrPhone;
-  else params.phone = emailOrPhone;
+
+  // ⚠️ Backend contract: GET /api/orders/track ONLY supports phone-based lookup.
+  // Email is NOT supported and would cause 422 / 404 loops.
+  // If kind==='email' is passed by legacy callers: log a warn, but ALWAYS send as `phone`
+  // param (the API rejects `email` key outright — per PhoneHelper-only normalization).
+  if (kind === 'email') {
+    console.warn(
+      '[trackOrder] DEPRECATED: kind="email" is not supported by /api/orders/track. '
+      + 'Backend requires order_number + phone only. Sending as phone param to avoid 422.',
+    );
+  }
+  params.phone = emailOrPhone;
 
   const res = await apiClient.get<
     | ApiResponse<ApiOrder>
