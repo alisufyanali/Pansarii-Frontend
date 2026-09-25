@@ -513,18 +513,37 @@ export default function ProductDetailsModal({
 
           {/* Left: Desktop image now clickable */}
           <div className="w-2/5 p-6 border-r border-gray-100 flex-shrink-0">
-            <button
-              onClick={goToProductDetail}
-              className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 block w-full"
-              aria-label="View product details"
-            >
-              {product.sale && (
-                <span className="absolute top-3 right-3 z-10 px-3 py-1 bg-red-500 text-white rounded-full text-sm font-semibold">
-                  {product.sale}
-                </span>
-              )}
-              <Image src={selectedImage} alt={product.nameEn} fill className="object-contain p-4" sizes="(max-width: 768px) 50vw, 33vw" />
-            </button>
+            <div className="relative">
+              {/* Wishlist toggle — desktop (top-left of product image) */}
+              <button
+                type="button"
+                onClick={handleWishlistToggle}
+                className={`absolute top-3 left-3 z-20 w-9 h-9 flex items-center justify-center rounded-full shadow-md transition-all hover:scale-110 ${
+                  wishlisted
+                    ? 'bg-red-50 border border-red-200 text-red-500'
+                    : 'bg-white/90 hover:bg-white border border-gray-200 text-gray-600'
+                }`}
+                aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+              >
+                {wishlisted
+                  ? <FaHeart className="w-4 h-4 text-red-500" />
+                  : <FaRegHeart className="w-4 h-4 text-gray-600" />
+                }
+              </button>
+
+              <button
+                onClick={goToProductDetail}
+                className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 block w-full"
+                aria-label="View product details"
+              >
+                {product.sale && (
+                  <span className="absolute top-3 right-3 z-10 px-3 py-1 bg-red-500 text-white rounded-full text-sm font-semibold">
+                    {product.sale}
+                  </span>
+                )}
+                <Image src={selectedImage} alt={product.nameEn} fill className="object-contain p-4" sizes="(max-width: 768px) 50vw, 33vw" />
+              </button>
+            </div>
             {product.additionalImages && product.additionalImages.length > 0 && (
               <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar">
                 {[product.img, ...product.additionalImages].map((img, i) => (
@@ -546,25 +565,12 @@ export default function ProductDetailsModal({
             <div className="flex-1 space-y-4 overflow-y-auto">
 
               <div>
-                <div className="flex items-start justify-between gap-2">
-                  <button
-                    onClick={goToProductDetail}
-                    className="text-xl font-bold text-gray-900 leading-tight hover:text-green-700 transition text-left"
-                  >
-                    {product.nameEn}
-                  </button>
-                  {/* Wishlist toggle — desktop */}
-                  <button
-                    onClick={handleWishlistToggle}
-                    className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 hover:bg-red-50 hover:border-red-200 transition"
-                    aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                  >
-                    {wishlisted
-                      ? <FaHeart className="w-4 h-4 text-red-500" />
-                      : <FaRegHeart className="w-4 h-4 text-gray-500" />
-                    }
-                  </button>
-                </div>
+                <button
+                  onClick={goToProductDetail}
+                  className="text-xl font-bold text-gray-900 leading-tight hover:text-green-700 transition text-left pr-8 block"
+                >
+                  {product.nameEn}
+                </button>
                 <p className="text-gray-500 text-sm mt-0.5">{product.nameUr}</p>
                 {product.description && (
                   <p className="text-green-700 text-sm mt-1">{product.description}</p>
